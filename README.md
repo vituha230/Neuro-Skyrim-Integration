@@ -39,7 +39,7 @@ xmake project -k vsxmake
 
 ### SKSE Installation
 The mod requires the runtime component of SKSE to run.
-- Follow the link: `https://skse.silverlock.org/`
+- Follow the link: https://skse.silverlock.org/
 - Download archive: `Current Anniversary Edition build 2.2.6 (game version 1.6.1170)` (first link)
 - ***Both Anniversary and Special edition 1.6.1170 use the same game version***
 - Extract archive contents into Skyrim install folder
