@@ -56,5 +56,4 @@ lib/glaze/
 lib/libneurosdk/
 
 # files
-*.zip
 compile_commands.json
