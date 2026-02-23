@@ -23,7 +23,7 @@ xmake build
 ### Build Output
 If you want to redirect the build output, set the following environment variable:
 
-- Path to a Skyrim install folder: `SKYRIM_PATH`
+- Path to Skyrim install folder: `SKYRIM_PATH`
 - (example: `D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition`)
 - ***Resulting .dll file will be in `...\Skyrim Special Edition\Data\SKSE\Plugins\`***
 
