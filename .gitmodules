@@ -1,0 +1,9 @@
+[submodule "lib/commonlibsse"]
+	path = lib/commonlibsse
+	url = https://github.com/libxse/commonlibsse
+[submodule "lib/libneurosdk"]
+	path = lib/libneurosdk
+	url = https://github.com/alphanin9/libneurosdk
+[submodule "lib/glaze"]
+	path = lib/glaze
+	url = https://github.com/stephenberry/glaze
