@@ -1,7 +1,7 @@
 # Neuro-Skyrim-Integration
 
 ### Requirements
-* Skyrim Special Edition 1.6.1170 or Skyrim Anniversary Edition 1.6.1170 (anniversary edition is untested) (latest steam release)
+* `Skyrim Special Edition 1.6.1170` or `Skyrim Anniversary Edition 1.6.1170` (anniversary edition is untested) (latest steam release)
 * [XMake](https://xmake.io) [2.8.2+]
 * C++23 Compiler (MSVC, Clang-CL)
 
