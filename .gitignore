@@ -51,6 +51,9 @@
 # folders
 build/
 vs*/
+lib/commonlibsse/
+lib/glaze/
+lib/libneurosdk/
 
 # files
 *.zip

@@ -6,8 +6,6 @@ set_xmakever("2.8.2")
 
 -- includes
 includes("lib/commonlibsse")
-includes("lib/libneurosdk")
-includes("lib/glaze")
 includes("lib/xmake.lua")
 
 -- set project
@@ -29,6 +27,7 @@ set_policy("package.requires_lock", true)
 
 local skyrim_path = os.getenv("SKYRIM_PATH")
 
+set_defaultmode("debug")
 
 -- targets
 target("Neuro-Skyrim-Integration")
