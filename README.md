@@ -19,7 +19,7 @@ xmake build
 > ***Note:*** *This will generate a `build/windows/` directory in the **project's root directory** with the build output.*
 
 ### Build Output (Optional)
-If you want to redirect the build output, set one of the following environment variable:
+If you want to redirect the build output, set the following environment variable:
 
 - Path to a Skyrim install folder: `SKYRIM_PATH`
 - (example: `D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition`)
