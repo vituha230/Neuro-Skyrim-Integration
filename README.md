@@ -27,7 +27,7 @@ If you want to redirect the build output, set the following environment variable
 - (example: `D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition`)
 - ***Resulting .dll file will be in `...\Skyrim Special Edition\Data\SKSE\Plugins\`***
 
-Alternatively, from `\Neuro-Skyrim-Integration\build\windows\x64\debug` manually copy files `Neuro-Skyrim-Integration.dll` and `Neuro-Skyrim-Integration.pdb` into `...\Skyrim Special Edition\Data\SKSE\Plugins\` folder. If the folder does not exist, create it.
+Alternatively, from `\Neuro-Skyrim-Integration\build\windows\x64\debug` manually copy files `Neuro-Skyrim-Integration.dll` into `...\Skyrim Special Edition\Data\SKSE\Plugins\` folder. If the folder does not exist, create it.
 
 
 ### Project Generation (Optional)
