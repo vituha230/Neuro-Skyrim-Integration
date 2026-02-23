@@ -43,6 +43,8 @@ The mod requires the runtime component of SKSE to run.
 - Download archive: `Current Anniversary Edition build 2.2.6 (game version 1.6.1170)` (first link)
 - ***Both Anniversary and Special edition 1.6.1170 use the same game version***
 - Extract archive contents into Skyrim install folder
+- Extract `SKSE_addresses.zip` contents into `Skyrim Special Edition\Data\SKSE\Plugins\`. Or download it from here: https://www.nexusmods.com/skyrimspecialedition/mods/32444
+### Additional mod file
 - Copy `mysc.esp` file from repository into `...\Skyrim Special Edition\Data\` directory. This file is required for some core mechanics of the mod to work.
 - At `%appdata%\Local\Skyrim Special Edition\` edit the `Plugins.txt` file: add `*mysc.esp` line in the end (asterisk required). If the file does not exist, create it. Example file contents (for me it has been created automatically):
 ```
