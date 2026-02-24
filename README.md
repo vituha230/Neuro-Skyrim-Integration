@@ -70,6 +70,6 @@ cmake --build skse64/build --config Debug
 ```
 - Copy contents of `...\skse64\build\skse64_loader\Debug` into Skyrim install directory
 - Copy contents of `...\skse64\build\skse64\Debug` into Skyrim install directory
-- The mod has to be built in debug mode too (currently its the default mode, see `xmake.lua`).
+- The mod has to be built in debug mode too (currently its the default mode, see `xmake.lua`
 
 
