@@ -53,3 +53,11 @@ The mod requires the runtime component of SKSE to run.
 *mysc.esp
 ```
 **THE GAME HAS TO BE RUN USING `skse64_loader.exe` FOR THE MOD TO WORK. However, you may run the game launcher (from steam or manually from game folder) to change graphics settings at any time.**
+
+### Debug mode
+It is possible to build the mod in debug mode, and attatch debugger to the game.
+To do this, replace release version of SKSE with contents of `skse64_1_6_1170_DEBUG.zip` archive (extract into Skyrim install directory).
+***If you want to build SKSE debug version yourself, follow this link: `https://www.youtube.com/watch?v=FLRhsrQ8mqw`***
+The mod has to be built in debug mode too (currently its the default mode, see `xmake.lua`).
+**In debug mode the game will be paused after launch until a debugger is attatched**
+
