@@ -27,7 +27,7 @@ If you want to redirect the build output, set the following environment variable
 - (example: `D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition`)
 - ***Resulting .dll file will be in `...\Skyrim Special Edition\Data\SKSE\Plugins\`***
 
-Alternatively, from `\Neuro-Skyrim-Integration\build\windows\x64\debug` manually copy `Neuro-Skyrim-Integration.dll` into `...\Skyrim Special Edition\Data\SKSE\Plugins\` folder. If the folder does not exist, create it.
+Alternatively, from `...\Neuro-Skyrim-Integration\build\windows\x64\debug` manually copy `Neuro-Skyrim-Integration.dll` into `...\Skyrim Special Edition\Data\SKSE\Plugins\` folder. If the folder does not exist, create it.
 
 
 ### Project Generation (Optional)
@@ -54,10 +54,22 @@ The mod requires the runtime component of SKSE to run.
 ```
 **THE GAME HAS TO BE RUN USING `skse64_loader.exe` FOR THE MOD TO WORK. However, you may run the game launcher (from steam or manually from game folder) to change graphics settings at any time.**
 
-### Debug mode
+## Debug mode
 It is possible to build the mod in debug mode, and attatch debugger to the game.
-To do this, replace release version of SKSE with contents of `skse64_1_6_1170_DEBUG.zip` archive (extract into Skyrim install directory).
-***If you want to build SKSE debug version yourself, follow this link: `https://www.youtube.com/watch?v=FLRhsrQ8mqw`***
+- **In debug mode the game will be paused after launch until a debugger is attatched**
+### Building debug version
+- Install [Cmake](https://cmake.org/download)
+- Run following commands:
+```bat
+git clone https://github.com/ianpatt/common
+git clone https://github.com/ianpatt/skse64
+cmake -B common/build -S common -DCMAKE_INSTALL_PREFIX=extern common
+cmake --build common/build --config Debug --target install
+cmake -B skse64/build -S skse64 -DCMAKE_INSTALL_PREFIX=extern skse64
+cmake --build skse64/build --config Debug
+```
+- Copy contents of `...\skse64\build\skse64_loader\Debug` into Skyrim install directory
+- Copy contents of `...\skse64\build\skse64\Debug` into Skyrim install directory
 The mod has to be built in debug mode too (currently its the default mode, see `xmake.lua`).
-**In debug mode the game will be paused after launch until a debugger is attatched**
+
 
