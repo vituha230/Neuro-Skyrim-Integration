@@ -270,6 +270,13 @@ namespace Observer {
 								std::string model = test->GetModel();
 								if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
 									return RE::BSContainer::ForEachResult::kContinue;
+
+								//little flags
+								if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+									return RE::BSContainer::ForEachResult::kContinue;
+
+
+
 							}
 
 

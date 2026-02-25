@@ -3,7 +3,6 @@
 //crucial:
 
 
-//TODO remove rabbit creature race since chicken is rabbit according to it
 //TODO use fist when no arrows equipped
 
 
@@ -20,7 +19,6 @@
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME if attack ralof, sometimes it holds block forever (looks like when target got too far away while we were blocking - the block isnt interrupted)
 
 
-//TODO filter little flags on table maps they clog the context
 //TODO combine close-lying little objects into one context entry
 
 
