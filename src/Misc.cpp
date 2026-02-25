@@ -1812,7 +1812,10 @@ namespace MiscThings {
                     if (race == "Old People Race")
                         race = "Old";
 
-                    race = ", " + race;
+                    if (race == "Rabbit")
+                        race = "";
+                    else
+                        race = ", " + race;
                 }
 
 

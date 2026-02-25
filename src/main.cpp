@@ -3,9 +3,11 @@
 //crucial:
 
 
+//TODO remove rabbit creature race since chicken is rabbit according to it
 //TODO use fist when no arrows equipped
 
 
+//TODO horses
 
 //TODO raycast object detection
 
@@ -2227,7 +2229,9 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 
 	SKSE::GetMessagingInterface()->RegisterListener(MessageListener);
 
-	REX::INFO("Hello World!");
+	//REX::INFO("Hello world!");
+
+
 
 	return true;
 }
