@@ -6,7 +6,6 @@
 //TODO use fist when no arrows equipped
 
 
-//TODO horses
 
 //TODO raycast object detection
 

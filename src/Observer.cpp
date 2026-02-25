@@ -39,6 +39,9 @@ namespace Observer {
 	bool old_unbound_quest = false;
 	bool first_cycle = true;
 
+	bool old_mount_state = false;
+	RE::ActorPtr mount = nullptr;
+
 
 	float detect_locations_timer = 0.0f;
 
@@ -1168,6 +1171,8 @@ namespace Observer {
 
 
 
+
+
 	void player_state_monitor(float dtime)
 	{
 		RE::UI* ui = RE::UI::GetSingleton();
@@ -1212,6 +1217,42 @@ namespace Observer {
 
 				bool player_dead = player->IsDead();
 
+
+
+				bool cur_mount = MiscThings::is_on_horse();
+
+				if (old_mount_state != cur_mount)
+				{
+					old_mount_state = cur_mount;
+
+					if (cur_mount)
+					{
+						RE::ActorPtr mount_ptr;
+						player_actor->GetMount(mount_ptr);
+						std::string mount_name = "Horse";
+						mount = mount_ptr;
+						if (mount_ptr)
+						{
+							RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount_ptr.get();
+							mount_name = MiscThings::insert_into_list_and_get_info(mount_refr);
+						}
+
+						send_random_context("[You got onto " + mount_name + "]");
+					}
+					else
+					{
+						std::string mount_name = "Horse";
+						if (mount)
+						{
+							RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount.get();
+							mount_name = MiscThings::insert_into_list_and_get_info(mount_refr);
+						}
+						mount = nullptr;
+
+						send_random_context("[You got off " + mount_name + "]");
+					}
+						
+				}
 
 
 

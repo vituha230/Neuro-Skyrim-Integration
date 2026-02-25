@@ -914,8 +914,23 @@ namespace WalkerProcessor {
             {
                 turning_around = true;
                 mouse_y = 0.0f; //maybe this can be fixed some other way
+
+
             }
                 
+            if (MiscThings::is_on_horse())
+            {
+                if (mulX < -0.1f)
+                {
+                    left();
+                }
+
+                if (mulX > 0.1f)
+                {
+                    right();
+                }
+            }
+
 
             mouse_mouse_x_y(mouse_x, -mouse_y);
 
@@ -2545,11 +2560,11 @@ namespace WalkerProcessor {
 
     std::pair<bool, std::string> walk_to_object_by_index(int index, int interaction)
     {
+
         std::pair<bool, std::string> result{};
 
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_actor = (RE::Actor*)player->AsReference();
-
 
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
@@ -2587,6 +2602,37 @@ namespace WalkerProcessor {
 
                 right_attack_cancel();
                 left_attack_cancel();
+
+
+                if (MiscThings::is_on_horse())
+                {
+                    RE::ActorPtr mount_ptr;
+                    player_actor->GetMount(mount_ptr);
+                    std::string mount_name = "Horse";
+                    if (mount_ptr)
+                    {
+                        RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount_ptr.get();
+
+                        if (mount_refr == object->second)
+                        {
+                            if (interaction == 1)
+                            {
+                                mount_name = MiscThings::insert_into_list_and_get_info(mount_refr);
+                                result.first = true;
+                                result.second = "[Getting off " + mount_name + "...]";
+                                confirm();
+                            }
+                            else
+                            {
+                                result.first = false;
+                                result.second = "[Can not do this to your mount: " + mount_name + "...]";
+                            }
+
+                            return result;
+                        }
+                    }
+                }
+
 
                 target_ref = object->second;
 
@@ -4455,6 +4501,48 @@ namespace WalkerProcessor {
 
 
 
+    void path_is_blocked_result(RE::TESObjectREFR* result_target)
+    {
+        std::string blocking_object_name = "Something";
+        if (result_target)
+        {
+            std::string result_target_name = result_target->GetDisplayFullName();
+            if (result_target_name != "")
+            {
+                blocking_object_name = MiscThings::insert_into_list_and_get_info(result_target);
+
+            }
+
+        }
+        else
+        {
+            std::string check_name = MiscThings::get_potential_blocking_object();
+            if (check_name != "")
+                blocking_object_name = check_name;
+        }
+
+        if (MiscThings::is_on_horse())
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_actor = (RE::Actor*)player->AsReference();
+            RE::ActorPtr mount_ptr;
+            player_actor->GetMount(mount_ptr);
+            std::string mount_name = "Horse";
+            if (mount_ptr)
+            {
+                RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount_ptr.get();
+                mount_name = MiscThings::insert_into_list_and_get_info(mount_refr);
+            }
+            send_random_context("Cannot do this while on mount: " + mount_name);
+        }
+        else
+            send_random_context("[" + blocking_object_name + " blocks the object]");
+
+        remove_navmesh_cutter();
+        reset_walker();//there is something but it cannot be moved
+    }
+
+
 
 	float walker_processor_timer = 0.0f;
 
@@ -4976,53 +5064,13 @@ namespace WalkerProcessor {
                                                                                     }
                                                                                     else
                                                                                     {
-                                                                                        std::string blocking_object_name = "Something";
-                                                                                        if (result_target)
-                                                                                        {
-                                                                                            std::string result_target_name = result_target->GetDisplayFullName();
-                                                                                            if (result_target_name != "")
-                                                                                            {
-                                                                                                blocking_object_name = MiscThings::insert_into_list_and_get_info(result_target);
-
-                                                                                            }
-
-                                                                                        }
-                                                                                        else
-                                                                                        {
-                                                                                            std::string check_name = MiscThings::get_potential_blocking_object();
-                                                                                            if (check_name != "")
-                                                                                                blocking_object_name = check_name;
-                                                                                        }
-
-                                                                                        send_random_context("[" + blocking_object_name + " blocks the object]");
-                                                                                        remove_navmesh_cutter();
-                                                                                        reset_walker();//there is something but it cannot be moved
+                                                                                        path_is_blocked_result(result_target);
                                                                                     }
 
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    std::string blocking_object_name = "Something";
-                                                                                    if (result_target)
-                                                                                    {
-                                                                                        std::string result_target_name = result_target->GetDisplayFullName();
-                                                                                        if (result_target_name != "")
-                                                                                        {
-                                                                                            blocking_object_name = MiscThings::insert_into_list_and_get_info(result_target);
-                                                                                        }
-
-                                                                                    }
-                                                                                    else
-                                                                                    {
-                                                                                        std::string check_name = MiscThings::get_potential_blocking_object();
-                                                                                        if (check_name != "")
-                                                                                            blocking_object_name = check_name;
-                                                                                    }
-
-
-                                                                                    send_random_context("[" + blocking_object_name + " blocks the object]");
-                                                                                    remove_navmesh_cutter();
-                                                                                    reset_walker();//there is something but it cannot be moved
+                                                                                    path_is_blocked_result(result_target);
                                                                                 }
                                                                                 
                                                                             }
@@ -5065,55 +5113,14 @@ namespace WalkerProcessor {
                                                                                             }
                                                                                             else
                                                                                             {
-                                                                                                std::string blocking_object_name = "Something";
-                                                                                                if (result_target)
-                                                                                                {
-                                                                                                    std::string result_target_name = result_target->GetDisplayFullName();
-                                                                                                    if (result_target_name != "")
-                                                                                                    {
-                                                                                                        blocking_object_name = MiscThings::insert_into_list_and_get_info(result_target);
-
-                                                                                                    }
-
-                                                                                                }
-                                                                                                else
-                                                                                                {
-                                                                                                    std::string check_name = MiscThings::get_potential_blocking_object();
-                                                                                                    if (check_name != "")
-                                                                                                        blocking_object_name = check_name;
-                                                                                                }
-
-
-                                                                                                send_random_context("[" + blocking_object_name + " blocks the object]");
-                                                                                                remove_navmesh_cutter();
-                                                                                                reset_walker();//there is something but it cannot be moved
+                                                                                                path_is_blocked_result(result_target);
                                                                                             }
 
                                                                                         }
                                                                                         else
                                                                                         {
                                                                                             result_target = get_targeted_ref();
-                                                                                            std::string blocking_object_name = "Something";
-                                                                                            if (result_target)
-                                                                                            {
-                                                                                                std::string result_target_name = result_target->GetDisplayFullName();
-                                                                                                if (result_target_name != "")
-                                                                                                {
-                                                                                                    blocking_object_name = MiscThings::insert_into_list_and_get_info(result_target);
-
-                                                                                                }
-                                                                                            }
-                                                                                            else
-                                                                                            {
-                                                                                                std::string check_name = MiscThings::get_potential_blocking_object();
-                                                                                                if (check_name != "")
-                                                                                                    blocking_object_name = check_name;
-                                                                                            }
-
-
-                                                                                            send_random_context("[" + blocking_object_name + " blocks the object]");
-                                                                                            remove_navmesh_cutter();
-                                                                                            reset_walker();
+                                                                                            path_is_blocked_result(result_target);
                                                                                         }
                                                                                         
                                                                                     }
