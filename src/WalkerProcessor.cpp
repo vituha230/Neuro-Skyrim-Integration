@@ -2178,6 +2178,8 @@ namespace WalkerProcessor {
             lasttime = 0;
             lasttime_close_enough = 0;
 
+            attack_action_time = 0.0f;
+
         }
     }
 
@@ -2455,13 +2457,27 @@ namespace WalkerProcessor {
                         bool target_visible = false;
                         if (raycast_test)
                         {
-                            if (successful_raycast_time > 0.5f)
+                            if (successful_raycast_time > 0.4f)
                                 target_visible = true;
                             else
                                 successful_raycast_time += dtime_better;
                         }
                         else
-                            successful_raycast_time = 0.0f;
+                        {
+                            if (start_attacking)
+                                if (successful_raycast_time < 0.2f)
+                                {
+                                    target_visible = false;
+                                    successful_raycast_time = 0.0f;
+                                }
+                                else
+                                {
+                                    successful_raycast_time -= dtime_better;
+                                    target_visible = true;
+                                }
+                                    
+                        }
+                            //successful_raycast_time = 0.0f;
 
                         if ((target_visible && distance.Length() < range) || distance.Length() < 200.0f)
                             return true;
@@ -3469,7 +3485,7 @@ namespace WalkerProcessor {
                 {
                     //not a spell..
                     if (has_ranged_weapon_equipped(true))
-                        result = 2.7f;//result = 2.7f;
+                        result = 2.0f;//result = 2.7f;
                     else
                         result = 0.8f;
                 }  
@@ -3491,7 +3507,7 @@ namespace WalkerProcessor {
                 {
                     //not a spell..
                     if (has_ranged_weapon_equipped(false))
-                        result = 2.7f;
+                        result = 2.0f;
                     else
                         result = 0.8f;
                 }
