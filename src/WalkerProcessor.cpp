@@ -3531,7 +3531,7 @@ namespace WalkerProcessor {
                 {
                     //not a spell..
                     if (has_ranged_weapon_equipped(true) && !no_ammo())
-                        result = 2.0f;//result = 2.7f;
+                        result = 2.4f;//result = 2.7f;
                     else
                         result = 0.8f;
                 }  
@@ -3553,7 +3553,7 @@ namespace WalkerProcessor {
                 {
                     //not a spell..
                     if (has_ranged_weapon_equipped(false) && !no_ammo())
-                        result = 2.0f;
+                        result = 2.4f;
                     else
                         result = 0.8f;
                 }

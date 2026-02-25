@@ -1812,7 +1812,10 @@ namespace MiscThings {
                     if (race == "Old People Race")
                         race = "Old";
 
-                    if (race == "Rabbit")
+                    std::string temp_name = "";
+                    temp_name = object->GetDisplayFullName();
+
+                    if (race == "Rabbit" || race == temp_name)
                         race = "";
                     else
                         race = ", " + race;

@@ -2,8 +2,7 @@
 
 //crucial:
 
-
-//TODO use fist when no arrows equipped
+//TODO deseases info
 
 //TODO inventory weight control
 
