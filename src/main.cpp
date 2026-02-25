@@ -5,7 +5,7 @@
 
 //TODO use fist when no arrows equipped
 
-
+//TODO inventory weight control
 
 //TODO raycast object detection
 

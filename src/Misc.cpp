@@ -2333,6 +2333,22 @@ namespace MiscThings {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto actor_equip = RE::ActorEquipManager::GetSingleton();
 
+        auto form_type = object->GetFormType();
+
+        if (form_type == RE::FormType::Ammo)
+        {
+            auto player_actor = (RE::Actor*)player->AsReference();
+
+            auto worn_ammo = player_actor->GetCurrentAmmo();
+
+            auto ammo_object = (RE::TESBoundObject*)worn_ammo;
+
+            if (ammo_object == object)
+            {
+                return true;
+            }
+        }
+
 
         if (object && player && actor_equip)
         {

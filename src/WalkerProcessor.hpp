@@ -34,7 +34,7 @@ namespace WalkerProcessor {
 
 	bool is_fighting();
 
-
+	bool no_ammo();
 
 
 	float get_weapon_range(bool right);
