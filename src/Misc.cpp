@@ -3404,6 +3404,9 @@ namespace MiscThings {
                 //objects.push_back(a_ref); //UNLIMITED
                 //return RE::BSContainer::ForEachResult::kContinue;
 
+                if (!a_ref)
+                    return RE::BSContainer::ForEachResult::kContinue;
+
                 if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
                 {
 
@@ -3686,7 +3689,8 @@ namespace MiscThings {
         //i = 0;
         for (auto object : objects)
         {
-            objects_around.insert({ std::size(objects_around), object });
+            if (!is_object_in_the_list(object))
+                objects_around.insert({ std::size(objects_around), object });
             //i++;
         }
 

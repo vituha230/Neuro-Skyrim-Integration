@@ -29,7 +29,7 @@ bool visit_all_members4(std::vector<std::string>& results, const RE::GFxValue& i
 
 
 
-void force_choice(std::vector<MenuOption> options, std::string message, int force_type);
+bool force_choice(std::vector<MenuOption> options, std::string message, int force_type);
 
 
 /*

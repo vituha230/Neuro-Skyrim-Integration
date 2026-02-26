@@ -161,9 +161,9 @@ namespace RandomMessageBoxProcessor {
 								set_message_box_choice(option_test.at(0).id);
 							}
 							else
-								force_choice(get_options(), text, force_type::messagebox_option);
-
-							message_box_request_sent = true;
+								if (force_choice(get_options(), text, force_type::messagebox_option))
+									message_box_request_sent = true;
+							
 							
 						}
 						else

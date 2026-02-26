@@ -633,8 +633,9 @@ namespace MapProcessor {
 
 						if (!undiscovered_travel_request_sent)
 						{
-							undiscovered_travel_request_sent = true;
-							force_choice(get_undiscovered_options(), get_undiscovered_message(), force_type::map_undiscovered);
+							
+							if (force_choice(get_undiscovered_options(), get_undiscovered_message(), force_type::map_undiscovered))
+								undiscovered_travel_request_sent = true;
 						}
 						else
 						{
@@ -727,8 +728,9 @@ namespace MapProcessor {
 				{
 					if (!location_request_sent)
 					{
-						location_request_sent = true;
-						force_choice(get_location_options(), "You opened the map. Choose location to travel to. ", force_type::map_location);
+						
+						if (force_choice(get_location_options(), "You opened the map. Choose location to travel to. ", force_type::map_location))
+							location_request_sent = true;
 					}
 					else
 					{

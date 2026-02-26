@@ -1648,10 +1648,13 @@ namespace BarterProcessor {
                     {
                         if (!barter_category_request_sent)
                         {
-                            missing_category_detected = false;
-                            last_cursor_move = 0;
-                            barter_category_request_sent = true;
-                            force_choice(get_barter_categories(), "You are bartering. Choose item category to " + get_barter_type_text(), force_type::barter_category);
+
+                            if (force_choice(get_barter_categories(), "You are bartering. Choose item category to " + get_barter_type_text(), force_type::barter_category))
+                            {
+                                missing_category_detected = false;
+                                last_cursor_move = 0;
+                                barter_category_request_sent = true;
+                            }
                         }
                         else
                         {
@@ -1682,10 +1685,13 @@ namespace BarterProcessor {
                                         {
                                             if (!barter_item_request_sent && !item_confirming && !item_confirmed)
                                             {
-                                                missing_item_detected = false;
-                                                last_cursor_move = 0;
-                                                barter_item_request_sent = true;
-                                                force_choice(get_barter_items(), "You are bartering. Choose item to " + get_barter_type_text(), force_type::barter_item);
+
+                                                if (force_choice(get_barter_items(), "You are bartering. Choose item to " + get_barter_type_text(), force_type::barter_item))
+                                                {
+                                                    missing_item_detected = false;
+                                                    last_cursor_move = 0;
+                                                    barter_item_request_sent = true;
+                                                }
                                             }
                                             else
                                             {
@@ -1729,9 +1735,10 @@ namespace BarterProcessor {
                                                             {
                                                                 if (!slider_request_sent)
                                                                 {
-                                                                    slider_request_sent = true;
-                                                                    force_choice({}, "You are bartering. Choose amount of " + get_item_text_by_id(item_choice) + " to " + get_barter_type_text() +
-                                                                        ". Valid range: from " + std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity);
+                                                                    
+                                                                    if (force_choice({}, "You are bartering. Choose amount of " + get_item_text_by_id(item_choice) + " to " + get_barter_type_text() +
+                                                                        ". Valid range: from " + std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity))
+                                                                        slider_request_sent = true;
                                                                 }
                                                                 else
                                                                 {
@@ -1762,8 +1769,9 @@ namespace BarterProcessor {
                                                                                 {
                                                                                     if (!vendor_not_enough_gold_request_sent)
                                                                                     {
-                                                                                        vendor_not_enough_gold_request_sent = true;
-                                                                                        force_choice({ {0, "No"}, {1, "Yes"}, {-1, "[QUIT BARTER]"} }, test + " Confirm?", force_type::barter_vendor_not_enough_gold);
+                                                                                        
+                                                                                        if (force_choice({ {0, "No"}, {1, "Yes"}, {-1, "[QUIT BARTER]"} }, test + " Confirm?", force_type::barter_vendor_not_enough_gold))
+                                                                                            vendor_not_enough_gold_request_sent = true;
                                                                                     }
                                                                                     else
                                                                                     {
@@ -1831,8 +1839,9 @@ namespace BarterProcessor {
                                                                 {
                                                                     if (!vendor_not_enough_gold_request_sent)
                                                                     {
-                                                                        vendor_not_enough_gold_request_sent = true;
-                                                                        force_choice({ {0, "No"}, {1, "Yes"}, {-1, "[QUIT BARTER]"} }, test + " Confirm?", force_type::barter_vendor_not_enough_gold);
+                                                                        
+                                                                        if (force_choice({ {0, "No"}, {1, "Yes"}, {-1, "[QUIT BARTER]"} }, test + " Confirm?", force_type::barter_vendor_not_enough_gold))
+                                                                            vendor_not_enough_gold_request_sent = true;
                                                                     }
                                                                     else
                                                                     {
@@ -1912,8 +1921,9 @@ namespace BarterProcessor {
                 {
                     if (!barter_type_request_sent)
                     {
-                        barter_type_request_sent = true;
-                        force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering. Choose barter type", force_type::barter_type_force);
+                        
+                        if (force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering. Choose barter type", force_type::barter_type_force))
+                            barter_type_request_sent = true;
                     }
 
                 }

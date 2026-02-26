@@ -948,8 +948,9 @@ void processor(float dtime)
 				{
 					if (!operation_type_request_sent)
 					{
-						operation_type_request_sent = true;
-						force_choice({ {0, "Enchanting"}, {1, "Disenchanting"}, {-1, "[QUIT ENCHANTING TABLE]"}}, "You are at enchanting table. Choose operation type. ", force_type::enchant_type);
+						
+						if (force_choice({ {0, "Enchanting"}, {1, "Disenchanting"}, {-1, "[QUIT ENCHANTING TABLE]"}}, "You are at enchanting table. Choose operation type. ", force_type::enchant_type))
+							operation_type_request_sent = true;
 					}
 					else
 					{
@@ -977,8 +978,11 @@ void processor(float dtime)
 										{
 											if (!enchant_item_request_sent)
 											{
-												enchant_item_request_sent = true;
-												force_choice(get_enchantment_options(), "You are at enchanting table. Choose an item to disenchant. ", force_type::enchant_item);
+												
+												if (force_choice(get_enchantment_options(), "You are at enchanting table. Choose an item to disenchant. ", force_type::enchant_item))
+												{
+													enchant_item_request_sent = true;
+												}
 											}
 											else
 											{
@@ -1058,9 +1062,13 @@ void processor(float dtime)
 										{
 											if (!enchant_item_request_sent)
 											{
-												enchant_item_request_sent = true;
-												force_choice(get_enchantment_options(), "You are at enchantment table. Choose an enchantment to apply on item. ", force_type::enchant_item);
-												filter_already_selected = true;
+												
+												if (force_choice(get_enchantment_options(), "You are at enchantment table. Choose an enchantment to apply on item. ", force_type::enchant_item))
+												{
+													enchant_item_request_sent = true;
+													filter_already_selected = true;
+												}
+												
 											}
 											else
 											{
@@ -1095,8 +1103,9 @@ void processor(float dtime)
 															{
 																if (!slider_request_sent)
 																{
-																	slider_request_sent = true;
-																	force_choice({}, "You are enchanting." + get_slider_text() + "Valid range: from " + std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::enchant_strength);
+																	
+																	if (force_choice({}, "You are enchanting." + get_slider_text() + "Valid range: from " + std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::enchant_strength))
+																		slider_request_sent = true;
 																}
 																else
 																{

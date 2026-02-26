@@ -505,8 +505,9 @@ void processor(float dtime)
 				{
 					if (!ask_for_more_request_sent)
 					{
-						ask_for_more_request_sent = true;
-						force_choice({}, "You can craft more potions of this kind. Choose how many more to craft. Valid range: from 0 to " + std::to_string(ask_for_more), force_type::alchemy_amount_more);
+						
+						if (force_choice({}, "You can craft more potions of this kind. Choose how many more to craft. Valid range: from 0 to " + std::to_string(ask_for_more), force_type::alchemy_amount_more))
+							ask_for_more_request_sent = true;
 					}
 					else
 					{
@@ -573,8 +574,9 @@ void processor(float dtime)
 							{
 								if (!alchemy_request_sent)
 								{
-									alchemy_request_sent = true;
-									force_choice(get_ingredient_options(), "You are in alchemy menu. Choose 2 or 3 ingredients to combine. Ingredients must be different.", force_type::alchemy_ingredients);
+									
+									if (force_choice(get_ingredient_options(), "You are in alchemy menu. Choose 2 or 3 ingredients to combine. Ingredients must be different.", force_type::alchemy_ingredients))
+										alchemy_request_sent = true;
 								}
 								else
 								{

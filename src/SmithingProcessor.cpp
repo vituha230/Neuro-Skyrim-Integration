@@ -1285,10 +1285,13 @@ void processor(float dtime)
 										{
 											if (!item_choice_request_sent)
 											{
-												missing_item_detected = false;
-												last_cursor_move = 0;
-												item_choice_request_sent = true;
-												force_choice(get_items_options(), get_force_message(false), force_type::smithing_item);
+
+												if (force_choice(get_items_options(), get_force_message(false), force_type::smithing_item))
+												{
+													missing_item_detected = false;
+													last_cursor_move = 0;
+													item_choice_request_sent = true;
+												}
 											}
 											else
 											{

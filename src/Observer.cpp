@@ -135,7 +135,7 @@ namespace Observer {
 				{
 					if (!threats_response_request_sent)
 					{
-						threats_response_request_sent = true;
+						
 
 						std::string attacked_by = "";
 						for (auto attacker : attackers)
@@ -146,13 +146,17 @@ namespace Observer {
 
 
 
-						force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response);
-
-						if (!pause_was_made && !MiscThings::is_game_paused())
+						if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response))
 						{
-							pause_was_made = true; //tween menu mouse kills walker so it has disabled mouse in main.cpp
-							MiscThings::pause_game();
+							if (!pause_was_made && !MiscThings::is_game_paused())
+							{
+								threats_response_request_sent = true;
+								pause_was_made = true; //tween menu mouse kills walker so it has disabled mouse in main.cpp
+								MiscThings::pause_game();
+							}
 						}
+
+
 
 
 					}

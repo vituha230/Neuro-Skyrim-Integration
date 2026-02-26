@@ -1062,8 +1062,9 @@ namespace RaceProcessor {
 						{
 							if (!race_request_sent)
 							{
-								race_request_sent = true;
-								force_choice(get_options(0), get_force_message(0), force_type::race);
+								
+								if (force_choice(get_options(0), get_force_message(0), force_type::race))
+									race_request_sent = true;
 							}
 							else
 							{
@@ -1098,8 +1099,9 @@ namespace RaceProcessor {
 
 							if (!gender_request_sent)
 							{
-								gender_request_sent = true;
-								force_choice(get_options(1), get_force_message(1), force_type::race);
+								
+								if (force_choice(get_options(1), get_force_message(1), force_type::race))
+									gender_request_sent = true;
 							}
 							else
 							{
@@ -1135,8 +1137,9 @@ namespace RaceProcessor {
 
 								if (!preset_request_sent)
 								{
-									preset_request_sent = true;
-									force_choice(get_options(2), get_force_message(2), force_type::race);
+									
+									if (force_choice(get_options(2), get_force_message(2), force_type::race))
+										preset_request_sent = true;
 								}
 								else
 								{
@@ -1195,8 +1198,11 @@ namespace RaceProcessor {
 								{
 									if (!name_request_sent)
 									{
-										name_request_sent = true;
-										force_choice({}, get_force_message(3), force_type::character_name);
+										
+										if (force_choice({}, get_force_message(3), force_type::character_name))
+										{
+											name_request_sent = true;
+										}
 										//set_character_name("test_name_123");
 									}
 									else

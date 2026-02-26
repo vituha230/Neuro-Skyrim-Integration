@@ -1216,10 +1216,17 @@ namespace PerksProcessor {
 
 		if (perk_id == -2)
 		{
-			force_choice(get_all_perk_options(), "You are in perk menu, " + get_tree_name(tree_choice) + " perk tree. You have " + get_available_perk_points_text() + " perk points. Choose perk to investigate. ", force_type::perk_perk);
+			if (force_choice(get_all_perk_options(), "You are in perk menu, " + get_tree_name(tree_choice) + " perk tree. You have " + get_available_perk_points_text() + " perk points. Choose perk to investigate. ", force_type::perk_perk))
+			{
+				result.first = true;
+				result.second = "[Processing...]";
+			}
+			else
+			{
+				result.first = false;
+				result.second = "Can not do that now";
+			}
 
-			result.first = true;
-			result.second = "[Processing...]";
 		}
 		else
 		{
@@ -1855,8 +1862,9 @@ namespace PerksProcessor {
 				{
 					if (!select_tree_request_sent)
 					{
-						select_tree_request_sent = true;
-						force_choice(get_tree_options(), "You are in perk learning menu. You have " + get_available_perk_points_text() + " perk points. Choose skill tree. ", force_type::perk_tree);
+						
+						if (force_choice(get_tree_options(), "You are in perk learning menu. You have " + get_available_perk_points_text() + " perk points. Choose skill tree. ", force_type::perk_tree))
+							select_tree_request_sent = true;
 					}
 					else
 					{
@@ -1915,9 +1923,10 @@ namespace PerksProcessor {
 
 											if (!select_perk_request_sent)
 											{
-												select_perk_request_sent = true;
+												
 												//force_perks_select_perk(get_available_perk_options(), get_tree_name(tree_choice));
-												force_choice(get_available_perk_options(), "You are in perk menu, " + get_tree_name(tree_choice) + " perk tree. You have " + get_available_perk_points_text() + " perk points. Choose perk to learn. ", force_type::perk_perk);
+												if (force_choice(get_available_perk_options(), "You are in perk menu, " + get_tree_name(tree_choice) + " perk tree. You have " + get_available_perk_points_text() + " perk points. Choose perk to learn. ", force_type::perk_perk))
+													select_perk_request_sent = true;
 											}
 											else
 											{
@@ -1952,8 +1961,9 @@ namespace PerksProcessor {
 
 																	if (!confirm_request_sent)
 																	{
-																		confirm_request_sent = true;
-																		force_choice({ {0, "No"},{1, "Yes"},{-1, "[QUIT PERK MENU]"} }, "You are in perk menu. You are about to learn " + get_perk_name(get_current_perk_id()) + ": " + get_perk_description() + ". Confirm?", force_type::perk_confirm);
+																		
+																		if (force_choice({ {0, "No"},{1, "Yes"},{-1, "[QUIT PERK MENU]"} }, "You are in perk menu. You are about to learn " + get_perk_name(get_current_perk_id()) + ": " + get_perk_description() + ". Confirm?", force_type::perk_confirm))
+																			confirm_request_sent = true;
 																	}
 																	else
 																	{

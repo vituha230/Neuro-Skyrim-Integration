@@ -296,10 +296,13 @@ namespace BookProcessor {
 			{
 				if (!sent_quit_force)
 				{
-					sent_quit_force = true;
+					
 					std::vector<MenuOption> quit_option = { {-1, "Stop reading" } };
 
-					force_choice(quit_option, "[Failed to take the book]", force_type::book);
+					if (force_choice(quit_option, "[Failed to take the book]", force_type::book))
+					{
+						sent_quit_force = true;
+					}
 				}
 			}
 			else
@@ -345,8 +348,9 @@ namespace BookProcessor {
 				{
 					if (!book_request_sent)
 					{
-						book_request_sent = true;
-						force_choice(get_options(), get_force_message(), force_type::book);
+						
+						if (force_choice(get_options(), get_force_message(), force_type::book))
+							book_request_sent = true;
 					}
 					else
 					{

@@ -4266,11 +4266,13 @@ namespace WalkerProcessor {
             {
                 if ((is_door(target_ref) || is_container(target_ref)) && is_targeted_door_locked())
                 {
-                    confirming_closed_door_interaction = true;
+                    
                     if (is_door(target_ref))
-                        force_choice({ {0, "No"}, {1, "Yes"}}, get_locked_door_force_message(target_ref), force_type::closed_door_choice);
+                        if (force_choice({ {0, "No"}, {1, "Yes"}}, get_locked_door_force_message(target_ref), force_type::closed_door_choice))
+                            confirming_closed_door_interaction = true;
                     else
-                        force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(target_ref), force_type::closed_door_choice);
+                        if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(target_ref), force_type::closed_door_choice))
+                            confirming_closed_door_interaction = true;
                 }
                 else
                 {
@@ -5100,11 +5102,13 @@ namespace WalkerProcessor {
                                                             {
                                                                 if (!confirming_closed_door_interaction && (is_door(result_target) || is_container(result_target)) && is_targeted_door_locked())
                                                                 {
-                                                                    confirming_closed_door_interaction = true;
+                                                                    
                                                                     if (is_door(result_target))
-                                                                        force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(result_target), force_type::closed_door_choice);
+                                                                        if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(result_target), force_type::closed_door_choice))
+                                                                            confirming_closed_door_interaction = true;
                                                                     else
-                                                                        force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(result_target), force_type::closed_door_choice);
+                                                                        if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(result_target), force_type::closed_door_choice))
+                                                                            confirming_closed_door_interaction = true;
                                                                 }
                                                                 else
                                                                 {
@@ -5268,9 +5272,9 @@ namespace WalkerProcessor {
                                                             {
                                                                 if (!door_is_closed_request_sent)
                                                                 {
-                                                                    door_is_closed_request_sent = true;
                                                                     //send_random_context("The path is blocked by a locked door!");
-                                                                    force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice);
+                                                                    if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
+                                                                        door_is_closed_request_sent = true;
                                                                 }
                                                                 else
                                                                 {
@@ -5387,9 +5391,10 @@ namespace WalkerProcessor {
                                             {
                                                 if (!door_is_closed_request_sent)
                                                 {
-                                                    door_is_closed_request_sent = true;
+                                                    
                                                     //send_random_context("The path is blocked by a locked door!");
-                                                    force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice);
+                                                    if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
+                                                        door_is_closed_request_sent = true;
                                                 }
                                                 else
                                                 {

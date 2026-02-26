@@ -106,26 +106,32 @@ std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 
 
 //universal force choice
-void force_choice(std::vector<MenuOption> options, std::string message, int force_type)
+bool force_choice(std::vector<MenuOption> options, std::string message, int force_type)
 {
-    StringView force_name = Capabilities::SelectForceChoice::Name;
+    if (get_active_force() == -1)
+    {
+        StringView force_name = Capabilities::SelectForceChoice::Name;
 
-    if (force_type == force_type::alchemy_ingredients)
-        force_name = Capabilities::SelectForceChoiceMultiple::Name;
+        if (force_type == force_type::alchemy_ingredients)
+            force_name = Capabilities::SelectForceChoiceMultiple::Name;
 
-    if (force_type == force_type::character_name)
-        force_name = Capabilities::SelectForceChoiceString::Name;
+        if (force_type == force_type::character_name)
+            force_name = Capabilities::SelectForceChoiceString::Name;
 
-    set_active_force(force_type);
+        set_active_force(force_type);
 
-    MiscThings::clean_controls_from_string(&message);
-    set_universal_block(1.0f);
-    std::string json{};
-    bool result = !glz::write_json(options, json);
-    m_neuroSocket->SendForcedAction(force_name,
-        message.c_str(),
-        json.c_str(),
-        "medium");
+        MiscThings::clean_controls_from_string(&message);
+        set_universal_block(1.0f);
+        std::string json{};
+        bool result = !glz::write_json(options, json);
+        m_neuroSocket->SendForcedAction(force_name,
+            message.c_str(),
+            json.c_str(),
+            "medium");
+        return true;
+    }
+    else
+        return false;
 }
 
 

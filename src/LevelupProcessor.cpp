@@ -133,8 +133,9 @@ namespace LevelupProcessor {
 
 				if (!attribute_request_sent)
 				{
-					attribute_request_sent = true;
-					force_choice({ {1, "Health"},{2, "Magicka"},{3, "Stamina"} }, "You leveled up. Choose an attribute to increase. ", force_type::levelup_attribute);
+					
+					if (force_choice({ {1, "Health"},{2, "Magicka"},{3, "Stamina"} }, "You leveled up. Choose an attribute to increase. ", force_type::levelup_attribute))
+						attribute_request_sent = true;
 				}
 				else
 				{

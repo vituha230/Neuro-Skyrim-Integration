@@ -247,9 +247,12 @@ namespace DialogueProcessor {
                             if (std::size(options) == 0 || (std::size(options) == 1 && options[0].text == "..."))
                                 return; //just wait for it to disappear its fake
 
-                            force_choice(options, "You are in dialogue. Choose a line to say", force_type::dialogue_line);
-                            old_dialogue = *topic_manager->dialogueList->front();
-                            pause_time = 0.0f;
+                            if (force_choice(options, "You are in dialogue. Choose a line to say", force_type::dialogue_line))
+                            {
+                                old_dialogue = *topic_manager->dialogueList->front();
+                                pause_time = 0.0f;
+                            }
+
                         }
                         else
                             pause_time += dtime;
