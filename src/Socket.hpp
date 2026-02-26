@@ -17,6 +17,7 @@
 #include "RaceProcessor.hpp"
 #include "SleepWaitProcessor.hpp"
 #include "BookProcessor.hpp"
+#include "TrainingProcessor.hpp"
 
 #include "GiftProcessor.hpp"
 
@@ -532,9 +533,14 @@ namespace neuro {
 
                             case force_type::book:
                                 command_result = BookProcessor::set_book_choice(json.id); break;
+
+                            case force_type::training_choice:
+                                command_result = TrainingProcessor::set_training_choice(json.id); break;
+
+                            default:
+                                command_result = { true, "You dont have any choices to make" };
                             }
                         }
-
                     }
 
                     if (name == Capabilities::SelectForceChoiceMultiple::Name)

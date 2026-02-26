@@ -98,6 +98,11 @@ namespace LevelupProcessor {
 
 			}
 		}
+		else
+		{
+			result.first = true;
+			result.second = "Not in levelup menu";
+		}
 
 		if (result.first)
 			leveled_up_attribute = true; //notify processor

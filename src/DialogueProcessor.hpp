@@ -41,7 +41,8 @@
         sleepwait_time,
         book,
         alchemy_ingredients,
-        character_name
+        character_name,
+        training_choice
     };
 
     int get_active_force();

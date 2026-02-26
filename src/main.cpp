@@ -82,6 +82,7 @@
 #include "RaceProcessor.hpp"
 #include "SleepWaitProcessor.hpp"
 #include "BookProcessor.hpp"
+#include "TrainingProcessor.hpp"
 
 
 #include "Socket.hpp"
@@ -521,6 +522,8 @@ namespace Hooks {
                 MapProcessor::reset_menu2();
                 SleepWaitProcessor::saveload_reset();
                 ContainerProcessor::reset_pickpocketing();
+                set_active_force(-1);
+
                 reset_input_processor();
 
                 send_random_context("[The game is loading. You are not in game yet]");
@@ -1234,7 +1237,7 @@ private:
 
                 SleepWaitProcessor::processor(dtime);
                 BookProcessor::processor(dtime);
-
+                TrainingProcessor::processor(dtime);
                 ;
             }
                 

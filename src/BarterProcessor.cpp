@@ -2131,7 +2131,7 @@ void debug_scan(float dtime)
 
         if (const auto ui = RE::UI::GetSingleton(); ui) {
             //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-            if (const auto menu = ui->GetMenu<RE::MagicMenu>(); menu) {
+            if (const auto menu = ui->GetMenu<RE::TrainingMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
                     {
@@ -2200,7 +2200,7 @@ void debug_scan(float dtime)
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
 
 
-                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -2224,8 +2224,52 @@ void debug_scan(float dtime)
                             }
                             */
 
+                            search_var = "Gold";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
 
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "resist", skip_problematic);
+                            search_var = "Skill";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
+                            search_var = "Cost";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
+                            search_var = "Times";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
+                            search_var = "15";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
+
+                            search_var = "94";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
+
+                            search_var = "200";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -2372,7 +2416,7 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
     if (const auto ui = RE::UI::GetSingleton(); ui) 
         //if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) 
         //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu)
-        if (const auto menu = ui->GetMenu<RE::SleepWaitMenu>(); menu)
+        if (const auto menu = ui->GetMenu<RE::TrainingMenu>(); menu)
         {
 
             if (menu->uiMovie)

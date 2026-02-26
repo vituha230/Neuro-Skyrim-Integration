@@ -2932,7 +2932,7 @@ namespace MiscThings {
                 int known_words = 0;
                 int unlocked_words = 0;
                 int max_words = 0;
-                bool set_known_one = false;
+                //bool set_known_one = false;
 
                 for (auto variation : shout_p->variations)
                 {
@@ -2941,17 +2941,19 @@ namespace MiscThings {
 
                     if (variation.word->GetKnown())
                         known_words++;
-                    else
-                    {
-                        if (!set_known_one)
-                        {
-                            variation.word->SetPlayerKnows(true); //this works. but how to get if its learned? (if dragonsoul injected)
+                    //else
+                    //{
+                        //if (!set_known_one)
+                        //{
+                         //   variation.word->SetPlayerKnows(true); //this works. but how to get if its learned? (if dragonsoul injected)
                             //player_actor->UnlockWord(variation.word);
-                            known_words++;
-                            set_known_one = true;
-                        }
+                     //       known_words++;
+                     //       set_known_one = true;
+                     //   }
 
-                    }
+                    //}
+
+
                     max_words++;
                 }
 

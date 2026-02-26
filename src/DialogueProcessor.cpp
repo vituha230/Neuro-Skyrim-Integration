@@ -225,7 +225,7 @@ namespace DialogueProcessor {
 
 
             if (topic_manager->dialogueList)
-                if (topic_manager->dialogueList->front())
+                if (!topic_manager->dialogueList->empty() && topic_manager->dialogueList->front())
                 {
                     if (old_dialogue.topicText != topic_manager->dialogueList->front()->topicText)
                     {
