@@ -14,10 +14,16 @@
 
 bool long_cast_ult = false;
 float use_ult_time = 0.0f;
+bool canceled_inputs = false;
 
 
 
-
+void reset_input_processor()
+{
+    long_cast_ult = false;
+    use_ult_time = 0.0f;
+    canceled_inputs = false;
+}
 
 
 
@@ -593,16 +599,31 @@ void input_processor(float dtime)
 {
     if (long_cast_ult)
     {
-        if (use_ult_time < 2.0f)
+        set_universal_block(0.5f);
+        if (!canceled_inputs)
         {
-            use_ult_time += dtime;
-            start_use_ult();
+            canceled_inputs = true;
+            clear_input_queue();
         }
         else
         {
-            stop_use_ult();
-            long_cast_ult = false;
-            use_ult_time = 0.0f;
+            if (WalkerProcessor::pause_attacking(dtime))
+            {
+                if (use_ult_time < 2.5f)
+                {
+                    use_ult_time += dtime;
+                    start_use_ult();
+                }
+                else
+                {
+                    WalkerProcessor::unpause_attacking();
+                    stop_use_ult();
+                    reset_input_processor();
+                }
+            }
+                
         }
+
+
     }
 }

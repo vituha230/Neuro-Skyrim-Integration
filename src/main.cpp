@@ -2,6 +2,9 @@
 
 //crucial:
 
+
+//TODO "wooden bridge opened" didnt come through, test it and fix it
+
 //TODO deseases info
 
 //TODO inventory weight control
@@ -40,6 +43,7 @@
 
 //TODO potentially worth looking into:
 //  button events like in race menu for text. maybe can finally use perfect key up/down events?
+// it will probably require disabling actual inputs because it polls real devices which have all keys up.
 
 
 //arbitrary:
@@ -511,7 +515,7 @@ namespace Hooks {
                 MapProcessor::reset_menu2();
                 SleepWaitProcessor::saveload_reset();
                 ContainerProcessor::reset_pickpocketing();
-
+                reset_input_processor();
 
                 send_random_context("[The game is loading. You are not in game yet]");
             }
@@ -1979,6 +1983,7 @@ class MyHook {
             debug_time2 += dtime;
             */
         
+        input_processor(dtime);
 
         if (!universal_block)
         {
@@ -1986,7 +1991,7 @@ class MyHook {
             DialogueProcessor::processor(dtime);
         }
 
-        input_processor(dtime);
+        
         
 
 

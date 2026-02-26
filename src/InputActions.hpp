@@ -65,6 +65,7 @@ void press_t();
 
 void input_processor(float dtime);
 void make_long_ult_cast();
+void reset_input_processor();
 
 
 void right_attack_bow();

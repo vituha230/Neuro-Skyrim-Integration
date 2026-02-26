@@ -43,4 +43,8 @@ namespace WalkerProcessor {
 	bool is_casting_something(bool right);
 	void stop_casting_hand(bool right);
 
+
+	bool pause_attacking(float dtime);
+	void unpause_attacking();
+
 }

@@ -2876,8 +2876,15 @@ namespace MiscThings {
                                     *max_id = i;
                                 }
 
-
                             }
+                    }
+                    else
+                    {
+                        if (a_spell->GetSpellType() == RE::MagicSystem::SpellType::kDisease)
+                        {
+                            *passive_effects += "[DESEASE] " + name + " - " + description + "\n";
+                        }
+
                     }
                 }
                 return RE::BSContainer::ForEachResult::kContinue;
@@ -2929,7 +2936,7 @@ namespace MiscThings {
 
                 for (auto variation : shout_p->variations)
                 {
-                    if (variation.word->formFlags & (65600))
+                    if ((variation.word->formFlags & 65600) == 65600)
                         unlocked_words++;
 
                     if (variation.word->GetKnown())
@@ -3147,11 +3154,26 @@ namespace MiscThings {
                         {
                             if (player_actor->GetVoiceRecoveryTime() < 0.01)
                             {
-                                equip_manager->EquipShout(player_actor, shout);
-                                //use_ult();
-                                make_long_ult_cast();
-                                result.first = true;
-                                result.second = "[Using the shout]";
+                                int unlocked_words = 0;
+
+                                for (auto variation : shout->variations)
+                                {
+                                    if ((variation.word->formFlags & 65600) == 65600)
+                                        unlocked_words++;
+                                }
+                                if (unlocked_words > 0)
+                                {
+                                    equip_manager->EquipShout(player_actor, shout);
+                                    //use_ult();
+                                    make_long_ult_cast();
+                                    result.first = true;
+                                    result.second = "[Using the shout]";
+                                }
+                                else
+                                {
+                                    result.first = false;
+                                    result.second = "You have no unlocked words of this shout. ";
+                                }
                             }
                             else
                             {

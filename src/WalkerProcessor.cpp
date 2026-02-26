@@ -163,6 +163,9 @@ namespace WalkerProcessor {
     bool low_mana_notified = false;
     float low_mana_notify_time = 0.0f;
 
+    bool attack_paused = false;
+    float attack_pause_time = 0.0f;
+
 
     void set_crime_mode(bool state)
     {
@@ -175,6 +178,72 @@ namespace WalkerProcessor {
     {
         return ((interaction_after_walk == 3) && target_ref);
     }
+
+
+
+
+
+    bool pause_attacking(float dtime)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!attack_paused)
+        {
+            if (start_attacking)
+            {
+                attack_paused = true;
+                gave_attacking_info = false;
+                if (was_charging_ranged)
+                {
+                    was_charging_ranged = false;
+
+                    //right_attack_cancel();
+                    //left_attack_cancel();
+
+                    //stop_casting_hand(true);
+                    //stop_casting_hand(false);
+
+                    auto player_actor = (RE::Actor*)player->AsReference();
+
+                    //GetAttackState()
+                    if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
+                        is_casting_something(true) || is_casting_something(false))
+                        ready_weapon();
+                }
+
+                right_attack_cancel();
+                left_attack_cancel();
+                attack_action_time = 0.0f;
+            }
+            else
+            {
+                attack_paused = true;
+            }
+        }
+        else
+        {
+            if (attack_pause_time < 0.5f)
+            {
+                attack_pause_time += dtime;
+            }
+            else
+            {
+                //attack_pause_time = 0.0f;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    void unpause_attacking()
+    {
+        attack_pause_time = 0.0f;
+        attack_paused = false;
+    }
+
+
 
 
 
@@ -840,7 +909,7 @@ namespace WalkerProcessor {
                 auto player_actor = (RE::Actor*)player->AsReference();
 
                 //GetAttackState()
-                if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached ||
+                if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
                     is_casting_something(true) || is_casting_something(false))
                     ready_weapon();
             }
@@ -2166,7 +2235,8 @@ namespace WalkerProcessor {
         low_mana_notified = false;
         low_mana_notify_time = 0.0f;
 
-
+        attack_paused = false;
+        attack_pause_time = 0.0f;
     }
 
     void walk_again()
@@ -2422,7 +2492,7 @@ namespace WalkerProcessor {
                             auto player_actor = (RE::Actor*)player->AsReference();
 
                             //GetAttackState()
-                            if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached ||
+                            if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
                                 is_casting_something(true) || is_casting_something(false))
                                 ready_weapon();
                         }
@@ -4641,6 +4711,16 @@ namespace WalkerProcessor {
 
                     if (cast_result)
                         make_clairvoyance_cast = false;
+                }
+
+
+                if (attack_paused)
+                {
+                    if (start_attacking)
+                    {
+                        lock_camera_onto_target(target_ref, dtime);
+                    }
+                    return;
                 }
 
 
