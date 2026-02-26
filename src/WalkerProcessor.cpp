@@ -2496,8 +2496,9 @@ namespace WalkerProcessor {
 
                 if (!wait_and_start_pickpocket && !got_close_for_pickpocket)
                 {
-                    if (distance.Length() < 80.0f)
+                    if (distance.Length() < 70.0f)
                     {
+                        interact_with_target(0.016); //just to crouch.
                         got_close_for_pickpocket = true;
                         return true;
                     }

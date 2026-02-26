@@ -2652,6 +2652,13 @@ namespace MiscThings {
             }
         }
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        std::string cur_weight = std::to_string((int)player->GetActorValue(RE::ActorValue::kInventoryWeight));
+        std::string max_weight = std::to_string((int)player->GetActorValue(RE::ActorValue::kCarryWeight));
+
+        inventory_contents += "Total weight: " + cur_weight + "/" + max_weight;
+
         inventory_valid = true;
 
         result.first = true;
