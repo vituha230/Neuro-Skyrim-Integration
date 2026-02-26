@@ -18,7 +18,7 @@
 
 neurosdk_action ActionsList[] = {  
                                     
-                                    //Capabilities::GetObjectsAround::Action,
+                                    
                                     Capabilities::WalkToObject::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
@@ -41,6 +41,7 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::SelectForceChoiceMultiple::Action,
                                     Capabilities::SelectForceChoiceString::Action,
 
+                                    Capabilities::GetObjectsAround::Action //idk about this one
                                 };
 
 

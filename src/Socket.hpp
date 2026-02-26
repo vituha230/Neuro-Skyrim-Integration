@@ -109,7 +109,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Walk to object specified by its ID and do action ID)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object and action ID. Use "get_objects_around" to get list of object IDs. Or put -1 to run away. ", "type": "integer" }, "id2": { "description": "The ID of the action to do after walk. 0 - do nothing (walk up and stare at), 1 - interact, 2 - pickpocket (works only on humanoids), 3 - attack ", "type": "integer" } }, "required": ["id1", "id2"] })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object and action ID. Or put -1 to run away. ", "type": "integer" }, "id2": { "description": "The ID of the action to do after walk. 0 - do nothing (walk up and stare at), 1 - interact, 2 - pickpocket (works only on humanoids), 3 - attack ", "type": "integer" } }, "required": ["id1", "id2"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     }

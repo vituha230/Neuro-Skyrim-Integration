@@ -3403,7 +3403,7 @@ namespace MiscThings {
         int i = 0;
 
 
-
+        /*
         RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 4000.0,
             //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
             [&](RE::TESObjectREFR* a_ref) {
@@ -3520,17 +3520,17 @@ namespace MiscThings {
                         if (base_type == RE::FormType::Container)
                         {
                             //TODO: filter merchant chests
-                            /*
-                            const std::string_view a_editorID = "MerchantSolitudeBlacksmith";
-                            std::string form_editor_name = a_ref->GetFormEditorID();
-                            std::string form_editor_name2 = base_obj->GetFormEditorID();
-                            auto test_form = RE::TESObjectREFR::LookupByID(0xa6c07);
-                            auto test_form2 = RE::TESObjectREFR::LookupByID(0xa6c0b);
-                            std::string form_editor_name3 = test_form->GetFormEditorID();
-                            std::string form_editor_name4 = test_form2->GetFormEditorID();
-                            auto test123 = base_obj->GetFormID();
-                            auto test = RE::TESForm::LookupByEditorID(a_editorID);
-                            */
+                            
+                            //const std::string_view a_editorID = "MerchantSolitudeBlacksmith";
+                            //std::string form_editor_name = a_ref->GetFormEditorID();
+                            //std::string form_editor_name2 = base_obj->GetFormEditorID();
+                            //auto test_form = RE::TESObjectREFR::LookupByID(0xa6c07);
+                            //auto test_form2 = RE::TESObjectREFR::LookupByID(0xa6c0b);
+                            //std::string form_editor_name3 = test_form->GetFormEditorID();
+                            //std::string form_editor_name4 = test_form2->GetFormEditorID();
+                            //auto test123 = base_obj->GetFormID();
+                            //auto test = RE::TESForm::LookupByEditorID(a_editorID);
+                            
 
                             objects.push_back(a_ref);
                             //objects_around.insert({ i, a_ref });
@@ -3674,14 +3674,14 @@ namespace MiscThings {
                     //FormType::Door
                     //a_ref->extraList.
 
-                    /*
-                    if (a_ref->AsReference()->IsInventoryObject() || a_ref->AsReference()->IsActor() || a_ref->AsReference()->HasContainer() || a_ref->AsReference()) //TODO: this probably doesnt include levers and other stuff like that. need to deal with this
-                    {
-                        objects.push_back(a_ref);
-                        objects_around.insert({ i, a_ref });
-                        i++;
-                    }
-                    */
+                    
+                    //if (a_ref->AsReference()->IsInventoryObject() || a_ref->AsReference()->IsActor() || a_ref->AsReference()->HasContainer() || a_ref->AsReference()) //TODO: this probably doesnt include levers and other stuff like that. need to deal with this
+                    //{
+                    //    objects.push_back(a_ref);
+                    //    objects_around.insert({ i, a_ref });
+                    //    i++;
+                    //}
+                    
                 }
                 return RE::BSContainer::ForEachResult::kContinue;
             });
@@ -3694,6 +3694,8 @@ namespace MiscThings {
 
             });
 
+        
+
 
         //i = 0;
         for (auto object : objects)
@@ -3703,7 +3705,7 @@ namespace MiscThings {
             //i++;
         }
 
-
+        */
 
         objects_around_valid = true;
 
