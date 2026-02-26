@@ -1095,7 +1095,7 @@ namespace Observer {
 
 	void detect_locations(float dtime)
 	{
-		if (detect_locations_timer > 10.0f)
+		if (detect_locations_timer > 30.0f)
 		{
 			auto player = RE::PlayerCharacter::GetSingleton();
 

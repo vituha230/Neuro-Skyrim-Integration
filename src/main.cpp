@@ -583,7 +583,7 @@ namespace Hooks {
                         
                         
 
-                        send_random_context("[You are in game. Current location: " + location_name + "]");
+                        send_random_context("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]");
                     }
                 }
             }

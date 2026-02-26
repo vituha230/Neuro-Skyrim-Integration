@@ -167,7 +167,7 @@ bool neuro::NeuroSocket::Initialize()
     }
 
     return SendContext("You are playing Skyrim, an action RPG. Commands will only give reasonable output once "
-        "you are ingame.",
+        "you are ingame. ",
         true) &&
         IsAlive();
 }

@@ -21,9 +21,7 @@ namespace WalkerProcessor {
 
     bool crime_mode = false;
 
-
     bool gave_attacking_info = false;
-
 
     int current_path_point = -1;
     bool path_valid = false;
@@ -738,10 +736,11 @@ namespace WalkerProcessor {
 
 
 
+    float last_walk_reminded_time = 0.0f;
 
-
-    void walk_to_point()
+    void walk_to_point(float dtime_maybe_bad)
     {
+
 
 
         if (path_valid || use_last_point_of_last_path)
@@ -965,6 +964,14 @@ namespace WalkerProcessor {
 
                 //right_attack_cancel();
                 //left_attack_cancel();
+
+                if (last_walk_reminded_time > 5.0f)
+                {
+                    last_walk_reminded_time = 0.0f;
+                    send_random_context("[You keep walking...]");
+                }
+                else
+                    last_walk_reminded_time += dtime_maybe_bad;
 
                 walk_forward();
 
@@ -4906,7 +4913,7 @@ namespace WalkerProcessor {
                                         {
                                             if (!detect_stuck(dtime))
                                             {
-                                                walk_to_point();
+                                                walk_to_point(dtime);
                                                 //cast_pathfinding(dtime); //rebuild path
                                                 make_clairvoyance_cast = true;
                                             }
@@ -5350,7 +5357,7 @@ namespace WalkerProcessor {
                                         {
                                             if (!detect_stuck(dtime))
                                             {
-                                                walk_to_point();
+                                                walk_to_point(dtime);
                                                 //cast_pathfinding(dtime); //rebuild path
                                             }
                                             else
