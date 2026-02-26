@@ -2653,11 +2653,82 @@ namespace WalkerProcessor {
 
 
 
+    std::string get_cant_walk_reason()
+    {
+        std::string result = "";
+
+        RE::UI* ui = RE::UI::GetSingleton();
+
+        if (ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+            result = "Cannot walk while in crafting menu!";
+
+        if (ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
+            result = "Cannot walk while in dialogue!";
+
+        if (ui->IsMenuOpen(RE::StatsMenu::MENU_NAME))
+            result = "Cannot walk while in skill menu!";
+
+        if (ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME))
+            result = "Cannot walk while in levelup menu!";
+
+        if (ui->IsMenuOpen(RE::TrainingMenu::MENU_NAME))
+            result = "Cannot walk while in training menu!";
+
+        if (ui->IsMenuOpen(RE::SleepWaitMenu::MENU_NAME))
+            result = "Cannot walk while in sleep/wait menu!";
+
+        if (ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME))
+            result = "Cannot walk right now, you have to make a choice first!";
+
+        if (ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
+            result = "Cannot walk while in container menu!";
+
+        if (ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+            result = "Cannot walk while in barter menu!";
+
+        if (ui->IsMenuOpen(RE::BookMenu::MENU_NAME))
+            result = "Cannot walk while reading!";
+
+        if (ui->IsMenuOpen(RE::GiftMenu::MENU_NAME))
+            result = "Cannot walk while in gift menu!";
+
+        if (ui->IsMenuOpen(RE::LockpickingMenu::MENU_NAME))
+            result = "Cannot walk while lockpicking!";
+
+        if (ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+            result = "Cannot walk while in map menu!";
+
+        if (ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME))
+            result = "Cannot walk while game is loading!";
+
+        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+            result = "Cannot walk while in main menu! Wait for the game to start";
+
+
+        return result;
+    }
+
 
     std::pair<bool, std::string> walk_to_object_by_index(int index, int interaction)
     {
 
         std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
+
+        if (index == -1)
+        {
+            return run_away();
+        }
+
 
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_actor = (RE::Actor*)player->AsReference();
