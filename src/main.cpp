@@ -1757,6 +1757,10 @@ float start_pos = 0.0f;
 RE::NiPoint3 original_dif{};
 
 
+RE::ATTACK_STATE_ENUM last_attack_state;
+std::vector<RE::ATTACK_STATE_ENUM> track_attack{};
+
+
 //this update doesnt work in pause
 class MyHook {
     static void Update(RE::PlayerCharacter* a, float dtime) 
@@ -1783,15 +1787,26 @@ class MyHook {
         */
 
 
+        
+
+
 
         std::string result = "";
 
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
+        auto player_actor = (RE::Actor*)player_ref;
 
         auto test_controls = RE::PlayerControls::GetSingleton();
 
 
+        auto attack_state = player_actor->GetAttackState();
+
+        if (attack_state != last_attack_state)
+        {
+            last_attack_state = attack_state;
+            track_attack.push_back(attack_state);
+        }
 
 
         if (false)

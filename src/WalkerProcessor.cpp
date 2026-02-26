@@ -181,6 +181,22 @@ namespace WalkerProcessor {
 
 
 
+    void cancel_charge_weapon()
+    {
+        was_charging_ranged = false;
+
+        //right_attack_cancel();
+        //left_attack_cancel();
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        //GetAttackState()
+        if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
+            is_casting_something(true) || is_casting_something(false))
+            ready_weapon();
+    }
+
 
 
     bool pause_attacking(float dtime)
@@ -195,20 +211,7 @@ namespace WalkerProcessor {
                 gave_attacking_info = false;
                 if (was_charging_ranged)
                 {
-                    was_charging_ranged = false;
-
-                    //right_attack_cancel();
-                    //left_attack_cancel();
-
-                    //stop_casting_hand(true);
-                    //stop_casting_hand(false);
-
-                    auto player_actor = (RE::Actor*)player->AsReference();
-
-                    //GetAttackState()
-                    if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
-                        is_casting_something(true) || is_casting_something(false))
-                        ready_weapon();
+                    cancel_charge_weapon();
                 }
 
                 right_attack_cancel();
@@ -898,20 +901,7 @@ namespace WalkerProcessor {
 
             if (was_charging_ranged)
             {
-                was_charging_ranged = false;
-
-                //right_attack_cancel();
-                //left_attack_cancel();
-
-                //stop_casting_hand(true);
-                //stop_casting_hand(false);
-
-                auto player_actor = (RE::Actor*)player->AsReference();
-
-                //GetAttackState()
-                if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
-                    is_casting_something(true) || is_casting_something(false))
-                    ready_weapon();
+                cancel_charge_weapon();
             }
 
 
@@ -1821,6 +1811,9 @@ namespace WalkerProcessor {
             auto pos_difY_norm = pos_difY / pos_difY.Length();
             mulY = camera_dirY * pos_difY_norm;
             mulZ = camera_dirZ * pos_difY_norm;
+
+            if (mulY < 0)
+                mulZ = -mulZ;
         }
 
 
@@ -2405,6 +2398,11 @@ namespace WalkerProcessor {
 
 
     
+
+
+
+
+
     float successful_raycast_time = 0.0f;
 
     bool close_enough()
@@ -2481,20 +2479,7 @@ namespace WalkerProcessor {
                     {
                         if (was_charging_ranged)
                         {
-                            was_charging_ranged = false;
-
-                            right_attack_cancel();
-                            left_attack_cancel();
-
-                            //stop_casting_hand(true);
-                            //stop_casting_hand(false);
-
-                            auto player_actor = (RE::Actor*)player->AsReference();
-
-                            //GetAttackState()
-                            if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
-                                is_casting_something(true) || is_casting_something(false))
-                                ready_weapon();
+                            cancel_charge_weapon();
                         }
                         return true;
                     }
