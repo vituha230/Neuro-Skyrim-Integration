@@ -118,7 +118,7 @@ namespace DialogueProcessor {
         int count_lines = 0;
         if (topic_manager)
             if (topic_manager->dialogueList)
-                if (topic_manager->dialogueList->front())
+                if (!topic_manager->dialogueList->empty() && topic_manager->dialogueList->front())
                     for (auto& dialogue : *topic_manager->dialogueList)
                         count_lines++;
 
@@ -138,6 +138,15 @@ namespace DialogueProcessor {
 
         if (id == -1)
         {
+            //RE::MenuTopicManager* topic_manager = RE::MenuTopicManager::GetSingleton();
+            //if (topic_manager)
+            //{
+            //    bool stop_here = false;
+            //}
+                //if (topic_manager->dialogueList)
+                 //   if (!topic_manager->dialogueList->empty() && topic_manager->dialogueList->front())
+
+
             quit_menu();
             result.first = true;
             result.second = "[Stopped the dialogue]";

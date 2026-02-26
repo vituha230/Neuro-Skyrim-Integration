@@ -292,6 +292,10 @@ public:
             doAllowProgressFix();
         }
         
+        if (a_message.type == RE::UI_MESSAGE_TYPE::kHide)
+            send_random_context("[The dialogue ended]");
+
+
         if (a_message.type == RE::UI_MESSAGE_TYPE::kShow) {
             doAllowProgressFix();
 
@@ -299,6 +303,8 @@ public:
                 if (const auto menu = ui->GetMenu(RE::DialogueMenu::MENU_NAME); menu) {
                     //menu->menuFlags.set(RE::UI_MENU_FLAGS::kPausesGame); //works
                     menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+
+                    send_random_context("[Started a dialogue]");
 
                     //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::CursorMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 

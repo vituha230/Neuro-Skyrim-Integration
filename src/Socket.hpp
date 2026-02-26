@@ -109,7 +109,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Walk to object specified by its ID and do action ID)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object and action ID. Or put -1 to run away. ", "type": "integer" }, "id2": { "description": "The ID of the action to do after walk. 0 - do nothing (walk up and stare at), 1 - interact, 2 - pickpocket (works only on humanoids), 3 - attack ", "type": "integer" } }, "required": ["id1", "id2"] })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object. Use -1 to run away. ", "type": "integer" }, "id2": { "description": "The ID of the action to do after walk. 0 - do nothing (walk up and stare at), 1 - interact, 2 - pickpocket (works only on humanoids), 3 - attack ", "type": "integer" } }, "required": ["id1", "id2"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     }
@@ -120,7 +120,7 @@ namespace Capabilities
         constexpr char Name[] = "get_objects_around";
         constexpr char Desc[] =
             R"(Get a list of objects around you)";
-        constexpr char JsonSchema[] = R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of object type to get. If not specified, all objects will be given. ", "type": "integer" } }, "required": [] })";
+        constexpr char JsonSchema[] = "{}"; //R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of object type to get. If not specified, all objects will be given. ", "type": "integer" } }, "required": [] })";
 
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
@@ -637,12 +637,13 @@ namespace neuro {
                     if (name == Capabilities::GetObjectsAround::Name)
                     {
 
-                        Impl::JSON::NeuroChoiceJson json{};
+                        //Impl::JSON::NeuroChoiceJson json{};
 
-                        if (glz::read_json(json, messageQueue[i].value.action.data))
-                            failed_to_parse_json = true;
-                        else
-                            command_result = MiscThings::GetObjectsAround(json.id);
+                        //if (glz::read_json(json, messageQueue[i].value.action.data))
+                        //    failed_to_parse_json = true;
+                        //else
+
+                        command_result = MiscThings::GetObjectsAround(-1);
 
                     }
 

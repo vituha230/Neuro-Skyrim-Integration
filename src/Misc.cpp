@@ -3713,8 +3713,8 @@ namespace MiscThings {
         {
             if (player_ref->GetDistance(object.second) < 10000.0f)
             {
-                std::string category = get_object_category(object.second);
-                result.second += std::to_string(object.first) + " - " + object.second->GetDisplayFullName() + " " + category;
+                //std::string category = get_object_category(object.second);
+                result.second += insert_into_list_and_get_info(object.second); //they are all in the list but whatever. just to get the name
                 result.second += +"\n";
             }
         }
