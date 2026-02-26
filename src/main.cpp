@@ -2,17 +2,15 @@
 
 //crucial:
 
+//TODO add ability to run away at any time
+//TODO fix nonexistent objects
+//TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
+
 
 //TODO "wooden bridge opened" didnt come through, test it and fix it
-
-//TODO deseases info
-
 //TODO inventory weight control
-
 //TODO raycast object detection
-
 //TODO: check all menus after force/choice merge
-
 //TODO: non-hostile spells will be cast excessively especially in right hand. need to figure out that
 
 

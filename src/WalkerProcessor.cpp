@@ -164,6 +164,8 @@ namespace WalkerProcessor {
     bool attack_paused = false;
     float attack_pause_time = 0.0f;
 
+    bool got_close_for_pickpocket = false;
+
 
     void set_crime_mode(bool state)
     {
@@ -177,6 +179,12 @@ namespace WalkerProcessor {
         return ((interaction_after_walk == 3) && target_ref);
     }
 
+
+
+    bool is_pickpocketing()
+    {
+        return interaction_after_walk == 2;
+    }
 
 
     void cancel_charge_weapon()
@@ -1586,20 +1594,41 @@ namespace WalkerProcessor {
 
             if (target_actor->currentProcess)
                 if (target_actor->currentProcess->middleHigh)
-                    if (target_actor->currentProcess->middleHigh->headNode)
+                {
+                    if (is_pickpocketing())
                     {
-                        auto head_pos = target_actor->currentProcess->middleHigh->headNode->world.translate;
+                        if (target_actor->currentProcess->middleHigh->torsoNode)
+                        {
+                            auto head_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
 
-                        auto lookat_location = head_pos;
+                            auto lookat_location = head_pos;
 
-                        auto player_temp_pos = player->GetPosition();
+                            auto player_temp_pos = player->GetPosition();
 
-                        target_center = lookat_location;
-                        height = 0.0f;
-                        specific_shift = RE::NiPoint3::Zero();
+                            target_center = lookat_location;
+                            height = 0.0f;
+                            specific_shift = RE::NiPoint3::Zero();
 
-                        lookat_used = true;
+                            lookat_used = true;
+                        }
                     }
+                    else
+                        if (target_actor->currentProcess->middleHigh->headNode)
+                        {
+                            auto head_pos = target_actor->currentProcess->middleHigh->headNode->world.translate;
+
+                            auto lookat_location = head_pos;
+
+                            auto player_temp_pos = player->GetPosition();
+
+                            target_center = lookat_location;
+                            height = 0.0f;
+                            specific_shift = RE::NiPoint3::Zero();
+
+                            lookat_used = true;
+                        }
+                }
+
 
             /*
             if (biped)
@@ -1898,7 +1927,7 @@ namespace WalkerProcessor {
         if (interaction_after_walk == 2)
         {
             auto actor_obj = (RE::Actor*)target_ref;
-            bool is_walking = actor_obj->IsWalking();
+            bool is_walking = actor_obj->IsWalking() || actor_obj->actorState1.movingBack;
 
             if (wait_and_start_pickpocket)
             {
@@ -2237,6 +2266,7 @@ namespace WalkerProcessor {
 
         attack_paused = false;
         attack_pause_time = 0.0f;
+        got_close_for_pickpocket = false;
     }
 
     void walk_again()
@@ -2264,7 +2294,7 @@ namespace WalkerProcessor {
             lasttime_close_enough = 0;
 
             attack_action_time = 0.0f;
-
+            got_close_for_pickpocket = false;
         }
     }
 
@@ -2464,10 +2494,13 @@ namespace WalkerProcessor {
 
                 distance.z = 0.0f; //dont account for height
 
-                if (!wait_and_start_pickpocket)
+                if (!wait_and_start_pickpocket && !got_close_for_pickpocket)
                 {
-                    if (distance.Length() < 70.0f)
+                    if (distance.Length() < 80.0f)
+                    {
+                        got_close_for_pickpocket = true;
                         return true;
+                    }
                 }
                 else
                     if (distance.Length() < 160.0f)
@@ -4335,7 +4368,7 @@ namespace WalkerProcessor {
 
             auto actor_obj = (RE::Actor*)target_ref;
 
-            bool is_walking = actor_obj->IsWalking();
+            bool is_walking = actor_obj->IsWalking() || actor_obj->actorState1.movingBack; //movingBack is true when they walk forward (sometimes?)
 
 
             if (wait_and_start_pickpocket)
@@ -4351,7 +4384,7 @@ namespace WalkerProcessor {
                 else
                 {
                     if (is_walking)
-                        ;// cursor_up();
+                        ;// walk_forward();// cursor_up();
 
 
                     waiting_pickpocket_time += dtime;
@@ -4722,6 +4755,28 @@ namespace WalkerProcessor {
                 {
                     backup_input_cancel = false;
 
+                    
+                    if (got_close_for_pickpocket)
+                    {
+                        auto actor_obj = (RE::Actor*)target_ref;
+                        bool is_walking = actor_obj->IsWalking() || actor_obj->actorState1.movingBack; //movingBack is true when they walk forward (sometimes?)
+
+                        if (lock_camera_onto_target(target_ref, dtime) && is_walking)
+                            walk_forward();// cursor_up();
+
+                        //lock_camera_onto_target(target_ref, dtime);
+                        if (lock_camera_onto_target(target_ref, dtime) && close_enough())
+                            interact_with_target(dtime);
+                        else
+                        {
+                            if (!close_enough())
+                                walk_again();
+                        }
+                            
+                        return;
+                    }
+                    
+
                     if (start_attacking)
                     {
                         if (attack_target(dtime))
@@ -4966,8 +5021,13 @@ namespace WalkerProcessor {
                                         if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)) || MiscThings::is_intro())
                                         {
 
-                                            if (close_enough() || MiscThings::is_intro())
+                                            if (got_close_for_pickpocket || close_enough() || MiscThings::is_intro())
                                             {
+                                                if (interaction_after_walk == 2)
+                                                {
+                                                    got_close_for_pickpocket = true;
+                                                }
+
                                                 had_successful_walk = true;
                                                 unstuck_attempts = 0;
 

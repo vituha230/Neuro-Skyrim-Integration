@@ -46,5 +46,7 @@ namespace WalkerProcessor {
 
 	bool pause_attacking(float dtime);
 	void unpause_attacking();
+	bool is_pickpocketing();
+
 
 }
