@@ -1251,10 +1251,13 @@ void processor(float dtime)
 					{
 						if (!category_choice_request_sent)
 						{
-							missing_category_detected = false;
-							last_cursor_move = 0;
-							category_choice_request_sent = true;
-							force_choice(get_categories_options(), get_force_message(true), force_type::smithing_category);
+
+							if (force_choice(get_categories_options(), get_force_message(true), force_type::smithing_category))
+							{
+								missing_category_detected = false;
+								last_cursor_move = 0;
+								category_choice_request_sent = true;
+							}
 						}
 						else
 						{

@@ -178,10 +178,10 @@ namespace Observer {
 
 							if (!action_taken)
 							{
-
-
 								if (threats_response_choice == 0)
 								{
+									if (DialogueProcessor::is_in_dialogue(nullptr))
+										DialogueProcessor::quit_menu();
 									WalkerProcessor::walk_to_object_by_refr(attackers.at(0), 3);
 									action_taken = true;
 								}

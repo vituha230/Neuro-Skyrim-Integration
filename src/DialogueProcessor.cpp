@@ -48,16 +48,26 @@ namespace DialogueProcessor {
     {
         bool result = false;
 
-        if (in_dialogue)
+        if (!speaker)
         {
-            RE::MenuTopicManager* topic_manager = RE::MenuTopicManager::GetSingleton();
-            if (topic_manager)
-                if (topic_manager->speaker.get())
-                {
-                    auto speaker_ref = topic_manager->speaker.get().get();
-                    if (speaker_ref == speaker)
-                        result = true;
-                }
+            RE::UI* ui = RE::UI::GetSingleton();
+            return ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME);
+        }
+        else
+        {
+            if (in_dialogue)
+            {
+                RE::MenuTopicManager* topic_manager = RE::MenuTopicManager::GetSingleton();
+                if (topic_manager)
+                    if (topic_manager->speaker.get())
+                    {
+                        auto speaker_ref = topic_manager->speaker.get().get();
+                        if (speaker_ref == speaker)
+                            result = true;
+                    }
+            }
+
+            
         }
 
         return result;

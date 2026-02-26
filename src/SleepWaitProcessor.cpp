@@ -274,8 +274,9 @@ namespace SleepWaitProcessor {
 			{
 				if (!sleepwait_request_sent)
 				{
-					sleepwait_request_sent = true;
-					force_choice({}, get_force_message() + "Valid range: " + get_choice_range(), force_type::sleepwait_time);
+					
+					if (force_choice({}, get_force_message() + "Valid range: " + get_choice_range(), force_type::sleepwait_time))
+						sleepwait_request_sent = true;
 				}
 				else
 				{

@@ -18,7 +18,7 @@
 
 neurosdk_action ActionsList[] = {  
                                     
-                                    Capabilities::GetObjectsAround::Action,
+                                    //Capabilities::GetObjectsAround::Action,
                                     Capabilities::WalkToObject::Action,
 
                                     Capabilities::GetCurrentQuests::Action,

@@ -62,5 +62,6 @@
         void processor(float dtime);
         bool is_in_dialogue(RE::TESObjectREFR* speaker);
         void clean_old_dialogue();
+        bool quit_menu();
 
     }
