@@ -206,6 +206,16 @@ namespace MapProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
+
+		if (MiscThings::is_intro() || MiscThings::is_intro2())
+		{
+			result.first = false;
+			result.second = "Cannot open the map right now. ";
+			return result;
+		}
+
+
+
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::MapMenu>();
 

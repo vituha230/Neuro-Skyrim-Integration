@@ -2791,7 +2791,10 @@ namespace WalkerProcessor {
                 if (interaction == 2 && MiscThings::is_intro2())
                 {
                     result.first = false;
-                    result.second = "Your hands are bound. You cannot pickpocket anything now. Probably its better to follow some quest right now. ";
+                    if (MiscThings::is_intro())
+                        result.second = "Your hands are bound. Wait for the game to progress";
+                    else
+                        result.second = "Your hands are bound. You cannot pickpocket anything now. Probably its better to follow some quest right now. ";
                     return result;
                 }
 

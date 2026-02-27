@@ -739,7 +739,10 @@ namespace MiscThings {
                                                         if (result_string != "Autosaving..." && result_string != "Quicksaving..." && result_string != "Quickloading...")
                                                         {
                                                             if (result_string.find("hands are bound") != std::string::npos)
-                                                                result_string += ". You probably need to follow some quest right now. ";
+                                                                if (MiscThings::is_intro())
+                                                                    result_string += ". Wait for the game to progress. ";
+                                                                else
+                                                                    result_string += ". You probably need to follow some quest right now. ";
 
                                                             send_random_context("[" + result_string + "]");
                                                         }
@@ -3107,7 +3110,15 @@ namespace MiscThings {
         //TODO: some abilities are one time per day use but must be equipped. need different mechanic 
 
 
+
         std::pair<bool, std::string> result{};
+
+        if (MiscThings::is_intro() || MiscThings::is_intro2())
+        {
+            result.first = false;
+            result.second = "Cannot use spells right now. ";
+            return result;
+        }
 
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_actor = (RE::Actor*)(player->AsReference());
