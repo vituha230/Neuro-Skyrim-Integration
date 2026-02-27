@@ -162,8 +162,17 @@ namespace RandomMessageBoxProcessor {
 								message_box_request_sent = true;
 							}
 							else
-								if (force_choice(get_options(), text, force_type::messagebox_option))
+							{
+								if (text.find("Survival Mode") != std::string::npos)
+								{
+									set_message_box_choice(1);
 									message_box_request_sent = true;
+								}
+								else
+									if (force_choice(get_options(), text, force_type::messagebox_option))
+										message_box_request_sent = true;
+							}
+
 							
 							
 						}
