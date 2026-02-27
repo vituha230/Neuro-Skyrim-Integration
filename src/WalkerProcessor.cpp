@@ -2162,6 +2162,10 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        if (using_custom_path)
+            quicksave();
+
         if (!backup_input_cancel)
         {
             backup_input_cancel = true;
@@ -2808,9 +2812,27 @@ namespace WalkerProcessor {
                     return result;
                 }
 
+                if (interaction == 1 && MiscThings::is_intro2())
+                {
+                    result.first = false;
+                    if (MiscThings::is_intro())
+                        result.second = "Your hands are bound. Wait for the game to progress";
+                    else
+                        result.second = "Your hands are bound. You cannot interact now. Probably its better to follow some quest right now. ";
+                    return result;
+                }
 
                 if (have_target_to_walk)
-                    reset_walker();
+                {
+                    if (target_ref != object->second)
+                        reset_walker();
+                    else
+                    {
+                        result.first = false;
+                        result.second = "You are already walking to this object!";
+                    }
+                }
+                    
 
 
                 right_attack_cancel();
@@ -3118,8 +3140,8 @@ namespace WalkerProcessor {
 
                 if (objective)
                 {
-                    if (have_target_to_walk)
-                        reset_walker();
+                    //if (have_target_to_walk)
+                    //    reset_walker();
 
 
                     if (objective->numTargets != 0)
@@ -3172,6 +3194,18 @@ namespace WalkerProcessor {
                                                     path = CustomWalkerPaths::helgen_tower_path;
                                                     //path_valid = true;
                                                 }
+
+                                                if (have_target_to_walk)
+                                                {
+                                                    if (target_ref != quests_target_ref)
+                                                        reset_walker();
+                                                    else
+                                                    {
+                                                        result.first = false;
+                                                        result.second = "You are already walking to this object!";
+                                                    }
+                                                }
+
                                                 quest_mode = true;
                                                 target_ref = quests_target_ref;
 
@@ -3221,6 +3255,7 @@ namespace WalkerProcessor {
 
         result.first = false;
         result.second = "Invalid quest ID. Use get_current_quests to get valid ID list";
+        reset_walker();
 
         return result;
 
@@ -3296,7 +3331,13 @@ namespace WalkerProcessor {
                                                     path_valid = true;
                                                 }
                                                 else
+                                                {
+                                                    if (using_custom_path)
+                                                        quicksave();
+
                                                     using_custom_path = false;
+                                                }
+                                                    
 
 
                                                 right_attack_cancel();
@@ -4188,8 +4229,8 @@ namespace WalkerProcessor {
 
                             if (!has_something_equipped(true))
                             {
-                                attacking_info += "bare fists";
-                                if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
+                                attacking_info += "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                if (player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
                                     cursor_up();
                             }
                             else
@@ -4306,7 +4347,7 @@ namespace WalkerProcessor {
                             else
                             {
                                 left_attack();
-                                if (!has_something_equipped(false))
+                                if (!has_something_equipped(false) && has_something_equipped(true) && is_melee_weapon(true))
                                 {
                                     attacking_info = "[You are blocking";
                                     if (player->GetDistance(target_ref) > 20.0f)
@@ -4526,7 +4567,25 @@ namespace WalkerProcessor {
                         if (target_ref)
                         {
                             std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);//target_ref->GetDisplayFullName();
-                            send_random_context("[Interacting with " + target_name + "...]");
+                            auto base_obj = target_ref->GetBaseObject();
+                            if (base_obj->IsInventoryObject())
+                            {
+                                send_random_context("[Picking up " + target_name + "...]");
+                                if (MiscThings::is_objects_around_valid())
+                                {
+                                    auto objects_around = MiscThings::get_p_objects_around();
+                                    for (std::pair<int, RE::TESObjectREFR*> object : *objects_around)
+                                    {
+                                        if (object.second == target_ref)
+                                        {
+                                            objects_around->erase(object.first);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                                send_random_context("[Interacting with " + target_name + "...]");
                         }
                     }
 

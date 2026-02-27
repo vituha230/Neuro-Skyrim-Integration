@@ -576,7 +576,6 @@ void unsprint()
 
 
 
- //doesnt work. not keyboard not gamepad
 void walk_forward()
 {
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
@@ -587,6 +586,12 @@ void walk_forward()
 }
 
 
+void quicksave()
+{
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->quicksave, RE::INPUT_DEVICES::kKeyboard);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
+}
 
 
 void make_long_ult_cast()

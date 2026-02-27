@@ -69,3 +69,5 @@ void reset_input_processor();
 
 
 void right_attack_bow();
+
+void quicksave();

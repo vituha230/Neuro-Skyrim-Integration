@@ -159,6 +159,7 @@ namespace RandomMessageBoxProcessor {
 							{
 								send_random_context("[" + text + "]");
 								set_message_box_choice(option_test.at(0).id);
+								message_box_request_sent = true;
 							}
 							else
 								if (force_choice(get_options(), text, force_type::messagebox_option))

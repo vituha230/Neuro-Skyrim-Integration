@@ -597,141 +597,149 @@ namespace neuro {
                     }
                     else
                     {
-
-                        if (name == Capabilities::WalkToObject::Name)
+                        if (get_active_force() != -1)
                         {
-                            Impl::JSON::NeuroChoiceJson json{};
-                            Impl::JSON::NeuroChoiceJson2 json2{};
-
-                            // operator bool overload for glz::error_ctx returns true on failure!
-                            if (glz::read_json(json2, messageQueue[i].value.action.data))
+                            command_result.first = false;
+                            command_result.second = "You must make a choice first!";
+                        }
+                        else
+                        {
+                            if (name == Capabilities::WalkToObject::Name)
                             {
+                                Impl::JSON::NeuroChoiceJson json{};
+                                Impl::JSON::NeuroChoiceJson2 json2{};
+
+                                // operator bool overload for glz::error_ctx returns true on failure!
+                                if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                {
+                                    if (glz::read_json(json, messageQueue[i].value.action.data))
+                                        failed_to_parse_json = true;
+                                    else
+                                        command_result = WalkerProcessor::walk_to_object_by_index(json.id, 0);
+                                }
+                                else
+                                    command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
+                            }
+
+
+
+
+                            if (name == Capabilities::FollowQuest::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
                                 if (glz::read_json(json, messageQueue[i].value.action.data))
                                     failed_to_parse_json = true;
                                 else
-                                    command_result = WalkerProcessor::walk_to_object_by_index(json.id, 0);
+                                    command_result = WalkerProcessor::walk_to_quest_by_index(json.id);
                             }
-                            else
-                                command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
+
+
+
+                            if (name == Capabilities::GoToLocation::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = WalkerProcessor::walk_to_location_by_index(json.id);
+                            }
+
+
+
+
+
+                            if (name == Capabilities::GetObjectsAround::Name)
+                            {
+
+                                //Impl::JSON::NeuroChoiceJson json{};
+
+                                //if (glz::read_json(json, messageQueue[i].value.action.data))
+                                //    failed_to_parse_json = true;
+                                //else
+
+                                command_result = MiscThings::GetObjectsAround(-1);
+
+                            }
+
+
+                            if (name == Capabilities::GetInventory::Name)
+                            {
+                                command_result = MiscThings::GetInventory();
+                            }
+
+
+                            if (name == Capabilities::GetSpells::Name)
+                            {
+                                command_result = MiscThings::get_available_spells();
+                            }
+
+
+
+                            if (name == Capabilities::CastEquipSpell::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = MiscThings::use_spell_by_index(json.id);
+                            }
+
+
+                            if (name == Capabilities::UnlockShoutLevel::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = MiscThings::unlock_shout_level(json.id);
+                            }
+
+
+                            if (name == Capabilities::OpenMap::Name)
+                            {
+                                command_result = MapProcessor::open_menu();
+                            }
+
+
+                            if (name == Capabilities::GetCurrentQuests::Name)
+                            {
+                                command_result = MiscThings::get_current_quests();
+                            }
+
+
+                            if (name == Capabilities::GetLocations::Name)
+                            {
+                                command_result = MiscThings::get_locations_around();
+                            }
+
+
+                            if (name == Capabilities::UseInventoryItem::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson2 json2{};
+
+                                if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = MiscThings::activate_inventory_object_by_index(json2.id1, json2.id2);
+
+                            }
+
+                            if (name == Capabilities::GetGold::Name)
+                            {
+                                command_result = MiscThings::GetGold();
+                            }
+
+
+                            if (name == Capabilities::CallWaitMenu::Name)
+                            {
+                                command_result = SleepWaitProcessor::call_wait_menu();
+                            }
                         }
-
-
-
-
-                        if (name == Capabilities::FollowQuest::Name)
-                        {
-                            Impl::JSON::NeuroChoiceJson json{};
-
-                            if (glz::read_json(json, messageQueue[i].value.action.data))
-                                failed_to_parse_json = true;
-                            else
-                                command_result = WalkerProcessor::walk_to_quest_by_index(json.id);
-                        }
-
-
-
-                        if (name == Capabilities::GoToLocation::Name)
-                        {
-                            Impl::JSON::NeuroChoiceJson json{};
-
-                            if (glz::read_json(json, messageQueue[i].value.action.data))
-                                failed_to_parse_json = true;
-                            else
-                                command_result = WalkerProcessor::walk_to_location_by_index(json.id);
-                        }
-
-
-
-
-
-                        if (name == Capabilities::GetObjectsAround::Name)
-                        {
-
-                            //Impl::JSON::NeuroChoiceJson json{};
-
-                            //if (glz::read_json(json, messageQueue[i].value.action.data))
-                            //    failed_to_parse_json = true;
-                            //else
-
-                            command_result = MiscThings::GetObjectsAround(-1);
-
-                        }
-
-
-                        if (name == Capabilities::GetInventory::Name)
-                        {
-                            command_result = MiscThings::GetInventory();
-                        }
-
-
-                        if (name == Capabilities::GetSpells::Name)
-                        {
-                            command_result = MiscThings::get_available_spells();
-                        }
-
-
-
-                        if (name == Capabilities::CastEquipSpell::Name)
-                        {
-                            Impl::JSON::NeuroChoiceJson json{};
-
-                            if (glz::read_json(json, messageQueue[i].value.action.data))
-                                failed_to_parse_json = true;
-                            else
-                                command_result = MiscThings::use_spell_by_index(json.id);
-                        }
-
-
-                        if (name == Capabilities::UnlockShoutLevel::Name)
-                        {
-                            Impl::JSON::NeuroChoiceJson json{};
-
-                            if (glz::read_json(json, messageQueue[i].value.action.data))
-                                failed_to_parse_json = true;
-                            else
-                                command_result = MiscThings::unlock_shout_level(json.id);
-                        }
-
-
-                        if (name == Capabilities::OpenMap::Name)
-                        {
-                            command_result = MapProcessor::open_menu();
-                        }
-
-
-                        if (name == Capabilities::GetCurrentQuests::Name)
-                        {
-                            command_result = MiscThings::get_current_quests();
-                        }
-
-
-                        if (name == Capabilities::GetLocations::Name)
-                        {
-                            command_result = MiscThings::get_locations_around();
-                        }
-
-
-                        if (name == Capabilities::UseInventoryItem::Name)
-                        {
-                            Impl::JSON::NeuroChoiceJson2 json2{};
-
-                            if (glz::read_json(json2, messageQueue[i].value.action.data))
-                                failed_to_parse_json = true;
-                            else
-                                command_result = MiscThings::activate_inventory_object_by_index(json2.id1, json2.id2);
-
-                        }
-
-                        if (name == Capabilities::GetGold::Name)
-                        {
-                            command_result = MiscThings::GetGold();
-                        }
-
-
-                        if (name == Capabilities::CallWaitMenu::Name)
-                        {
-                            command_result = SleepWaitProcessor::call_wait_menu();
-                        }
+                        
 
                     }
 
