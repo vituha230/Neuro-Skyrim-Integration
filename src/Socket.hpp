@@ -438,6 +438,10 @@ namespace neuro {
                     bool failed_to_parse_json = false;
                     bool dont_reset_force = false;
 
+
+
+
+
                     if (name == Capabilities::SelectForceChoice::Name)
                     {
                         Impl::JSON::NeuroChoiceJson json{};
@@ -585,6 +589,11 @@ namespace neuro {
                     //////////////END OF FORCE RESPONSE
 
 
+                    if (WalkerProcessor::is_walking_important_path() && command_result.second == "")
+                    {
+                        command_result.first = false;
+                        command_result.second = "You are concentrated on walking right now. Wait until you reach the target. ";
+                    }
 
 
 

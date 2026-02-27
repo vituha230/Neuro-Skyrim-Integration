@@ -173,6 +173,12 @@ namespace WalkerProcessor {
     }
 
 
+    bool is_walking_important_path()
+    {
+        return using_custom_path;
+    }
+
+
 
     bool is_fighting()
     {

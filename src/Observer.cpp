@@ -1188,7 +1188,12 @@ namespace Observer {
 					auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
 					if (threshold_quest)
 						if (threshold_quest->GetCurrentStageID() < 160)
+						{
 							old_unbound_quest = true;
+							//game start context
+							send_random_context("You awake on a carriage going down a mountain to Helgen. You were unfortunate enough to stumble across an imperial raid on rebels while crossing the border and were arrested with other Stormcloaks, a horse thief, and Ulfric Stormcloak himself. Everyone assumes correctly that they are being led to their execution.");
+						}
+							
 				}
 				else
 				{
