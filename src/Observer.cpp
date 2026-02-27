@@ -579,22 +579,33 @@ namespace Observer {
 			auto player_ref = player->AsReference();
 			auto player_actor = (RE::Actor*)player_ref;
 
-			float scan_distance = 4000.0f;
+			float scan_distance = 2000.0f;
 			auto player_cell = player->GetParentCell();
 			if (player_cell && player_cell->IsInteriorCell())
 				scan_distance = 2000.0f;
+
+
+			//if (std::size(objects_to_track) > 5000)
+			//	objects_to_track.clear();
 
 			RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, scan_distance,
 				//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 				[&](RE::TESObjectREFR* a_ref) {
 
+					auto base_obj = a_ref->GetBaseObject();
+					auto base_type = base_obj->GetFormType();
+
+					if (base_type == RE::FormType::Static || base_type == RE::FormType::Hazard)
+						return RE::BSContainer::ForEachResult::kContinue;
+
+
 					if (a_ref->IsActor())
 					{
-						std::string name1 = a_ref->GetDisplayFullName();
-						if (name1 == "Headsman")
-						{
-							bool headsman_found = true;
-						}
+						//std::string name1 = a_ref->GetDisplayFullName();
+						//if (name1 == "Headsman")
+						//{
+						//	bool headsman_found = true;
+						//}
 
 
 						auto actor_ref = (RE::Actor*)a_ref;
@@ -967,28 +978,16 @@ namespace Observer {
 								
 
 
-
-
-
-
-
-
-
 								objects_to_track.insert_or_assign(a_ref, new_state);
 							}
 						}
-
-
-
-
-
 					}
 
 					return RE::BSContainer::ForEachResult::kContinue;
 				});
 
 
-
+				
 				RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 20000.0f, //999999.0 is too much
 					//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 					[&](RE::TESObjectREFR* a_ref) {

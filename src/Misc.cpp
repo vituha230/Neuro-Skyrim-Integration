@@ -2516,7 +2516,7 @@ namespace MiscThings {
         else
         {
             result.first = false;
-            result.second = "Invalid item ID";
+            result.second = "Invalid item ID. Use get_inventory to get list of available item IDs. ";
             return result;
         }
 
@@ -3727,12 +3727,16 @@ namespace MiscThings {
 
         for (auto object : objects_around)
         {
-            if (player_ref->GetDistance(object.second) < 10000.0f)
+            if (object.second)
             {
-                //std::string category = get_object_category(object.second);
-                result.second += insert_into_list_and_get_info(object.second); //they are all in the list but whatever. just to get the name
-                result.second += +"\n";
+                if (player_ref->GetDistance(object.second) < 10000.0f)
+                {
+                    //std::string category = get_object_category(object.second);
+                    result.second += insert_into_list_and_get_info(object.second); //they are all in the list but whatever. just to get the name
+                    result.second += +"\n";
+                }
             }
+
         }
 
         result.first = true;

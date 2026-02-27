@@ -17,8 +17,6 @@ namespace WalkerProcessor {
 
 
 
-
-
     bool crime_mode = false;
 
     bool gave_attacking_info = false;
@@ -487,33 +485,34 @@ namespace WalkerProcessor {
 
                     if (using_custom_path)
                     {
-                        auto last_point = path.at(std::size(path) - 1);
-
-                        if (last_point.GetDistance(custom_path.at(0)) < 200.0f)
+                        if (!path.empty())
                         {
-                            custom_path_appended = true;
-                            path.insert(path.end(), custom_path.cbegin(), custom_path.cend()); //append custom path
-                        }
+                            auto last_point = path.at(std::size(path) - 1);
 
-                        /*
-                        int pos = 0;
-                        
-                        for (auto point : custom_path)
-                        {
-                            if (last_point.GetDistance(point) < 200.0f)
+                            if (last_point.GetDistance(custom_path.at(0)) < 200.0f)
                             {
-                                std::vector<RE::NiPoint3> new_custom_path{};
-                                for (int i = pos; i < std::size(custom_path); i++)
-                                    new_custom_path.push_back(custom_path.at(i));
-
-                                path.insert(path.end(), new_custom_path.cbegin(), new_custom_path.cend()); //append custom path
+                                custom_path_appended = true;
+                                path.insert(path.end(), custom_path.cbegin(), custom_path.cend()); //append custom path
                             }
-                            pos++;
+
+                            /*
+                            int pos = 0;
+
+                            for (auto point : custom_path)
+                            {
+                                if (last_point.GetDistance(point) < 200.0f)
+                                {
+                                    std::vector<RE::NiPoint3> new_custom_path{};
+                                    for (int i = pos; i < std::size(custom_path); i++)
+                                        new_custom_path.push_back(custom_path.at(i));
+
+                                    path.insert(path.end(), new_custom_path.cbegin(), new_custom_path.cend()); //append custom path
+                                }
+                                pos++;
+                            }
+                            */
                         }
-                        */
-                        
                     }
-                        
 
                     path_valid = true;
 
@@ -2579,7 +2578,13 @@ namespace WalkerProcessor {
             if (custom_path_appended)
                 return true;
             else
-                return player_pos.GetDistance(custom_path.at(0)) < 200.0f;
+            {
+                if (!custom_path.empty())
+                    return player_pos.GetDistance(custom_path.at(std::size(custom_path) - 1)) < 200.0f;
+                else
+                    return true; //super error
+            }
+                
         }
 
 
@@ -4667,6 +4672,7 @@ namespace WalkerProcessor {
                             if (base_obj->IsInventoryObject())
                             {
                                 send_random_context("[Picking up " + target_name + "...]");
+                                /* //TODO it ruins the list a little, observer starts spamming. figure it out later
                                 if (MiscThings::is_objects_around_valid())
                                 {
                                     auto objects_around = MiscThings::get_p_objects_around();
@@ -4679,6 +4685,7 @@ namespace WalkerProcessor {
                                         }
                                     }
                                 }
+                                */
                             }
                             else
                                 send_random_context("[Interacting with " + target_name + "...]");

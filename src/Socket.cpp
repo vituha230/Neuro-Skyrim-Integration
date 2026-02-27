@@ -24,8 +24,8 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
                                     
-                                    Capabilities::GetLocations::Action,
-                                    Capabilities::GoToLocation::Action,
+                                    //Capabilities::GetLocations::Action,
+                                    
 
                                     Capabilities::GetSpells::Action,
                                     Capabilities::CastEquipSpell::Action,
@@ -35,13 +35,14 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::UseInventoryItem::Action,
                                     Capabilities::CallWaitMenu::Action,
                                     Capabilities::OpenMap::Action,
-                                    Capabilities::GetGold::Action,
+                                    //Capabilities::GetGold::Action,
                                     
                                     Capabilities::SelectForceChoice::Action,
                                     Capabilities::SelectForceChoiceMultiple::Action,
                                     Capabilities::SelectForceChoiceString::Action,
 
-                                    Capabilities::GetObjectsAround::Action //idk about this one
+                                    Capabilities::GetObjectsAround::Action, //idk about this one
+                                    Capabilities::GoToLocation::Action
                                 };
 
 
