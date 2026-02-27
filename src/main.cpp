@@ -534,6 +534,7 @@ namespace Hooks {
                 set_active_force(-1);
 
                 reset_input_processor();
+                clear_input_queue();
 
                 send_random_context("[The game is loading. You are not in game yet]");
             }

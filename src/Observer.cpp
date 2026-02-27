@@ -1,5 +1,6 @@
 ﻿
 
+#include "InputActions.hpp"
 #include "WalkerProcessor.hpp"
 #include "Observer.hpp"
 #include "Misc.hpp"
@@ -45,6 +46,7 @@ namespace Observer {
 
 	float detect_locations_timer = 0.0f;
 
+	float last_saved_time = 0.0f;
 
 	void set_threat_action_taken()
 	{
@@ -80,6 +82,7 @@ namespace Observer {
 
 		old_unbound_quest = false;
 		first_cycle = true;
+		last_saved_time = 0.0f;
 
 		detect_locations_timer = 0.0f;
 	}
@@ -219,6 +222,8 @@ namespace Observer {
 		std::string info;
 		RE::TESObjectREFR* refr;
 	};
+
+	
 
 
 	void detect_interesting_objects(float dtime)
@@ -1180,6 +1185,16 @@ namespace Observer {
 
 	void player_state_monitor(float dtime)
 	{
+
+
+		if (last_saved_time > 300000.0f)
+		{
+			quicksave();
+			last_saved_time = 0.0f;
+		}
+		else
+			last_saved_time += dtime;
+
 		RE::UI* ui = RE::UI::GetSingleton();
 		if (!ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME) && !ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
 		{
