@@ -1925,7 +1925,7 @@ namespace WalkerProcessor {
 
 
 
-            send_random_context(std::to_string(mulX) + ", " + std::to_string(mulY) + ", " + std::to_string(mulZ));
+            //send_random_context(std::to_string(mulX) + ", " + std::to_string(mulY) + ", " + std::to_string(mulZ));
             if (mulY < 0)
                 mulZ = -mulZ;
 
