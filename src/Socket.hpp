@@ -597,7 +597,7 @@ namespace neuro {
                     }
                     else
                     {
-                        if (get_active_force() != -1)
+                        if (get_active_force() != -1 && command_result.second == "") //only if unhandled above
                         {
                             command_result.first = false;
                             command_result.second = "You must make a choice first!";
