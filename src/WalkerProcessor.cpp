@@ -865,12 +865,15 @@ namespace WalkerProcessor {
 
 
 
+                    //mulY = camera_dirY * desired_direction_norm;
+                    mulX = camera_dirX * desired_direction_norm;
+                    mulZ = camera_dirZ * desired_direction_norm;
+                    desired_direction_norm.z = 0.0f;
                     mulY = camera_dirY * desired_direction_norm;
-
 
                     //camera_dirZ_noZ = camera_dirZ_noZ / camera_dirZ_noZ.Length();
                     //mulY = camera_dirY * pos_difY_norm;
-                    mulZ = camera_dirZ * desired_direction_norm;// pos_difY_norm;
+                    //mulZ = camera_dirZ * desired_direction_norm;// pos_difY_norm;
 
                     if (mulY < 0)
                         mulZ = -mulZ;
@@ -1590,6 +1593,7 @@ namespace WalkerProcessor {
 
 
     
+    int debug_mode_cam = 0;
 
 
     bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime)
@@ -1822,12 +1826,12 @@ namespace WalkerProcessor {
         float mouse_x = 0.0f;
         float mouse_y = 0.0f;
 
+
+
+
         auto mulX = camera_dirX * pos_dif_norm;
         auto mulY = 0.0f;
         auto mulZ = 0.0f;
-
-
-        
 
 
         if (target)
@@ -1886,14 +1890,47 @@ namespace WalkerProcessor {
 
             //auto shift = target_ref->GetScale()
 
-            auto pos_difY = target_center - camera_pos;
+            pos_dif = target_center - camera_pos;
+            pos_dif_norm = pos_dif / pos_dif.Length();
 
-            auto pos_difY_norm = pos_difY / pos_difY.Length();
-            mulY = camera_dirY * pos_difY_norm;
-            mulZ = camera_dirZ * pos_difY_norm;
+            mulX = camera_dirX * pos_dif_norm;
+            mulZ = camera_dirZ * pos_dif_norm;
+            pos_dif_norm.z = 0.0f;
+            mulY = camera_dirY * pos_dif_norm;
 
+
+            //auto pos_difZ_norm = pos_difZ / pos_difZ.Length();
+
+            //mulY = camera_dirY * pos_difY_norm;
+            //mulZ = camera_dirZ * pos_difY_norm;
+
+            //auto crossX = camera_dirX.Cross(pos_dif_norm);
+            //auto crossY = camera_dirY.Cross(pos_dif_norm);
+            //auto crossZ = camera_dirZ.Cross(pos_dif_norm);
+
+
+            //auto test_mulX = crossX * pos_dif_norm;
+            //auto test_mulY = crossY * pos_dif_norm;
+            //auto test_mulZ = crossZ * pos_dif_norm;
+
+            //if (debug_mode_cam == 0)
+            //{
+            //    if (crossX < 0)
+            //}
+
+        
+            //mulX = camera_dirX.Dot(pos_dif_norm);
+            //mulY = camera_dirY.Dot(pos_dif_norm);
+            //mulZ = camera_dirZ.Dot(pos_dif_norm);
+
+
+
+            send_random_context(std::to_string(mulX) + ", " + std::to_string(mulY) + ", " + std::to_string(mulZ));
             if (mulY < 0)
                 mulZ = -mulZ;
+
+
+            //return false;
         }
 
 
@@ -4288,7 +4325,7 @@ namespace WalkerProcessor {
                             if (!has_something_equipped(true))
                             {
                                 attacking_info += "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                if (player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
+                                if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
                                     cursor_up();
                             }
                             else
