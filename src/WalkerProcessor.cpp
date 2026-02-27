@@ -27,6 +27,8 @@ namespace WalkerProcessor {
     bool path_valid = false;
     std::vector<RE::NiPoint3> path{};
 
+    std::vector<RE::NiPoint3> custom_path{};
+
     bool have_target_to_walk = false;
     RE::TESObjectREFR* target_ref = nullptr;
 
@@ -167,6 +169,10 @@ namespace WalkerProcessor {
     bool got_close_for_pickpocket = false;
 
 
+    bool custom_path_appended = false;
+
+
+
     void set_crime_mode(bool state)
     {
         crime_mode = state;
@@ -289,7 +295,7 @@ namespace WalkerProcessor {
                 }
 
                 if (using_custom_path)
-                    marker_ref->SetPosition(path.at(0));
+                    marker_ref->SetPosition(custom_path.at(0));
                 else
                     marker_ref->SetPosition(marker_ref->GetPosition() + shift + pickpocket_shift);
             }
@@ -454,7 +460,7 @@ namespace WalkerProcessor {
 
                     //fill path
                     path_valid = false;
-                    auto path_to_save = path;
+                    //auto path_to_save = path;
 
 
                     path.clear();
@@ -480,7 +486,34 @@ namespace WalkerProcessor {
                             
 
                     if (using_custom_path)
-                        path.insert(path.end(), path_to_save.cbegin(), path_to_save.cend()); //append custom path
+                    {
+                        auto last_point = path.at(std::size(path) - 1);
+
+                        if (last_point.GetDistance(custom_path.at(0)) < 200.0f)
+                        {
+                            custom_path_appended = true;
+                            path.insert(path.end(), custom_path.cbegin(), custom_path.cend()); //append custom path
+                        }
+
+                        /*
+                        int pos = 0;
+                        
+                        for (auto point : custom_path)
+                        {
+                            if (last_point.GetDistance(point) < 200.0f)
+                            {
+                                std::vector<RE::NiPoint3> new_custom_path{};
+                                for (int i = pos; i < std::size(custom_path); i++)
+                                    new_custom_path.push_back(custom_path.at(i));
+
+                                path.insert(path.end(), new_custom_path.cbegin(), new_custom_path.cend()); //append custom path
+                            }
+                            pos++;
+                        }
+                        */
+                        
+                    }
+                        
 
                     path_valid = true;
 
@@ -2163,6 +2196,8 @@ namespace WalkerProcessor {
     void reset_walker()
     {
 
+        custom_path_appended = false; 
+
         if (using_custom_path)
             quicksave();
 
@@ -2294,7 +2329,7 @@ namespace WalkerProcessor {
 
     void walk_again()
     {
-        if (!using_custom_path)
+        //if (!using_custom_path)
         {
             lock_camera_wants_to_crouch = false;
             path_valid = false;
@@ -2319,6 +2354,10 @@ namespace WalkerProcessor {
             attack_action_time = 0.0f;
             got_close_for_pickpocket = false;
         }
+        //else
+        //{
+
+        //}
     }
 
     
@@ -2485,8 +2524,8 @@ namespace WalkerProcessor {
 
 
 
-        if (using_custom_path)
-            return true;
+
+            
 
         
         
@@ -2498,7 +2537,13 @@ namespace WalkerProcessor {
         auto target_pos = target_ref->GetPosition();
 
 
-
+        if (using_custom_path)
+        {
+            if (custom_path_appended)
+                return true;
+            else
+                return player_pos.GetDistance(custom_path.at(0)) < 200.0f;
+        }
 
 
         if (MiscThings::is_intro2())
@@ -2812,15 +2857,28 @@ namespace WalkerProcessor {
                     return result;
                 }
 
+                
                 if (interaction == 1 && MiscThings::is_intro2())
                 {
+                    /*
                     result.first = false;
                     if (MiscThings::is_intro())
-                        result.second = "Your hands are bound. Wait for the game to progress";
+                        result.second = "Your hands are bound. Wait for the game to progress before interacting. Looking at the target instead";
                     else
-                        result.second = "Your hands are bound. You cannot interact now. Probably its better to follow some quest right now. ";
+                        result.second = "Your hands are bound. You cannot interact now. Probably its better to follow some quest right now. Looking at the target instead ";
                     return result;
+                    */
+
+                    result.first = false;
+                    if (MiscThings::is_intro())
+                        send_random_context("Your hands are bound. Wait for the game to progress before interacting. Looking at the target instead");
+                    else
+                        send_random_context("Your hands are bound. You cannot interact now. Probably its better to follow some quest right now. Looking at the target instead");
+                    //return result;
+                    interaction = 0;
+
                 }
+                
 
                 if (have_target_to_walk)
                 {
@@ -3191,7 +3249,7 @@ namespace WalkerProcessor {
                                                 if (quests_target_ref == helgen_tower_marker)
                                                 {
                                                     using_custom_path = true;
-                                                    path = CustomWalkerPaths::helgen_tower_path;
+                                                    custom_path = CustomWalkerPaths::helgen_tower_path;
                                                     //path_valid = true;
                                                 }
 
@@ -3327,7 +3385,7 @@ namespace WalkerProcessor {
                                                 if (quests_target_ref == RE::TESForm::LookupByEditorID("dunCGObjectiveInn01REF") || quests_target_ref == RE::TESObjectREFR::LookupByID(0x000E24C3))
                                                 {
                                                     using_custom_path = true;
-                                                    path = CustomWalkerPaths::helgen_tower_path;
+                                                    custom_path = CustomWalkerPaths::helgen_tower_path;
                                                     path_valid = true;
                                                 }
                                                 else
@@ -4879,7 +4937,7 @@ namespace WalkerProcessor {
 
 
     bool path_record_mode = false;
-    std::vector<RE::NiPoint3> custom_path{};
+    std::vector<RE::NiPoint3> custom_path_record{};
 
 
 
@@ -4939,15 +4997,15 @@ namespace WalkerProcessor {
             auto player = RE::PlayerCharacter::GetSingleton();
             auto player_pos = player->GetPosition();
 
-            if (std::size(custom_path) == 0)
+            if (std::size(custom_path_record) == 0)
             {
-                custom_path.push_back(player_pos);
+                custom_path_record.push_back(player_pos);
             }
             else
             {
-                if (player_pos.GetDistance(custom_path.at(std::size(custom_path) - 1)) > 100.0f)
+                if (player_pos.GetDistance(custom_path_record.at(std::size(custom_path_record) - 1)) > 100.0f)
                 {
-                    custom_path.push_back(player_pos);
+                    custom_path_record.push_back(player_pos);
                 }
             }
 
