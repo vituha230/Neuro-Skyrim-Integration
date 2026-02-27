@@ -2798,6 +2798,17 @@ namespace WalkerProcessor {
                     return result;
                 }
 
+                if (interaction == 3 && MiscThings::is_intro2())
+                {
+                    result.first = false;
+                    if (MiscThings::is_intro())
+                        result.second = "Your hands are bound. Wait for the game to progress";
+                    else
+                        result.second = "Your hands are bound. You cannot attack anything now. Probably its better to follow some quest right now. ";
+                    return result;
+                }
+
+
                 if (have_target_to_walk)
                     reset_walker();
 
