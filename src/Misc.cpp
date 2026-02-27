@@ -737,7 +737,12 @@ namespace MiscThings {
                                                     {
                                                         old_topleft_notification = result_string;
                                                         if (result_string != "Autosaving..." && result_string != "Quicksaving..." && result_string != "Quickloading...")
+                                                        {
+                                                            if (result_string.find("hands are bound") != std::string::npos)
+                                                                result_string += ". You probably need to follow some quest right now. ";
+
                                                             send_random_context("[" + result_string + "]");
+                                                        }
                                                     }
                                                 }
                             }
@@ -3085,7 +3090,7 @@ namespace MiscThings {
         else
         {
             result.first = false;
-            result.second = "Invalid shout ID. ";
+            result.second = "Invalid shout ID. Use get_available_spells to get valid IDs.  ";
         }
 
         return result;
@@ -3213,7 +3218,7 @@ namespace MiscThings {
         else
         {
             result.first = false;
-            result.second = "Invalid spell ID. ";
+            result.second = "Invalid spell ID. Use get_available_spells to get valid IDs. ";
         }
 
 

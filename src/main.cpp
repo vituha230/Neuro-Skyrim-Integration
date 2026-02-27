@@ -2,17 +2,20 @@
 
 //crucial:
 
-//TODO fix nonexistent objects
+
+//TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one)
+
+
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 
 
 //TODO "wooden bridge opened" didnt come through, test it and fix it
 //TODO inventory weight control (maybe force throw away things?)
-//TODO raycast object detection (!!!)
+//TODO raycast object detection (!!! uuh maybe leave as is)
 //TODO: check all menus after force/choice merge
 //TODO: non-hostile spells will be cast excessively especially in right hand. need to figure out that (maybe irrelevant now that fights give nice info about what you are attacking with?)
 //TODO: add notifications when someone attacks you
-//TODO: force battle force. works unstable now
+//TODO: fix battle force. works unstable now
 
 
 

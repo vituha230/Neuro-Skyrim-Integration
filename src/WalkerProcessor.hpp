@@ -49,5 +49,6 @@ namespace WalkerProcessor {
 	bool is_pickpocketing();
 
 	bool interact_with_target(float dtime);
+	bool walker_active();
 
 }

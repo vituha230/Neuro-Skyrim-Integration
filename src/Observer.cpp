@@ -196,9 +196,6 @@ namespace Observer {
 								{
 									action_taken = true;
 								}
-
-
-
 							}
 						}
 					}

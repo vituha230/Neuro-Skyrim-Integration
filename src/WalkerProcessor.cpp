@@ -180,6 +180,11 @@ namespace WalkerProcessor {
     }
 
 
+    bool walker_active()
+    {
+        return (bool)target_ref;
+    }
+
 
     bool is_pickpocketing()
     {
@@ -1853,9 +1858,17 @@ namespace WalkerProcessor {
         }
 
 
+        if (MiscThings::is_intro())
+        {
+            mouse_x = mulX * 50.0f;
+            mouse_y = mulZ * 50.0f;
+        }
+        else
+        {
+            mouse_x = mulX * 400.0f;
+            mouse_y = mulZ * 400.0f;
+        }
 
-        mouse_x = mulX * 400.0f;
-        mouse_y = mulZ * 400.0f;
 
 
         if (abs(mouse_x) > 100.0f)
@@ -2704,6 +2717,9 @@ namespace WalkerProcessor {
         if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
             result = "Cannot walk while in main menu! Wait for the game to start";
 
+        if (ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+            result = "Cannot walk while creating your character!";
+
 
         return result;
     }
@@ -2724,10 +2740,13 @@ namespace WalkerProcessor {
         }
 
 
+
+
         if (index == -1)
         {
             return run_away();
         }
+
 
 
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -2762,6 +2781,13 @@ namespace WalkerProcessor {
                     return result;
                 }
 
+
+                if (interaction == 2 && MiscThings::is_intro2())
+                {
+                    result.first = false;
+                    result.second = "Your hands are bound. You cannot pickpocket anything now. Probably its better to follow some quest right now. ";
+                    return result;
+                }
 
                 if (have_target_to_walk)
                     reset_walker();
@@ -2811,7 +2837,11 @@ namespace WalkerProcessor {
                     interaction_after_walk = -1;
 
                 result.first = true;
-                result.second = "[Started walking...]";
+                if (!MiscThings::is_intro())
+                    result.second = "[Started walking...]";
+                else
+                    result.second = "Cannot walk right now. Looking at target instead";
+
                 return result;
             }
             else
@@ -2820,7 +2850,7 @@ namespace WalkerProcessor {
         }
 
         result.first = false;
-        result.second = "Invalid command"; //TODO more info
+        result.second = "Invalid object ID"; //TODO more info
 
         return result;
     }
@@ -2854,6 +2884,10 @@ namespace WalkerProcessor {
             {
                 auto location = locations_list->at(index);
 
+                auto player = RE::PlayerCharacter::GetSingleton();
+                auto player_pos = player->GetPosition();
+                auto test_z_dif = player_pos.z - location->GetPosition().z;
+
                 if (location)
                 {
                     if (have_target_to_walk)
@@ -2870,7 +2904,7 @@ namespace WalkerProcessor {
 
                     result.first = true;
                     result.second = "[Started walking...]";
-
+                    return result;
                 }
 
             }
@@ -2880,7 +2914,7 @@ namespace WalkerProcessor {
         }
 
         result.first = false;
-        result.second = "Invalid command"; //TODO more info
+        result.second = "Invalid location ID. Use get_locations_around to get valid IDs. "; //TODO more info
 
         return result;
     }
@@ -2959,6 +2993,10 @@ namespace WalkerProcessor {
             player_marker = p_marker.get().get();
         
 
+
+        //auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+        auto test_z_dif = player_pos.z - player_marker->GetPosition().z;
 
 
         if (player_marker)
@@ -3162,7 +3200,7 @@ namespace WalkerProcessor {
         }
 
         result.first = false;
-        result.second = "Invalid quest ID";
+        result.second = "Invalid quest ID. Use get_current_quests to get valid ID list";
 
         return result;
 
@@ -3286,12 +3324,86 @@ namespace WalkerProcessor {
     {
         std::pair<bool, std::string> result{};
 
-        auto target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
+        auto player = RE::PlayerCharacter::GetSingleton();
+        RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
+
+        /*
+        RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
+
+
+        std::vector<RE::TESObjectREFR*> test_vectors{};
+
+        for (auto marker : map_markers)
+        {
+            if (marker.get())
+            {
+                auto real_marker = marker.get().get();
+
+                auto test_name = real_marker->GetDisplayFullName();
+
+                auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
+
+                if (data && data->mapData)
+                {
+                    std::string marker_name = data->mapData->locationName.GetFullName();
+                    auto type = data->mapData->type;
+
+                    //if (type == RE::MARKER_TYPE::kNone) marker_category = "Location";
+                    if (type == RE::MARKER_TYPE::kSettlement)
+                    {
+                        if (data && data->mapData)// && !data->mapData->flags)
+                        {
+                            std::string marker_name = data->mapData->locationName.GetFullName();
+
+                            if (marker_name != "")
+                            {
+                                auto distance = real_marker->GetDistance(player);
+                                if (distance > 10000.0f)
+                                {
+                                    test_vectors.push_back(real_marker);
+                                    //target = real_marker;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        auto player_pos = player->GetPosition();
+
+        std::sort(test_vectors.begin(), test_vectors.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
+            //return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
+            RE::NiPoint3 pos_left = left->GetPosition();
+            RE::NiPoint3 pos_right = right->GetPosition();
+
+            return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
+
+            });
+
+        if (!test_vectors.empty())
+            target = test_vectors.at(0);
+*/
+        
+        auto player_pos = player->GetPosition();
+        
+        auto test_z_dif = player_pos.z - target->GetPosition().z;
+
+
+        if (MiscThings::is_intro())
+        {
+            result.first = false;
+            result.second = "Cannot run away right now";
+            return result;
+        }
 
         if (target)
         {
             if (have_target_to_walk)
                 reset_walker();
+
+            location_mode = true;
 
             target_ref = target;
             have_target_to_walk = true;
@@ -3302,7 +3414,7 @@ namespace WalkerProcessor {
         else
         {
             result.first = false;
-            result.second = "[Error]";
+            result.second = "Nowhere to run!";
         }
 
         return result;
@@ -5024,7 +5136,7 @@ namespace WalkerProcessor {
                                 }
 
                                 //if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
-                                if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
+                                if (MiscThings::is_intro() || path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3))
                                 {
                                     time_stuck = 0.0f;
 
@@ -5090,7 +5202,7 @@ namespace WalkerProcessor {
                                     else
                                     {
                                         //if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path) || MiscThings::is_intro())
-                                        if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)) || MiscThings::is_intro())
+                                        if (MiscThings::is_intro() || use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)))
                                         {
 
                                             if (got_close_for_pickpocket || close_enough() || MiscThings::is_intro())
@@ -5111,7 +5223,7 @@ namespace WalkerProcessor {
                                                         return; 
                                                     }
                                                         
-                                                    if (locking_failed || lock_camera_onto_target(target_ref, dtime) || location_mode)
+                                                    if (MiscThings::is_intro() || locking_failed || lock_camera_onto_target(target_ref, dtime) || location_mode)
                                                     {
                                                         auto result_target = get_targeted_ref();
 
@@ -5123,7 +5235,7 @@ namespace WalkerProcessor {
 
                                                         //
 
-                                                        if (location_mode || (result_target == target_ref) || quest_mode || MiscThings::is_intro() || MiscThings::is_intro2())
+                                                        if (MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || quest_mode)
                                                         {
                                                             //all good
                                                             if (!walk_finished_context_sent)
@@ -5137,7 +5249,7 @@ namespace WalkerProcessor {
                                                                 }
 
                                                             }
-                                                            if (interaction_after_walk != -1)
+                                                            if (interaction_after_walk > 0)
                                                             {
                                                                 if (paused_before_interaction)
                                                                 {
@@ -5195,7 +5307,7 @@ namespace WalkerProcessor {
                                                             else
                                                                 if (!locking_failed)
                                                                 {
-                                                                    if (location_mode || MiscThings::is_intro())
+                                                                    if (location_mode)// || MiscThings::is_intro())
                                                                         reset_walker();
                                                                     else
                                                                     {

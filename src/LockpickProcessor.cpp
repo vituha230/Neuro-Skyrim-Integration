@@ -421,7 +421,7 @@ namespace LockpickProcessor {
 						if (lock_level_text != "")
 						{
 							
-							if (force_choice({}, "You are lockpicking. You have " + get_picks_amount() + " lockpicks. The lock level is: " + lock_level_text + ". Choose angle of pick to try. Valid range: from -90 to 90. You can send -1000 to quit lockpicking. ", force_type::lockpick_angle))
+							if (force_choice({}, "You are lockpicking. You have " + get_picks_amount() + " lockpicks. " + lock_level_text + ". Choose angle of pick to try. Valid range: from -90 to 90. You can send -1000 to quit lockpicking. ", force_type::lockpick_angle))
 								angle_choice_request_sent = true;
 						}
 

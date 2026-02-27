@@ -1054,7 +1054,7 @@ namespace RaceProcessor {
 							else
 							{
 								fill_items_list(0.02f);
-								set_universal_block(1.5f);
+								set_universal_block(0.2f);
 							}
 								
 						}
