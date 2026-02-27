@@ -866,7 +866,7 @@ namespace WalkerProcessor {
 
 
                     //mulY = camera_dirY * desired_direction_norm;
-                    mulX = camera_dirX * desired_direction_norm;
+                    //mulX = camera_dirX * desired_direction_norm;
                     mulZ = camera_dirZ * desired_direction_norm;
                     desired_direction_norm.z = 0.0f;
                     mulY = camera_dirY * desired_direction_norm;
@@ -2925,6 +2925,7 @@ namespace WalkerProcessor {
                     {
                         result.first = false;
                         result.second = "You are already walking to this object!";
+                        return result;
                     }
                 }
                     
