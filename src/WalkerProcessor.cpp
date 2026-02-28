@@ -3045,7 +3045,7 @@ namespace WalkerProcessor {
 
                 result.first = true;
                 if (!MiscThings::is_intro())
-                    result.second = "[Started walking...]";
+                    result.second = "[Started walking to " + reminder_target_name + "...]";
                 else
                     result.second = "Cannot walk right now. Looking at target instead";
 
@@ -3082,6 +3082,13 @@ namespace WalkerProcessor {
             result.second = "You cannot walk yet";
             return result;
         }
+
+        if (!MiscThings::is_locations_around_valid())
+        {
+            auto get_locations_result = MiscThings::get_locations_around();
+            send_random_context("Locations around you: " + get_locations_result.second);
+        }
+
 
         if (MiscThings::is_locations_around_valid())
         {
@@ -3123,7 +3130,7 @@ namespace WalkerProcessor {
                     left_attack_cancel();
 
                     result.first = true;
-                    result.second = "[Started walking...]";
+                    result.second = "[Started walking to location: " + reminder_target_name + "...]";
                     return result;
                 }
 
@@ -3303,6 +3310,12 @@ namespace WalkerProcessor {
             return result;
         }
 
+        if (!MiscThings::is_quest_list_valid())
+        {
+            auto get_quest_result = MiscThings::get_current_quests();
+            send_random_context("Active quests: " + get_quest_result.second);
+        }
+            
 
         if (MiscThings::is_quest_list_valid())
         {
@@ -3324,7 +3337,20 @@ namespace WalkerProcessor {
                 actual_id++;
             }
 
-
+            if (!quest_found)
+            {
+                if (MiscThings::is_quest_list_valid())
+                {
+                    result.first = false;
+                    result.second = "Invalid quest ID. Use get_current_quests to get valid ID list";
+                }
+                else
+                {
+                    result.first = false;
+                    result.second = "No active quests. ";
+                }
+                return result;
+            }
 
             if (actual_id < std::size(*quest_list) && actual_id >= 0 && player_ref)
             {
@@ -3437,7 +3463,7 @@ namespace WalkerProcessor {
                                                 left_attack_cancel();
 
                                                 result.first = true;
-                                                result.second = "[Started walking...]";
+                                                result.second = "[Started following quest: " + reminder_target_name + "...]";
                                                 return result;
                                             }
 
@@ -5792,7 +5818,8 @@ namespace WalkerProcessor {
                                                                                     }
                                                                                     else
                                                                                     {
-                                                                                        path_is_blocked_result(result_target);
+                                                                                        search_next_fight_target = true;
+                                                                                        //path_is_blocked_result(result_target);
                                                                                     }
 
                                                                                 }
@@ -5841,7 +5868,8 @@ namespace WalkerProcessor {
                                                                                             }
                                                                                             else
                                                                                             {
-                                                                                                path_is_blocked_result(result_target);
+                                                                                                search_next_fight_target = true;
+                                                                                                //path_is_blocked_result(result_target);
                                                                                             }
 
                                                                                         }

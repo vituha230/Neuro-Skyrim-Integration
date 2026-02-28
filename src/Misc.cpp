@@ -1256,6 +1256,7 @@ namespace MiscThings {
         auto my_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("myscPath");
 
         int id = 1;
+        bool got_any_quests = false;
 
         for (auto quest_target : quest_targets)
         {
@@ -1291,18 +1292,25 @@ namespace MiscThings {
                         result_text += "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext;
                         result_text += "\n";
                         id++;
+                        got_any_quests = true;
                     }
                 }
             }
         }
 
-        quest_list_valid = true;
-        result.first = true;
-        result.second = result_text;
+        if (!got_any_quests)
+        {
+            result.first = true;
+            result.second = "No active quests found. ";
+        }
+        else
+        {
+            quest_list_valid = true;
+            result.first = true;
+            result.second = result_text;
+        }
 
         return result;
-
-
     }
 
 
@@ -1636,16 +1644,28 @@ namespace MiscThings {
 
 
 
+        bool found_any_locations = false;
 
         for (auto location : locations_around)
         {
+            found_any_locations = true;
             std::string location_info = get_location_full_info(location.second);
             if (location_info != "")
                 result_text += "[id " + std::to_string(location.first) + "]" + location_info + "\n";
         }
 
-        result.first = true;
-        result.second = result_text;
+
+        if (!found_any_locations)
+        {
+            result.first = true;
+            result.second = "No locations around you. ";
+        }
+        else
+        {
+            result.first = true;
+            result.second = result_text;
+        }
+
 
         return result;
     }
@@ -2432,6 +2452,23 @@ namespace MiscThings {
         auto player_ref = player->AsReference();
 
 
+
+        if (MiscThings::is_intro() || MiscThings::is_intro2())
+        {
+            result.first = false;
+            result.second = "Cannot access inventory right now. ";
+            return result;
+        }
+
+
+
+        if (!inventory_valid)
+        {
+            auto get_inventory_result = GetInventory();
+            send_random_context("You inventory contents: " + get_inventory_result.second);
+        }
+
+
         if (items_list.find(item_id) != items_list.end())
         {
             auto object = items_list.find(item_id)->second.object;
@@ -2457,7 +2494,7 @@ namespace MiscThings {
                         if (is_equipped(object))
                         {
                             result.first = actor_equip->UnequipObject((RE::Actor*)player_ref, object);
-                            result.second = "[Unequipping...]";
+                            result.second = "[Unequipping [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
                         }
                         else
                         {
@@ -2466,7 +2503,7 @@ namespace MiscThings {
                             else
                                 actor_equip->EquipObject((RE::Actor*)player_ref, object);
 
-                            result.second = "[Equipping...]";
+                            result.second = "[Equipping [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
                         }
 
                         result.first = true;
@@ -2482,13 +2519,13 @@ namespace MiscThings {
                             actor_equip->EquipObject((RE::Actor*)player_ref, object);
 
                             result.first = true;
-                            result.second = "[Consuming...]";
+                            result.second = "[Consuming [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
                             return result;
                         }
                         else
                         {
                             result.first = false;
-                            result.second = "Cannot activate this item";
+                            result.second = "Cannot activate [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
                             return result;
                         }
                     }
@@ -2518,13 +2555,13 @@ namespace MiscThings {
                     if (cant_drop)
                     {
                         result.first = false;
-                        result.second = "Cant drop this item";
+                        result.second = "Cant drop [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
                         return result;
                     }
                     else
                     {
                         player_actor->DropObject(object, nullptr, 1);
-                        result.second = "[Dropping the item...]";
+                        result.second = "[Dropping [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
                         return result;
                     }
 
@@ -3078,6 +3115,21 @@ namespace MiscThings {
         
         std::pair<bool, std::string> result{};
 
+
+
+        if (MiscThings::is_intro() || MiscThings::is_intro2())
+        {
+            result.first = false;
+            result.second = "Cannot unlock shouts yet. ";
+            return result;
+        }
+
+        if (std::size(spells) <= 0)
+        {
+            auto get_spells_result = get_available_spells();
+            send_random_context("Available spells: " + get_spells_result.second);
+        }
+
         if (shout_id >= 0 && shout_id < std::size(spells))
         {
             auto shout_p = spells.at(shout_id).shout;
@@ -3162,6 +3214,14 @@ namespace MiscThings {
         auto player_actor = (RE::Actor*)(player->AsReference());
 
 
+
+        if (std::size(spells) <= 0)
+        {
+            auto get_spells_result = get_available_spells();
+            send_random_context("Available spells: " + get_spells_result.second);
+        }
+
+
         if (player_actor && id >= 0 && id < std::size(spells))
         {
             if (spells.at(id).spell)
@@ -3181,7 +3241,8 @@ namespace MiscThings {
                         equip_manager->EquipSpell(player_actor, spell, equip_slot);
                         use_ult();
                         result.first = true;
-                        result.second = "[Casting the spell]";
+                        if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
+                            result.second = "[Casting the spell]";
                     }
                     else
                     {
@@ -3189,7 +3250,10 @@ namespace MiscThings {
                         {
                             equip_manager->EquipSpell(player_actor, spell, get_free_slot());
                             result.first = true;
-                            result.second = "[Casting the spell]";
+                            if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
+                                result.second = "[Equipping [id " + std::to_string(id) + "] " + spell->GetFullName();
+                            else
+                                result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName();
                         }
                         else
                         {
@@ -3230,12 +3294,12 @@ namespace MiscThings {
                                     //use_ult();
                                     make_long_ult_cast();
                                     result.first = true;
-                                    result.second = "[Using the shout]";
+                                    result.second = "[Using [id " + std::to_string(id) + "] " + shout->GetFullName();
                                 }
                                 else
                                 {
                                     result.first = false;
-                                    result.second = "You have no unlocked words of this shout. ";
+                                    result.second = "You have not unlocked any words of this shout. ";
                                 }
                             }
                             else

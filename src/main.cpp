@@ -1,4 +1,5 @@
 ﻿
+#pragma warning( disable : 4305 )
 
 //crucial:
 
