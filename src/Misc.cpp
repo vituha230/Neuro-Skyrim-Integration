@@ -1255,7 +1255,7 @@ namespace MiscThings {
 
         auto my_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("myscPath");
 
-        int id = 0;
+        int id = 1;
 
         for (auto quest_target : quest_targets)
         {
@@ -2272,6 +2272,13 @@ namespace MiscThings {
     //
 
 
+    //std::string get_hands_equipped_text()
+    //{
+    //
+    //}
+
+
+
 
     RE::BGSEquipSlot* get_free_slot()
     {
@@ -2297,6 +2304,10 @@ namespace MiscThings {
 
         return nullptr;
     }
+
+
+
+
 
 
     RE::BGSEquipSlot* get_weapon_equipped_slot(RE::TESBoundObject* object)
@@ -2523,7 +2534,7 @@ namespace MiscThings {
                 default:
                 {
                     result.first = false;
-                    result.second = "Invalid action ID";
+                    result.second = "Invalid action ID. Valid actions: 1 - activate/use/equip/unequip, 2 - drop";
                     return result;
                 }
                 }
@@ -2549,6 +2560,11 @@ namespace MiscThings {
 
         //return result;
     }
+
+
+
+
+
 
 
     std::pair<bool, std::string> GetInventory()

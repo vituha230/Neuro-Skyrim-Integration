@@ -30,6 +30,12 @@ namespace WalkerProcessor {
     bool have_target_to_walk = false;
     RE::TESObjectREFR* target_ref = nullptr;
 
+    std::string reminder_target_name = "";
+    float reminder_walk_time = 0.0f;
+    float reminder_distance = 0.0f;
+    RE::NiPoint3 reminder_start_pos{};
+
+
     int interaction_after_walk = -1;
    
     bool walk_finished_context_sent = false;
@@ -168,6 +174,21 @@ namespace WalkerProcessor {
 
 
     bool custom_path_appended = false;
+
+
+
+    bool search_next_fight_target = false;
+    float search_next_target_timer = 0.0f;
+
+
+    float intro_look_timeout = 0.0f;
+
+
+    std::string last_start_attacking_info = "";
+    std::string last_attacking_target = "";
+    std::string last_attacking_weapon = "";
+    std::string last_attacking_health = "";
+
 
 
 
@@ -1022,7 +1043,26 @@ namespace WalkerProcessor {
                 if (last_walk_reminded_time > 5.0f)
                 {
                     last_walk_reminded_time = 0.0f;
-                    send_random_context("[You keep walking...]");
+
+                    //reminder_target_name = "";
+                    //reminder_walk_time = 0;
+                    //reminder_distance = 0;
+
+                    reminder_distance += (player->GetPosition() - reminder_start_pos).Length();
+
+                    reminder_start_pos = player->GetPosition();
+
+                    std::string reminder_message = "";
+                    if (quest_mode)
+                        reminder_message = "[You keep following the quest: ";
+                    else
+                        reminder_message = "[You keep walking to ";
+
+                    reminder_message += reminder_target_name + ". ";
+                    reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
+                    reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
+
+                    send_random_context(reminder_message);
                 }
                 else
                     last_walk_reminded_time += dtime_maybe_bad;
@@ -2231,6 +2271,17 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        last_start_attacking_info = "";
+        last_attacking_target = "";
+        last_attacking_weapon = "";
+        last_attacking_health = "";
+
+
+        reminder_target_name = "";
+        reminder_walk_time = 0;
+        reminder_distance = 0;
+
+        intro_look_timeout = 0.0f;
 
         custom_path_appended = false; 
 
@@ -2243,6 +2294,7 @@ namespace WalkerProcessor {
             right_attack_cancel();
             left_attack_cancel();
         }
+
         lock_camera_wants_to_crouch = false;
         path_valid = false;
         current_path_point = -1;
@@ -2361,6 +2413,10 @@ namespace WalkerProcessor {
         attack_paused = false;
         attack_pause_time = 0.0f;
         got_close_for_pickpocket = false;
+
+        search_next_fight_target = false;
+        search_next_target_timer = 0.0f;
+
     }
 
     void walk_again()
@@ -2389,6 +2445,9 @@ namespace WalkerProcessor {
 
             attack_action_time = 0.0f;
             got_close_for_pickpocket = false;
+
+            search_next_fight_target = false;
+            search_next_target_timer = 0.0f;
         }
         //else
         //{
@@ -2974,6 +3033,11 @@ namespace WalkerProcessor {
 
                 have_target_to_walk = true;
 
+                reminder_start_pos = player->GetPosition();
+                reminder_start_pos = player->GetPosition();
+                reminder_target_name = MiscThings::insert_into_list_and_get_info(object->second);
+
+
                 if (interaction > 0 && interaction < 4)
                     interaction_after_walk = interaction;
                 else
@@ -3034,13 +3098,26 @@ namespace WalkerProcessor {
                 if (location)
                 {
                     if (have_target_to_walk)
+                    {
+                        if (target_ref == location)
+                        {
+                            result.first = false;
+                            result.second = "You are already walking to that location. ";
+                            return result;
+                        }
+
                         reset_walker();
+                    }
+                        
 
 
                     location_mode = true;
                     target_ref = location;
                     have_target_to_walk = true;
                     interaction_after_walk = -1;
+
+                    reminder_start_pos = player->GetPosition();
+                    reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
 
                     right_attack_cancel();
                     left_attack_cancel();
@@ -3057,7 +3134,7 @@ namespace WalkerProcessor {
         }
 
         result.first = false;
-        result.second = "Invalid location ID. Use get_locations_around to get valid IDs. "; //TODO more info
+        result.second = "Invalid location ID. You get valid location ID's from context. ";// Use get_locations_around to get valid IDs. "; //TODO more info
 
         return result;
     }
@@ -3210,6 +3287,7 @@ namespace WalkerProcessor {
 
     std::pair<bool, std::string> walk_to_quest_by_index(int index)
     {
+
         std::pair<bool, std::string> result{};
 
         auto control_map = RE::ControlMap::GetSingleton();
@@ -3233,9 +3311,24 @@ namespace WalkerProcessor {
 
             auto quest_list = MiscThings::get_p_quest_list();
 
-            if (index < std::size(*quest_list) && index >= 0 && player_ref)
+            bool quest_found = false;
+            int actual_id = 0;
+
+            for (auto quest_entry : *quest_list)
             {
-                auto quest = quest_list->at(index);
+                if (quest_entry.id == index)
+                {
+                    quest_found = true;
+                    break;
+                }
+                actual_id++;
+            }
+
+
+
+            if (actual_id < std::size(*quest_list) && actual_id >= 0 && player_ref)
+            {
+                auto quest = quest_list->at(actual_id);
 
                 auto objective = quest.objective;
 
@@ -3303,12 +3396,19 @@ namespace WalkerProcessor {
                                                     else
                                                     {
                                                         result.first = false;
-                                                        result.second = "You are already walking to this object!";
+                                                        result.second = "You are already following this quest!";
+                                                        return result;
                                                     }
                                                 }
 
                                                 quest_mode = true;
                                                 target_ref = quests_target_ref;
+
+                                                reminder_target_name = "[id " + std::to_string(quest.id) + "] " + quest.name + ": " + quest.displaytext;
+                                                reminder_start_pos = player->GetPosition();
+
+                                               //MiscThings::insert_quest_into_list_and_get_info(quest);
+
 
                                                 if (target_ref == player_ref)
                                                 {
@@ -4305,7 +4405,15 @@ namespace WalkerProcessor {
                     if (attack_action_time < get_attack_time(true))
                     {
                         std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);
-                        std::string attacking_info = "[You are attacking " + target_name + " with your ";
+                        
+                        std::string attacking_info = "";
+
+                        std::string start_attacking_info = "[You are attacking ";
+
+                        std::string attacking_target = "";
+                        std::string attacking_weapon = "";
+                        std::string attacking_health = "";
+
 
                         if (has_spell_equipped(true))
                         {
@@ -4314,8 +4422,8 @@ namespace WalkerProcessor {
 
                             right_attack_spell();
                             if (!is_offensive_spell(true))
-                                attacking_info = "[You are casting ";
-                            attacking_info += get_equipped_spell_name(true);
+                                start_attacking_info = "[You are casting ";
+                            attacking_weapon += get_equipped_spell_name(true);
                         }
                         else
                         {
@@ -4330,16 +4438,16 @@ namespace WalkerProcessor {
 
                             if (!has_something_equipped(true))
                             {
-                                attacking_info += "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                attacking_weapon += "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
                                 if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
                                     cursor_up();
                             }
                             else
                             {
                                 if (has_ranged_weapon_equipped(true) && no_ammo())
-                                    attacking_info += " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
+                                    attacking_weapon += " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
                                 else
-                                    attacking_info += get_equipped_weapon_name(true);
+                                    attacking_weapon += get_equipped_weapon_name(true);
 
                                 if (is_melee_weapon(true) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
                                     cursor_up();
@@ -4361,12 +4469,32 @@ namespace WalkerProcessor {
                                     cur_health = 1;
                                     immortal = true;
                                 }
-                                attacking_info += ". Enemy health : " + std::to_string(cur_health) + "/" + std::to_string(max_health);
+                                attacking_health += ". Enemy health : " + std::to_string(cur_health) + "/" + std::to_string(max_health);
                                 if (immortal)
                                     ;// attacking_info += ". The target is not dying for some reason...";
                             }
 
-                            send_random_context(attacking_info + "]");
+
+                            if (attacking_info == "")
+                            {
+                                if (last_attacking_target != target_name)
+                                    attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                else
+                                    if (last_attacking_weapon != attacking_weapon)
+                                        attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                    else
+                                        if (last_attacking_health != attacking_health)
+                                            attacking_info = "Enemy health: " + attacking_health;
+                            }
+
+                            last_start_attacking_info = start_attacking_info;
+                            last_attacking_target = target_name;
+                            last_attacking_weapon = attacking_weapon;
+                            last_attacking_health = attacking_health;
+
+
+                            if (attacking_info != "")
+                                send_random_context(attacking_info + "]");
                         }
 
 
@@ -4435,7 +4563,14 @@ namespace WalkerProcessor {
                         if (attack_action_time < get_attack_time(false))
                         {
                             std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);
-                            std::string attacking_info = "[You are attacking " + target_name + " with your ";
+                            
+                            std::string attacking_info = "";
+
+                            std::string start_attacking_info = "[You are attacking ";
+
+                            std::string attacking_target = "";
+                            std::string attacking_weapon = "";
+                            std::string attacking_health = "";
 
                             if (has_spell_equipped(false))
                             {
@@ -4443,7 +4578,7 @@ namespace WalkerProcessor {
                                     was_charging_ranged = true;
 
                                 left_attack_spell();
-                                attacking_info += get_equipped_spell_name(false);
+                                attacking_weapon += get_equipped_spell_name(false);
                             }
                             else
                             {
@@ -4462,9 +4597,9 @@ namespace WalkerProcessor {
                                 else
                                 {
                                     if (has_ranged_weapon_equipped(true) && no_ammo())
-                                        attacking_info += " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
+                                        attacking_weapon += " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
                                     else
-                                        attacking_info += get_equipped_weapon_name(false);
+                                        attacking_weapon += get_equipped_weapon_name(false);
                                 }
                             }
 
@@ -4483,13 +4618,31 @@ namespace WalkerProcessor {
                                         cur_health = 1;
                                         immortal = true;
                                     }
-                                    attacking_info += ". Enemy health : " + std::to_string(cur_health) + "/" + std::to_string(max_health);
+                                    attacking_health += ". Enemy health : " + std::to_string(cur_health) + "/" + std::to_string(max_health);
                                     if (immortal)
-                                        attacking_info += ". The target is not dying for some reason...";
+                                        ;// attacking_health += ". The target is not dying for some reason...";
+                                }
+
+                                if (attacking_info == "")
+                                {
+                                    if (last_attacking_target != target_name)
+                                        attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                    else
+                                        if (last_attacking_weapon != attacking_weapon)
+                                            attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                        else
+                                            if (last_attacking_health != attacking_health)
+                                                attacking_info = "Enemy health: " + attacking_health;
                                 }
 
 
-                                send_random_context(attacking_info + "]");
+                                last_start_attacking_info = start_attacking_info;
+                                last_attacking_target = target_name;
+                                last_attacking_weapon = attacking_weapon;
+                                last_attacking_health = attacking_health;
+
+                                if (attacking_info != "")
+                                    send_random_context(attacking_info + "]");
                             }
 
                             attack_action_time += dtime;
@@ -5035,6 +5188,7 @@ namespace WalkerProcessor {
 	{
         auto ui = RE::UI::GetSingleton();
 
+        reminder_walk_time += dtime;
         
 
         if (path_record_mode)
@@ -5088,12 +5242,58 @@ namespace WalkerProcessor {
         try
         {
 
+            auto control_map = RE::ControlMap::GetSingleton();
+            bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+            bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+            bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+            //if (player_actor && !player_actor->movementController->controlsDriven)
+            if (!can_walk && !can_look)
+            {
+                reset_walker();
+            }
+
+
+
 
             if (!RE::UI::GetSingleton()->IsMenuOpen(RE::TweenMenu::MENU_NAME) && !RE::UI::GetSingleton()->IsMenuOpen(RE::LevelUpMenu::MENU_NAME) && !RE::UI::GetSingleton()->IsMenuOpen(RE::StatsMenu::MENU_NAME) && (init_delay || true))
             {
                 //path_valid = true;
                 //target_ref = RE::TESObjectREFR::LookupByID(0x7001834)->AsReference();
                 //walk_to_point();
+
+                if (search_next_fight_target)
+                {
+                    auto next_targets = MiscThings::get_player_attackers();
+
+                    if (std::size(next_targets) > 0)
+                    {
+                        reset_walker();
+                        auto new_target = next_targets.at(0);
+                        std::string new_target_name = MiscThings::insert_into_list_and_get_info(new_target);
+
+                        right_attack_cancel();
+                        left_attack_cancel();
+
+                        chill_with_context = true;
+
+                        walk_to_object_by_refr(new_target, 3);
+                        send_random_context("[You started fighting next target: " + new_target_name + "]");
+                    }
+                    else
+                    {
+                        if (search_next_target_timer > 1.0f)
+                        {
+                            reset_walker();
+                            send_random_context("[Fight ended. Choose next action to do. You can walk somewhere, interact with something, follow some quest.]");
+                        }
+                        else
+                            search_next_target_timer += dtime;
+                    }
+
+                    return;
+                }
+                
 
 
                 if (make_clairvoyance_cast)
@@ -5119,6 +5319,26 @@ namespace WalkerProcessor {
 
                 if (have_target_to_walk)
                 {
+
+                    if (MiscThings::is_intro())
+                    {
+                        if (lock_camera_onto_target(target_ref, dtime))
+                        {
+                            reset_walker();
+                        }
+                        else
+                        {
+                            if (intro_look_timeout > 2.0f)
+                            {
+                                reset_walker();
+                            }
+                            else
+                                intro_look_timeout += dtime;
+                        }
+                    }
+
+
+
                     backup_input_cancel = false;
 
                     
@@ -5444,24 +5664,8 @@ namespace WalkerProcessor {
                                                                         {
                                                                             if (interaction_after_walk == 3)
                                                                             {
-                                                                                reset_walker();
-                                                                                auto next_targets = MiscThings::get_player_attackers();
-
-                                                                                if (std::size(next_targets) > 0)
-                                                                                {
-                                                                                    auto new_target = next_targets.at(0);
-                                                                                    std::string new_target_name = MiscThings::insert_into_list_and_get_info(new_target);
-
-                                                                                    right_attack_cancel();
-                                                                                    left_attack_cancel();
-
-                                                                                    chill_with_context = true;
-
-                                                                                    walk_to_object_by_refr(new_target, 3);
-                                                                                    send_random_context("[You started fighting next target: " + new_target_name + "]");
-                                                                                }
-                                                                                else
-                                                                                    send_random_context("[Fight ended. Choose next action to do. You can walk somewhere, interact with something, follow some quest.]");
+                                                                                //reset_walker();
+                                                                                search_next_fight_target = true;
                                                                                     
                                                                             }
                                                                             else

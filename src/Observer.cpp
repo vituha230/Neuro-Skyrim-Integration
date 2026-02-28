@@ -43,6 +43,7 @@ namespace Observer {
 	bool old_mount_state = false;
 	RE::ActorPtr mount = nullptr;
 
+	bool old_can_interact = false;
 
 	float detect_locations_timer = 0.0f;
 
@@ -85,6 +86,8 @@ namespace Observer {
 		last_saved_time = 0.0f;
 
 		detect_locations_timer = 0.0f;
+
+		old_can_interact = false;
 	}
 
 
@@ -1224,7 +1227,10 @@ namespace Observer {
 							//game start context
 							send_random_context("You awake on a carriage going down a mountain to Helgen. You were unfortunate enough to stumble across an imperial raid on rebels while crossing the border and were arrested with other Stormcloaks, a horse thief, and Ulfric Stormcloak himself. Everyone assumes correctly that they are being led to their execution.");
 						}
-							
+
+					auto control_map = RE::ControlMap::GetSingleton();
+					bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+					old_can_interact = can_interact;
 				}
 				else
 				{
@@ -1254,6 +1260,17 @@ namespace Observer {
 
 				bool player_dead = player->IsDead();
 
+				auto control_map = RE::ControlMap::GetSingleton();
+				bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+				bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+				bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+
+				if (!old_can_interact && can_interact)
+				{
+					send_random_context("[Your hands are free]");
+					old_can_interact = can_interact;
+				}
 
 
 				bool cur_mount = MiscThings::is_on_horse();

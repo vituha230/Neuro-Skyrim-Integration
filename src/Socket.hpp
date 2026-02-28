@@ -195,7 +195,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Walk towards the location. Requires location ID. )";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the location to walk to. Use get_locations_around to get list of available locations. ", "type": "integer" } }, "required": ["id"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the location to walk to. You will get available location ID's from context. ", "type": "integer" } }, "required": ["id"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
