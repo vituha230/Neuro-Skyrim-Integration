@@ -120,6 +120,8 @@ namespace MiscThings {
 
 
 
+    bool is_enemy_to_actor(RE::TESObjectREFR* object);
+
 
     namespace General::Script
     {

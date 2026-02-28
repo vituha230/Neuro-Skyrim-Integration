@@ -48,7 +48,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Select an option. )";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the selected option.", "type": "integer" } }, "required": ["id"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "Can only be used when you are asked to choose something. The ID of the selected option.", "type": "integer" } }, "required": ["id"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
@@ -60,7 +60,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Select multiple options. )";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the selected option.", "type": "integer" }, "id2": { "description": "The ID of the selected option.", "type": "integer" }, "id3": { "description": "The ID of the selected option.", "type": "integer" } }, "required": ["id1", "id2"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "Can only be used when you are asked to choose something. The ID of the selected option.", "type": "integer" }, "id2": { "description": "The ID of the selected option.", "type": "integer" }, "id3": { "description": "The ID of the selected option.", "type": "integer" } }, "required": ["id1", "id2"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
@@ -68,11 +68,11 @@ namespace Capabilities
 
     namespace SelectForceChoiceString
     {
-        constexpr char Name[] = "select_choice_string";
+        constexpr char Name[] = "character_creation_choose_name";
         constexpr char Desc[] =
             R"(Give a choice in string format. )";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "choice": { "description": "The ID of the selected option.", "type": "string" } }, "required": ["choice"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "choice": { "description": "Can only be used when asked while creating your character. Choose your character's name", "type": "string" } }, "required": ["choice"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
@@ -80,6 +80,7 @@ namespace Capabilities
 
     /////////////////////////////////////////////////////
 
+    /*
     namespace DoorIsClosedChoice
     {
         constexpr char Name[] = "choose_what_to_do_with_closed_door";
@@ -101,11 +102,11 @@ namespace Capabilities
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
-
+    */
 
     namespace WalkToObject
     {
-        constexpr char Name[] = "walk_to_object";
+        constexpr char Name[] = "walk_to_object_and_interact";
         constexpr char Desc[] =
             R"(Walk to object specified by its ID and do action ID)";
         constexpr char JsonSchema[] =
@@ -241,7 +242,7 @@ namespace Capabilities
 
     namespace CallWaitMenu
     {
-        constexpr char Name[] = "call_wait_menu";
+        constexpr char Name[] = "call_wait_menu_to_skip_ingame_time";
         constexpr char Desc[] =
             R"(Call wait menu)";
         constexpr char JsonSchema[] = "{}";
@@ -567,6 +568,11 @@ namespace neuro {
                                 command_result = AlchemyProcessor::choose_ingredients({ json2.id1, json2.id2 });
                             }
                         }
+                        else
+                        {
+                            command_result = { true, "You dont have any choices to make. " };
+                        }
+
                     }
 
                     if (name == Capabilities::SelectForceChoiceString::Name)
@@ -580,6 +586,10 @@ namespace neuro {
                                 failed_to_parse_json = true;
                             else
                                 command_result = RaceProcessor::set_character_name(json.choice);
+                        }
+                        else
+                        {
+                            command_result = { false, "This command is not for talking! You will be notified when you are in dialogue. You can try starting a dialogue by interacting with someone (use walk_to_object, with target ID and action 1 (interact)). " };
                         }
                     }
 

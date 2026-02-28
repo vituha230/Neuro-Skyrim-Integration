@@ -73,6 +73,13 @@ namespace SleepWaitProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
+		if (MiscThings::is_intro() || MiscThings::is_intro2())
+		{
+			result.first = false;
+			result.second = "Cannot wait to skip time right now";
+			return result;
+		}
+
 		result.first = true;
 		result.second = "[Calling wait menu...]";
 

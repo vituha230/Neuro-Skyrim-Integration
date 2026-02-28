@@ -745,7 +745,16 @@ namespace MiscThings {
                                                                 if (MiscThings::is_intro())
                                                                     result_string += ". Wait for the game to progress. ";
                                                                 else
-                                                                    result_string += ". You probably need to follow some quest right now. ";
+                                                                {
+                                                                    std::string bonus = ". You probably need to follow some quest right now. ";
+                                                                    auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+                                                                    if (threshold_quest)
+                                                                        if (threshold_quest->GetCurrentStageID() > 200)
+                                                                            bonus = ". You need someone to help you untie your hands. Try walking to someone. ";
+
+                                                                    result_string += bonus;
+                                                                }
+                                                                    
 
                                                             send_random_context("[" + result_string + "]");
                                                         }
@@ -1233,6 +1242,9 @@ namespace MiscThings {
         }
         return displaytext;
     }
+
+
+
 
 
 
@@ -1878,6 +1890,11 @@ namespace MiscThings {
                 if (actor_object->IsChild())
                     child = ", Child";
 
+                std::string enemy_text = "";
+
+                if (is_enemy_to_actor(actor_object))
+                    enemy_text = "[ENEMY]";
+
                 if (object->IsHumanoid())
                 {
                     result = "[Person" + race + dead + child + "]";
@@ -1885,6 +1902,7 @@ namespace MiscThings {
                 else
                     result = "[Creature" + race + dead + "]";
 
+                result += enemy_text;
             }
             
 
@@ -3429,6 +3447,47 @@ namespace MiscThings {
         return result;
     }
 
+
+    bool is_enemy_to_actor(RE::TESObjectREFR* object)
+    {
+        if (object && object->IsActor())
+        {
+            auto actor_refr = (RE::Actor*)object;
+
+            auto controller = actor_refr->combatController;
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_ref = player->AsReference();
+            auto player_actor = (RE::Actor*)player_ref;
+
+
+            if (controller)
+            {
+                auto target_handle = controller->targetHandle;
+                auto target_ref = RE::TESObjectREFR::LookupByHandle(target_handle.native_handle());
+
+                if (actor_refr->race->fullName != "Dragon Race" || is_fighting_dragons_allowed())
+                {
+                    if (target_ref && target_ref.get() == player_ref)
+                        return true;
+                    else
+                    {
+                        auto is_enemy = actor_refr->GetFactionReaction(player_actor);
+
+                        if (is_enemy == RE::FIGHT_REACTION::kEnemy)
+                        {
+                            if (controller->startedCombat)
+                                return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
     std::vector<RE::Actor*> get_player_attackers()
     {
         std::vector<RE::Actor*> result{};
@@ -3449,36 +3508,8 @@ namespace MiscThings {
 
                 if (a_ref->IsActor())
                 {
-                    auto actor_refr = (RE::Actor*)a_ref;
-
-                    auto controller = actor_refr->combatController;
-
-                    if (controller)
-                    {
-                        auto target_handle = controller->targetHandle;
-                        auto target_ref = RE::TESObjectREFR::LookupByHandle(target_handle.native_handle());
-
-
-
-
-                        if (actor_refr->race->fullName != "Dragon Race" || is_fighting_dragons_allowed())
-                        {
-                            if (target_ref && target_ref.get() == player_ref)
-                                result.push_back(actor_refr);
-                            else
-                            {
-                                auto is_enemy = actor_refr->GetFactionReaction(player_actor);
-
-                                if (is_enemy == RE::FIGHT_REACTION::kEnemy)
-                                {
-                                    if (controller->startedCombat)
-                                        result.push_back(actor_refr);
-                                }
-                            }
-                        }
-
-                    
-                    }
+                    if (is_enemy_to_actor(a_ref))
+                        result.push_back((RE::Actor*)a_ref);
                 }
 
 
@@ -3829,12 +3860,14 @@ namespace MiscThings {
 
         for (auto object : objects_around)
         {
-            if (object.second)
+            auto this_object = object.second;
+
+            if (this_object->data.objectReference)
             {
-                if (player_ref->GetDistance(object.second) < 10000.0f)
+                if (player_ref->GetDistance(this_object) < 10000.0f)
                 {
                     //std::string category = get_object_category(object.second);
-                    result.second += insert_into_list_and_get_info(object.second); //they are all in the list but whatever. just to get the name
+                    result.second += insert_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
                     result.second += +"\n";
                 }
             }

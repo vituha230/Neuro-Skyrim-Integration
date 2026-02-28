@@ -37,17 +37,24 @@ namespace Observer {
 	int last_stamina_value = 0;
 	int last_mana_value = 0;
 
-	bool old_unbound_quest = false;
+	int old_unbound_quest_stage = 0;
 	bool first_cycle = true;
 
 	bool old_mount_state = false;
 	RE::ActorPtr mount = nullptr;
 
 	bool old_can_interact = false;
+	bool old_can_look = false;
 
 	float detect_locations_timer = 0.0f;
 
 	float last_saved_time = 0.0f;
+
+	float start_game_timer = 0.0f;
+	bool wait_and_send_game_start_context = false;
+
+	bool observers_green_light = false;
+	float green_light_delay = 0.0f;
 
 	void set_threat_action_taken()
 	{
@@ -81,13 +88,15 @@ namespace Observer {
 		state_monitor_subtimer = 0.0f;
 		player_dead_sent = false;
 
-		old_unbound_quest = false;
+		old_unbound_quest_stage = false;
 		first_cycle = true;
 		last_saved_time = 0.0f;
 
 		detect_locations_timer = 0.0f;
 
 		old_can_interact = false;
+		old_unbound_quest_stage = 0;
+		old_can_look = false;
 	}
 
 
@@ -127,96 +136,99 @@ namespace Observer {
 
 	void detect_threats(float dtime)
 	{
-		if (dont_check_threats_timer > 0.0f)
-			dont_check_threats_timer -= dtime;
-		else
+		if (observers_green_light)
 		{
-			auto attackers = MiscThings::get_player_attackers();
-
-			if (std::size(attackers) != 0 && !WalkerProcessor::is_fighting())
+			if (dont_check_threats_timer > 0.0f)
+				dont_check_threats_timer -= dtime;
+			else
 			{
-				//wait a little then notify
+				auto attackers = MiscThings::get_player_attackers();
 
-				if (detect_threats_time > 0.5f)
+				if (std::size(attackers) != 0 && !WalkerProcessor::is_fighting())
 				{
-					if (!threats_response_request_sent)
+					//wait a little then notify
+
+					if (detect_threats_time > 0.5f)
 					{
-						
-
-						std::string attacked_by = "";
-						for (auto attacker : attackers)
+						if (!threats_response_request_sent)
 						{
-							attacked_by += MiscThings::insert_into_list_and_get_info(attacker);
-							attacked_by += "; ";
-						}
 
 
-
-						if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response))
-						{
-							if (!pause_was_made && !MiscThings::is_game_paused())
+							std::string attacked_by = "";
+							for (auto attacker : attackers)
 							{
-								threats_response_request_sent = true;
-								pause_was_made = true; //tween menu mouse kills walker so it has disabled mouse in main.cpp
-								MiscThings::pause_game();
+								attacked_by += MiscThings::insert_into_list_and_get_info(attacker);
+								attacked_by += "; ";
+							}
+
+
+
+							if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response))
+							{
+								if (!pause_was_made && !MiscThings::is_game_paused())
+								{
+									threats_response_request_sent = true;
+									pause_was_made = true; //tween menu mouse kills walker so it has disabled mouse in main.cpp
+									MiscThings::pause_game();
+								}
+							}
+
+
+
+
+						}
+						else
+						{
+							if (threats_response_choice_valid)
+							{
+								if (pause_was_made)
+								{
+									if (MiscThings::is_game_paused())
+									{
+										MiscThings::unpause_game();
+									}
+									//set_universal_block(0.5f);
+									pause_was_made = false;
+									return;
+
+								}
+
+								if (!action_taken)
+								{
+									if (threats_response_choice == 0)
+									{
+										if (DialogueProcessor::is_in_dialogue(nullptr))
+											DialogueProcessor::quit_menu();
+										WalkerProcessor::walk_to_object_by_refr(attackers.at(0), 3);
+										action_taken = true;
+									}
+
+									if (threats_response_choice == 1)
+									{
+										send_random_context(WalkerProcessor::run_away().second);
+										action_taken = true;
+									}
+
+									if (threats_response_choice == 2)
+									{
+										action_taken = true;
+									}
+								}
 							}
 						}
-
-
-
-
 					}
 					else
 					{
-						if (threats_response_choice_valid)
-						{
-							if (pause_was_made)
-							{
-								if (MiscThings::is_game_paused())
-								{
-									MiscThings::unpause_game();
-								}
-								//set_universal_block(0.5f);
-								pause_was_made = false;
-								return;
-
-							}
-
-							if (!action_taken)
-							{
-								if (threats_response_choice == 0)
-								{
-									if (DialogueProcessor::is_in_dialogue(nullptr))
-										DialogueProcessor::quit_menu();
-									WalkerProcessor::walk_to_object_by_refr(attackers.at(0), 3);
-									action_taken = true;
-								}
-
-								if (threats_response_choice == 1)
-								{
-									send_random_context(WalkerProcessor::run_away().second);
-									action_taken = true;
-								}
-
-								if (threats_response_choice == 2)
-								{
-									action_taken = true;
-								}
-							}
-						}
+						detect_threats_time += dtime;
 					}
 				}
 				else
 				{
-					detect_threats_time += dtime;
+					reset_threats();
 				}
 			}
-			else
-			{
-				reset_threats();
-			}
 		}
-		
+
 	}
 
 
@@ -231,320 +243,322 @@ namespace Observer {
 
 	void detect_interesting_objects(float dtime)
 	{
-		if (detect_interesting_time > 5.0f)
+		if (observers_green_light)
 		{
-			detect_interesting_time = 0.0f;
-			std::vector<interesting_object> result{};
-			auto player = RE::PlayerCharacter::GetSingleton();
-			auto player_ref = player->AsReference();
-			auto player_actor = (RE::Actor*)player_ref;
-
-			float scan_distance = 4000.0f;
-			auto player_cell = player->GetParentCell();
-			if (player_cell && player_cell->IsInteriorCell())
-				scan_distance = 2000.0f;
-
-			if (!player->IsDead())
+			if (detect_interesting_time > 5.0f)
 			{
-				RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, scan_distance,
-					//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
-					[&](RE::TESObjectREFR* a_ref) {
+				detect_interesting_time = 0.0f;
+				std::vector<interesting_object> result{};
+				auto player = RE::PlayerCharacter::GetSingleton();
+				auto player_ref = player->AsReference();
+				auto player_actor = (RE::Actor*)player_ref;
 
-						std::string name = a_ref->GetName();
-						std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+				float scan_distance = 4000.0f;
+				auto player_cell = player->GetParentCell();
+				if (player_cell && player_cell->IsInteriorCell())
+					scan_distance = 2000.0f;
 
-						auto base_obj = a_ref->GetBaseObject();
-						RE::FormType base_type{};
+				if (!player->IsDead())
+				{
+					RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, scan_distance,
+						//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+						[&](RE::TESObjectREFR* a_ref) {
 
-						if (base_obj)
-						{
-							base_type = base_obj->GetFormType();
-							bool debug_type = true;
-						}
-						else
-						{
-							bool no_base_object = true;
-						}
+							std::string name = a_ref->GetName();
+							std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
-						if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
-						{
+							auto base_obj = a_ref->GetBaseObject();
+							RE::FormType base_type{};
 
-							if (MiscThings::has_digits(name))
-								return RE::BSContainer::ForEachResult::kContinue; 
-
-							if (a_ref->AsReference()->modelState == 0)
-								return RE::BSContainer::ForEachResult::kContinue; //skip objects without world model
-
-
-							if (base_type == RE::FormType::Activator)
+							if (base_obj)
 							{
-								auto test = (RE::TESObjectACTI*)base_obj;
-								std::string model = test->GetModel();
-								if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+								base_type = base_obj->GetFormType();
+								bool debug_type = true;
+							}
+							else
+							{
+								bool no_base_object = true;
+							}
+
+							if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
+							{
+
+								if (MiscThings::has_digits(name))
 									return RE::BSContainer::ForEachResult::kContinue;
 
-								//little flags
-								if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
-									return RE::BSContainer::ForEachResult::kContinue;
+								if (a_ref->AsReference()->modelState == 0)
+									return RE::BSContainer::ForEachResult::kContinue; //skip objects without world model
 
 
-
-							}
-
-
-
-							if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
-								return RE::BSContainer::ForEachResult::kContinue;
-
-							if (name.find("Do Not Delete") != std::string::npos)
-								return RE::BSContainer::ForEachResult::kContinue;
-
-							if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
-								return RE::BSContainer::ForEachResult::kContinue;
-
-
-
-
-							if (a_ref->AsReference()->IsActor())
-							{
-								if (!MiscThings::is_object_in_the_list(a_ref))
-									result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
-							}
-
-
-							if (base_type == RE::FormType::Door)
-							{
-								if (!MiscThings::is_object_in_the_list(a_ref))
-									result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
-							}
-
-
-
-							if (base_type == RE::FormType::Activator)
-							{
-								if (!MiscThings::is_object_in_the_list(a_ref))
-									result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
-							}
-
-							if (base_type == RE::FormType::Furniture) //pullchains/levers
-							{
-								auto furniture = (RE::TESFurniture*)base_obj;
-								auto workbenchtype = furniture->workBenchData.benchType;
-								if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
+								if (base_type == RE::FormType::Activator)
 								{
-									if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
-									{
-										if (!MiscThings::is_object_in_the_list(a_ref))
-											result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
-									}
+									auto test = (RE::TESObjectACTI*)base_obj;
+									std::string model = test->GetModel();
+									if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+										return RE::BSContainer::ForEachResult::kContinue;
+
+									//little flags
+									if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+										return RE::BSContainer::ForEachResult::kContinue;
+
+
+
 								}
-							}
+
+
+
+								if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
+									return RE::BSContainer::ForEachResult::kContinue;
+
+								if (name.find("Do Not Delete") != std::string::npos)
+									return RE::BSContainer::ForEachResult::kContinue;
+
+								if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
+									return RE::BSContainer::ForEachResult::kContinue;
 
 
 
 
-							if (a_ref->GetDistance(player_ref) < 1000.0f)
-							{
-								//and now with smaller range
-
-
-
-
-								if (base_type == RE::FormType::Container)
+								if (a_ref->AsReference()->IsActor())
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
 										result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
 								}
 
 
-								if (base_obj)
+								if (base_type == RE::FormType::Door)
 								{
-									bool is_harvestable = false;
-
-									if (base_type == RE::FormType::Tree)
-									{
-										auto tree_form = (RE::TESObjectTREE*)base_obj;
-
-										auto test_flags = a_ref->AsReference()->GetFormFlags();
-
-										bool already_harvested = false;
-
-										if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-											already_harvested = true;
-
-										if (test_flags & 2048) //this is potentially only one we need here
-											already_harvested = true;
-
-
-
-
-										if (tree_form->produceItem && !already_harvested)
-											is_harvestable = true;
-									}
-
-									if (base_type == RE::FormType::Flora)
-									{
-										auto tree_form = (RE::TESFlora*)base_obj;
-
-										if (tree_form->produceItem)
-											is_harvestable = true;
-									}
-
-
-									if (is_harvestable)
-									{
-										if (!MiscThings::is_object_in_the_list(a_ref))
-											result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
-									}
-								}
-
-								if (base_type == RE::FormType::Furniture) //workbenches and beds
-								{
-									bool this_isnt_a_furniture = false;
-									auto furniture = (RE::TESFurniture*)base_obj;
-									auto workbenchtype = furniture->workBenchData.benchType;
-									if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
-									{
-										if (!MiscThings::is_object_in_the_list(a_ref))
-											result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
-									}
-									else
-									{
-										if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref }); //bed
-									}
-								}
-
-								if (a_ref->GetDistance(player_ref) < 500.0f)
-								{
-									if (base_obj->IsInventoryObject())
-									{
-										if (!MiscThings::is_object_in_the_list(a_ref))
-											result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
-									}
+									if (!MiscThings::is_object_in_the_list(a_ref))
+										result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
 								}
 
 
-							}
-
-						}
-						else
-						{
-							//nameless things that still have to be tracked.
-							//FXspiderWebKitDoorSpecial - normal
-							//FXspiderWebKitDoorSpecialDest - destroyed
-
-							if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
-							{
-								base_type = base_obj->GetFormType();
 
 								if (base_type == RE::FormType::Activator)
 								{
-									auto static_obj = (RE::TESObjectACTI*)base_obj;
-
-									std::string model = static_obj->GetModel();
-
-									if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
-									{
-										if (a_ref->GetDistance(player_ref) < 300.0f)
-										{
-											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
-										}
-									}
-
+									if (!MiscThings::is_object_in_the_list(a_ref))
+										result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
 								}
 
-								/*
-								if (base_type == RE::FormType::Furniture)
+								if (base_type == RE::FormType::Furniture) //pullchains/levers
 								{
-									auto static_obj = (RE::TESFurniture*)base_obj;
-
-									std::string model = static_obj->GetModel();
-
-									if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+									auto furniture = (RE::TESFurniture*)base_obj;
+									auto workbenchtype = furniture->workBenchData.benchType;
+									if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
 									{
-										if (a_ref->GetDistance(player_ref) < 500.0f)
+										if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
+												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
 										}
 									}
 								}
-								*/
-								auto test_base = 0xec3de;
 
-								auto web_refr = RE::TESObjectREFR::LookupByID(0x45f3c);
-								//auto web_refr2 = RE::TESObjectREFR::LookupByID(0xec3de);
 
-								if (web_refr)
+
+
+								if (a_ref->GetDistance(player_ref) < 1000.0f)
 								{
-									
-									RE::TESObjectREFR* refr1 = (RE::TESObjectREFR*)web_refr;
+									//and now with smaller range
+
+
+
+
+									if (base_type == RE::FormType::Container)
+									{
+										if (!MiscThings::is_object_in_the_list(a_ref))
+											result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+									}
+
+
+									if (base_obj)
+									{
+										bool is_harvestable = false;
+
+										if (base_type == RE::FormType::Tree)
+										{
+											auto tree_form = (RE::TESObjectTREE*)base_obj;
+
+											auto test_flags = a_ref->AsReference()->GetFormFlags();
+
+											bool already_harvested = false;
+
+											if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+												already_harvested = true;
+
+											if (test_flags & 2048) //this is potentially only one we need here
+												already_harvested = true;
+
+
+
+
+											if (tree_form->produceItem && !already_harvested)
+												is_harvestable = true;
+										}
+
+										if (base_type == RE::FormType::Flora)
+										{
+											auto tree_form = (RE::TESFlora*)base_obj;
+
+											if (tree_form->produceItem)
+												is_harvestable = true;
+										}
+
+
+										if (is_harvestable)
+										{
+											if (!MiscThings::is_object_in_the_list(a_ref))
+												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+										}
+									}
+
+									if (base_type == RE::FormType::Furniture) //workbenches and beds
+									{
+										bool this_isnt_a_furniture = false;
+										auto furniture = (RE::TESFurniture*)base_obj;
+										auto workbenchtype = furniture->workBenchData.benchType;
+										if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
+										{
+											if (!MiscThings::is_object_in_the_list(a_ref))
+												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+										}
+										else
+										{
+											if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
+												if (!MiscThings::is_object_in_the_list(a_ref))
+													result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref }); //bed
+										}
+									}
+
+									if (a_ref->GetDistance(player_ref) < 500.0f)
+									{
+										if (base_obj->IsInventoryObject())
+										{
+											if (!MiscThings::is_object_in_the_list(a_ref))
+												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+										}
+									}
+
+
+								}
+
+							}
+							else
+							{
+								//nameless things that still have to be tracked.
+								//FXspiderWebKitDoorSpecial - normal
+								//FXspiderWebKitDoorSpecialDest - destroyed
+
+								if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
+								{
+									base_type = base_obj->GetFormType();
+
+									if (base_type == RE::FormType::Activator)
+									{
+										auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+										std::string model = static_obj->GetModel();
+
+										if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+										{
+											if (a_ref->GetDistance(player_ref) < 300.0f)
+											{
+												if (!MiscThings::is_object_in_the_list(a_ref))
+													result.push_back({ MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
+											}
+										}
+
+									}
+
 									/*
-									auto object_p = MiscThings::General::Script::GetObject(refr1, "PressurePlate");
-
-									if (object_p)
+									if (base_type == RE::FormType::Furniture)
 									{
+										auto static_obj = (RE::TESFurniture*)base_obj;
 
-										RE::BSFixedString prop_name = "::isOpen_var";
+										std::string model = static_obj->GetModel();
 
-										//if (General::Script::GetVariable<bool>(object_p, prop_name))
-										//	result = 0;
-										//else
-										//	result = 1;
-
+										if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+										{
+											if (a_ref->GetDistance(player_ref) < 500.0f)
+											{
+												if (!MiscThings::is_object_in_the_list(a_ref))
+													result.push_back({ MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
+											}
+										}
 									}
 									*/
+									auto test_base = 0xec3de;
+
+									auto web_refr = RE::TESObjectREFR::LookupByID(0x45f3c);
+									//auto web_refr2 = RE::TESObjectREFR::LookupByID(0xec3de);
+
+									if (web_refr)
+									{
+
+										RE::TESObjectREFR* refr1 = (RE::TESObjectREFR*)web_refr;
+										/*
+										auto object_p = MiscThings::General::Script::GetObject(refr1, "PressurePlate");
+
+										if (object_p)
+										{
+
+											RE::BSFixedString prop_name = "::isOpen_var";
+
+											//if (General::Script::GetVariable<bool>(object_p, prop_name))
+											//	result = 0;
+											//else
+											//	result = 1;
+
+										}
+										*/
 
 
-									auto base_obj1 = refr1->GetBaseObject();
-									auto base_type1 = base_obj1->GetFormType();
+										auto base_obj1 = refr1->GetBaseObject();
+										auto base_type1 = base_obj1->GetFormType();
 
-									//auto activator = (RE::TESObjectACTI*)base_obj1;
-									//auto model = activator->GetModel();
+										//auto activator = (RE::TESObjectACTI*)base_obj1;
+										//auto model = activator->GetModel();
 
 
-									bool here1 = false;
+										bool here1 = false;
+									}
+
+
 								}
 
-								
 							}
 
-						}
-
-						return RE::BSContainer::ForEachResult::kContinue;
-					});
+							return RE::BSContainer::ForEachResult::kContinue;
+						});
 
 
-				auto player_pos = player_ref->GetPosition();
+					auto player_pos = player_ref->GetPosition();
 
 
-				std::sort(result.begin(), result.end(), [&](interesting_object left, interesting_object right) {
-					//return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
-					RE::NiPoint3 pos_left = left.refr->GetPosition();
-					RE::NiPoint3 pos_right = right.refr->GetPosition();
+					std::sort(result.begin(), result.end(), [&](interesting_object left, interesting_object right) {
+						//return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
+						RE::NiPoint3 pos_left = left.refr->GetPosition();
+						RE::NiPoint3 pos_right = right.refr->GetPosition();
 
-					return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
+						return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
 
-					});
+						});
 
-				std::string info_string = "[You see: \n";
+					std::string info_string = "[You see: \n";
 
-				for (auto result_entry : result)
-				{
-					info_string += result_entry.info + "\n";
+					for (auto result_entry : result)
+					{
+						info_string += result_entry.info + "\n";
+					}
+
+					if (std::size(result) != 0)
+						send_random_context(info_string);
 				}
 
-				if (std::size(result) != 0)
-					send_random_context(info_string);
 			}
-
+			else
+				detect_interesting_time += dtime;
 		}
-		else
-			detect_interesting_time += dtime;
-
 	}
 
 
@@ -573,437 +587,438 @@ namespace Observer {
 
 	void detect_events(float dtime)
 	{
-
-		if (detect_events_time > 0.1f)
+		if (observers_green_light)
 		{
-			detect_events_time = 0.0f;
-			std::vector<std::string> result{};
-			auto player = RE::PlayerCharacter::GetSingleton();
-			auto player_ref = player->AsReference();
-			auto player_actor = (RE::Actor*)player_ref;
+			if (detect_events_time > 0.1f)
+			{
+				detect_events_time = 0.0f;
+				std::vector<std::string> result{};
+				auto player = RE::PlayerCharacter::GetSingleton();
+				auto player_ref = player->AsReference();
+				auto player_actor = (RE::Actor*)player_ref;
 
-			float scan_distance = 2000.0f;
-			auto player_cell = player->GetParentCell();
-			if (player_cell && player_cell->IsInteriorCell())
-				scan_distance = 2000.0f;
-
-
-			//if (std::size(objects_to_track) > 5000)
-			//	objects_to_track.clear();
-
-			RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, scan_distance,
-				//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
-				[&](RE::TESObjectREFR* a_ref) {
-
-					auto base_obj = a_ref->GetBaseObject();
-					auto base_type = base_obj->GetFormType();
+				float scan_distance = 2000.0f;
+				auto player_cell = player->GetParentCell();
+				if (player_cell && player_cell->IsInteriorCell())
+					scan_distance = 2000.0f;
 
 
+				//if (std::size(objects_to_track) > 5000)
+				//	objects_to_track.clear();
+
+				RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, scan_distance,
+					//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+					[&](RE::TESObjectREFR* a_ref) {
+
+						auto base_obj = a_ref->GetBaseObject();
+						auto base_type = base_obj->GetFormType();
 
 
 
-					//if (base_type == RE::FormType::Static || base_type == RE::FormType::Hazard)
-					if (base_type == RE::FormType::Hazard)
-						return RE::BSContainer::ForEachResult::kContinue;
 
 
-					if (a_ref->IsActor())
-					{
-						//std::string name1 = a_ref->GetDisplayFullName();
-						//if (name1 == "Headsman")
-						//{
-						//	bool headsman_found = true;
-						//}
+						//if (base_type == RE::FormType::Static || base_type == RE::FormType::Hazard)
+						if (base_type == RE::FormType::Hazard)
+							return RE::BSContainer::ForEachResult::kContinue;
 
 
-						auto actor_ref = (RE::Actor*)a_ref;
-
-						if (objects_to_track.find(a_ref) == objects_to_track.end())
+						if (a_ref->IsActor())
 						{
-							auto new_target = 0;
-							if (actor_ref->currentProcess)
-								new_target = actor_ref->currentProcess->target;
-
-							old_object_state state = { a_ref->IsDead(), new_target, (int)actor_ref->actorState1.flyState, 0, -1, -1};
-							objects_to_track.insert({ a_ref, state });
-						}
-						else
-						{
-							auto old_entry = objects_to_track.find(a_ref);
-							old_object_state old_state = old_entry->second;
-
-							auto new_target = 0;
-							if (actor_ref->currentProcess)
-								new_target = actor_ref->currentProcess->target;
-
-							old_object_state new_state = { a_ref->IsDead(), new_target, old_state.action_flags, old_state.pillar_face_code, old_state.trap_firing , old_state.destructible_state};
-
-							if (old_state.dead != new_state.dead)
-							{
-								bool dont_add = false;
-
-								objects_to_track.insert_or_assign(a_ref, new_state);
-
-								std::string victim_name = MiscThings::insert_into_list_and_get_info(a_ref);
-								std::string message_text = "[" + victim_name + " died]";
-
-								auto target_actor = (RE::Actor*)a_ref;
-								auto killer = target_actor->myKiller;
-								if (killer)
-								{
-									if (a_ref == player_ref) //have dedicated message for that
-										dont_add = true;
-
-									auto killer_ptr = killer.get();
-									if (killer_ptr)
-									{
-										auto killer_actor = killer_ptr.get();
+							//std::string name1 = a_ref->GetDisplayFullName();
+							//if (name1 == "Headsman")
+							//{
+							//	bool headsman_found = true;
+							//}
 
 
-										if (MiscThings::is_intro2() && killer_actor == a_ref && actor_ref->race->fullName == "Dragon Race")
-											return RE::BSContainer::ForEachResult::kContinue; //alduin kills himself during helgen attack for some reason. skip it
+							auto actor_ref = (RE::Actor*)a_ref;
 
-										if (killer_actor)
-										{
-											std::string killer_name = MiscThings::insert_into_list_and_get_info(killer_actor);
-											if (killer_actor == player_actor)
-												killer_name = "You";
-
-											message_text = "[" + killer_name + " killed " + victim_name + "]";
-
-										}
-									}
-								}
-								else
-								{
-									if (a_ref == player_ref) //have dedicated message for that
-										dont_add = true;
-								}
-
-								if (!dont_add)
-									result.push_back(message_text);
-							}
-
-
-							if (old_state.target != new_state.target)
-							{
-								if (old_state.target != 0 && new_state.target == 0)
-								{
-									//interacted with something?
-									objects_to_track.insert_or_assign(a_ref, new_state);
-
-									auto p_target = RE::TESObjectREFR::LookupByHandle(old_state.target);
-
-									if (p_target)
-									{
-										auto target_refr = p_target.get();
-										if (target_refr && target_refr != player_ref)
-										{
-											std::string target_short_name = target_refr->GetDisplayFullName();
-											std::string actor_short_name = a_ref->GetDisplayFullName();
-											if (target_short_name != "" && actor_short_name != "")
-											{
-												std::string interaction_name = " interacted with ";
-
-												if (target_refr == a_ref)
-													return RE::BSContainer::ForEachResult::kContinue; //alduin kills himself during helgen attack for some reason. skip it
-
-												if (actor_ref->race->fullName == "Dragon Race" && target_refr->IsActor())
-														interaction_name = " killed ";
-
-												auto target_name = MiscThings::insert_into_list_and_get_info(target_refr);
-												std::string actor_name = MiscThings::insert_into_list_and_get_info(a_ref);
-
-												std::string message = "[" + actor_name + interaction_name + target_name;
-
-												result.push_back(message);
-											}
-										}
-									}
-
-								}
-								else
-								{
-									objects_to_track.insert_or_assign(a_ref, new_state);
-								}
-							}
-						}
-					}
-					else
-					{
-						auto base_object = a_ref->GetBaseObject();
-						auto base_type = base_object->GetFormType();
-
-
-						auto test_refr = RE::TESObjectREFR::LookupByID(0x945b8);
-
-						if (a_ref == test_refr)
-							bool break_here = false;
-
-						if (true || base_type == RE::FormType::Activator || base_type == RE::FormType::Door)
-						{
 							if (objects_to_track.find(a_ref) == objects_to_track.end())
 							{
-								old_object_state state = { 0, 0, 0, 0, -1 };
-								RE::ExtraDataList* extralist = &a_ref->extraList;
-								auto extra = extralist->GetByType(RE::ExtraDataType::kAction);
-								int pillar_face = MiscThings::get_pillar_face_name(a_ref);
-								//int action_data = 0;
-								int trap_firing = MiscThings::trap_firing(a_ref);
-								int activation = MiscThings::two_state_activator_state(a_ref);
-								int destructible_state = MiscThings::get_destructible_state(a_ref);
+								auto new_target = 0;
+								if (actor_ref->currentProcess)
+									new_target = actor_ref->currentProcess->target;
 
-								//if (extra)
-								//{
-								//	auto extra_action = (RE::ExtraAction*)extra;
-								//	action_data = static_cast<int>(*extra_action->action);
-								//}
-
-								state = { 0, 0, activation, pillar_face, trap_firing, destructible_state };
-
+								old_object_state state = { a_ref->IsDead(), new_target, (int)actor_ref->actorState1.flyState, 0, -1, -1 };
 								objects_to_track.insert({ a_ref, state });
 							}
 							else
 							{
-								RE::ExtraDataList* extralist = &a_ref->extraList;
-								//auto extra = extralist->GetByType(RE::ExtraDataType::kAction);
 								auto old_entry = objects_to_track.find(a_ref);
 								old_object_state old_state = old_entry->second;
-								int pillar_face = MiscThings::get_pillar_face_name(a_ref);
-								int trap_firing = MiscThings::trap_firing(a_ref);
-								int activation = MiscThings::two_state_activator_state(a_ref);
-								int destructible_state = MiscThings::get_destructible_state(a_ref);
 
-								old_object_state new_state = { 0, 0, activation, pillar_face, trap_firing, destructible_state };
+								auto new_target = 0;
+								if (actor_ref->currentProcess)
+									new_target = actor_ref->currentProcess->target;
 
+								old_object_state new_state = { a_ref->IsDead(), new_target, old_state.action_flags, old_state.pillar_face_code, old_state.trap_firing , old_state.destructible_state };
 
-								if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
+								if (old_state.dead != new_state.dead)
 								{
-									if (old_state.action_flags != new_state.action_flags)
+									bool dont_add = false;
+
+									objects_to_track.insert_or_assign(a_ref, new_state);
+
+									std::string victim_name = MiscThings::insert_into_list_and_get_info(a_ref);
+									std::string message_text = "[" + victim_name + " died]";
+
+									auto target_actor = (RE::Actor*)a_ref;
+									auto killer = target_actor->myKiller;
+									if (killer)
 									{
-										auto door = (RE::TESObjectDOOR*)base_object;
-										std::string model = door->GetModel();
+										if (a_ref == player_ref) //have dedicated message for that
+											dont_add = true;
 
-										if (model.find("CaveGSecretDoor") != std::string::npos)
+										auto killer_ptr = killer.get();
+										if (killer_ptr)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("Secret stone wall door", a_ref);
+											auto killer_actor = killer_ptr.get();
 
-											if (activation == 0)
-												result.push_back("[ " + name + " opened]");
 
-											if (activation == 1)
-												result.push_back("[ " + name + " closed]");
+											if (MiscThings::is_intro2() && killer_actor == a_ref && actor_ref->race->fullName == "Dragon Race")
+												return RE::BSContainer::ForEachResult::kContinue; //alduin kills himself during helgen attack for some reason. skip it
 
-											if (activation == 2)
-												result.push_back("[ " + name + " is opening...]");
+											if (killer_actor)
+											{
+												std::string killer_name = MiscThings::insert_into_list_and_get_info(killer_actor);
+												if (killer_actor == player_actor)
+													killer_name = "You";
 
-											if (activation == 3)
-												result.push_back("[ " + name + " is closing...]");
+												message_text = "[" + killer_name + " killed " + victim_name + "]";
+
+											}
 										}
 									}
+									else
+									{
+										if (a_ref == player_ref) //have dedicated message for that
+											dont_add = true;
+									}
+
+									if (!dont_add)
+										result.push_back(message_text);
+								}
+
+
+								if (old_state.target != new_state.target)
+								{
+									if (old_state.target != 0 && new_state.target == 0)
+									{
+										//interacted with something?
+										objects_to_track.insert_or_assign(a_ref, new_state);
+
+										auto p_target = RE::TESObjectREFR::LookupByHandle(old_state.target);
+
+										if (p_target)
+										{
+											auto target_refr = p_target.get();
+											if (target_refr && target_refr != player_ref)
+											{
+												std::string target_short_name = target_refr->GetDisplayFullName();
+												std::string actor_short_name = a_ref->GetDisplayFullName();
+												if (target_short_name != "" && actor_short_name != "")
+												{
+													std::string interaction_name = " interacted with ";
+
+													if (target_refr == a_ref)
+														return RE::BSContainer::ForEachResult::kContinue; //alduin kills himself during helgen attack for some reason. skip it
+
+													if (actor_ref->race->fullName == "Dragon Race" && target_refr->IsActor())
+														interaction_name = " killed ";
+
+													auto target_name = MiscThings::insert_into_list_and_get_info(target_refr);
+													std::string actor_name = MiscThings::insert_into_list_and_get_info(a_ref);
+
+													std::string message = "[" + actor_name + interaction_name + target_name;
+
+													result.push_back(message);
+												}
+											}
+										}
+
+									}
+									else
+									{
+										objects_to_track.insert_or_assign(a_ref, new_state);
+									}
+								}
+							}
+						}
+						else
+						{
+							auto base_object = a_ref->GetBaseObject();
+							auto base_type = base_object->GetFormType();
+
+
+							auto test_refr = RE::TESObjectREFR::LookupByID(0x945b8);
+
+							if (a_ref == test_refr)
+								bool break_here = false;
+
+							if (true || base_type == RE::FormType::Activator || base_type == RE::FormType::Door)
+							{
+								if (objects_to_track.find(a_ref) == objects_to_track.end())
+								{
+									old_object_state state = { 0, 0, 0, 0, -1 };
+									RE::ExtraDataList* extralist = &a_ref->extraList;
+									auto extra = extralist->GetByType(RE::ExtraDataType::kAction);
+									int pillar_face = MiscThings::get_pillar_face_name(a_ref);
+									//int action_data = 0;
+									int trap_firing = MiscThings::trap_firing(a_ref);
+									int activation = MiscThings::two_state_activator_state(a_ref);
+									int destructible_state = MiscThings::get_destructible_state(a_ref);
+
+									//if (extra)
+									//{
+									//	auto extra_action = (RE::ExtraAction*)extra;
+									//	action_data = static_cast<int>(*extra_action->action);
+									//}
+
+									state = { 0, 0, activation, pillar_face, trap_firing, destructible_state };
+
+									objects_to_track.insert({ a_ref, state });
 								}
 								else
 								{
-									if (true)//(extra)
+									RE::ExtraDataList* extralist = &a_ref->extraList;
+									//auto extra = extralist->GetByType(RE::ExtraDataType::kAction);
+									auto old_entry = objects_to_track.find(a_ref);
+									old_object_state old_state = old_entry->second;
+									int pillar_face = MiscThings::get_pillar_face_name(a_ref);
+									int trap_firing = MiscThings::trap_firing(a_ref);
+									int activation = MiscThings::two_state_activator_state(a_ref);
+									int destructible_state = MiscThings::get_destructible_state(a_ref);
+
+									old_object_state new_state = { 0, 0, activation, pillar_face, trap_firing, destructible_state };
+
+
+									if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
 									{
-										//auto extra_action = (RE::ExtraAction*)extra;
-										//int action_data = static_cast<int>(*extra_action->action);
-
-										//new_state = { 0, 0, action_data, pillar_face, trap_firing };
-
-
 										if (old_state.action_flags != new_state.action_flags)
 										{
+											auto door = (RE::TESObjectDOOR*)base_object;
+											std::string model = door->GetModel();
 
-
-											if (true)//(action_data & (int)RE::OBJECT_ACTION::kOpen)
+											if (model.find("CaveGSecretDoor") != std::string::npos)
 											{
-												auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
-												if (extra_anim)
+												std::string name = MiscThings::insert_into_list_custom_name("Secret stone wall door", a_ref);
+
+												if (activation == 0)
+													result.push_back("[ " + name + " opened]");
+
+												if (activation == 1)
+													result.push_back("[ " + name + " closed]");
+
+												if (activation == 2)
+													result.push_back("[ " + name + " is opening...]");
+
+												if (activation == 3)
+													result.push_back("[ " + name + " is closing...]");
+											}
+										}
+									}
+									else
+									{
+										if (true)//(extra)
+										{
+											//auto extra_action = (RE::ExtraAction*)extra;
+											//int action_data = static_cast<int>(*extra_action->action);
+
+											//new_state = { 0, 0, action_data, pillar_face, trap_firing };
+
+
+											if (old_state.action_flags != new_state.action_flags)
+											{
+
+
+												if (true)//(action_data & (int)RE::OBJECT_ACTION::kOpen)
 												{
-													auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
-													if (extra_anim_graph->animGraphMgr)
+													auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
+													if (extra_anim)
 													{
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
+														auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
+														if (extra_anim_graph->animGraphMgr)
 														{
-															std::string name = MiscThings::insert_into_list_custom_name("Large wooden bridge", a_ref);
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
+															{
+																std::string name = MiscThings::insert_into_list_custom_name("Large wooden bridge", a_ref);
 
-															if (activation == 0)
-																result.push_back("[ " + name + " closed]");
+																if (activation == 0)
+																	result.push_back("[ " + name + " closed]");
 
-															if (activation == 1)
-																result.push_back("[ " + name + " opened]");
+																if (activation == 1)
+																	result.push_back("[ " + name + " opened]");
+															}
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
+															{
+																std::string name = MiscThings::insert_into_list_custom_name("Heavy wooden gate", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " opened]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " closed]");
+															}
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
+															{
+																std::string name = MiscThings::insert_into_list_custom_name("Metal gate", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " opened]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " closed]");
+															}
+
+
+
+
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PuzzleDoorKeyHole01")
+															{
+																std::string name = "Ancient Nordic Door";
+
+																//if (activation == 0)
+																//	result.push_back("[" + name + " 0]");
+
+																if (activation == 1)
+																	result.push_back("[" + name + " is opening...]");
+
+																//if (activation == 2)
+																//	result.push_back("[" + name + " 2]");
+
+
+																//if (activation == 3)
+																//	result.push_back("[" + name + " 3]");
+
+																if (activation == 4)
+																	result.push_back("[" + name + " didn't move]");
+															}
+															//
+
 														}
-
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
-														{
-															std::string name = MiscThings::insert_into_list_custom_name("Heavy wooden gate", a_ref);
-
-															if (activation == 0)
-																result.push_back("[ " + name + " opened]");
-
-															if (activation == 1)
-																result.push_back("[ " + name + " closed]");
-														}
-
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
-														{
-															std::string name = MiscThings::insert_into_list_custom_name("Metal gate", a_ref);
-
-															if (activation == 0)
-																result.push_back("[ " + name + " opened]");
-
-															if (activation == 1)
-																result.push_back("[ " + name + " closed]");
-														}
-
-
-
-
-
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PuzzleDoorKeyHole01")
-														{
-															std::string name = "Ancient Nordic Door";
-
-															//if (activation == 0)
-															//	result.push_back("[" + name + " 0]");
-
-															if (activation == 1)
-																result.push_back("[" + name + " is opening...]");
-
-															//if (activation == 2)
-															//	result.push_back("[" + name + " 2]");
-
-
-															//if (activation == 3)
-															//	result.push_back("[" + name + " 3]");
-
-															if (activation == 4)
-																result.push_back("[" + name + " didn't move]");
-														}
-														//
-
 													}
 												}
 											}
 										}
-									}
 
-									if (old_state.pillar_face_code != new_state.pillar_face_code)
-									{
-										if (new_state.pillar_face_code > 0 && new_state.pillar_face_code < 4)
+										if (old_state.pillar_face_code != new_state.pillar_face_code)
 										{
-											std::string pillar_name = MiscThings::get_stateless_info(a_ref);
-											std::string pillar_face_name = MiscThings::get_pillar_face_name(a_ref, new_state.pillar_face_code);
-
-											std::string solved_text = "";
-
-											if (pillar_face_name != "")
-												solved_text = MiscThings::get_pillar_solved_text(a_ref);
-
-											result.push_back(pillar_name + " turned to " + pillar_face_name + solved_text);
-										}
-									}
-
-									if (old_state.trap_firing == 6)
-									{
-										if (player->GetDistance(a_ref) < 400.0f)
-										{
-											long long now = std::chrono::steady_clock::now().time_since_epoch().count();
-											float dtime = (double)(now - last_periodic_info) / 1000000000.0;
-											if (dtime > 2.0f)
+											if (new_state.pillar_face_code > 0 && new_state.pillar_face_code < 4)
 											{
-												last_periodic_info = now;
+												std::string pillar_name = MiscThings::get_stateless_info(a_ref);
+												std::string pillar_face_name = MiscThings::get_pillar_face_name(a_ref, new_state.pillar_face_code);
+
+												std::string solved_text = "";
+
+												if (pillar_face_name != "")
+													solved_text = MiscThings::get_pillar_solved_text(a_ref);
+
+												result.push_back(pillar_name + " turned to " + pillar_face_name + solved_text);
+											}
+										}
+
+										if (old_state.trap_firing == 6)
+										{
+											if (player->GetDistance(a_ref) < 400.0f)
+											{
+												long long now = std::chrono::steady_clock::now().time_since_epoch().count();
+												float dtime = (double)(now - last_periodic_info) / 1000000000.0;
+												if (dtime > 2.0f)
+												{
+													last_periodic_info = now;
+													std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
+													result.push_back("[ " + name + " swinged!]");
+												}
+											}
+										}
+
+
+										if (old_state.trap_firing != new_state.trap_firing)
+										{
+											if (new_state.trap_firing == 1)
+											{
+												if (std::size(result) == 0 || result.at(std::size(result) - 1) != "[Dart trap triggered!]")
+													result.push_back("[Dart trap triggered!]");
+											}
+
+											if (new_state.trap_firing == 2)
+											{
+												std::string name = MiscThings::insert_into_list_custom_name("Pressure plate", a_ref);
+												result.push_back("[ " + name + " was triggered!]");
+											}
+
+
+											if (new_state.trap_firing == 3)
+											{
+												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
+												result.push_back("[ " + name + " launched!]");
+											}
+
+
+											if (new_state.trap_firing == 4)
+											{
+												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
+												result.push_back("[ " + name + " went back]");
+											}
+
+											if (new_state.trap_firing == 5)
+											{
 												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
-												result.push_back("[ " + name + " swinged!]");
+												result.push_back("[ " + name + " deactivated]");
+											}
+
+											if (new_state.trap_firing == 6)
+											{
+												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
+												result.push_back("[ " + name + " started swinging!]");
+											}
+
+											if (new_state.trap_firing == 7)
+											{
+												std::string name = MiscThings::insert_into_list_custom_name("Trap oil lamp", a_ref);
+												result.push_back("[ " + name + " fell down and exploded!]");
+											}
+
+											if (new_state.trap_firing == 8)
+											{
+												std::string name = MiscThings::insert_into_list_custom_name("Oil on the floor", a_ref);
+												result.push_back("[ " + name + " started burning]");
+											}
+
+
+											//only when close.
+
+
+
+										}
+
+										if (old_state.destructible_state != new_state.destructible_state)
+										{
+											if (new_state.destructible_state == 1)
+											{
+												std::string name = MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref);
+
+												result.push_back(name + " was destroyed");
 											}
 										}
 									}
 
 
-									if (old_state.trap_firing != new_state.trap_firing)
-									{
-										if (new_state.trap_firing == 1)
-										{
-											if (std::size(result) == 0 || result.at(std::size(result) - 1) != "[Dart trap triggered!]")
-												result.push_back("[Dart trap triggered!]");
-										}
-
-										if (new_state.trap_firing == 2)
-										{
-											std::string name = MiscThings::insert_into_list_custom_name("Pressure plate", a_ref);
-											result.push_back("[ " + name + " was triggered!]");
-										}
 
 
-										if (new_state.trap_firing == 3)
-										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
-											result.push_back("[ " + name + " launched!]");
-										}
-
-
-										if (new_state.trap_firing == 4)
-										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
-											result.push_back("[ " + name + " went back]");
-										}
-
-										if (new_state.trap_firing == 5)
-										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
-											result.push_back("[ " + name + " deactivated]");
-										}
-
-										if (new_state.trap_firing == 6)
-										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
-											result.push_back("[ " + name + " started swinging!]");
-										}
-
-										if (new_state.trap_firing == 7)
-										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap oil lamp", a_ref);
-											result.push_back("[ " + name + " fell down and exploded!]");
-										}
-
-										if (new_state.trap_firing == 8)
-										{
-											std::string name = MiscThings::insert_into_list_custom_name("Oil on the floor", a_ref);
-											result.push_back("[ " + name + " started burning]");
-										}
-
-
-										//only when close.
-
-
-
-									}
-
-									if (old_state.destructible_state != new_state.destructible_state)
-									{
-										if (new_state.destructible_state == 1)
-										{
-											std::string name = MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref);
-
-											result.push_back(name + " was destroyed");
-										}
-									}
+									objects_to_track.insert_or_assign(a_ref, new_state);
 								}
-
-								
-
-
-								objects_to_track.insert_or_assign(a_ref, new_state);
 							}
 						}
-					}
 
-					return RE::BSContainer::ForEachResult::kContinue;
-				});
+						return RE::BSContainer::ForEachResult::kContinue;
+					});
 
 
-				
+
 				RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 20000.0f, //999999.0 is too much
 					//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 					[&](RE::TESObjectREFR* a_ref) {
@@ -1045,7 +1060,7 @@ namespace Observer {
 											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
 											std::string action = " is flying";
 											if (result.empty())
-											result.push_back("[" + name + action + in_the_distance + "]");
+												result.push_back("[" + name + action + in_the_distance + "]");
 										}
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kLanding)
@@ -1053,15 +1068,15 @@ namespace Observer {
 											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
 											std::string action = " is landing";
 											if (result.empty())
-											result.push_back("[" + name + action + in_the_distance + "]");
+												result.push_back("[" + name + action + in_the_distance + "]");
 										}
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kHovering)
 										{
 											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
 											if (result.empty())
-											std::string action = " is hovering";
-											
+												std::string action = " is hovering";
+
 										}
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kTakeOff)
@@ -1069,7 +1084,7 @@ namespace Observer {
 											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
 											std::string action = " takes off";
 											if (result.empty())
-											result.push_back("[" + name + action + in_the_distance + "]");
+												result.push_back("[" + name + action + in_the_distance + "]");
 										}
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kPerching)
@@ -1090,22 +1105,23 @@ namespace Observer {
 
 
 
-			if (std::size(result) > 0)
-			{
-				std::string message = "";
-				for (auto result_entry : result)
+				if (std::size(result) > 0)
 				{
-					message += result_entry + "\n";
+					std::string message = "";
+					for (auto result_entry : result)
+					{
+						message += result_entry + "\n";
+					}
+
+					send_random_context(message);
+
 				}
 
-				send_random_context(message);
 
 			}
-
-
+			else
+				detect_events_time += dtime;
 		}
-		else
-			detect_events_time += dtime;
 
 	}
 
@@ -1116,80 +1132,82 @@ namespace Observer {
 
 	void detect_locations(float dtime)
 	{
-		if (detect_locations_timer > 30.0f)
+		if (observers_green_light)
 		{
-			auto player = RE::PlayerCharacter::GetSingleton();
-
-			RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
-
-			std::vector<std::string> location_list{};
-
-
-			for (auto marker : map_markers)
+			if (detect_locations_timer > 30.0f && !(MiscThings::is_intro() || MiscThings::is_intro2()))
 			{
-				if (marker.get())
+				auto player = RE::PlayerCharacter::GetSingleton();
+
+				RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
+
+				std::vector<std::string> location_list{};
+
+
+				for (auto marker : map_markers)
 				{
-					auto real_marker = marker.get().get();
-					auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
-					auto data_radius = (RE::ExtraRadius*)real_marker->extraList.GetByType(RE::ExtraDataType::kRadius);
-
-					std::string marker_name = data->mapData->locationName.GetFullName();
-
-					//if (marker_name.find("eirmund") != std::string::npos)
-					//	bool stop_here = false;
-
-					float radius = 2000.0f;
-
-					//if (!data_radius)
-					//{
-					//	bool test_breakpoint = false;
-					//}
-					//else
-					//{
-					//	;// radius = data_radius->radius;// *10.0f; //this radius is useless, markers just appear on 20k distance
-					//}
-						
-					if (data && data->mapData && marker_name.find("Military Camp") == std::string::npos) //just filter military camps for now
+					if (marker.get())
 					{
-						if (marker_name != "")
+						auto real_marker = marker.get().get();
+						auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
+						auto data_radius = (RE::ExtraRadius*)real_marker->extraList.GetByType(RE::ExtraDataType::kRadius);
+
+						std::string marker_name = data->mapData->locationName.GetFullName();
+
+						//if (marker_name.find("eirmund") != std::string::npos)
+						//	bool stop_here = false;
+
+						float radius = 2000.0f;
+
+						//if (!data_radius)
+						//{
+						//	bool test_breakpoint = false;
+						//}
+						//else
+						//{
+						//	;// radius = data_radius->radius;// *10.0f; //this radius is useless, markers just appear on 20k distance
+						//}
+
+						if (data && data->mapData && marker_name.find("Military Camp") == std::string::npos) //just filter military camps for now
 						{
-
-							auto distance = real_marker->GetDistance(player);
-
-							
-							if (distance < radius * 10.0f) //looks like devs put exactly this value for compass
+							if (marker_name != "")
 							{
-								if (!MiscThings::is_location_in_the_list(real_marker))
+
+								auto distance = real_marker->GetDistance(player);
+
+
+								if (distance < radius * 10.0f) //looks like devs put exactly this value for compass
 								{
-									std::string location_info = MiscThings::insert_location_into_list_and_get_info(real_marker);
-									if (location_info != "")
-										location_list.push_back(location_info);
+									if (!MiscThings::is_location_in_the_list(real_marker))
+									{
+										std::string location_info = MiscThings::insert_location_into_list_and_get_info(real_marker);
+										if (location_info != "")
+											location_list.push_back(location_info);
+									}
 								}
 							}
 						}
 					}
 				}
-			}
 
 
-			if (std::size(location_list) > 0)
-			{
-				std::string message = "[New locations on compass:\n";
-
-				for (auto location : location_list)
+				if (std::size(location_list) > 0)
 				{
-					message += location + "\n";
-				}
-				message = message.substr(0, message.length() - 1);
-				message += "]";
+					std::string message = "[New locations on compass:\n";
 
-				send_random_context(message);
+					for (auto location : location_list)
+					{
+						message += location + "\n";
+					}
+					message = message.substr(0, message.length() - 1);
+					message += "]";
+
+					send_random_context(message);
+				}
+				////
 			}
-			////
+			else
+				detect_locations_timer += dtime;
 		}
-		else
-			detect_locations_timer += dtime;
-		
 	}
 
 
@@ -1200,6 +1218,42 @@ namespace Observer {
 
 	void player_state_monitor(float dtime)
 	{
+
+		if (wait_and_send_game_start_context)
+		{
+			if (start_game_timer > 7.0f)
+			{
+				//game start context
+				send_random_context("You awake on a carriage going down a mountain to Helgen. You were unfortunate enough to stumble across an imperial raid on rebels while crossing the border and were arrested with other Stormcloaks, a horse thief, and Ulfric Stormcloak himself. Everyone assumes correctly that they are being led to their execution.");
+				wait_and_send_game_start_context = false;
+			}
+			else
+				start_game_timer += dtime;
+		}
+
+
+		auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+
+		if (threshold_quest && !observers_green_light)
+		{
+			int unbound_quest_stage = threshold_quest->GetCurrentStageID();
+			if (unbound_quest_stage >= 15)
+			{
+				if (unbound_quest_stage < 50)
+				{
+					if (green_light_delay > 10.0f)
+					{
+						observers_green_light = true;
+					}
+					else
+						green_light_delay += dtime;
+				}
+				else
+					observers_green_light = true;
+			}
+		}
+
+
 
 
 		if (last_saved_time > 300000.0f)
@@ -1218,29 +1272,81 @@ namespace Observer {
 				if (first_cycle)
 				{
 					first_cycle = false;
-					old_unbound_quest = false;
-					auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+					//auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+					
 					if (threshold_quest)
-						if (threshold_quest->GetCurrentStageID() < 160)
+					{
+						int unbound_quest_stage = threshold_quest->GetCurrentStageID();
+						if (unbound_quest_stage < 160)
 						{
-							old_unbound_quest = true;
-							//game start context
-							send_random_context("You awake on a carriage going down a mountain to Helgen. You were unfortunate enough to stumble across an imperial raid on rebels while crossing the border and were arrested with other Stormcloaks, a horse thief, and Ulfric Stormcloak himself. Everyone assumes correctly that they are being led to their execution.");
+							old_unbound_quest_stage = unbound_quest_stage;
 						}
+					}
+						
 
 					auto control_map = RE::ControlMap::GetSingleton();
 					bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+					bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
 					old_can_interact = can_interact;
+					old_can_look = can_look;
 				}
 				else
 				{
-					auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+					//auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
 					if (threshold_quest)
-						if (threshold_quest->GetCurrentStageID() >= 160 && old_unbound_quest)
+					{
+						int unbound_quest_stage = threshold_quest->GetCurrentStageID();
+						if (unbound_quest_stage != old_unbound_quest_stage)
 						{
-							old_unbound_quest = false;
-							send_random_context("[YOU CAN WALK NOW]");
+
+							if (unbound_quest_stage == 15)
+								wait_and_send_game_start_context = true;
+
+							if (unbound_quest_stage == 54)
+								send_random_context("[You are getting out of the carriage with the others...]");
+
+							if (unbound_quest_stage == 70)
+								send_random_context("[You got out of the carriage]");
+
+							if (unbound_quest_stage == 80)
+								send_random_context("[You walk after captain towards the block, other prisoners are already there...]");
+
+							if (unbound_quest_stage == 82)
+								send_random_context("[A loud roar is heard in the distance]");
+
+							if (unbound_quest_stage == 85)
+								send_random_context("[Stormcloak soldier is forced to put his head on the block...]");
+
+							if (unbound_quest_stage == 90)
+								send_random_context("[Stormcloak soldier has been beheaded by Headsman]");
+
+							if (unbound_quest_stage == 95)
+								send_random_context("[You walk towards the block...]");
+
+							if (unbound_quest_stage == 97)
+								send_random_context("[You are pushed down on the beheading block]");
+
+							if (unbound_quest_stage == 100)
+								send_random_context("[You lie down on the block. Ready to be executed...]");
+
+							if (unbound_quest_stage == 120)
+								send_random_context("[Headsman puts his axe in the air above you...]");
+
+							if (unbound_quest_stage == 130)
+								send_random_context("[The ground shakes, Headsman loses balance and falls on the ground, you are unharmed]");
+
+							if (unbound_quest_stage == 140)
+								send_random_context("[The dragon shouts. Firestorm begins. Meteorites fall from the sky, buildings are getting destroyed. You try to get up...]");
+
+							if (unbound_quest_stage == 150)
+								send_random_context("[You stood up]");
+
+							if (unbound_quest_stage == 160)
+								send_random_context("[YOU CAN WALK NOW]");
+
+							old_unbound_quest_stage = unbound_quest_stage;
 						}
+					}
 				}
 
 
@@ -1272,6 +1378,21 @@ namespace Observer {
 					old_can_interact = can_interact;
 				}
 
+				if (!old_can_look && can_look)
+				{
+					//auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+					if (threshold_quest)
+					{
+						int unbound_quest_stage = threshold_quest->GetCurrentStageID();
+						if (unbound_quest_stage == 80)
+						{
+							send_random_context("[You stop near the execution site with the others. ]");
+						}
+					}
+
+					
+				}
+				old_can_look = can_look;
 
 				bool cur_mount = MiscThings::is_on_horse();
 

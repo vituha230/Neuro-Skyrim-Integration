@@ -4,6 +4,8 @@
 //crucial:
 
 
+//TODO intro context (getting out of carriage, waking to the block to get executed, lie down)
+
 //TODO south riverwood mountain passage had some bug where walker lost camera control for no reason. maybe not relared to passage but must be fixed.
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO add [ENEMY] tag on enemies
@@ -36,7 +38,7 @@
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap, normal bear trap)
 //TODO dvemer mechanisms/traps
 //TODO spin mechanic. spin 3 times = knocked down/paralyzed and falls
-//TODO probably fully automate after-talk get-in into the travel cart
+//TODO probably fully automate after-talk get-in into the travel carriage
 //TODO when an item is taken - it is added into inventory. but it doesnt update any list automatically - have to call inventory to know its id. and it may overlap with world object... figure out distinction
 //TODO slaughterfish fights
 //TODO underwater + oxygen control
@@ -153,6 +155,8 @@ float universal_block_time = 0.0f;
 float universal_block_time_threshold = 0.0f;
 std::string speech_context_old = "";
 std::vector<std::string> subtitle_msg_old_vector{"", "", ""};
+
+float subtitle_history_clear_time = 0.0f;
 /////////////////////////////////////////////////////////
 
 
@@ -2032,6 +2036,20 @@ class MyHook {
         ////////////SUBTITLE TESTS///////////////////// seems to work. prints subtitles into console
         std::string subtitle_msg = "";
 
+
+        if (subtitle_history_clear_time > 2.0f)
+        {
+            //clear all but last. so it doesnt repeat actual ongoing message
+            for (int i = 1; i < std::size(subtitle_msg_old_vector); i++)
+                subtitle_msg_old_vector.at(i) = "";
+
+            if (subtitle_history_clear_time > 10.0f)
+                subtitle_msg_old_vector.clear(); //clear all. if its a repeat, its been actually repeated.
+        }
+        else
+            subtitle_history_clear_time += dtime;
+
+
         RE::SubtitleManager* sub_manager = RE::SubtitleManager::GetSingleton();
         if (sub_manager)
             if (sub_manager->subtitles.data())
@@ -2065,6 +2083,8 @@ class MyHook {
                     if (sub_manager->currentSpeaker.get())
                     {
                         send_speech_context(sub_manager->currentSpeaker.get().get(), subtitle_msg);
+
+                        subtitle_history_clear_time = 0.0f;
 
                         int subtitle_msg_old_vector_max = 3;
 

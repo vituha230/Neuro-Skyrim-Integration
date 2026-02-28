@@ -1222,6 +1222,8 @@ namespace RaceProcessor {
 											else
 											{
 
+												send_random_context("[Character creation is done!]");
+
 												name_defined = true;
 												//menu->ChangeName(typed_string.c_str()); //this jus closes menu (and probably sets the name) but it wasnt typed
 
@@ -1234,7 +1236,6 @@ namespace RaceProcessor {
 										}
 									}
 								}
-
 							}
 						}
 					}

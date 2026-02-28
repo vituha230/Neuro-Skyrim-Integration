@@ -28,6 +28,7 @@ bool item_choice_valid = false;
 int item_choice = -1;
 bool check_results = false;
 bool catch_pickpocket_result = false;
+bool close_empty_container = false;
 
 
 
@@ -679,6 +680,8 @@ void reset_pickpocketing()
 
 void reset_container()
 {
+	close_empty_container = false;
+
 	in_container = false;
 	last_cursor_move = 0;
 	missing_item_detected = false;
@@ -769,6 +772,7 @@ std::pair<bool, std::string> set_item_choice(int id)
 
 bool quit_menu()
 {
+	send_random_context("[Container closed]");
 	RE::UIMessageQueue::GetSingleton()->AddMessage(RE::ContainerMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 	return true;
 }
@@ -776,9 +780,15 @@ bool quit_menu()
 
 bool is_container_empty()
 {
+
+	//auto options = get_items_options();
+
+	//return std::size(options) <= 2;
+
+	
 	return false;
 
-
+	/*
 	bool result = true;
 
 	RE::UI* ui = RE::UI::GetSingleton();
@@ -795,9 +805,10 @@ bool is_container_empty()
 					result = size < 1;
 				}
 			}
-					
+	*/				
 
-	return result;
+	//return result;
+	
 }
 
 
@@ -839,28 +850,16 @@ void processor(float dtime)
 
 		if (in_container)
 		{
+
+			if (close_empty_container)
+				quit_menu();
+
 			WalkerProcessor::reset_walker();
 
 			if (!is_inside_of_category() && !is_container_empty() && !check_results)
 				right();// confirm();
 			else
 			{   //NOW ITEMS
-
-				if (is_container_empty())
-				{
-					if (!item_choice_request_sent)
-					{
-
-						if (force_choice(get_items_options(), "You opened a container. It is empty. Send -1 to exit. ", force_type::container_item))
-						{
-							missing_item_detected = false;
-							last_cursor_move = 0;
-							item_choice_request_sent = true;
-						}
-					}
-				}
-
-
 
 				if (!items_list_valid && !check_results)
 					if (!filling_items)
@@ -876,7 +875,24 @@ void processor(float dtime)
 					if (!item_choice_request_sent && !check_results)
 					{
 
-						if (force_choice(get_items_options(), get_force_message(), force_type::container_item))
+						auto options = get_items_options();
+
+						if (std::size(options) <= 2)
+						{
+							send_random_context("[You opened a container. It is empty. Closing container...]");
+							//if (force_choice(get_items_options(), "You opened a container. It is empty. Send -1 to exit. ", force_type::container_item))
+							missing_item_detected = false;
+							last_cursor_move = 0;
+							item_choice_request_sent = true;
+							close_empty_container = true;
+
+							set_universal_block(2.0f);
+
+							return;
+						}
+
+
+						if (force_choice(options, get_force_message(), force_type::container_item))
 						{
 							missing_item_detected = false;
 							last_cursor_move = 0;

@@ -3012,7 +3012,17 @@ namespace WalkerProcessor {
                     if (MiscThings::is_intro())
                         result.second = "Your hands are bound. Wait for the game to progress";
                     else
-                        result.second = "Your hands are bound. You cannot pickpocket anything now. Probably its better to follow some quest right now. ";
+                    {
+                            result.second = "Your hands are bound. You cannot interact now. ";
+
+                            std::string bonus = ". You probably need to follow some quest right now. ";
+                            auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+                            if (threshold_quest)
+                                if (threshold_quest->GetCurrentStageID() > 200)
+                                    bonus = ". You need someone to help you untie your hands. Try walking to someone. ";
+
+                            result.second += bonus;
+                    }
                     return result;
                 }
 
@@ -3022,7 +3032,17 @@ namespace WalkerProcessor {
                     if (MiscThings::is_intro())
                         result.second = "Your hands are bound. Wait for the game to progress";
                     else
-                        result.second = "Your hands are bound. You cannot attack anything now. Probably its better to follow some quest right now. ";
+                    {
+                        result.second = "Your hands are bound. You cannot attack anything now. ";
+
+                        std::string bonus = ". You probably need to follow some quest right now. ";
+                        auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+                        if (threshold_quest)
+                            if (threshold_quest->GetCurrentStageID() > 200)
+                                bonus = ". You need someone to help you untie your hands. Try walking to someone. ";
+
+                        result.second += bonus;
+                    }
                     return result;
                 }
 
@@ -3042,7 +3062,21 @@ namespace WalkerProcessor {
                     if (MiscThings::is_intro())
                         send_random_context("Your hands are bound. Wait for the game to progress before interacting. Looking at the target instead");
                     else
-                        send_random_context("Your hands are bound. You cannot interact now. Probably its better to follow some quest right now. Looking at the target instead");
+                    {
+                        std::string message = "Your hands are bound. You cannot interact now. ";
+
+                        std::string bonus = ". You probably need to follow some quest right now. ";
+                        auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+                        if (threshold_quest)
+                            if (threshold_quest->GetCurrentStageID() > 200)
+                                bonus = ". You need someone to help you untie your hands. Try walking to someone. ";
+
+                        message += bonus;
+                        message += ". Looking at the target instead";
+
+                        send_random_context(message);
+                    }
+                        
                     //return result;
                     interaction = 0;
 
@@ -3396,8 +3430,20 @@ namespace WalkerProcessor {
             {
                 if (quest_entry.id == index)
                 {
-                    quest_found = true;
-                    break;
+                    auto the_quest = quest_entry.quest;
+
+                    for (auto objective : the_quest->objectives)
+                    {
+                        if (quest_entry.objective == objective)
+                        {
+                            if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+                            {
+                                quest_found = true;
+                                break;
+                            }
+                        }
+
+                    }
                 }
                 actual_id++;
             }
