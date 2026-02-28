@@ -881,6 +881,19 @@ namespace WalkerProcessor {
             float mouse_y = 0.0f;
 
             auto mulX = camera_dirX * pos_dif_norm;
+            auto test_crossX = camera_dirY.Cross(pos_dif_norm);
+
+            //send_random_context()
+            /*
+            if (test_crossX.Length() > 1.0f)// && mulX < 0.0001)
+            {
+                if (mulX < 0.0f)
+                    mulX = -100.0f;
+                else
+                    mulX = 100.0f;
+            }
+               */ 
+
             auto mulY = 0.0f;
             auto mulZ = 0.0f;
 
@@ -1967,9 +1980,9 @@ namespace WalkerProcessor {
             //mulY = camera_dirY * pos_difY_norm;
             //mulZ = camera_dirZ * pos_difY_norm;
 
-            //auto crossX = camera_dirX.Cross(pos_dif_norm);
-            //auto crossY = camera_dirY.Cross(pos_dif_norm);
-            //auto crossZ = camera_dirZ.Cross(pos_dif_norm);
+            auto crossX = camera_dirX.Cross(pos_dif_norm);
+            auto crossY = camera_dirY.Cross(pos_dif_norm);
+            auto crossZ = camera_dirZ.Cross(pos_dif_norm);
 
 
             //auto test_mulX = crossX * pos_dif_norm;
@@ -1988,7 +2001,10 @@ namespace WalkerProcessor {
 
 
 
-            //send_random_context(std::to_string(mulX) + ", " + std::to_string(mulY) + ", " + std::to_string(mulZ));
+            //send_random_context(std::to_string(crossX.Length()) + ", " + std::to_string(crossY.Length()) + ", " + std::to_string(crossZ.Length()));
+            
+            //return false;
+
             if (mulY < 0)
                 mulZ = -mulZ;
 
@@ -3181,6 +3197,8 @@ namespace WalkerProcessor {
         std::pair<bool, std::string> result{};
 
 
+
+
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
@@ -3193,6 +3211,16 @@ namespace WalkerProcessor {
             result.second = "You cannot walk yet";
             return result;
         }
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
 
         if (!MiscThings::is_locations_around_valid())
         {
@@ -3394,6 +3422,16 @@ namespace WalkerProcessor {
             result.second = "You cannot walk yet";
             return result;
         }
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
 
         if (!MiscThings::is_quest_list_valid())
         {
@@ -3942,7 +3980,7 @@ namespace WalkerProcessor {
 
             auto base_type = base_obj->GetFormType();
 
-            if (base_obj)
+            if (base_obj && base_type != RE::FormType::Static)
             {
                 auto player = RE::PlayerCharacter::GetSingleton();
                 auto player_ref = player->AsReference();

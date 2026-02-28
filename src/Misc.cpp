@@ -1209,6 +1209,9 @@ namespace MiscThings {
 
         }
 
+
+
+        /* //this doesnt work and ruins many things instead.
         if (result == RE::NiPoint3::Zero())
         {
             auto bounds_max = object->GetBoundMax(); //looks like this is better than height
@@ -1226,6 +1229,8 @@ namespace MiscThings {
             result = rotated_shift_vector;
 
         }
+        */
+
 
         return result;
     }
