@@ -183,12 +183,14 @@ namespace WalkerProcessor {
 
     float intro_look_timeout = 0.0f;
 
-
     std::string last_start_attacking_info = "";
     std::string last_attacking_target = "";
     std::string last_attacking_weapon = "";
     std::string last_attacking_health = "";
 
+
+
+    bool too_high_notified = false;
 
 
 
@@ -492,6 +494,21 @@ namespace WalkerProcessor {
 
                     if (std::size(path) > 2)
                         had_any_path_found_this_run = true;
+                    else
+                    {
+                        if (target_ref)
+                        {
+                            if (target_is_too_high())
+                            {
+                                if (!too_high_notified)
+                                {
+                                    too_high_notified = true;
+                                    send_random_context(MiscThings::insert_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
+                                }
+                            }
+                        }
+                    }
+
 
                     if (marker)
                         if (auto marker_ref = marker->AsReference(); marker_ref && (int)std::size(path) > 0)
@@ -2100,7 +2117,14 @@ namespace WalkerProcessor {
                     if (current_path_point < (int)std::size(path))
                     {
                         auto current_path_point_pos = path.at(current_path_point);
+
+                        /////////////////// EXPERIMENTAL /////////////////
+                        current_path_point_pos.z = 0.0f;
+                        player_pos.z = 0.0f;
+                        ///////////////////////////////////////////////////
+
                         auto distance = current_path_point_pos.GetDistance(player_pos);
+
                         if (using_custom_path)
                         {
                             current_path_point_pos.z = 0.0f;
@@ -2271,6 +2295,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        too_high_notified = false; 
+
         last_start_attacking_info = "";
         last_attacking_target = "";
         last_attacking_weapon = "";
@@ -2423,6 +2450,9 @@ namespace WalkerProcessor {
     {
         //if (!using_custom_path)
         {
+
+            too_high_notified = false;
+
             lock_camera_wants_to_crouch = false;
             path_valid = false;
             current_path_point = -1;
@@ -2595,6 +2625,44 @@ namespace WalkerProcessor {
 
 
 
+
+    bool target_is_too_high()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        auto player_pos = player->GetPosition();
+
+        if (target_ref)
+        {
+            auto target_pos = target_ref->GetPosition();
+
+
+            auto pos_dif = target_pos - player_pos;
+
+            bool its_high = pos_dif.z > 300.0f;
+
+            pos_dif.z = 0.0f;
+
+            float horizontal_max_distance = 200.0f;
+
+            if (target_ref->IsActor())
+            {
+                auto actor_refr = (RE::Actor*)target_ref;
+                if (actor_refr->race->fullName == "Dragon Race")
+                {
+                    horizontal_max_distance = 4000.0f;
+                }
+            }
+            
+
+            bool its_right_above = pos_dif.Length() < horizontal_max_distance;
+
+            return its_high && its_right_above;//
+        }
+
+
+        return false;
+    }
 
 
     float successful_raycast_time = 0.0f;
@@ -3314,8 +3382,34 @@ namespace WalkerProcessor {
         {
             auto get_quest_result = MiscThings::get_current_quests();
             send_random_context("Active quests: " + get_quest_result.second);
+
         }
-            
+        else
+        {
+            //refresh quests in case the list changed 
+            auto quest_list = MiscThings::get_p_quest_list();
+
+            bool quest_found = false;
+            int actual_id = 0;
+
+            for (auto quest_entry : *quest_list)
+            {
+                if (quest_entry.id == index)
+                {
+                    quest_found = true;
+                    break;
+                }
+                actual_id++;
+            }
+
+            if (!quest_found)
+            {
+                auto get_quest_result = MiscThings::get_current_quests();
+                send_random_context("Active quests: " + get_quest_result.second);
+            }
+        }
+
+
 
         if (MiscThings::is_quest_list_valid())
         {
@@ -5365,6 +5459,9 @@ namespace WalkerProcessor {
 
 
 
+                    
+
+
                     backup_input_cancel = false;
 
                     
@@ -5388,6 +5485,18 @@ namespace WalkerProcessor {
                         return;
                     }
                     
+
+                    if (too_high_notified)
+                    {
+                        if (target_is_too_high())
+                        {
+                            lock_camera_onto_target(target_ref, dtime);
+                            return;
+                        }
+                        else
+                            walk_again();
+                    }
+
 
                     if (start_attacking)
                     {
@@ -5905,6 +6014,18 @@ namespace WalkerProcessor {
                                             }
                                             else
                                             {
+
+                                                if (target_is_too_high())
+                                                {
+                                                    if (!too_high_notified)
+                                                    {
+                                                        too_high_notified = true;
+                                                        send_random_context(MiscThings::insert_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
+                                                    }
+                                                    lock_camera_onto_target(target_ref, dtime);
+                                                    return;
+                                                }
+
                                                 if (false && ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7)))
                                                 {
                                                     if ((interaction_after_walk == 2) && ((int)std::size(path) < 3) && !had_successful_walk)

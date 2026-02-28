@@ -51,5 +51,6 @@ namespace WalkerProcessor {
 	bool interact_with_target(float dtime);
 	bool walker_active();
 	bool is_walking_important_path();
+	bool target_is_too_high();
 
 }

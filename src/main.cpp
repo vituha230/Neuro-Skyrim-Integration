@@ -6,11 +6,8 @@
 
 //TODO south riverwood mountain passage had some bug where walker lost camera control for no reason. maybe not relared to passage but must be fixed.
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
-//TODO add more info to "You keep walking..." message. looks like nothing happens. maybe progress or how long you walked so far
 //TODO add [ENEMY] tag on enemies
 //TODO add info about current weapons in hands to both spell and inventory
-
-
 
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 
@@ -19,8 +16,6 @@
 //TODO: check all menus after force/choice merge
 //TODO: non-hostile spells will be cast excessively especially in right hand. need to figure out that (maybe irrelevant now that fights give nice info about what you are attacking with?)
 //TODO: add notifications when someone attacks you
-//TODO: fix battle force. works unstable now
-
 
 
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME container menu bugged, after taking 1st item it doesnt force and looks like the scan is broken in this case

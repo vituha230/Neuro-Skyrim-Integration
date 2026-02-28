@@ -1371,7 +1371,7 @@ namespace MiscThings {
                             {
                                 quest this_quest{};
 
-                                this_quest.id = std::size(quests);
+                                this_quest.id = std::size(quests) + 1;
                                 this_quest.quest = the_quest;
                                 this_quest.name = the_quest->GetFullName();
 
