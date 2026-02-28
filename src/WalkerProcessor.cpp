@@ -1338,7 +1338,7 @@ namespace WalkerProcessor {
             wiggle_camera_time += dtime;
 
             float radius = wiggle_camera_time*12;
-            float x = 3*radius*cos(wiggle_camera_time * std::numbers::pi);
+            float x = 8*radius*cos(wiggle_camera_time*2.0f * std::numbers::pi);
             float y = radius*sin(wiggle_camera_time * std::numbers::pi);
 
             mouse_mouse_x_y(x, y);
@@ -1860,8 +1860,8 @@ namespace WalkerProcessor {
 
                     if (player)
                     {
-                        if (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target_ref->IsActor() && target_ref->IsDead()))
-                            if (!player->IsSneaking() && !using_custom_path && !location_mode && !(quest_mode && target_ref->IsActor() && !target_ref->IsDead()))
+                        if (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead()))
+                            if (!player->IsSneaking() && !using_custom_path && !location_mode && !(quest_mode && target->IsActor() && !target->IsDead()))
                             {
                                 lock_camera_wants_to_crouch = true;
                                 crouch(); //if target is very low - sneak on it
@@ -2014,7 +2014,7 @@ namespace WalkerProcessor {
 
         if (interaction_after_walk == 2)
         {
-            auto actor_obj = (RE::Actor*)target_ref;
+            auto actor_obj = (RE::Actor*)target;
             bool is_walking = actor_obj->IsWalking() || actor_obj->actorState1.movingBack;
 
             if (wait_and_start_pickpocket)
@@ -5853,7 +5853,7 @@ namespace WalkerProcessor {
                                                     }
                                                     else
                                                     {
-                                                        lock_camera_onto_target(get_targeted_ref(), dtime);
+                                                        ;// lock_camera_onto_target(get_targeted_ref(), dtime);
                                                     }
                                                 }
                                             }
