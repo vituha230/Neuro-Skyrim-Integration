@@ -13,8 +13,6 @@
 
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 
-
-//TODO "wooden bridge opened" didnt come through, test it and fix it
 //TODO inventory weight control (maybe force throw away things?)
 //TODO raycast object detection (!!! uuh maybe leave as is)
 //TODO: check all menus after force/choice merge

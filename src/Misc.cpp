@@ -295,6 +295,9 @@ namespace MiscThings {
         //default2StateActivator
         int result = -1;
         auto object_p = General::Script::GetObject(activator, "default2StateActivator");
+        //dunCGdefault2StateActivator
+        if (!object_p)
+            object_p = General::Script::GetObject(activator, "dunCGdefault2StateActivator");
 
         if (object_p)
         {

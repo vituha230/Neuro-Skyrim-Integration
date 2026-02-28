@@ -595,7 +595,12 @@ namespace Observer {
 					auto base_obj = a_ref->GetBaseObject();
 					auto base_type = base_obj->GetFormType();
 
-					if (base_type == RE::FormType::Static || base_type == RE::FormType::Hazard)
+
+
+
+
+					//if (base_type == RE::FormType::Static || base_type == RE::FormType::Hazard)
+					if (base_type == RE::FormType::Hazard)
 						return RE::BSContainer::ForEachResult::kContinue;
 
 
@@ -726,6 +731,12 @@ namespace Observer {
 						auto base_object = a_ref->GetBaseObject();
 						auto base_type = base_object->GetFormType();
 
+
+						auto test_refr = RE::TESObjectREFR::LookupByID(0x945b8);
+
+						if (a_ref == test_refr)
+							bool break_here = false;
+
 						if (true || base_type == RE::FormType::Activator || base_type == RE::FormType::Door)
 						{
 							if (objects_to_track.find(a_ref) == objects_to_track.end())
@@ -800,6 +811,8 @@ namespace Observer {
 
 										if (old_state.action_flags != new_state.action_flags)
 										{
+
+
 											if (true)//(action_data & (int)RE::OBJECT_ACTION::kOpen)
 											{
 												auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
@@ -813,10 +826,10 @@ namespace Observer {
 															std::string name = MiscThings::insert_into_list_custom_name("Large wooden bridge", a_ref);
 
 															if (activation == 0)
-																result.push_back("[ " + name + " opened]");
+																result.push_back("[ " + name + " closed]");
 
 															if (activation == 1)
-																result.push_back("[ " + name + " closed]");
+																result.push_back("[ " + name + " opened]");
 														}
 
 														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
