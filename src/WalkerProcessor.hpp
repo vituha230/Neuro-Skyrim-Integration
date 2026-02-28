@@ -6,6 +6,9 @@ namespace WalkerProcessor {
 
 	void processor(float dtime);
 
+	void stop_casting();
+
+
 	void install_hook();
 
 	void reset_walker();

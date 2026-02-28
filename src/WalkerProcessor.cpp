@@ -374,6 +374,13 @@ namespace WalkerProcessor {
 
                 if (my_quest)
                 {
+
+                    if (!target_ref)
+                    {
+                        stop_casting();
+                    }
+
+
                     if (my_quest->GetCurrentStageID() != 10);
                     {
                         ;
@@ -2966,10 +2973,6 @@ namespace WalkerProcessor {
 
 
 
-        if (index == -1)
-        {
-            return run_away();
-        }
 
 
 
@@ -2988,6 +2991,12 @@ namespace WalkerProcessor {
             result.second = "You cannot walk yet";
             return result;
         }
+
+        if (index == -1)
+        {
+            return run_away();
+        }
+
 
 
         if (MiscThings::is_objects_around_valid())
@@ -3415,7 +3424,15 @@ namespace WalkerProcessor {
         if (!MiscThings::is_quest_list_valid())
         {
             auto get_quest_result = MiscThings::get_current_quests();
-            send_random_context("Active quests: " + get_quest_result.second);
+            
+            if (!MiscThings::is_quest_list_valid())
+            {
+                result.first = false;
+                result.second = "You do not have any quests right now. ";
+            }
+            else
+                send_random_context("Active quests: " + get_quest_result.second);
+
 
         }
         else
