@@ -3372,38 +3372,12 @@ namespace WalkerProcessor {
     }
     
 
-    bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest)
-    {
-        if (condition)
-        {
-            auto params = RE::ConditionCheckParams::ConditionCheckParams(nullptr, nullptr);
-
-            params.quest = quest;
-
-            if (condition->IsTrue(params))
-            {//this one is true
-                if (!condition->data.flags.isOR && condition->next)
-                    return recursive_quest_condition_check(condition->next, quest); //if its not OR and have next, check next.
-                else
-                    return true; //its OR, or there is no next
-            }
-            else
-            {//this one is false
-                if (condition->data.flags.isOR && condition->next) //if its OR and we have next, check next.
-                    return recursive_quest_condition_check(condition->next, quest);
-                else
-                    return false; //its false, there its not OR with next even if next exists
-            }
-                
-        }
-        else
-            return true; //no condition
-    }
+    
 
 
 
 
-    std::pair<bool, std::string> walk_to_quest_by_index(int index)
+    std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target)
     {
 
         std::pair<bool, std::string> result{};
@@ -3537,7 +3511,7 @@ namespace WalkerProcessor {
                                         {
                                             auto the_condition = target->conditions.head;
 
-                                            conditions_met = recursive_quest_condition_check(the_condition, quest.quest);
+                                            conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest.quest);
 
                                             bool test_stop = false;
 
@@ -3557,6 +3531,8 @@ namespace WalkerProcessor {
                                         if (!quest_ref_handle)
                                             target->GetTargetRef(quest_ref_handle, false, quest.quest); //no tracked - try actual target
 
+                                        if (!ignore_specified_target && target != quest.target)
+                                            continue;
 
                                         if (quest_ref_handle)
                                             if (quest_ref_handle.get())
@@ -3629,6 +3605,12 @@ namespace WalkerProcessor {
                                 }
                             }
                         }
+
+                        if (!ignore_specified_target)
+                        {
+                            //try without specified target
+                            return walk_to_quest_by_index(index, true);
+                        }
                     }
                 }
             }
@@ -3684,7 +3666,7 @@ namespace WalkerProcessor {
                                     {
                                         auto the_condition = target->conditions.head;
 
-                                        conditions_met = recursive_quest_condition_check(the_condition, quest);
+                                        conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest);
 
                                         bool test_stop = false;
                                     }
@@ -3951,6 +3933,30 @@ namespace WalkerProcessor {
 
 
 
+
+    bool target_is_interactive()
+    {
+        if (target_ref)
+        {
+            auto base_obj = target_ref->GetBaseObject();
+
+            auto base_type = base_obj->GetFormType();
+
+            if (base_obj)
+            {
+                auto player = RE::PlayerCharacter::GetSingleton();
+                auto player_ref = player->AsReference();
+                RE::BSString result_string = "";
+
+                base_obj->GetActivateText(player_ref, result_string);
+
+                if (result_string != "")
+                    return true;
+            }
+        }
+
+        return false;
+    }
 
 
 
@@ -5835,9 +5841,14 @@ namespace WalkerProcessor {
 
                                                         //
 
-                                                        if (MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || quest_mode)
+                                                        if (MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || (quest_mode && !target_is_interactive()))
                                                         {
                                                             //all good
+
+                                                            if (result_target == target_ref)
+                                                                locking_failed = false;
+
+
                                                             if (!walk_finished_context_sent)
                                                             {
                                                                 walk_finished_context_sent = true;
@@ -5968,7 +5979,8 @@ namespace WalkerProcessor {
                                                                                     else
                                                                                         move_obstacle_failed = true;
                                                                                 }
-
+                                                                                else
+                                                                                    move_obstacle_failed = true; //cant move alive actors
 
                                                                                 locking_failed = false;
                                                                             }

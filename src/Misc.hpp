@@ -17,10 +17,12 @@ namespace MiscThings {
         int id;
         RE::TESQuest* quest;
         RE::BGSQuestObjective* objective;
+        RE::TESQuestTarget* target;
         int category; //0 - main, 1 - major sidequest, 2 - monor sidequest
         std::string name;
         std::string displaytext;
         std::string description;
+        std::string target_name;
     };
 
 
@@ -121,6 +123,8 @@ namespace MiscThings {
 
 
     bool is_enemy_to_actor(RE::TESObjectREFR* object);
+    bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest);
+
 
 
     namespace General::Script

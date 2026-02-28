@@ -16,7 +16,7 @@ namespace WalkerProcessor {
 	void walk_to_object_by_refr(RE::TESObjectREFR* target, int action);
 
 	std::pair<bool, std::string> walk_to_object_by_index(int index, int interaction);
-	std::pair<bool, std::string> walk_to_quest_by_index(int index);
+	std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target);
 
 
 	std::pair<bool, std::string> set_closed_door_choice(int choice);

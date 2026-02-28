@@ -103,7 +103,7 @@ bool API_CONTROL_LOCKPICK = false;
 bool API_CONTROL_CRAFTING = false;
 
 
-bool do_debug_scan = true;
+bool do_debug_scan = false;
 
 std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 

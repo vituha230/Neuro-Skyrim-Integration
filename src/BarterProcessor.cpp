@@ -2131,7 +2131,7 @@ void debug_scan(float dtime)
 
         if (const auto ui = RE::UI::GetSingleton(); ui) {
             //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-            if (const auto menu = ui->GetMenu<RE::TrainingMenu>(); menu) {
+            if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
                     {
@@ -2224,51 +2224,8 @@ void debug_scan(float dtime)
                             }
                             */
 
-                            search_var = "Gold";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
-                            if (search_success)
-                            {
-                                auto test = var1.GetType();
-                            }
 
-                            search_var = "Skill";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
-                            if (search_success)
-                            {
-                                auto test = var1.GetType();
-                            }
-
-                            search_var = "Cost";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
-                            if (search_success)
-                            {
-                                auto test = var1.GetType();
-                            }
-
-                            search_var = "Times";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
-                            if (search_success)
-                            {
-                                auto test = var1.GetType();
-                            }
-
-                            search_var = "15";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
-                            if (search_success)
-                            {
-                                auto test = var1.GetType();
-                            }
-
-
-                            search_var = "94";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
-                            if (search_success)
-                            {
-                                auto test = var1.GetType();
-                            }
-
-
-                            search_var = "200";
+                            search_var = "Enter the Keep";
                             search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {

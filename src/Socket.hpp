@@ -649,7 +649,7 @@ namespace neuro {
                                     if (glz::read_json(json, messageQueue[i].value.action.data))
                                         failed_to_parse_json = true;
                                     else
-                                        command_result = WalkerProcessor::walk_to_quest_by_index(json.id);
+                                        command_result = WalkerProcessor::walk_to_quest_by_index(json.id, false);
                                 }
 
 
