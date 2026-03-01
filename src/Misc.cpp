@@ -4094,22 +4094,64 @@ namespace MiscThings {
         */
 
         objects_around_valid = true;
+        
+
+        std::vector<std::pair<int, RE::TESObjectREFR*>> local_copy{};
 
         for (auto object : objects_around)
+        {
+            if (object.second->data.objectReference)
+                local_copy.push_back(object);
+        }
+
+
+        std::sort(local_copy.begin(), local_copy.end(), [&](std::pair<int, RE::TESObjectREFR*> left, std::pair<int, RE::TESObjectREFR*> right) {
+            return left.second->GetDistance(player) < right.second->GetDistance(player); //switch > to < for inversed order. this is last->closest
+            //std::string name_left = left.second->GetDisplayFullName();
+            //std::string name_right = right.second->GetDisplayFullName();
+            //return name_left < name_right; //alphabetical order. top = A
+
+            });
+
+
+        bool nearby_line_made = false;
+        bool faraway_line_made = false;
+
+        for (auto object : local_copy)
         {
             auto this_object = object.second;
 
             if (this_object->data.objectReference)
             {
-                if (player_ref->GetDistance(this_object) < 10000.0f)
+                if (player_ref != this_object)
                 {
-                    //std::string category = get_object_category(object.second);
-                    result.second += insert_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
-                    result.second += +"\n";
+                    if (player_ref->GetDistance(this_object) < 2000.0f)
+                        if (!nearby_line_made)
+                        {
+                            result.second += "\nNearby:\n";
+                            nearby_line_made = true;
+                        }
+
+
+                    if (player_ref->GetDistance(this_object) >= 2000.0f && player_ref->GetDistance(this_object) < 10000.0f)
+                        if (!faraway_line_made)
+                        {
+                            result.second += "\nFar away:\n";
+                            faraway_line_made = true;
+                        }
+
+                    if (player_ref->GetDistance(this_object) < 10000.0f)
+                    {
+                        //std::string category = get_object_category(object.second);
+                        result.second += insert_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
+                        result.second += +"\n";
+                    }
                 }
+                
             }
 
         }
+
 
         result.first = true;
 
