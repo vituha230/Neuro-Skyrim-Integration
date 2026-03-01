@@ -71,3 +71,7 @@ void reset_input_processor();
 void right_attack_bow();
 
 void quicksave();
+
+
+void dialogue_cursor_down();
+void dialogue_cursor_up();

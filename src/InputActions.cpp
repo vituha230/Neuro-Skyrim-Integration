@@ -334,6 +334,17 @@ void perk_down_cancel()
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
 }
 
+void confirm_dialogue()
+{
+    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 100.0);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
+    set_allowed_events(2);
+    set_universal_block(0.5f);
+}
+
+
 
 void confirm()
 {
@@ -573,6 +584,27 @@ void unsprint()
     //set_allowed_events(2);
     //set_universal_block(0.5f);
 }
+
+
+
+void dialogue_cursor_down()
+{
+    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->zoomOut, RE::INPUT_DEVICES::kMouse);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
+    set_allowed_events(2);
+}
+
+void dialogue_cursor_up()
+{
+    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->zoomIn, RE::INPUT_DEVICES::kMouse);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
+    set_allowed_events(2);
+}
+
 
 
 

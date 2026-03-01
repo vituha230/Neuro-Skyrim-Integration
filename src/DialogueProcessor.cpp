@@ -306,14 +306,14 @@ namespace DialogueProcessor {
                     if (dialogue_choice > cursor_pos)
                     {
                         //RE::ConsoleLog::GetSingleton()->Print("moving cursor down...");
-                        cursor_down();
+                        dialogue_cursor_down();
                     }
 
 
                     if (dialogue_choice < cursor_pos)
                     {
                         //RE::ConsoleLog::GetSingleton()->Print("moving cursor up...");
-                        cursor_up();
+                        dialogue_cursor_up();
                     }
 
                     if (dialogue_choice == cursor_pos)
@@ -325,7 +325,27 @@ namespace DialogueProcessor {
                         set_universal_block(1.0f);
                         //old_dialogue.topicText = "";
                         //leftclick();
-                        confirm();
+
+
+                        //confirm();
+
+                        leftclick();
+
+                        /*
+                        RE::GFxKeyEvent* my_event = new RE::GFxKeyEvent; //im not sure if its destroyed after use but i dont really care since this is supposed to be unique event in playthrough
+
+                        my_event->type = RE::GFxKeyEvent::EventType::kKeyDown;
+                        my_event->keyCode = (RE::GFxKey::Code)RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);//(RE::GFxKey::Code)in_char;//RE::GFxKey::Code::kKP_Multiply;
+                        //my_event->wCharCode = 13;
+
+                        const auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
+                        if (uiMessageQueue) {
+                            const auto msgData = RE::UIMessageDataFactory::Create<RE::BSUIScaleformData>();
+                            msgData->scaleformEvent = my_event;
+                            uiMessageQueue->AddMessage(RE::DialogueMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kScaleformEvent, msgData);
+                        }
+                        */
+
                     }
 
                     dialogue_proc_time = 0.0f;

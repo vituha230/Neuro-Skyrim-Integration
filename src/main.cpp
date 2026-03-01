@@ -4,11 +4,8 @@
 //crucial:
 
 
-//TODO intro context (getting out of carriage, waking to the block to get executed, lie down)
-
 //TODO south riverwood mountain passage had some bug where walker lost camera control for no reason. maybe not relared to passage but must be fixed.
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
-//TODO add [ENEMY] tag on enemies
 //TODO add info about current weapons in hands to both spell and inventory
 
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
@@ -309,6 +306,15 @@ public:
                 if (const auto menu = ui->GetMenu(RE::DialogueMenu::MENU_NAME); menu) {
                     //menu->menuFlags.set(RE::UI_MENU_FLAGS::kPausesGame); //works
                     menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+
+
+                    //clear_input_queue();
+                    //right_attack_cancel();
+                    //left_attack_cancel();
+                    //perk_down_cancel();
+                    //perk_up_cancel();
+                    //mouse_mouse_x_y(0.0f, 0.0f);
+
 
                     send_random_context("[Started a dialogue]");
 

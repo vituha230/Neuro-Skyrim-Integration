@@ -881,7 +881,12 @@ namespace WalkerProcessor {
             float mouse_y = 0.0f;
 
             auto mulX = camera_dirX * pos_dif_norm;
-            auto test_crossX = camera_dirY.Cross(pos_dif_norm);
+            //auto test_crossX = camera_dirY.Cross(pos_dif_norm);
+
+            //auto camera_dirX_noZ = camera_dirY;
+            //camera_dirX_noZ.z = 0.0f;
+
+            //auto test_s
 
             //send_random_context()
             /*
@@ -1980,11 +1985,34 @@ namespace WalkerProcessor {
             //mulY = camera_dirY * pos_difY_norm;
             //mulZ = camera_dirZ * pos_difY_norm;
 
-            auto crossX = camera_dirX.Cross(pos_dif_norm);
-            auto crossY = camera_dirY.Cross(pos_dif_norm);
-            auto crossZ = camera_dirZ.Cross(pos_dif_norm);
+            //auto crossX = camera_dirX.Cross(pos_dif_norm);
+            //auto crossY = camera_dirY.Cross(pos_dif_norm);
+            //auto crossZ = camera_dirZ.Cross(pos_dif_norm);
+
+            /*
+            auto camera_dirX_noZ = camera_dirX;
+            auto camera_dirY_noZ = camera_dirY;
+            auto camera_dirZ_noZ = camera_dirZ;
+
+            camera_dirX_noZ.z = 0.0f;
+            camera_dirY_noZ.z = 0.0f;
+            camera_dirZ_noZ.z = 0.0f;
+
+            camera_dirX_noZ = camera_dirX_noZ / camera_dirX_noZ.Length();
+            camera_dirY_noZ = camera_dirY_noZ / camera_dirY_noZ.Length();
+            camera_dirZ_noZ = camera_dirZ_noZ / camera_dirZ_noZ.Length();
 
 
+            auto pos_dif_norm_noZ = pos_dif_norm;
+            pos_dif_norm_noZ.z = 0.0f;
+
+            pos_dif_norm_noZ = pos_dif_norm_noZ / pos_dif_norm_noZ.Length();
+
+
+            auto crossX = camera_dirX_noZ + pos_dif_norm_noZ;
+            auto crossY = camera_dirY_noZ + pos_dif_norm_noZ;
+            auto crossZ = camera_dirZ_noZ + pos_dif_norm_noZ;
+            */
             //auto test_mulX = crossX * pos_dif_norm;
             //auto test_mulY = crossY * pos_dif_norm;
             //auto test_mulZ = crossZ * pos_dif_norm;
@@ -2003,6 +2031,7 @@ namespace WalkerProcessor {
 
             //send_random_context(std::to_string(crossX.Length()) + ", " + std::to_string(crossY.Length()) + ", " + std::to_string(crossZ.Length()));
             
+            //return false;
             //return false;
 
             if (mulY < 0)
@@ -2343,6 +2372,7 @@ namespace WalkerProcessor {
             backup_input_cancel = true;
             right_attack_cancel();
             left_attack_cancel();
+            //perk_up_cancel();
         }
 
         lock_camera_wants_to_crouch = false;
