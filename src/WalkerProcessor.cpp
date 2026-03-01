@@ -2563,7 +2563,7 @@ namespace WalkerProcessor {
             attack_action_time = 0.0f;
             got_close_for_pickpocket = false;
 
-            search_next_fight_target = false;
+            //search_next_fight_target = false;
             search_next_target_timer = 0.0f;
         }
         //else

@@ -442,319 +442,327 @@ namespace neuro {
 
 
 
+                    RE::UI* ui = RE::UI::GetSingleton();
 
-                    if (name == Capabilities::SelectForceChoice::Name)
+                    if (ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME) || ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
                     {
-                        Impl::JSON::NeuroChoiceJson json{};
-
-                        // operator bool overload for glz::error_ctx returns true on failure!
-                        if (glz::read_json(json, messageQueue[i].value.action.data))
-                            failed_to_parse_json = true;
-                        else
-                        {
-                            switch (get_active_force())
-                            {
-                            case force_type::dialogue_line:
-                                command_result = DialogueProcessor::say_chosen_line(json.id); break;
-
-                            case force_type::barter_type_force:
-                                command_result = BarterProcessor::set_barter_type(json.id); break;
-
-                            case force_type::barter_category:
-                                command_result = BarterProcessor::set_category_choice(json.id); break;
-
-                            case force_type::barter_item:
-                                command_result = BarterProcessor::set_item_choice(json.id); break;
-
-                            case force_type::barter_quantity:
-                                command_result = BarterProcessor::set_slider_choice(json.id); break;
-
-                            case force_type::barter_vendor_not_enough_gold:
-                                command_result = BarterProcessor::set_vendor_not_enough_gold_choice(json.id); break;
-
-                            case force_type::lockpick_angle:
-                                command_result = LockpickProcessor::set_angle_choice(json.id); break;
-
-                            case force_type::levelup_attribute:
-                                command_result = LevelupProcessor::levelup_attritube(json.id); break;
-
-                            case force_type::perk_tree:
-                                command_result = PerksProcessor::choose_skill_tree(json.id); break;
-
-                            case force_type::perk_perk:
-                            {
-                                if (json.id == -2) //it sends another force right away, dont want to reset it
-                                    dont_reset_force = true;
-                                command_result = PerksProcessor::choose_perk(json.id); break;
-                            }
-
-                            case force_type::perk_confirm:
-                                command_result = PerksProcessor::choose_perk_confirm(json.id); break;
-
-                            case force_type::map_undiscovered:
-                                command_result = MapProcessor::set_undiscovered_choice(json.id); break;
-
-                            case force_type::alchemy_amount_more:
-                                command_result = AlchemyProcessor::choose_craft_more(json.id); break;
-
-                            case force_type::enchant_type:
-                                command_result = EnchantProcessor::set_enchant_type(json.id); break;
-
-                            case force_type::enchant_item:
-                                command_result = EnchantProcessor::set_item_choice(json.id); break;
-
-                            case force_type::enchant_strength:
-                                command_result = EnchantProcessor::set_slider_choice(json.id); break;
-
-                            case force_type::smithing_category:
-                                command_result = SmithingProcessor::set_category_choice(json.id); break;
-
-                            case force_type::smithing_item:
-                                command_result = SmithingProcessor::set_item_choice(json.id); break;
-
-                            case force_type::map_location:
-                                command_result = MapProcessor::set_location_choice(json.id); break;
-
-                            case force_type::container_item:
-                                command_result = ContainerProcessor::set_item_choice(json.id); break;
-
-                            case force_type::gift_item:
-                                command_result = GiftProcessor::set_item_choice(json.id); break;
-
-                            case force_type::messagebox_option:
-                                command_result = RandomMessageBoxProcessor::set_message_box_choice(json.id); break;
-
-                            case force_type::threat_response:
-                                command_result = Observer::set_threat_response_choice(json.id); break;
-
-                            case force_type::closed_door_choice:
-                                command_result = WalkerProcessor::set_closed_door_choice(json.id); break;
-
-                            case force_type::race:
-                                command_result = RaceProcessor::set_character_choice(json.id); break;
-
-                            case force_type::sleepwait_time:
-                                command_result = SleepWaitProcessor::set_sleepwait_choice(json.id); break;
-
-                            case force_type::book:
-                                command_result = BookProcessor::set_book_choice(json.id); break;
-
-                            case force_type::training_choice:
-                                command_result = TrainingProcessor::set_training_choice(json.id); break;
-
-                            default:
-                                command_result = { true, "You dont have any choices to make" };
-                            }
-                        }
-                    }
-
-                    if (name == Capabilities::SelectForceChoiceMultiple::Name)
-                    {
-
-                        if (get_active_force() == force_type::alchemy_ingredients)
-                        {
-                            Impl::JSON::NeuroChoiceJson2 json2{};
-                            Impl::JSON::NeuroChoiceJson3 json3{};
-
-                            if (glz::read_json(json2, messageQueue[i].value.action.data))
-                            {
-                                if (glz::read_json(json3, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
-                                else
-                                    command_result = AlchemyProcessor::choose_ingredients({ json3.id1, json3.id2, json3.id3 });
-                            }
-                            else
-                            {
-                                command_result = AlchemyProcessor::choose_ingredients({ json2.id1, json2.id2 });
-                            }
-                        }
-                        else
-                        {
-                            command_result = { true, "You dont have any choices to make. " };
-                        }
-
-                    }
-
-                    if (name == Capabilities::SelectForceChoiceString::Name)
-                    {
-
-                        if (get_active_force() == force_type::character_name)
-                        {
-                            Impl::JSON::NeuroStringChoice json{};
-
-                            if (glz::read_json(json, messageQueue[i].value.action.data))
-                                failed_to_parse_json = true;
-                            else
-                                command_result = RaceProcessor::set_character_name(json.choice);
-                        }
-                        else
-                        {
-                            command_result = { false, "This command is not for talking! You will be notified when you are in dialogue. You can try starting a dialogue by interacting with someone (use walk_to_object, with target ID and action 1 (interact)). " };
-                        }
-                    }
-
-                    if (command_result.first && !dont_reset_force) //if got positive result above - force has been cleared
-                        set_active_force(-1);
-
-                    //////////////END OF FORCE RESPONSE
-
-
-                    if (WalkerProcessor::is_walking_important_path() && command_result.second == "")
-                    {
-                        command_result.first = false;
-                        command_result.second = "You are concentrated on walking right now. Wait until you reach the target. ";
-
+                        command_result = { false, "You are not in game yet! Wait for the game to start. " };
                     }
                     else
                     {
-                        if (get_active_force() != -1 && command_result.second == "") //only if unhandled above
+                        if (name == Capabilities::SelectForceChoice::Name)
                         {
-                            command_result.first = false;
-                            command_result.second = "You must make a choice first!";
-                        }
-                        else
-                        {
-                            auto player = RE::PlayerCharacter::GetSingleton();
-                            if (player->IsDead())
+                            Impl::JSON::NeuroChoiceJson json{};
+
+                            // operator bool overload for glz::error_ctx returns true on failure!
+                            if (glz::read_json(json, messageQueue[i].value.action.data))
+                                failed_to_parse_json = true;
+                            else
                             {
-                                command_result.first = false;
-                                command_result.second = "Your character is dead! Wait for game to load last save...";
+                                switch (get_active_force())
+                                {
+                                case force_type::dialogue_line:
+                                    command_result = DialogueProcessor::say_chosen_line(json.id); break;
+
+                                case force_type::barter_type_force:
+                                    command_result = BarterProcessor::set_barter_type(json.id); break;
+
+                                case force_type::barter_category:
+                                    command_result = BarterProcessor::set_category_choice(json.id); break;
+
+                                case force_type::barter_item:
+                                    command_result = BarterProcessor::set_item_choice(json.id); break;
+
+                                case force_type::barter_quantity:
+                                    command_result = BarterProcessor::set_slider_choice(json.id); break;
+
+                                case force_type::barter_vendor_not_enough_gold:
+                                    command_result = BarterProcessor::set_vendor_not_enough_gold_choice(json.id); break;
+
+                                case force_type::lockpick_angle:
+                                    command_result = LockpickProcessor::set_angle_choice(json.id); break;
+
+                                case force_type::levelup_attribute:
+                                    command_result = LevelupProcessor::levelup_attritube(json.id); break;
+
+                                case force_type::perk_tree:
+                                    command_result = PerksProcessor::choose_skill_tree(json.id); break;
+
+                                case force_type::perk_perk:
+                                {
+                                    if (json.id == -2) //it sends another force right away, dont want to reset it
+                                        dont_reset_force = true;
+                                    command_result = PerksProcessor::choose_perk(json.id); break;
+                                }
+
+                                case force_type::perk_confirm:
+                                    command_result = PerksProcessor::choose_perk_confirm(json.id); break;
+
+                                case force_type::map_undiscovered:
+                                    command_result = MapProcessor::set_undiscovered_choice(json.id); break;
+
+                                case force_type::alchemy_amount_more:
+                                    command_result = AlchemyProcessor::choose_craft_more(json.id); break;
+
+                                case force_type::enchant_type:
+                                    command_result = EnchantProcessor::set_enchant_type(json.id); break;
+
+                                case force_type::enchant_item:
+                                    command_result = EnchantProcessor::set_item_choice(json.id); break;
+
+                                case force_type::enchant_strength:
+                                    command_result = EnchantProcessor::set_slider_choice(json.id); break;
+
+                                case force_type::smithing_category:
+                                    command_result = SmithingProcessor::set_category_choice(json.id); break;
+
+                                case force_type::smithing_item:
+                                    command_result = SmithingProcessor::set_item_choice(json.id); break;
+
+                                case force_type::map_location:
+                                    command_result = MapProcessor::set_location_choice(json.id); break;
+
+                                case force_type::container_item:
+                                    command_result = ContainerProcessor::set_item_choice(json.id); break;
+
+                                case force_type::gift_item:
+                                    command_result = GiftProcessor::set_item_choice(json.id); break;
+
+                                case force_type::messagebox_option:
+                                    command_result = RandomMessageBoxProcessor::set_message_box_choice(json.id); break;
+
+                                case force_type::threat_response:
+                                    command_result = Observer::set_threat_response_choice(json.id); break;
+
+                                case force_type::closed_door_choice:
+                                    command_result = WalkerProcessor::set_closed_door_choice(json.id); break;
+
+                                case force_type::race:
+                                    command_result = RaceProcessor::set_character_choice(json.id); break;
+
+                                case force_type::sleepwait_time:
+                                    command_result = SleepWaitProcessor::set_sleepwait_choice(json.id); break;
+
+                                case force_type::book:
+                                    command_result = BookProcessor::set_book_choice(json.id); break;
+
+                                case force_type::training_choice:
+                                    command_result = TrainingProcessor::set_training_choice(json.id); break;
+
+                                default:
+                                    command_result = { true, "You dont have any choices to make" };
+                                }
+                            }
+                        }
+
+                        if (name == Capabilities::SelectForceChoiceMultiple::Name)
+                        {
+
+                            if (get_active_force() == force_type::alchemy_ingredients)
+                            {
+                                Impl::JSON::NeuroChoiceJson2 json2{};
+                                Impl::JSON::NeuroChoiceJson3 json3{};
+
+                                if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                {
+                                    if (glz::read_json(json3, messageQueue[i].value.action.data))
+                                        failed_to_parse_json = true;
+                                    else
+                                        command_result = AlchemyProcessor::choose_ingredients({ json3.id1, json3.id2, json3.id3 });
+                                }
+                                else
+                                {
+                                    command_result = AlchemyProcessor::choose_ingredients({ json2.id1, json2.id2 });
+                                }
                             }
                             else
                             {
-                                if (name == Capabilities::WalkToObject::Name)
-                                {
-                                    Impl::JSON::NeuroChoiceJson json{};
-                                    Impl::JSON::NeuroChoiceJson2 json2{};
+                                command_result = { true, "You dont have any choices to make. " };
+                            }
 
-                                    // operator bool overload for glz::error_ctx returns true on failure!
-                                    if (glz::read_json(json2, messageQueue[i].value.action.data))
+                        }
+
+                        if (name == Capabilities::SelectForceChoiceString::Name)
+                        {
+
+                            if (get_active_force() == force_type::character_name)
+                            {
+                                Impl::JSON::NeuroStringChoice json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = RaceProcessor::set_character_name(json.choice);
+                            }
+                            else
+                            {
+                                command_result = { false, "This command is not for talking! You will be notified when you are in dialogue. You can try starting a dialogue by interacting with someone (use walk_to_object, with target ID and action 1 (interact)). " };
+                            }
+                        }
+
+                        if (command_result.first && !dont_reset_force) //if got positive result above - force has been cleared
+                            set_active_force(-1);
+
+                        //////////////END OF FORCE RESPONSE
+
+
+                        if (WalkerProcessor::is_walking_important_path() && command_result.second == "")
+                        {
+                            command_result.first = false;
+                            command_result.second = "You are concentrated on walking right now. Wait until you reach the target. ";
+
+                        }
+                        else
+                        {
+                            if (get_active_force() != -1 && command_result.second == "") //only if unhandled above
+                            {
+                                command_result.first = false;
+                                command_result.second = "You must make a choice first!";
+                            }
+                            else
+                            {
+                                auto player = RE::PlayerCharacter::GetSingleton();
+                                if (player->IsDead())
+                                {
+                                    command_result.first = false;
+                                    command_result.second = "Your character is dead! Wait for game to load last save...";
+                                }
+                                else
+                                {
+                                    if (name == Capabilities::WalkToObject::Name)
                                     {
+                                        Impl::JSON::NeuroChoiceJson json{};
+                                        Impl::JSON::NeuroChoiceJson2 json2{};
+
+                                        // operator bool overload for glz::error_ctx returns true on failure!
+                                        if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                        {
+                                            if (glz::read_json(json, messageQueue[i].value.action.data))
+                                                failed_to_parse_json = true;
+                                            else
+                                                command_result = WalkerProcessor::walk_to_object_by_index(json.id, 0);
+                                        }
+                                        else
+                                            command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
+                                    }
+
+
+
+
+                                    if (name == Capabilities::FollowQuest::Name)
+                                    {
+                                        Impl::JSON::NeuroChoiceJson json{};
+
                                         if (glz::read_json(json, messageQueue[i].value.action.data))
                                             failed_to_parse_json = true;
                                         else
-                                            command_result = WalkerProcessor::walk_to_object_by_index(json.id, 0);
+                                            command_result = WalkerProcessor::walk_to_quest_by_index(json.id, false);
                                     }
-                                    else
-                                        command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
-                                }
 
 
 
+                                    if (name == Capabilities::GoToLocation::Name)
+                                    {
+                                        Impl::JSON::NeuroChoiceJson json{};
 
-                                if (name == Capabilities::FollowQuest::Name)
-                                {
-                                    Impl::JSON::NeuroChoiceJson json{};
-
-                                    if (glz::read_json(json, messageQueue[i].value.action.data))
-                                        failed_to_parse_json = true;
-                                    else
-                                        command_result = WalkerProcessor::walk_to_quest_by_index(json.id, false);
-                                }
-
-
-
-                                if (name == Capabilities::GoToLocation::Name)
-                                {
-                                    Impl::JSON::NeuroChoiceJson json{};
-
-                                    if (glz::read_json(json, messageQueue[i].value.action.data))
-                                        failed_to_parse_json = true;
-                                    else
-                                        command_result = WalkerProcessor::walk_to_location_by_index(json.id);
-                                }
+                                        if (glz::read_json(json, messageQueue[i].value.action.data))
+                                            failed_to_parse_json = true;
+                                        else
+                                            command_result = WalkerProcessor::walk_to_location_by_index(json.id);
+                                    }
 
 
 
 
 
-                                if (name == Capabilities::GetObjectsAround::Name)
-                                {
+                                    if (name == Capabilities::GetObjectsAround::Name)
+                                    {
 
-                                    //Impl::JSON::NeuroChoiceJson json{};
+                                        //Impl::JSON::NeuroChoiceJson json{};
 
-                                    //if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    //    failed_to_parse_json = true;
-                                    //else
+                                        //if (glz::read_json(json, messageQueue[i].value.action.data))
+                                        //    failed_to_parse_json = true;
+                                        //else
 
-                                    command_result = MiscThings::GetObjectsAround(-1);
+                                        command_result = MiscThings::GetObjectsAround(-1);
 
-                                }
-
-
-                                if (name == Capabilities::GetInventory::Name)
-                                {
-                                    command_result = MiscThings::GetInventory();
-                                }
+                                    }
 
 
-                                if (name == Capabilities::GetSpells::Name)
-                                {
-                                    command_result = MiscThings::get_available_spells();
-                                }
+                                    if (name == Capabilities::GetInventory::Name)
+                                    {
+                                        command_result = MiscThings::GetInventory();
+                                    }
+
+
+                                    if (name == Capabilities::GetSpells::Name)
+                                    {
+                                        command_result = MiscThings::get_available_spells();
+                                    }
 
 
 
-                                if (name == Capabilities::CastEquipSpell::Name)
-                                {
-                                    Impl::JSON::NeuroChoiceJson json{};
+                                    if (name == Capabilities::CastEquipSpell::Name)
+                                    {
+                                        Impl::JSON::NeuroChoiceJson json{};
 
-                                    if (glz::read_json(json, messageQueue[i].value.action.data))
-                                        failed_to_parse_json = true;
-                                    else
-                                        command_result = MiscThings::use_spell_by_index(json.id);
-                                }
-
-
-                                if (name == Capabilities::UnlockShoutLevel::Name)
-                                {
-                                    Impl::JSON::NeuroChoiceJson json{};
-
-                                    if (glz::read_json(json, messageQueue[i].value.action.data))
-                                        failed_to_parse_json = true;
-                                    else
-                                        command_result = MiscThings::unlock_shout_level(json.id);
-                                }
+                                        if (glz::read_json(json, messageQueue[i].value.action.data))
+                                            failed_to_parse_json = true;
+                                        else
+                                            command_result = MiscThings::use_spell_by_index(json.id);
+                                    }
 
 
-                                if (name == Capabilities::OpenMap::Name)
-                                {
-                                    command_result = MapProcessor::open_menu();
-                                }
+                                    if (name == Capabilities::UnlockShoutLevel::Name)
+                                    {
+                                        Impl::JSON::NeuroChoiceJson json{};
+
+                                        if (glz::read_json(json, messageQueue[i].value.action.data))
+                                            failed_to_parse_json = true;
+                                        else
+                                            command_result = MiscThings::unlock_shout_level(json.id);
+                                    }
 
 
-                                if (name == Capabilities::GetCurrentQuests::Name)
-                                {
-                                    command_result = MiscThings::get_current_quests();
-                                }
+                                    if (name == Capabilities::OpenMap::Name)
+                                    {
+                                        command_result = MapProcessor::open_menu();
+                                    }
 
 
-                                if (name == Capabilities::GetLocations::Name)
-                                {
-                                    command_result = MiscThings::get_locations_around();
-                                }
+                                    if (name == Capabilities::GetCurrentQuests::Name)
+                                    {
+                                        command_result = MiscThings::get_current_quests();
+                                    }
 
 
-                                if (name == Capabilities::UseInventoryItem::Name)
-                                {
-                                    Impl::JSON::NeuroChoiceJson2 json2{};
-
-                                    if (glz::read_json(json2, messageQueue[i].value.action.data))
-                                        failed_to_parse_json = true;
-                                    else
-                                        command_result = MiscThings::activate_inventory_object_by_index(json2.id1, json2.id2);
-
-                                }
-
-                                if (name == Capabilities::GetGold::Name)
-                                {
-                                    command_result = MiscThings::GetGold();
-                                }
+                                    if (name == Capabilities::GetLocations::Name)
+                                    {
+                                        command_result = MiscThings::get_locations_around();
+                                    }
 
 
-                                if (name == Capabilities::CallWaitMenu::Name)
-                                {
-                                    command_result = SleepWaitProcessor::call_wait_menu();
+                                    if (name == Capabilities::UseInventoryItem::Name)
+                                    {
+                                        Impl::JSON::NeuroChoiceJson2 json2{};
+
+                                        if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                            failed_to_parse_json = true;
+                                        else
+                                            command_result = MiscThings::activate_inventory_object_by_index(json2.id1, json2.id2);
+
+                                    }
+
+                                    if (name == Capabilities::GetGold::Name)
+                                    {
+                                        command_result = MiscThings::GetGold();
+                                    }
+
+
+                                    if (name == Capabilities::CallWaitMenu::Name)
+                                    {
+                                        command_result = SleepWaitProcessor::call_wait_menu();
+                                    }
                                 }
                             }
                         }

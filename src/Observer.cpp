@@ -214,6 +214,14 @@ namespace Observer {
 										action_taken = true;
 									}
 								}
+								else
+								{
+									if (!WalkerProcessor::walker_active())
+									{
+										//walker inactive, but we have threats. reset threats
+										reset_threats();
+									}
+								}
 							}
 						}
 					}
