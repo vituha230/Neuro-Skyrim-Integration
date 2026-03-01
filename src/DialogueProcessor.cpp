@@ -81,6 +81,39 @@ namespace DialogueProcessor {
     }
 
 
+    std::string get_chosen_line_text(int chosen_id)
+    {
+        std::string result = "";
+
+        RE::MenuTopicManager* topic_manager = RE::MenuTopicManager::GetSingleton();
+
+        if (topic_manager)
+            if (topic_manager->dialogueList)
+                if (topic_manager->dialogueList->front())
+                {
+                    int id = 0;
+                    for (auto& dialogue : *topic_manager->dialogueList)
+                    {
+                        MenuOption option;
+                        option.id = id;
+                        option.text = dialogue->topicText.c_str();
+
+
+                        if (id == chosen_id)
+                        {
+                            result = dialogue->topicText;
+                            return result;
+                        }
+
+                        id++;
+                    }
+                }
+
+        return result;
+    }
+
+
+
     std::vector<MenuOption> get_dialogue_options()
     {
         std::vector<MenuOption> dialogue_options;
@@ -169,7 +202,7 @@ namespace DialogueProcessor {
         //dialogue_processor_skip_all = true;
 
         result.first = true;
-        result.second = "[Saying chosen line...]";
+        result.second = "[Dialogue] [You said: \""+ get_chosen_line_text(id) + "\"]";
 
         return result;
 

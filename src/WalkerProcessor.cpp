@@ -2372,6 +2372,7 @@ namespace WalkerProcessor {
             backup_input_cancel = true;
             right_attack_cancel();
             left_attack_cancel();
+            mouse_mouse_x_y(0.0f, 0.0f); //experimental
             //perk_up_cancel();
         }
 
