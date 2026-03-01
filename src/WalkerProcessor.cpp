@@ -832,6 +832,7 @@ namespace WalkerProcessor {
 
 
 
+
     float last_walk_reminded_time = 0.0f;
 
     void walk_to_point(float dtime_maybe_bad)
@@ -938,7 +939,13 @@ namespace WalkerProcessor {
                     //mulZ = camera_dirZ * desired_direction_norm;// pos_difY_norm;
 
                     if (mulY < 0)
-                        mulZ = -mulZ;
+                    {
+                        mulZ = 0.0f;// -mulZ;
+                        if (mulX < 0.0f)
+                            mulX = -0.3f + mulX;
+                        else
+                            mulX = 0.3f + mulX;
+                    }
 
                 }
 
@@ -1136,8 +1143,16 @@ namespace WalkerProcessor {
 
             mouse_mouse_x_y(mouse_x, -mouse_y);
 
+            /*
+            if (abs(mouse_x) < 1.0f && abs(mouse_y) >= 1.0f)
+                mouse_mouse_y(-mouse_y);
 
+            if (abs(mouse_x) >= 1.0f && abs(mouse_y) < 1.0f)
+                mouse_mouse_x(mouse_x);
 
+            if (abs(mouse_x) >= 1.0f && abs(mouse_y) >= 1.0f)
+                mouse_mouse_x_y(mouse_x, -mouse_y);
+            */
 
 
             //mouse_mouse_y(-mouse_y);
@@ -1672,8 +1687,26 @@ namespace WalkerProcessor {
     }
 
 
+    RE::NiPoint3 myGetVectorX(RE::NiMatrix3 matrix)
+    {
+        return RE::NiPoint3{ matrix.entry[0][0], matrix.entry[0][1], matrix.entry[0][2] };
+    }
 
+    RE::NiPoint3 myGetVectorY(RE::NiMatrix3 matrix)
+    {
+        return RE::NiPoint3{ matrix.entry[1][0], matrix.entry[1][1], matrix.entry[1][2] };
+    }
+
+    RE::NiPoint3 myGetVectorZ(RE::NiMatrix3 matrix)
+    {
+        return RE::NiPoint3{ matrix.entry[2][0], matrix.entry[2][1], matrix.entry[2][2] };
+    }
     
+
+
+
+
+
     int debug_mode_cam = 0;
 
 
@@ -1974,68 +2007,58 @@ namespace WalkerProcessor {
             pos_dif = target_center - camera_pos;
             pos_dif_norm = pos_dif / pos_dif.Length();
 
+
+            //////////////////////////////////////
+            //////////////////////////////////////
+            //////////////////////////////////////
+
+            //auto testX = myGetVectorX(camera_dir);
+            //auto testY = myGetVectorY(camera_dir);
+            //auto testZ = myGetVectorZ(camera_dir);
+
+            auto crossX = camera_dirX.Cross(pos_dif_norm);
+            auto crossY = camera_dirY.Cross(pos_dif_norm);
+            auto crossZ = camera_dirZ.Cross(pos_dif_norm);
+
+            auto dotX = camera_dirX.Dot(pos_dif_norm);
+            auto dotY = camera_dirY.Dot(pos_dif_norm);
+            auto dotZ = camera_dirZ.Dot(pos_dif_norm);
+
+
+           // send_random_context(std::to_string(dotX) + ", " + std::to_string(dotY) + ", " + std::to_string(dotZ));
+            //send_random_context(std::to_string(crossX.Length()) + ", " + std::to_string(crossY.Length()) + ", " + std::to_string(crossZ.Length()));
+            //send_random_context(std::to_string(crossX.x) + ", " + std::to_string(crossY.y) + ", " + std::to_string(crossZ.z));
+
+           // return false;
+
+            //////////////////////////////////////
+            //////////////////////////////////////
+            //////////////////////////////////////
+
+
+
             mulX = camera_dirX * pos_dif_norm;
             mulZ = camera_dirZ * pos_dif_norm;
             pos_dif_norm.z = 0.0f;
             mulY = camera_dirY * pos_dif_norm;
 
 
-            //auto pos_difZ_norm = pos_difZ / pos_difZ.Length();
-
-            //mulY = camera_dirY * pos_difY_norm;
-            //mulZ = camera_dirZ * pos_difY_norm;
-
-            //auto crossX = camera_dirX.Cross(pos_dif_norm);
-            //auto crossY = camera_dirY.Cross(pos_dif_norm);
-            //auto crossZ = camera_dirZ.Cross(pos_dif_norm);
-
-            /*
-            auto camera_dirX_noZ = camera_dirX;
-            auto camera_dirY_noZ = camera_dirY;
-            auto camera_dirZ_noZ = camera_dirZ;
-
-            camera_dirX_noZ.z = 0.0f;
-            camera_dirY_noZ.z = 0.0f;
-            camera_dirZ_noZ.z = 0.0f;
-
-            camera_dirX_noZ = camera_dirX_noZ / camera_dirX_noZ.Length();
-            camera_dirY_noZ = camera_dirY_noZ / camera_dirY_noZ.Length();
-            camera_dirZ_noZ = camera_dirZ_noZ / camera_dirZ_noZ.Length();
-
-
-            auto pos_dif_norm_noZ = pos_dif_norm;
-            pos_dif_norm_noZ.z = 0.0f;
-
-            pos_dif_norm_noZ = pos_dif_norm_noZ / pos_dif_norm_noZ.Length();
-
-
-            auto crossX = camera_dirX_noZ + pos_dif_norm_noZ;
-            auto crossY = camera_dirY_noZ + pos_dif_norm_noZ;
-            auto crossZ = camera_dirZ_noZ + pos_dif_norm_noZ;
-            */
-            //auto test_mulX = crossX * pos_dif_norm;
-            //auto test_mulY = crossY * pos_dif_norm;
-            //auto test_mulZ = crossZ * pos_dif_norm;
-
-            //if (debug_mode_cam == 0)
-            //{
-            //    if (crossX < 0)
-            //}
-
-        
-            //mulX = camera_dirX.Dot(pos_dif_norm);
-            //mulY = camera_dirY.Dot(pos_dif_norm);
-            //mulZ = camera_dirZ.Dot(pos_dif_norm);
 
 
 
-            //send_random_context(std::to_string(crossX.Length()) + ", " + std::to_string(crossY.Length()) + ", " + std::to_string(crossZ.Length()));
-            
-            //return false;
-            //return false;
+
+
+
 
             if (mulY < 0)
-                mulZ = -mulZ;
+            {
+                mulZ = 0.0f;// -mulZ;
+                if (mulX < 0.0f)
+                    mulX = -0.3f + mulX;
+                else
+                    mulX = 0.3f + mulX;
+            }
+                
 
 
             //return false;
@@ -2119,6 +2142,16 @@ namespace WalkerProcessor {
 
         mouse_mouse_x_y(mouse_x, -mouse_y);
 
+        /*
+        if (abs(mouse_x) < 1.0f && abs(mouse_y) >= 1.0f)
+            mouse_mouse_y(-mouse_y);
+
+        if (abs(mouse_x) >= 1.0f && abs(mouse_y) < 1.0f)
+            mouse_mouse_x(mouse_x);
+
+        if (abs(mouse_x) >= 1.0f && abs(mouse_y) >= 1.0f)
+            mouse_mouse_x_y(mouse_x, -mouse_y);
+*/
 
 
         if (interaction_after_walk == 2)

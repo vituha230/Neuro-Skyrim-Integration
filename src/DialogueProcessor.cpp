@@ -257,7 +257,15 @@ namespace DialogueProcessor {
                 {
                     auto speaker_ref = topic_manager->speaker.get().get();
                     if (speaker_ref)
-                        WalkerProcessor::lock_camera_onto_target(speaker_ref, dtime);
+                    {
+                        auto player = RE::PlayerCharacter::GetSingleton();
+                        auto player_ref = player->AsReference();
+                        if (speaker_ref != player_ref)
+                            WalkerProcessor::lock_camera_onto_target(speaker_ref, dtime);
+                        else
+                            bool test_this = false;
+                    }
+
                 }
 
             auto speaker_ref = topic_manager->speaker.get().get();
