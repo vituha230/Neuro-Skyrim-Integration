@@ -40,6 +40,16 @@ namespace RandomMessageBoxProcessor {
 		std::pair<bool, std::string> result{};
 		bool choice_valid = false;
 
+		RE::UI* ui = RE::UI::GetSingleton();
+		
+		if (!ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[No messagebox]";
+			return result;
+		}
+		
+
 		for (auto option : options)
 		{
 			if (option.button_id == choice)

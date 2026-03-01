@@ -30,6 +30,10 @@ namespace MapProcessor {
 	bool idk_what_to_do = false;
 
 
+	float cursor_move_timeout = 0.0f;
+	float click_location_timeout = 0.0f;
+
+
 	bool can_fast_travel(int id)
 	{
 		bool result = false;
@@ -200,12 +204,92 @@ namespace MapProcessor {
 	}
 
 
+	std::string cant_open_map_reason()
+	{
+		auto player = RE::PlayerCharacter::GetSingleton();
 
+		std::string result = "";
+
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+			result = "Cannot open map while in crafting menu!";
+
+		if (ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
+			result = "Cannot open map while in dialogue!";
+
+		if (ui->IsMenuOpen(RE::StatsMenu::MENU_NAME))
+			result = "Cannot open map while in skill menu!";
+
+		if (ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME))
+			result = "Cannot open map while in levelup menu!";
+
+		if (ui->IsMenuOpen(RE::TrainingMenu::MENU_NAME))
+			result = "Cannot open map while in training menu!";
+
+		if (ui->IsMenuOpen(RE::SleepWaitMenu::MENU_NAME))
+			result = "Cannot open map while in sleep/wait menu!";
+
+		if (ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME))
+			result = "Cannot open map right now, you have to make a choice first!";
+
+		if (ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
+			result = "Cannot open map while in container menu!";
+
+		if (ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+			result = "Cannot open map while in barter menu!";
+
+		if (ui->IsMenuOpen(RE::BookMenu::MENU_NAME))
+			result = "Cannot open map while reading!";
+
+		if (ui->IsMenuOpen(RE::GiftMenu::MENU_NAME))
+			result = "Cannot open map while in gift menu!";
+
+		if (ui->IsMenuOpen(RE::LockpickingMenu::MENU_NAME))
+			result = "Cannot open map while lockpicking!";
+
+		if (ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+			result = "The map is already opened!";
+
+		if (ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME))
+			result = "Cannot open map while game is loading!";
+
+		if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+			result = "Cannot open map while in main menu! Wait for the game to start";
+
+		if (ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+			result = "Cannot open map while creating your character!";
+
+		if (MiscThings::is_intro() || MiscThings::is_intro2())
+			result = "Cannot open map right now! It will become available later in the game";
+
+		if (player->actorState1.flyState != RE::FLY_STATE::kNone)
+			result = "Cannot open map while in the air! Wait a little and try again if you want...";
+
+		if (player->actorState1.swimming)
+			result = "Cannot open map while swimming!";
+
+		if (player->GetParentCell() && player->GetParentCell()->IsInteriorCell())
+			result = "Cannot open map in this location!";
+
+
+		return result;
+	}
 
 	std::pair<bool, std::string> open_menu()
 	{
+		RE::UI* ui = RE::UI::GetSingleton();
+		
 		std::pair<bool, std::string> result{};
 
+		std::string cant_open_reason = cant_open_map_reason();
+
+		if (cant_open_reason != "")
+		{
+			result.first = false;
+			result.second = cant_open_reason;
+			return result;
+		}
 
 		if (MiscThings::is_intro() || MiscThings::is_intro2())
 		{
@@ -216,7 +300,6 @@ namespace MapProcessor {
 
 
 
-		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::MapMenu>();
 
 		if (!menu)
@@ -242,6 +325,15 @@ namespace MapProcessor {
 	std::pair<bool, std::string> set_location_choice(int id)
 	{
 		std::pair<bool, std::string> result{};
+
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (!ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "Not in map menu";
+			return result;
+		}
 
 
 		if (id == -1)
@@ -288,10 +380,6 @@ namespace MapProcessor {
 
 
 
-
-
-
-
 	bool move_cursor_to_marker(int id)
 	{
 		bool result = false;
@@ -320,36 +408,41 @@ namespace MapProcessor {
 					bool camera_posX_ok = true;
 					bool camera_posY_ok = true;
 
-					if (marker_posX > 0.52)
-					{
-						camera_posX_ok = false;
-						right();
-					}
 
-					if (marker_posX < 0.48)
-					{
-						camera_posX_ok = false;
-						left();
-					}
 
+					if (abs(abs(marker_posX) - 0.5f) > abs(abs(marker_posY) - 0.5f))
+					{
+						if (marker_posX > 0.52)
+							right();
+
+						if (marker_posX < 0.48)
+							left();
+					}
+					else
+					{
+						if (marker_posY > 0.53)
+							cursor_down();
+
+						if (marker_posY < 0.47)
+							cursor_up();
+					}
 
 					if (marker_posY > 0.53)
-					{
 						camera_posY_ok = false;
-						cursor_down();
-					}
 
 					if (marker_posY < 0.47)
-					{
 						camera_posY_ok = false;
-						cursor_up();
-					}
+					
+					if (marker_posX > 0.52)
+						camera_posX_ok = false;
 
+					if (marker_posX < 0.48)
+						camera_posX_ok = false;
 
 
 					if (camera_posX_ok && camera_posY_ok)
 					{
-		
+							
 							result = true;
 					}
 					
@@ -382,6 +475,12 @@ namespace MapProcessor {
 		undiscovered_travel_request_sent = false;
 		undiscovered_travel_choice_valid = false;
 		undiscovered_travel_choice = -1;
+
+		cursor_move_timeout = 0.0f;
+		click_location_timeout = 0.0f;
+
+		if (get_active_force() == force_type::map_location || get_active_force() == force_type::map_undiscovered)
+			set_active_force(-1);
 
 	}
 
@@ -596,6 +695,7 @@ namespace MapProcessor {
 		{
 			if (move_cursor_to_marker(location_choice))
 			{
+				cursor_move_timeout = 0.0f;
 				//cursor arrived.
 				if (can_fast_travel(location_choice))
 				{
@@ -626,7 +726,17 @@ namespace MapProcessor {
 					else
 					{
 						catch_result = true;
+						//perk_up();//also zoom mouse NO NEED ITS ALREADY ZOOMED
 						leftclick();
+
+						click_location_timeout += dtime;
+
+						if (click_location_timeout > 5.0f)
+						{
+							send_random_context("Cannot travel there right now");
+							reset_menu();
+						}
+
 					}
 				}
 				else
@@ -712,6 +822,16 @@ namespace MapProcessor {
 					//send_random_context("[Cannot fast travel there]");
 					//reset_menu();
 					//set_universal_block(1.0f);
+				}
+			}
+			else
+			{
+				cursor_move_timeout += dtime;
+
+				if (cursor_move_timeout > 20.0f)
+				{
+					send_random_context("Cannot travel there right now");
+					reset_menu();
 				}
 			}
 		}

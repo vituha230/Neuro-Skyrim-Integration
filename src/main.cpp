@@ -3,8 +3,9 @@
 
 //crucial:
 
+//TODO remove dropped gear from enemies from object list (its lootable from their inventory, and picking it up from ground is buggy)
 
-//TODO south riverwood mountain passage had some bug where walker lost camera control for no reason. maybe not relared to passage but must be fixed.
+
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO add info about current weapons in hands to both spell and inventory
 
@@ -158,6 +159,13 @@ float subtitle_history_clear_time = 0.0f;
 
 
 
+
+
+
+
+
+
+
 bool is_universal_blocked() {return universal_block;}
 void set_universal_block(float time) { universal_block = true; universal_block_time_threshold = time; }
 
@@ -171,6 +179,41 @@ bool InitializeConnection()
 
     return m_neuroSocket->Initialize();
 }
+
+
+
+void tick_socket(float dtime)
+{
+    if (!reconnect)
+    {
+        if (!connected)
+        {
+            if (!InitializeConnection())
+                reconnect = true;
+            else
+                connected = true;
+        }
+        else
+            if (!m_neuroSocket->Tick())
+            {
+                connected = false;
+                reconnect = true;
+                reconnect_pause = 0.0f;
+            }
+    }
+
+    if (reconnect)
+    {
+        reconnect_pause += dtime;
+        if (reconnect_pause > 3.0f)
+        {
+            connected = false;
+            reconnect = false;
+            reconnect_pause = 0.0f;
+        }
+    }
+}
+
 
 
 bool move_down = false;
@@ -608,6 +651,13 @@ namespace Hooks {
             }
 
 
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kUpdate)
+            {
+                //idk if i'll find updater that works in loading menu. there should be one somewhere..
+                ;//tick_socket(0.016); //this doesnt work
+            }
+
+
             return originalFunction(menu, a_message);
         }
         static inline REL::Relocation<decltype(thunk)> originalFunction;
@@ -755,6 +805,7 @@ namespace Hooks {
                     RE::TESWorldSpace* worldSpace = target->GetWorldspace();
                     if (worldSpace)
                     {
+                        worldSpace->worldMapData.cameraData.minHeight = 40000.0f;
                         worldSpace->worldMapData.cameraData.initialPitch = 90.0f;
                         worldSpace->worldMapData.nwCellX = -200;
                         worldSpace->worldMapData.nwCellY = 200;
@@ -785,6 +836,7 @@ namespace Hooks {
                         RE::TESWorldSpace* worldSpace = target->GetWorldspace();
                         if (worldSpace)
                         {
+                            worldSpace->worldMapData.cameraData.minHeight = 50000.0f;
                             worldSpace->worldMapData.cameraData.initialPitch = 50.0f;
                             worldSpace->worldMapData.nwCellX = -30; //original values
                             worldSpace->worldMapData.nwCellY = 15;
@@ -1156,8 +1208,11 @@ namespace Hooks {
 }
 
 
-
 auto lasttime = std::chrono::steady_clock::now().time_since_epoch().count();
+
+
+
+
 
 
 //this update works in pause
@@ -1190,39 +1245,8 @@ private:
 
 
 
-        if (!reconnect)
-        {
-            if (!connected)
-            {
-                if (!InitializeConnection())
-                    reconnect = true;
-                else
-                    connected = true;
-            }
-            else
-            {
-                if (!m_neuroSocket->Tick())
-                {
-                    connected = false;
-                    reconnect = true;
-                    reconnect_pause = 0.0f;
-                }
-
-            }
-        }
-
-
-
-        if (reconnect)
-        {
-            reconnect_pause += dtime;
-            if (reconnect_pause > 3.0f)
-            {
-                connected = false;
-                reconnect = false;
-                reconnect_pause = 0.0f;
-            }
-        }
+        
+        tick_socket(dtime);
 
         
 
