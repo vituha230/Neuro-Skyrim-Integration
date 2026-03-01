@@ -1436,7 +1436,7 @@ namespace WalkerProcessor {
 
             float radius = wiggle_camera_time*12;
             float x = 8*radius*cos(wiggle_camera_time*2.0f * std::numbers::pi);
-            float y = radius*sin(wiggle_camera_time * std::numbers::pi);
+            float y = 2*radius*sin(wiggle_camera_time * std::numbers::pi); //was 1* before, revert if bad
 
             mouse_mouse_x_y(x, y);
         }
@@ -6119,7 +6119,7 @@ namespace WalkerProcessor {
                                                                         {
                                                                             if (!tried_to_come_closer)
                                                                             {
-                                                                                if (!walk_fixed_time(true, 0.2f, dtime))
+                                                                                if (!walk_fixed_time(true, 0.4f, dtime)) //was 0.2, revert if bad
                                                                                 {
                                                                                     ;
                                                                                 }
