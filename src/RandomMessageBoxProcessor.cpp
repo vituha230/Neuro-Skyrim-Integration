@@ -138,67 +138,71 @@ namespace RandomMessageBoxProcessor {
 		{
 			if (!is_handeled)
 			{
+				std::string text = "";
+				bool go_further = false;
+				auto menu = ui->GetMenu(RE::MessageBoxMenu::MENU_NAME);
 				if (handeled_timeout > 1.5f)
 				{
 					RE::GFxValue var1;
-					auto menu = ui->GetMenu(RE::MessageBoxMenu::MENU_NAME);
+
 					if (menu->uiMovie->GetVariable(&var1, "_root.MessageMenu.MessageText.text"))
 					{
-						std::string text = "";
 						if (!var1.IsNull() && var1.IsString())
-							text = var1.GetString();
-
-
-
-
-						if (!message_box_request_sent)
 						{
-							auto option_test = get_options();
+							text = var1.GetString();
+							go_further = true;
+						}
+					}
+				}
 
-							if (std::size(option_test) == 1)
-							{
-								send_random_context("[" + text + "]");
-								set_message_box_choice(option_test.at(0).id);
-								message_box_request_sent = true;
-							}
-							else
-							{
-								if (text.find("Survival Mode") != std::string::npos)
-								{
-									set_message_box_choice(1);
-									message_box_request_sent = true;
-								}
-								else
-									if (force_choice(get_options(), text, force_type::messagebox_option))
-										message_box_request_sent = true;
-							}
+				if (go_further)
+				{
+					if (!message_box_request_sent)
+					{
+						auto option_test = get_options();
 
-							
-							
+						if (std::size(option_test) == 1)
+						{
+							send_random_context("[" + text + "]");
+							set_message_box_choice(option_test.at(0).id);
+							message_box_request_sent = true;
 						}
 						else
 						{
-							if (message_box_choice_valid)
+							if (text.find("Survival Mode") != std::string::npos)
 							{
-								std::string index = std::to_string(message_box_choice);
+								set_message_box_choice(1);
+								message_box_request_sent = true;
+							}
+							else
+								if (force_choice(get_options(), text, force_type::messagebox_option))
+									message_box_request_sent = true;
+						}
 
-								if (!rolled_over)
-								{
-									menu->uiMovie->Invoke(("_root.MessageMenu.Buttons.Button" + index + ".onRollOver").c_str(), nullptr, nullptr, 0);
-									rolled_over = true;
-									set_universal_block(1.0f);
-								}
-								else
-								{
-									rolled_over = false;
-									menu->uiMovie->Invoke(("_root.MessageMenu.Buttons.Button" + index + ".onPress").c_str(), nullptr, nullptr, 0);
-									set_universal_block(1.0f);
-									reset_menu();
-									//supposedly we exit the menu now
-								}
+					}
+					else
+					{
+						if (message_box_choice_valid)
+						{
+							std::string index = std::to_string(message_box_choice);
+
+							if (!rolled_over)
+							{
+								menu->uiMovie->Invoke(("_root.MessageMenu.Buttons.Button" + index + ".onRollOver").c_str(), nullptr, nullptr, 0);
+								rolled_over = true;
+								set_universal_block(1.0f);
+							}
+							else
+							{
+								rolled_over = false;
+								menu->uiMovie->Invoke(("_root.MessageMenu.Buttons.Button" + index + ".onPress").c_str(), nullptr, nullptr, 0);
+								set_universal_block(1.0f);
+								reset_menu();
+								//supposedly we exit the menu now
 							}
 						}
 					}
+
 				}
 				else
 					handeled_timeout += dtime;
