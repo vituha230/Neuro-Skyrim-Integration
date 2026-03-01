@@ -2003,7 +2003,7 @@ namespace MiscThings {
             result = "[Ingredient]";
 
         if (base_type == RE::FormType::AlchemyItem)
-            result = "[Potion]";
+            result = "[Consumable]";
 
         if (base_type == RE::FormType::SoulGem)
             result = "[Soulgem]";
@@ -2173,7 +2173,18 @@ namespace MiscThings {
                     if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
                         result = "[Interactive object]";
                     else
-                        result = "[Furniture]";
+                    {
+                        std::string name_furniture = object->GetDisplayFullName();
+                        if (name_furniture == "Bed")
+                            result = "[Furniture]";
+                        else
+                        {
+                            if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
+                                result = "[Furniture, Bed]";
+                            else
+                                result = "[Furniture]";
+                        }
+                    }
                 }
                 
                 if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kAlchemy || workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kAlchemyExperiment)
@@ -2205,7 +2216,7 @@ namespace MiscThings {
                 result = "[Ingredient]";
 
             if (base_type == RE::FormType::AlchemyItem)
-                result = "[Potion]";
+                result = "[Consumable]";
 
             if (base_type == RE::FormType::SoulGem)
                 result = "[Soulgem]";
@@ -4114,6 +4125,7 @@ namespace MiscThings {
             });
 
 
+        bool veryclose_line_made = false;
         bool nearby_line_made = false;
         bool faraway_line_made = false;
 
@@ -4125,7 +4137,15 @@ namespace MiscThings {
             {
                 if (player_ref != this_object)
                 {
-                    if (player_ref->GetDistance(this_object) < 2000.0f)
+
+                    if (player_ref->GetDistance(this_object) < 450.0f)
+                        if (!veryclose_line_made)
+                        {
+                            result.second += "\nVery close:\n";
+                            veryclose_line_made = true;
+                        }
+
+                    if (player_ref->GetDistance(this_object) >= 450.0f && player_ref->GetDistance(this_object) < 2000.0f)
                         if (!nearby_line_made)
                         {
                             result.second += "\nNearby:\n";

@@ -5820,14 +5820,14 @@ namespace WalkerProcessor {
 
                     if (walk_forward_a_little)
                     {
-                        if (walk_fixed_time(true, 0.5f, dtime))
+                        if (walk_fixed_time(true, 0.7f, dtime))
                             reset_walker();
                     }
                     else
                     {
                         if (walk_backward_a_little)
                         {
-                            if (walk_fixed_time(false, 0.5f, dtime))
+                            if (walk_fixed_time(false, 0.7f, dtime))
                                 reset_walker();
                         }
                         else

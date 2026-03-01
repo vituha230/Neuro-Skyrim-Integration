@@ -56,6 +56,14 @@ namespace Observer {
 	bool observers_green_light = false;
 	float green_light_delay = 0.0f;
 
+
+	bool jail_serving_notified = false;
+	bool jail_escaping_notified = false;
+
+
+
+
+
 	void set_threat_action_taken()
 	{
 		threats_response_request_sent = true;
@@ -97,6 +105,10 @@ namespace Observer {
 		old_can_interact = false;
 		old_unbound_quest_stage = 0;
 		old_can_look = false;
+
+
+		jail_serving_notified = false;
+		jail_escaping_notified = false;
 	}
 
 
@@ -324,6 +336,8 @@ namespace Observer {
 								if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
 									return RE::BSContainer::ForEachResult::kContinue;
 
+								if (name.find("default") != std::string::npos)
+									return RE::BSContainer::ForEachResult::kContinue;
 
 
 
@@ -552,10 +566,40 @@ namespace Observer {
 
 						});
 
-					std::string info_string = "[You see: \n";
+					std::string info_string = "[You see objects around you: \n";
+
+
+					bool veryclose_line_made = false;
+					bool nearby_line_made = false;
+					bool faraway_line_made = false;
 
 					for (auto result_entry : result)
 					{
+
+						if (player_ref->GetDistance(result_entry.refr) < 450.0f)
+							if (!veryclose_line_made)
+							{
+								info_string += "\nVery close:\n";
+								veryclose_line_made = true;
+							}
+
+						if (player_ref->GetDistance(result_entry.refr) >= 450.0f && player_ref->GetDistance(result_entry.refr) < 2000.0f)
+							if (!nearby_line_made)
+							{
+								info_string += "\nNearby:\n";
+								nearby_line_made = true;
+							}
+
+
+						if (player_ref->GetDistance(result_entry.refr) >= 2000.0f && player_ref->GetDistance(result_entry.refr) < 10000.0f)
+							if (!faraway_line_made)
+							{
+								info_string += "\nFar away:\n";
+								faraway_line_made = true;
+							}
+
+
+
 						info_string += result_entry.info + "\n";
 					}
 
@@ -1358,7 +1402,6 @@ namespace Observer {
 				}
 
 
-
 				state_monitor_timer = 0.0f;
 				auto player = RE::PlayerCharacter::GetSingleton();
 				auto player_ref = player->AsReference();
@@ -1378,6 +1421,27 @@ namespace Observer {
 				bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
 				bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
 				bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+
+				auto escaping_jail = player->playerFlags.escaping;
+
+				//auto serving_jail = player->playerFlags.servingJailTime;
+				auto jail_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("JailQuest");
+				bool serving_jail = jail_quest->IsRunning() && (jail_quest->GetCurrentStageID() < 20) && !escaping_jail;
+
+				
+			
+				if (serving_jail && !jail_serving_notified)
+				{
+					jail_serving_notified = true;
+					send_random_context("[You are in jail. You can try to find a bed to sleep through your jail time, or try to escape (investigate surroundings)]");
+				}
+
+				if (escaping_jail && !jail_escaping_notified)
+				{
+					jail_escaping_notified = true;
+					send_random_context("[You are escaping from jail! Try to find exit and avoid guards... you also might want to try to get back your belongings (or might return to get them later)]");
+				}
 
 
 				if (!old_can_interact && can_interact)
