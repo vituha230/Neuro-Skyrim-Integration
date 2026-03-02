@@ -3,8 +3,6 @@
 
 //crucial:
 
-//TODO remove dropped gear from enemies from object list (its lootable from their inventory, and picking it up from ground is buggy)
-
 
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO add info about current weapons in hands to both spell and inventory
@@ -32,7 +30,6 @@
 //TODO catch animation events on all objects
 //TODO reanimating event catch + draugr wakes up from its grave
 //TODO weather info when outside, time info
-//TODO weird butterfly catching.. test it more
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap, normal bear trap)
 //TODO dvemer mechanisms/traps
 //TODO spin mechanic. spin 3 times = knocked down/paralyzed and falls
@@ -50,7 +47,6 @@
 
 //arbitrary:
 //TODO maybe slam all barter items into one category like in alchemy
-//TODO subtitles from far away that arent actually audible/visible 
 //TODO running when path is along straight line
 //TODO put things into container/gift menu (i think for followers its give not take)
 

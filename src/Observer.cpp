@@ -341,6 +341,25 @@ namespace Observer {
 
 
 
+								if (auto extra = a_ref->extraList.GetByType(RE::ExtraDataType::kItemDropper); extra)
+								{
+									auto extra_dropper = (RE::ExtraItemDropper*)extra;
+
+									if (extra_dropper && extra_dropper->dropper && extra_dropper->dropper.get())
+									{
+										auto dropper = extra_dropper->dropper.get().get();
+
+										if (dropper)
+										{
+											if (dropper->IsActor())
+											{
+												return RE::BSContainer::ForEachResult::kContinue; //exclude dropped items, they have weird position.
+											}
+										}
+									}
+								}
+
+
 								if (a_ref->AsReference()->IsActor())
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
@@ -1508,7 +1527,7 @@ namespace Observer {
 					if (!player_dead_sent)
 					{
 						player_dead_sent = true;
-						send_random_context("[YOU DIED]");
+						send_random_context("[YOU DIED. The game will resume from last save soon]");
 						MiscThings::set_time_of_death(std::chrono::steady_clock::now().time_since_epoch().count());
 					}
 

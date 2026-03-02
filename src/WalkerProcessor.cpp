@@ -795,6 +795,7 @@ namespace WalkerProcessor {
 
     bool may_sprint()
     {
+        return true;
         bool result = false;
         try {
 
@@ -1055,15 +1056,15 @@ namespace WalkerProcessor {
                     jump(); //if next point is much higher - we probably need to jump.
 
                 //this will probably never work until there is a way to actually hold a button
-                /*
+                
                 if (may_sprint())
                 {
-                    if (!player->IsSprinting() && !was_sprinting)
+                    //if (!player->IsSprinting() && !was_sprinting)
                     //if (!player->IsSprinting())
-                    {
+                    //{
                         sprint();
                         was_sprinting = true;
-                    }
+                    //}
                 } 
                 else
                 {
@@ -1079,7 +1080,7 @@ namespace WalkerProcessor {
                     }
                         
                 }
-                */
+                
 
                 //cursor_up(); //TODO: proper walk mechanics. somethimes just holding W is not good
 
