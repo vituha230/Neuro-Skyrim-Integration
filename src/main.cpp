@@ -4,6 +4,13 @@
 //crucial:
 
 
+//TODO continue registering/unregistering actions
+//TODO fix empty result of ult casting
+//TODO maybe give more context on actors' state (at least for things like "started running away"
+
+
+
+
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO add info about current weapons in hands to both spell and inventory
 
@@ -103,6 +110,17 @@ std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 
 
 
+void unregister_all_actions()
+{
+    m_neuroSocket->unregister_all();
+}
+
+
+void register_allowed_actions()
+{
+    m_neuroSocket->register_allowed_actions();
+}
+
 
 //universal force choice
 bool force_choice(std::vector<MenuOption> options, std::string message, int force_type)
@@ -117,8 +135,9 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
         if (force_type == force_type::character_name)
             force_action = Capabilities::SelectForceChoiceString::Action;
 
+        neurosdk_action actions[] = { force_action };
 
-        if (m_neuroSocket->register_an_action(force_action))
+        if (m_neuroSocket->register_actions(actions, std::size(actions)))
         {
 
             set_active_force(force_type);
@@ -565,6 +584,8 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS OPENED");
 
+                unregister_all_actions();
+
                 auto time_of_death = MiscThings::get_time_of_death();
 
                 auto now = std::chrono::steady_clock::now().time_since_epoch().count();
@@ -595,6 +616,9 @@ namespace Hooks {
 
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS CLOSED");
+
+
+                register_allowed_actions();
 
                 auto player = RE::PlayerCharacter::GetSingleton();
 
@@ -646,6 +670,10 @@ namespace Hooks {
                             }
                         
                         
+
+
+
+
 
                         send_random_context("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]");
                     }

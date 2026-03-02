@@ -31,6 +31,9 @@ bool visit_all_members4(std::vector<std::string>& results, const RE::GFxValue& i
 
 bool force_choice(std::vector<MenuOption> options, std::string message, int force_type);
 
+void unregister_all_actions();
+void register_allowed_actions();
+
 
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);

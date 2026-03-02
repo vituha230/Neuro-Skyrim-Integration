@@ -18,13 +18,12 @@
 
 neurosdk_action ActionsList[] = {  
                                     
-                                    
                                     Capabilities::WalkToObject::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
                                     
-                                    //Capabilities::GetLocations::Action,
+                                    Capabilities::GetLocations::Action,
                                     
 
                                     Capabilities::GetSpells::Action,
@@ -35,11 +34,11 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::UseInventoryItem::Action,
                                     Capabilities::CallWaitMenu::Action,
                                     Capabilities::OpenMap::Action,
-                                    //Capabilities::GetGold::Action,
+                                    Capabilities::GetGold::Action,
                                     
-                                        //Capabilities::SelectForceChoice::Action,
-                                        //Capabilities::SelectForceChoiceMultiple::Action,
-                                        //Capabilities::SelectForceChoiceString::Action,
+                                    Capabilities::SelectForceChoice::Action,
+                                    Capabilities::SelectForceChoiceMultiple::Action,
+                                    Capabilities::SelectForceChoiceString::Action,
 
                                     Capabilities::GetObjectsAround::Action, //idk about this one
                                     Capabilities::GoToLocation::Action
@@ -157,6 +156,7 @@ bool neuro::NeuroSocket::Initialize()
         return false;
     }
 
+    /* //now filled when necessary
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
                                          .value = {.actions_register = {.actions = ActionsList,
                                                                         .actions_len = ActionsCount}} };
@@ -168,53 +168,27 @@ bool neuro::NeuroSocket::Initialize()
 
         return false;
     }
+    */
 
-    return SendContext("You are playing Skyrim, an action RPG. Commands will only give reasonable output once. "
-        "you are ingame. ",
+
+    return SendContext("You are playing Skyrim, an action RPG.",
         true) &&
         IsAlive();
 }
 
 
-bool neuro::NeuroSocket::register_an_action(neurosdk_action action)
+
+bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
 {
-    /*
-    neurosdk_context_create_desc_t desc{ .url = "ws://localhost:8000", //TODO: why was this not filled?
-                                    .game_name = "Skyrim",
-                                    .poll_ms = PollRateMs,
-                                    .flags = (neurosdk_context_create_flags_e)NEUROSDK_CONTEXT_CREATE_FLAGS_DEBUG,
-                                    .callback_log = neuro::NeuroSocket::LogNeuro };
-
-    // Retry with fallback flag (for Tony/other less conformant API implementations)
-    *(uint32_t*)(&desc.flags) |= NeuroSDK_ContextCreateFlags_FallbackToNonRFCImplementation;
-
-    if (const auto status = neurosdk_context_create(&m_context, &desc); status != NeuroSDK_None)
-    {
-        // Try: does this crash if we don't create context twice?
-        *(uint32_t*)(&desc.flags) &= (~NeuroSDK_ContextCreateFlags_FallbackToNonRFCImplementation);
-
-        if (const auto status = neurosdk_context_create(&m_context, &desc); status != NeuroSDK_None)
-        {
-
-            //Context::PluginLogger->ErrorF(Context::PluginHandle, "Failed to create Neuro SDK context! Error %s",
-            //   neurosdk_error_string(status));
-
-            return false;
-        }
-    }
-    */
-
-    neurosdk_action actions[] = {action};
+    if (!IsAlive())
+        return false;
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
                                          .value = {.actions_register = {.actions = actions,
-                                                                        .actions_len = 1}} };
+                                                                        .actions_len = size}} };
 
     if (const auto status = neurosdk_context_send(&m_context, &capabilityMessage); status != NeuroSDK_None)
     {
-        //Context::PluginLogger->ErrorF(Context::PluginHandle, "Failed to inform backend of capabilities! Error %s",
-        //    neurosdk_error_string(status));
-
         return false;
     }
 
@@ -223,51 +197,101 @@ bool neuro::NeuroSocket::register_an_action(neurosdk_action action)
 
 
 
-bool neuro::NeuroSocket::unregister_an_action(neurosdk_action action)
+bool neuro::NeuroSocket::unregister_actions(const char** action_names, int size)
 {
-
-    /*
-    neurosdk_context_create_desc_t desc{ .url = "ws://localhost:8000", //TODO: why was this not filled?
-                                    .game_name = "Skyrim",
-                                    .poll_ms = PollRateMs,
-                                    .flags = (neurosdk_context_create_flags_e)NEUROSDK_CONTEXT_CREATE_FLAGS_DEBUG,
-                                    .callback_log = neuro::NeuroSocket::LogNeuro };
-
-    // Retry with fallback flag (for Tony/other less conformant API implementations)
-    *(uint32_t*)(&desc.flags) |= NeuroSDK_ContextCreateFlags_FallbackToNonRFCImplementation;
-
-    if (const auto status = neurosdk_context_create(&m_context, &desc); status != NeuroSDK_None)
-    {
-        // Try: does this crash if we don't create context twice?
-        *(uint32_t*)(&desc.flags) &= (~NeuroSDK_ContextCreateFlags_FallbackToNonRFCImplementation);
-
-        if (const auto status = neurosdk_context_create(&m_context, &desc); status != NeuroSDK_None)
-        {
-
-            //Context::PluginLogger->ErrorF(Context::PluginHandle, "Failed to create Neuro SDK context! Error %s",
-            //   neurosdk_error_string(status));
-
-            return false;
-        }
-    }
-    */
-
-    const char* action_names = action.name;
+    if (!IsAlive())
+        return false;
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsUnregister,
-                                         .value = {.actions_unregister = {.action_names = &action_names,
-                                                                        .action_names_len = 1}} };
+                                         .value = {.actions_unregister = {.action_names = action_names,
+                                                                        .action_names_len = size}}};
 
     if (const auto status = neurosdk_context_send(&m_context, &capabilityMessage); status != NeuroSDK_None)
     {
-        //Context::PluginLogger->ErrorF(Context::PluginHandle, "Failed to inform backend of capabilities! Error %s",
-        //    neurosdk_error_string(status));
-
         return false;
     }
 
     return true;
 }
+
+
+bool neuro::NeuroSocket::unregister_all()
+{
+    if (!IsAlive())
+        return false;
+
+
+    const char* action_names[ActionsCount];
+
+    for (int i = 0; i < ActionsCount; i++)
+    {
+        action_names[i] = ActionsList->name;
+    }
+
+
+    neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsUnregister,
+                                         .value = {.actions_unregister = {.action_names = action_names,
+                                                                        .action_names_len = ActionsCount}} };
+
+    if (const auto status = neurosdk_context_send(&m_context, &capabilityMessage); status != NeuroSDK_None)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
+neurosdk_action actions_to_register[ActionsCount]{};
+
+bool neuro::NeuroSocket::register_allowed_actions()
+{
+    if (!IsAlive())
+        return false;
+
+
+    int action_pos = 0;
+
+    actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
+    actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+
+    if (!MiscThings::is_intro())
+    {
+        actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
+        actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
+
+        if (!MiscThings::is_intro2())
+        {
+            actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+        }
+
+    }
+
+
+
+    neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
+                                         .value = {.actions_register = {.actions = actions_to_register,
+                                                                        .actions_len = action_pos}} };
+
+    if (const auto status = neurosdk_context_send(&m_context, &capabilityMessage); status != NeuroSDK_None)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
+
+
+
 
 
 
@@ -511,7 +535,10 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
 
                 if (command_result.first && !dont_reset_force) //if got positive result above - force has been cleared
                 {
-                    unregister_an_action(action_to_unregister); //lets try not caring about result... surely it will work 1st time?
+                    
+                    const char* action_names[] = { action_to_unregister.name };
+
+                    unregister_actions(action_names, std::size(action_names)); //lets try not caring about result... surely it will work 1st time?
 
                     set_active_force(-1);
                 }

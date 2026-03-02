@@ -420,8 +420,10 @@ namespace neuro {
 
 
 
-        bool register_an_action(neurosdk_action action);
-        bool unregister_an_action(neurosdk_action action);
+        bool register_actions(neurosdk_action actions[], int size);
+        bool unregister_actions(const char** action_names, int size);
+        bool unregister_all();
+        bool register_allowed_actions();
 
 
         static void LogNeuro(neurosdk_severity_e aSeverity, char *aMsg, void* aUserData);

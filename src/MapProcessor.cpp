@@ -272,7 +272,6 @@ namespace MapProcessor {
 		if (player->GetParentCell() && player->GetParentCell()->IsInteriorCell())
 			result = "Cannot open map in this location!";
 
-
 		return result;
 	}
 

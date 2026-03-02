@@ -1465,7 +1465,9 @@ namespace Observer {
 
 				if (!old_can_interact && can_interact)
 				{
+					register_allowed_actions();
 					send_random_context("[Your hands are free]");
+
 					old_can_interact = can_interact;
 				}
 
@@ -1526,6 +1528,9 @@ namespace Observer {
 				{
 					if (!player_dead_sent)
 					{
+						unregister_all_actions();
+						set_active_force(-1);
+
 						player_dead_sent = true;
 						send_random_context("[YOU DIED. The game will resume from last save soon]");
 						MiscThings::set_time_of_death(std::chrono::steady_clock::now().time_since_epoch().count());
