@@ -409,8 +409,20 @@ namespace MapProcessor {
 					bool camera_posY_ok = true;
 
 
+					if (marker_posY > 0.53)
+						camera_posY_ok = false;
 
-					if (abs(abs(marker_posX) - 0.5f) > abs(abs(marker_posY) - 0.5f))
+					if (marker_posY < 0.47)
+						camera_posY_ok = false;
+
+					if (marker_posX > 0.52)
+						camera_posX_ok = false;
+
+					if (marker_posX < 0.48)
+						camera_posX_ok = false;
+
+
+					if (!camera_posX_ok)
 					{
 						if (marker_posX > 0.52)
 							right();
@@ -420,24 +432,17 @@ namespace MapProcessor {
 					}
 					else
 					{
-						if (marker_posY > 0.53)
-							cursor_down();
+						if (!camera_posY_ok)
+						{
+							if (marker_posY > 0.53)
+								cursor_down();
 
-						if (marker_posY < 0.47)
-							cursor_up();
+							if (marker_posY < 0.47)
+								cursor_up();
+						}
 					}
 
-					if (marker_posY > 0.53)
-						camera_posY_ok = false;
 
-					if (marker_posY < 0.47)
-						camera_posY_ok = false;
-					
-					if (marker_posX > 0.52)
-						camera_posX_ok = false;
-
-					if (marker_posX < 0.48)
-						camera_posX_ok = false;
 
 
 					if (camera_posX_ok && camera_posY_ok)
@@ -587,7 +592,7 @@ namespace MapProcessor {
 			result.push_back({ 1, "Yes" });
 		}
 
-		result.push_back({ -1, "[CLOSE MAP]" });
+		//result.push_back({ -1, "[CLOSE MAP]" });
 
 
 		return result;

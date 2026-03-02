@@ -109,25 +109,31 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
 {
     if (get_active_force() == -1)
     {
-        StringView force_name = Capabilities::SelectForceChoice::Name;
+        neurosdk_action force_action = Capabilities::SelectForceChoice::Action;
 
         if (force_type == force_type::alchemy_ingredients)
-            force_name = Capabilities::SelectForceChoiceMultiple::Name;
+            force_action = Capabilities::SelectForceChoiceMultiple::Action;
 
         if (force_type == force_type::character_name)
-            force_name = Capabilities::SelectForceChoiceString::Name;
+            force_action = Capabilities::SelectForceChoiceString::Action;
 
-        set_active_force(force_type);
 
-        MiscThings::clean_controls_from_string(&message);
-        set_universal_block(1.0f);
-        std::string json{};
-        bool result = !glz::write_json(options, json);
-        m_neuroSocket->SendForcedAction(force_name,
-            message.c_str(),
-            json.c_str(),
-            "medium");
-        return true;
+        if (m_neuroSocket->register_an_action(force_action))
+        {
+
+            set_active_force(force_type);
+
+            MiscThings::clean_controls_from_string(&message);
+            set_universal_block(1.0f);
+            std::string json{};
+            bool result = !glz::write_json(options, json);
+            m_neuroSocket->SendForcedAction(force_action.name,
+                message.c_str(),
+                json.c_str(),
+                "medium");
+            return true;
+        }
+        return false;
     }
     else
         return false;
