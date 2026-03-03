@@ -441,7 +441,12 @@ namespace Observer {
 										{
 											auto tree_form = (RE::TESFlora*)base_obj;
 
-											if (tree_form->produceItem)
+											auto test_flags = a_ref->AsReference()->GetFormFlags();
+											bool already_harvested = false;
+											if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+												already_harvested = true;
+
+											if (tree_form->produceItem && !already_harvested)
 												is_harvestable = true;
 										}
 

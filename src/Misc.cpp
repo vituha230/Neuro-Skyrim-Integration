@@ -4202,7 +4202,68 @@ namespace MiscThings {
                 for (std::pair<int, RE::TESObjectREFR*> object : objects_around)
                 {
                     if (object.second == a_ref)
+                    {
+                        auto base_obj = a_ref->GetBaseObject();
+                        
+                        if (base_obj)
+                        {
+                            auto base_type = base_obj->GetFormType();
+
+                            bool is_harvestable = false;
+
+                            std::string name = "";
+                            name = a_ref->GetDisplayFullName();
+
+                            //if (name == "Coin Purse")
+                            //    bool break_here = false;
+
+                            if (base_type == RE::FormType::Tree)
+                            {
+                                auto tree_form = (RE::TESObjectTREE*)base_obj;
+
+                                auto test_flags = a_ref->AsReference()->GetFormFlags();
+
+                                bool already_harvested = false;
+
+                                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                                    already_harvested = true;
+
+                                if (test_flags & 2048) //this is potentially only one we need here
+                                    already_harvested = true;
+
+                                if (tree_form->produceItem && !already_harvested)
+                                {
+                                    local_copy.push_back(object);
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                }
+                                else
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                            }
+
+                            if (base_type == RE::FormType::Flora)
+                            {
+                                auto tree_form = (RE::TESFlora*)base_obj;
+
+                                auto test_flags = a_ref->AsReference()->GetFormFlags();
+                                bool already_harvested = false;
+                                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                                    already_harvested = true;
+
+                                if (tree_form->produceItem && !already_harvested)
+                                {
+                                    local_copy.push_back(object);
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                }
+                                else
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                            }
+
+                        }
+
                         local_copy.push_back(object);
+                        return RE::BSContainer::ForEachResult::kContinue;
+                    }
+                        
                 }
 
                 return RE::BSContainer::ForEachResult::kContinue;
