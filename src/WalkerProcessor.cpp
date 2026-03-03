@@ -2401,7 +2401,11 @@ namespace WalkerProcessor {
         custom_path_appended = false; 
 
         if (using_custom_path)
+        {
+            register_allowed_actions();
             quicksave();
+        }
+            
 
         if (!backup_input_cancel)
         {
@@ -3742,6 +3746,7 @@ namespace WalkerProcessor {
 
                                                 if (quests_target_ref == helgen_tower_marker)
                                                 {
+                                                    unregister_all_actions();
                                                     using_custom_path = true;
                                                     custom_path = CustomWalkerPaths::helgen_tower_path;
                                                     //path_valid = true;
@@ -3891,6 +3896,7 @@ namespace WalkerProcessor {
                                             {
                                                 if (quests_target_ref == RE::TESForm::LookupByEditorID("dunCGObjectiveInn01REF") || quests_target_ref == RE::TESObjectREFR::LookupByID(0x000E24C3))
                                                 {
+                                                    unregister_all_actions();
                                                     using_custom_path = true;
                                                     custom_path = CustomWalkerPaths::helgen_tower_path;
                                                     path_valid = true;
@@ -3898,7 +3904,11 @@ namespace WalkerProcessor {
                                                 else
                                                 {
                                                     if (using_custom_path)
+                                                    {
+                                                        register_allowed_actions();
                                                         quicksave();
+                                                    }
+                                                        
 
                                                     using_custom_path = false;
                                                 }

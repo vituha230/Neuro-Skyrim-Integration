@@ -222,7 +222,7 @@ bool register_walk_to_object()
 
 bool register_look_at_object()
 {
-    neurosdk_action actions[] = { Capabilities::WalkToObject::Action };
+    neurosdk_action actions[] = { Capabilities::LookAtObject::Action };
 
     if (m_neuroSocket->register_actions(actions, std::size(actions)))
         return true;
@@ -870,6 +870,18 @@ namespace Hooks {
         static RE::UI_MESSAGE_RESULTS thunk(RE::RaceSexMenu* menu, RE::UIMessage& a_message)
         //static bool thunk(RE::RaceSexMenu* menu, RE::ButtonEvent* a_event)
         {
+
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow)
+            {
+                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
+                unregister_all_actions();
+            }
+
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide)
+            {
+                register_allowed_actions();
+            }
+
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kChatterEvent)
             {
                 bool test_123 = false;

@@ -1383,7 +1383,7 @@ namespace Observer {
 
 							if (unbound_quest_stage == 54)
 							{
-								unregister_all_actions();
+								//unregister_all_actions();
 								send_random_context("[You are getting out of the carriage with the others...]");
 							}
 								
@@ -1408,7 +1408,7 @@ namespace Observer {
 
 							if (unbound_quest_stage == 95)
 							{
-								unregister_all_actions();
+								//unregister_all_actions();
 								send_random_context("[You walk towards the block...]");
 							}
 								
@@ -1479,11 +1479,21 @@ namespace Observer {
 				if (objects_around_valid && !old_objects_around_valid)
 				{
 					if (!MiscThings::is_intro())
+					{
 						register_walk_to_object();
+						register_get_objects_around();
+					}
 					else
-						register_look_at_object();
+					{
+						if (can_look)
+						{
+							register_look_at_object();
+							register_get_objects_around();
+						}
+					}
+						
 
-					register_get_objects_around();
+					
 				}
 
 				old_objects_around_valid = MiscThings::is_objects_around_valid();
@@ -1520,13 +1530,26 @@ namespace Observer {
 						int unbound_quest_stage = threshold_quest->GetCurrentStageID();
 						if (unbound_quest_stage == 80)
 						{
-							register_allowed_actions();
 							send_random_context("[You stop near the execution site with the others. ]");
 						}
 					}
-
-					
+					register_allowed_actions();
 				}
+
+
+				if (old_can_look && !can_look)
+				{
+					//auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+					//if (threshold_quest)
+					//{
+						//int unbound_quest_stage = threshold_quest->GetCurrentStageID();
+						//if (unbound_quest_stage < 160)
+						//{
+							unregister_all_actions();
+					//	}
+					//}
+				}
+
 				old_can_look = can_look;
 
 				bool cur_mount = MiscThings::is_on_horse();
