@@ -4203,7 +4203,10 @@ namespace MiscThings {
 
 
         std::sort(local_copy.begin(), local_copy.end(), [&](std::pair<int, RE::TESObjectREFR*> left, std::pair<int, RE::TESObjectREFR*> right) {
-            return left.second->GetDistance(player) < right.second->GetDistance(player); //switch > to < for inversed order. this is last->closest
+            if (left.second->data.objectReference && right.second->data.objectReference)
+                return left.second->GetDistance(player) < right.second->GetDistance(player); //switch > to < for inversed order. this is last->closest
+            else
+                return false;
             //std::string name_left = left.second->GetDisplayFullName();
             //std::string name_right = right.second->GetDisplayFullName();
             //return name_left < name_right; //alphabetical order. top = A
