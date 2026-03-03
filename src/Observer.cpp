@@ -129,18 +129,27 @@ namespace Observer {
 	{
 		std::pair<bool, std::string> result{};
 
-		if (threats_response_request_sent && id >= 0 && id < 3)
+		if (!threats_response_request_sent)
 		{
-			threats_response_choice = id;
-			threats_response_choice_valid = true;
 			result.first = true;
-			result.second = "[Processing...]";
+			result.second = "No threats found";
 		}
 		else
 		{
-			result.first = false;
-			result.second = "Invalid choice ID";
+			if (id >= 0 && id < 3)
+			{
+				threats_response_choice = id;
+				threats_response_choice_valid = true;
+				result.first = true;
+				result.second = "[Processing...]";
+			}
+			else
+			{
+				result.first = false;
+				result.second = "Invalid choice ID";
+			}
 		}
+
 
 		return result;
 	}

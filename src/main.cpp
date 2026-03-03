@@ -7,8 +7,6 @@
 //TODO maybe give more context on actors' state (at least for things like "started running away"
 
 
-
-
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO add info about current weapons in hands to both spell and inventory
 
@@ -17,7 +15,6 @@
 //TODO inventory weight control (maybe force throw away things?)
 //TODO raycast object detection (!!! uuh maybe leave as is)
 //TODO: check all menus after force/choice merge
-//TODO: non-hostile spells will be cast excessively especially in right hand. need to figure out that (maybe irrelevant now that fights give nice info about what you are attacking with?)
 //TODO: add notifications when someone attacks you
 
 

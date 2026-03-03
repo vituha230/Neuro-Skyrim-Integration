@@ -124,6 +124,7 @@ namespace MiscThings {
 
     std::pair<bool, std::string> unlock_shout_level(int shout_id);
 
+    bool player_is_full_hp();
 
 
     bool is_enemy_to_actor(RE::TESObjectREFR* object);

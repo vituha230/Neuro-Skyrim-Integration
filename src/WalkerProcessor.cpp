@@ -195,6 +195,10 @@ namespace WalkerProcessor {
     bool looking_mode = false;
 
 
+    bool was_already_dead = false;
+
+
+
     void set_crime_mode(bool state)
     {
         crime_mode = state;
@@ -2382,6 +2386,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        was_already_dead = false;
+
         looking_mode = false;
 
         too_high_notified = false; 
@@ -3237,7 +3244,12 @@ namespace WalkerProcessor {
 
 
                 if (interaction > 0 && interaction < 4)
+                {
                     interaction_after_walk = interaction;
+
+                    if (interaction_after_walk == 3 && target_ref->IsActor() && target_ref->IsDead())
+                        was_already_dead = true;
+                }
                 else
                     interaction_after_walk = -1;
 
@@ -4318,6 +4330,42 @@ namespace WalkerProcessor {
     }
 
 
+    /*
+    bool is_healing_spell(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell;
+
+            if (right)
+                spell = player->selectedSpells[0];
+            else
+                spell = player->selectedSpells[1];
+
+
+            if (spell)
+                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                {
+                    if (spell->GetDelivery() != RE::MagicSystem::Delivery::kSelf)
+                    {
+
+                    }
+                }
+
+
+
+        }
+        return result;
+    }
+    */
+
+
+
+
+
     std::string get_equipped_weapon_name(bool right)
     {
         std::string result = "";
@@ -4788,7 +4836,7 @@ namespace WalkerProcessor {
 
                     dont_check_mana = is_casting_something(true);
 
-                    if (!dont_check_mana && has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))))
+                    if ((!dont_check_mana && has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true)))) || (has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_is_full_hp()))
                     {
                         
 
@@ -4800,7 +4848,7 @@ namespace WalkerProcessor {
                         return false;
                     }
 
-                    if (attack_action_time < get_attack_time(true))
+                    if (attack_action_time < get_attack_time(true) && !(has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_is_full_hp()))
                     {
                         std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);
                         
@@ -4812,6 +4860,7 @@ namespace WalkerProcessor {
                         std::string attacking_weapon = "";
                         std::string attacking_health = "";
 
+                        bool casting = false;
 
                         if (has_spell_equipped(true))
                         {
@@ -4820,8 +4869,12 @@ namespace WalkerProcessor {
 
                             right_attack_spell();
                             if (!is_offensive_spell(true))
+                            {
+                                casting = true;
                                 start_attacking_info = "[You are casting ";
-                            attacking_weapon += get_equipped_spell_name(true);
+                            }
+
+                            attacking_weapon = get_equipped_spell_name(true);
                         }
                         else
                         {
@@ -4836,16 +4889,16 @@ namespace WalkerProcessor {
 
                             if (!has_something_equipped(true))
                             {
-                                attacking_weapon += "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                attacking_weapon = "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
                                 if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
                                     cursor_up();
                             }
                             else
                             {
                                 if (has_ranged_weapon_equipped(true) && no_ammo())
-                                    attacking_weapon += " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
+                                    attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
                                 else
-                                    attacking_weapon += get_equipped_weapon_name(true);
+                                    attacking_weapon = get_equipped_weapon_name(true);
 
                                 if (is_melee_weapon(true) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
                                     cursor_up();
@@ -4873,16 +4926,25 @@ namespace WalkerProcessor {
                             }
 
 
+
                             if (attacking_info == "")
                             {
-                                if (last_attacking_target != target_name)
-                                    attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                if (casting)
+                                {
+                                    attacking_info = start_attacking_info + attacking_weapon;
+                                }
                                 else
-                                    if (last_attacking_weapon != attacking_weapon)
+                                {
+                                    if (last_attacking_target != target_name)
                                         attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
                                     else
-                                        if (last_attacking_health != attacking_health)
-                                            attacking_info = "Enemy health: " + attacking_health;
+                                        if (last_attacking_weapon != attacking_weapon)
+                                            attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                        else
+                                            if (last_attacking_health != attacking_health)
+                                                attacking_info = "Enemy health: " + attacking_health;
+                                }
+
                             }
 
                             last_start_attacking_info = start_attacking_info;
@@ -4949,7 +5011,7 @@ namespace WalkerProcessor {
                         dont_check_mana = is_casting_something(false);
 
 
-                        if (!dont_check_mana && has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))))
+                        if ((!dont_check_mana && has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false)))) || (has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_is_full_hp()))
                         {
                             //set_universal_block(1.0f);
                             left_attack_cancel();
@@ -4958,7 +5020,7 @@ namespace WalkerProcessor {
                             return false;
                         }
 
-                        if (attack_action_time < get_attack_time(false))
+                        if (attack_action_time < get_attack_time(false) && !(has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_is_full_hp()))
                         {
                             std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);
                             
@@ -4970,12 +5032,20 @@ namespace WalkerProcessor {
                             std::string attacking_weapon = "";
                             std::string attacking_health = "";
 
+                            bool casting = false;
+
                             if (has_spell_equipped(false))
                             {
                                 if (attack_action_time > 0.7f);
-                                    was_charging_ranged = true;
+                                was_charging_ranged = true;
 
                                 left_attack_spell();
+                                if (!is_offensive_spell(left))
+                                {
+                                    casting = true;
+                                    start_attacking_info = "[You are casting ";
+                                }
+
                                 attacking_weapon += get_equipped_spell_name(false);
                             }
                             else
@@ -4995,9 +5065,9 @@ namespace WalkerProcessor {
                                 else
                                 {
                                     if (has_ranged_weapon_equipped(true) && no_ammo())
-                                        attacking_weapon += " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
+                                        attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
                                     else
-                                        attacking_weapon += get_equipped_weapon_name(false);
+                                        attacking_weapon = get_equipped_weapon_name(false);
                                 }
                             }
 
@@ -5023,14 +5093,21 @@ namespace WalkerProcessor {
 
                                 if (attacking_info == "")
                                 {
-                                    if (last_attacking_target != target_name)
-                                        attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                    if (casting)
+                                    {
+                                        attacking_info = start_attacking_info + attacking_weapon;
+                                    }
                                     else
-                                        if (last_attacking_weapon != attacking_weapon)
+                                    {
+                                        if (last_attacking_target != target_name)
                                             attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
                                         else
-                                            if (last_attacking_health != attacking_health)
-                                                attacking_info = "Enemy health: " + attacking_health;
+                                            if (last_attacking_weapon != attacking_weapon)
+                                                attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                            else
+                                                if (last_attacking_health != attacking_health)
+                                                    attacking_info = "Enemy health: " + attacking_health;
+                                    }
                                 }
 
 
@@ -5087,7 +5164,7 @@ namespace WalkerProcessor {
 
             
 
-            if (target_ref->IsActor())
+            if (target_ref->IsActor() && !was_already_dead)
             {
                 if (target_ref->IsDead())
                 {
@@ -5130,7 +5207,7 @@ namespace WalkerProcessor {
             }
             else
             {
-                if (attacking_inanimate_object_time > 2.0f)
+                if (attacking_inanimate_object_time > 3.0f)
                 {
                     if (MiscThings::get_destructible_state(target_ref) != 0)
                     {
