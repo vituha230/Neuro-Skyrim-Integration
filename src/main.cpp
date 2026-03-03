@@ -4,8 +4,6 @@
 //crucial:
 
 
-//TODO continue registering/unregistering actions
-//TODO fix empty result of ult casting
 //TODO maybe give more context on actors' state (at least for things like "started running away"
 
 

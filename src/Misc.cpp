@@ -3523,7 +3523,9 @@ namespace MiscThings {
                         use_ult();
                         result.first = true;
                         if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
-                            result.second = "[Casting the spell]";
+                            result.second = "[Casting spell:  [id " + std::to_string(id) + "] " + spell->GetFullName();
+                        else
+                            result.second = "[Using ult: [id " + std::to_string(id) + "] " + spell->GetFullName();
                     }
                     else
                     {
@@ -3539,7 +3541,7 @@ namespace MiscThings {
                         else
                         {
                             result.first = false;
-                            result.second = "Cannot use this spell. ";
+                            result.second = "Cannot use [id " + std::to_string(id) + "] " + spell->GetFullName();
                         }
                     }
                 }
