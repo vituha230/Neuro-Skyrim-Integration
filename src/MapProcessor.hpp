@@ -22,5 +22,8 @@ namespace MapProcessor {
 
 	bool abandon_all_messages();
 
+	std::string cant_open_map_reason();
+	bool map_is_allowed();
+
 }
 

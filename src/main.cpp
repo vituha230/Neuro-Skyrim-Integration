@@ -106,19 +106,49 @@ bool API_CONTROL_CRAFTING = false;
 
 bool do_debug_scan = false;
 
+
+
+/////////////////////////////////////////////////////////
+//clean this mess later
+int update_cycle = 0;
+float cycle_timer = 0.0;
+bool connected = false;
+bool reconnect = false;
+float reconnect_pause = 0.0f;
+bool universal_block = false;
+float universal_block_time = 0.0f;
+float universal_block_time_threshold = 0.0f;
+std::string speech_context_old = "";
+std::vector<std::string> subtitle_msg_old_vector{ "", "", "" };
+
+float subtitle_history_clear_time = 0.0f;
+
+
+bool restore_actions = false;
+float restore_actions_timer = 0.0f;
+
+/////////////////////////////////////////////////////////
+
+
+
 std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 
 
 
 void unregister_all_actions()
 {
+    restore_actions = false;
+    restore_actions_timer = 0.0f;
+
     m_neuroSocket->unregister_all();
 }
 
 
 void register_allowed_actions()
 {
-    m_neuroSocket->register_allowed_actions();
+    restore_actions = true;
+    restore_actions_timer = 0.0f;
+    //m_neuroSocket->register_allowed_actions();
 }
 
 
@@ -159,24 +189,18 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
 }
 
 
+bool register_unlock_shout_action()
+{
+    neurosdk_action actions[] = { Capabilities::UnlockShoutLevel::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
 
 
 
-/////////////////////////////////////////////////////////
-//clean this mess later
-int update_cycle = 0;
-float cycle_timer = 0.0;
-bool connected = false;
-bool reconnect = false;
-float reconnect_pause = 0.0f;
-bool universal_block = false;
-float universal_block_time = 0.0f;
-float universal_block_time_threshold = 0.0f;
-std::string speech_context_old = "";
-std::vector<std::string> subtitle_msg_old_vector{"", "", ""};
-
-float subtitle_history_clear_time = 0.0f;
-/////////////////////////////////////////////////////////
 
 
 
@@ -360,11 +384,17 @@ public:
         }
         
         if (a_message.type == RE::UI_MESSAGE_TYPE::kHide)
+        {
             send_random_context("[The dialogue ended]");
+            register_allowed_actions();
+        }
+            
 
 
         if (a_message.type == RE::UI_MESSAGE_TYPE::kShow) {
             doAllowProgressFix();
+
+            unregister_all_actions();
 
             if (const auto ui = RE::UI::GetSingleton(); ui) {
                 if (const auto menu = ui->GetMenu(RE::DialogueMenu::MENU_NAME); menu) {
@@ -460,6 +490,12 @@ namespace Hooks {
 
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); 
 
+                unregister_all_actions();
+            }
+
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
+
+                register_allowed_actions();
             }
 
             return originalFunction(menu, a_message);
@@ -476,12 +512,18 @@ namespace Hooks {
 
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
+                //unregister_all_actions();
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
                 //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->cancel, RE::INPUT_DEVICES::kKeyboard);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
 
+            }
+
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
+
+                ;// register_allowed_actions();
             }
 
             return originalFunction(menu, a_message);
@@ -498,12 +540,19 @@ namespace Hooks {
 
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
+                unregister_all_actions();
+
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
                 //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->cancel, RE::INPUT_DEVICES::kKeyboard);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
 
+            }
+
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
+
+                register_allowed_actions();
             }
 
             return originalFunction(menu, a_message);
@@ -520,12 +569,19 @@ namespace Hooks {
 
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
+                unregister_all_actions();
+
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
                 //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->cancel, RE::INPUT_DEVICES::kKeyboard);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
 
+            }
+
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
+
+                register_allowed_actions();
             }
 
             return originalFunction(menu, a_message);
@@ -542,6 +598,8 @@ namespace Hooks {
 
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
+                unregister_all_actions();
+
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
                 //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->cancel, RE::INPUT_DEVICES::kKeyboard);
@@ -549,6 +607,11 @@ namespace Hooks {
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
 
             }
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
+
+                register_allowed_actions();
+            }
+
 
             return originalFunction(menu, a_message);
         }
@@ -564,12 +627,19 @@ namespace Hooks {
 
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
+                unregister_all_actions();
+
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
                 //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->cancel, RE::INPUT_DEVICES::kKeyboard);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
 
+            }
+
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
+
+                register_allowed_actions();
             }
 
             return originalFunction(menu, a_message);
@@ -598,6 +668,8 @@ namespace Hooks {
                     MiscThings::reset_misc(); //clear compas locations on location change
                 }
 
+
+                RandomMessageBoxProcessor::reset_menu();
                 WalkerProcessor::reset_walker();
                 MiscThings::clear_object_list();
                 Observer::reset_threats();
@@ -717,7 +789,7 @@ namespace Hooks {
 
 
 
-    struct ProcessEvent {
+    struct RaceSexMenuProcessMessage {
 
         static RE::UI_MESSAGE_RESULTS thunk(RE::RaceSexMenu* menu, RE::UIMessage& a_message)
         //static bool thunk(RE::RaceSexMenu* menu, RE::ButtonEvent* a_event)
@@ -785,6 +857,8 @@ namespace Hooks {
 
             }
             else
+            {
+
                 if (a_message.type == RE::UI_MESSAGE_TYPE::kScaleformEvent)
                 {
                     if (const auto data = static_cast<RE::BSUIScaleformData*>(a_message.data); data)
@@ -802,6 +876,7 @@ namespace Hooks {
                         //        ;// return RE::UI_MESSAGE_RESULTS::kHandled; //works
                     }
                 }
+            }
 
             return originalFunction(menu, a_message);
         }
@@ -816,6 +891,8 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("MAP MENU WAS OPENED");
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
+
+                unregister_all_actions();
 
                 //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->cancel, RE::INPUT_DEVICES::kKeyboard);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
@@ -849,7 +926,7 @@ namespace Hooks {
             }
             else
                 if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
-                    RE::ConsoleLog::GetSingleton()->Print("MAP MENU WAS OPENED");
+                    RE::ConsoleLog::GetSingleton()->Print("MAP MENU WAS CLOSED");
                     //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
                     //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->cancel, RE::INPUT_DEVICES::kKeyboard);
@@ -875,7 +952,7 @@ namespace Hooks {
                         }
                     }
 
-
+                    register_allowed_actions();
 
                     /*
         nwCellX	-30	short
@@ -958,11 +1035,16 @@ namespace Hooks {
 
             }
             else
-                if (a_message.type.get() != RE::UI_MESSAGE_TYPE::kUpdate) 
+            {
+
+
+
+
+                if (a_message.type.get() != RE::UI_MESSAGE_TYPE::kUpdate)
                 {
                     std::string msg = "Tutorial menu message: ";
                     msg += std::to_string((uint32_t)a_message.type.get());
-                    
+
                     /*
                     BSUIMessageData
                     BSUIScaleformData
@@ -982,11 +1064,13 @@ namespace Hooks {
                     //IUIMessageData try all of this type
                     //auto test = a_message.type.;
 
-                   
+
 
 
                     //RE::ConsoleLog::GetSingleton()->Print(msg.c_str());
                 }
+            }
+                
             return originalFunction(menu, a_message);
         }
         static inline REL::Relocation<decltype(thunk)> originalFunction;
@@ -1002,10 +1086,15 @@ namespace Hooks {
                 RE::ConsoleLog::GetSingleton()->Print("Barter MENU WAS CLOSED");
                 DialogueProcessor::clean_old_dialogue(); //so dialogue continues on barter closed
                 universal_block = true;
+
+                register_allowed_actions();
+
             }
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("Barter MENU WAS OPENED");
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+
+                unregister_all_actions();
 
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::TutorialMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
@@ -1061,10 +1150,13 @@ namespace Hooks {
                 RE::ConsoleLog::GetSingleton()->Print("Lockpicking MENU WAS CLOSED");
                 DialogueProcessor::clean_old_dialogue(); //so dialogue continues on barter closed
                 universal_block = true;
+                register_allowed_actions();
             }
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("Lockpicking MENU WAS OPENED");
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+
+                unregister_all_actions();
 
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::TutorialMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
@@ -1114,10 +1206,14 @@ namespace Hooks {
                 RE::ConsoleLog::GetSingleton()->Print("Crafting MENU WAS CLOSED");
                 DialogueProcessor::clean_old_dialogue(); //so dialogue continues on barter closed
                 universal_block = true;
+                register_allowed_actions();
+
             }
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("Crafting MENU WAS OPENED");
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+
+                unregister_all_actions();
 
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::TutorialMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
 
@@ -1315,6 +1411,21 @@ private:
             }
                 
         }
+
+
+        if (restore_actions)
+        {
+            if (restore_actions_timer > 1.0f)
+            {
+                m_neuroSocket->register_allowed_actions();
+                restore_actions_timer = 0.0f;
+                restore_actions = false;
+            }
+            else
+                restore_actions_timer += dtime;
+        }
+        else
+            restore_actions_timer = 0.0f;
         
 
         OnUpdate();
@@ -2330,7 +2441,7 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
     Hooks::MessageBoxProcessMessage::Install();
     Hooks::SleepWaitProcessMessage::Install();
 
-    Hooks::ProcessEvent::Install();
+    Hooks::RaceSexMenuProcessMessage::Install();
 
 
 

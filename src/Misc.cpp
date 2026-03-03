@@ -24,6 +24,15 @@ namespace MiscThings {
         return time_of_death;
     }
 
+
+    bool is_in_main_menu()
+    {
+        RE::UI* ui = RE::UI::GetSingleton();
+        return ui->IsMenuOpen(RE::MainMenu::MENU_NAME);
+    }
+
+
+
     struct RayCastResult {
         float distance = -1.0f;
         RE::COL_LAYER layer = RE::COL_LAYER::kUnidentified;
@@ -669,6 +678,12 @@ namespace MiscThings {
                                     var_string = "Quest started: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
                                 if (var_string.find("COMPLETED: ") == 0)
                                     var_string = "Quest completed: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
+
+                                if (var_string.find("DRAGON SOUL ABSORBED") != std::string::npos || var_string.find("WORD OF POWER LEARNED") != std::string::npos)
+                                {
+                                    if (player_has_shouts_to_unlock())
+                                        register_unlock_shout_action();
+                                }
 
                                 send_random_context("[" + var_string + "]");
                             }
@@ -3683,6 +3698,75 @@ namespace MiscThings {
 
         return result;
     }
+
+    bool escaped_helgen()
+    {
+        bool result = false;
+        auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+        if (threshold_quest)
+            if (threshold_quest->GetCurrentStageID() >= 760)
+                result = true;
+
+        return result;
+    }
+
+
+    bool is_interior_cell()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        auto parent_cell = player->GetParentCell();
+
+        if (parent_cell)
+        {
+            if (parent_cell->IsInteriorCell())
+                return true;
+        }
+
+        return false;
+    }
+
+    bool player_has_shouts_to_unlock()
+    {
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        RE::TESNPC* player_npc = (RE::TESNPC*)RE::TESForm::LookupByID(0x7);
+        auto spellList = player_npc->GetSpellList();
+
+        auto shouts_pp = spellList->shouts;
+
+        int dragon_souls = player->GetActorValue(RE::ActorValue::kDragonSouls);
+
+        for (auto* shout_p : std::span(shouts_pp, spellList->numShouts))
+        {
+            if (shout_p)
+            {
+                int known_words = 0;
+                int unlocked_words = 0;
+                int max_words = 0;
+                //bool set_known_one = false;
+
+                for (auto variation : shout_p->variations)
+                {
+                    if ((variation.word->formFlags & 65600) == 65600)
+                        unlocked_words++;
+
+                    if (variation.word->GetKnown())
+                        known_words++;
+
+                    max_words++;
+                }
+
+                if (unlocked_words < known_words && dragon_souls > 0)
+                    return true;
+
+            }
+        }
+        return false;
+    }
+
+
+
 
     bool is_fighting_dragons_allowed()
     {

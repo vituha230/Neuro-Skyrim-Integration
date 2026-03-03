@@ -18,7 +18,8 @@ namespace RandomMessageBoxProcessor {
 	bool message_box_choice_valid = false;
 	int message_box_choice = -1;
 	bool rolled_over = false;
-
+	bool done = false;
+	float messagebox_processor_timer = 0.0f;
 
 	struct option {
 		int button_id;
@@ -129,19 +130,35 @@ namespace RandomMessageBoxProcessor {
 		message_box_choice = -1;
 		rolled_over = false;
 		options.clear();
-
+		done = false;
+		messagebox_processor_timer = 0.0f;
 	}
 
 
 
 
-	float walker_processor_timer = 0.0f;
+	
 
 	void processor(float dtime)
 	{
 		RE::UI* ui = RE::UI::GetSingleton();
 
 		message_box_open = ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME);
+
+
+		if (done)
+		{
+			if (messagebox_processor_timer > 0.5f)
+			{
+				reset_menu();
+				register_allowed_actions();
+			}
+			else
+				messagebox_processor_timer += dtime;
+
+			return;
+		}
+
 
 
 		if (message_box_open)
@@ -169,6 +186,8 @@ namespace RandomMessageBoxProcessor {
 				{
 					if (!message_box_request_sent)
 					{
+						unregister_all_actions();
+
 						auto option_test = get_options();
 
 						if (std::size(option_test) == 1)
@@ -207,8 +226,9 @@ namespace RandomMessageBoxProcessor {
 								rolled_over = false;
 								menu->uiMovie->Invoke(("_root.MessageMenu.Buttons.Button" + index + ".onPress").c_str(), nullptr, nullptr, 0);
 								set_universal_block(1.0f);
-								reset_menu();
+								//reset_menu();
 								//supposedly we exit the menu now
+								done = true;
 							}
 						}
 					}

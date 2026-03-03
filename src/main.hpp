@@ -33,7 +33,7 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
 
 void unregister_all_actions();
 void register_allowed_actions();
-
+bool register_unlock_shout_action();
 
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);

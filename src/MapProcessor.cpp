@@ -204,6 +204,28 @@ namespace MapProcessor {
 	}
 
 
+	bool map_is_allowed()
+	{
+		auto player = RE::PlayerCharacter::GetSingleton();
+
+		if (MiscThings::is_intro() || MiscThings::is_intro2())
+			return false;
+
+		if (player->actorState1.flyState != RE::FLY_STATE::kNone)
+			return false;
+
+		if (player->actorState1.swimming)
+			return false;
+
+		if (player->GetParentCell() && player->GetParentCell()->IsInteriorCell())
+			return false;
+
+
+
+		return true;
+	}
+
+
 	std::string cant_open_map_reason()
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();

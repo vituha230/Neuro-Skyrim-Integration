@@ -44,7 +44,29 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::GoToLocation::Action
                                 };
 
+neurosdk_action ActionsListNoForces[] = {
 
+                                    Capabilities::WalkToObject::Action,
+
+                                    Capabilities::GetCurrentQuests::Action,
+                                    Capabilities::FollowQuest::Action,
+
+                                    Capabilities::GetLocations::Action,
+
+
+                                    Capabilities::GetSpells::Action,
+                                    Capabilities::CastEquipSpell::Action,
+                                    Capabilities::UnlockShoutLevel::Action, //TODO: probably calculate ourselves and force just like levelup
+
+                                    Capabilities::GetInventory::Action,
+                                    Capabilities::UseInventoryItem::Action,
+                                    Capabilities::CallWaitMenu::Action,
+                                    Capabilities::OpenMap::Action,
+                                    Capabilities::GetGold::Action,
+
+                                    Capabilities::GetObjectsAround::Action, //idk about this one
+                                    Capabilities::GoToLocation::Action
+};
 
 /*
 neurosdk_action ActionsList[] = { QueryQuestContext::Action,
@@ -63,7 +85,7 @@ neurosdk_action ActionsList[] = { QueryQuestContext::Action,
 */
 
 constexpr auto ActionsCount = std::size(ActionsList);
-
+constexpr auto ActionsCountNoForces = std::size(ActionsListNoForces);
 
 
 neuro::NeuroSocket::NeuroSocket()
@@ -221,17 +243,19 @@ bool neuro::NeuroSocket::unregister_all()
         return false;
 
 
-    const char* action_names[ActionsCount];
+    const char* action_names[ActionsCountNoForces];
 
-    for (int i = 0; i < ActionsCount; i++)
+    for (int i = 0; i < ActionsCountNoForces; i++)
     {
-        action_names[i] = ActionsList->name;
+        action_names[i] = ActionsListNoForces[i].name;
     }
 
+    if (ActionsCountNoForces <= 0)
+        return true;
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsUnregister,
                                          .value = {.actions_unregister = {.action_names = action_names,
-                                                                        .action_names_len = ActionsCount}} };
+                                                                        .action_names_len = ActionsCountNoForces}} };
 
     if (const auto status = neurosdk_context_send(&m_context, &capabilityMessage); status != NeuroSDK_None)
     {
@@ -246,6 +270,9 @@ neurosdk_action actions_to_register[ActionsCount]{};
 
 bool neuro::NeuroSocket::register_allowed_actions()
 {
+    if (MiscThings::is_in_main_menu())
+        return false;
+
     if (!IsAlive())
         return false;
 
@@ -255,26 +282,46 @@ bool neuro::NeuroSocket::register_allowed_actions()
     actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
     actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
 
-    if (!MiscThings::is_intro())
+    if (!MiscThings::is_intro()) //must be watched to refresh
     {
         actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
         actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
 
-        if (!MiscThings::is_intro2())
+        if (!MiscThings::is_intro2()) //must be watched to refresh
         {
             actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
             actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+
+            if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
+            {
+                actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+            }
+            
             actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
             actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+
+            if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
+            {
+                actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+            }
+
+            if (MapProcessor::map_is_allowed()) //must be watched to refresh
+            {
+                actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
+            }
+                
+            if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
+            {
+                actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+            }
+            
         }
 
+        bool stop_here = false;
     }
 
-
+    if (action_pos <= 0)
+        return true;
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
                                          .value = {.actions_register = {.actions = actions_to_register,
@@ -661,7 +708,15 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                                 if (glz::read_json(json, messageQueue[i].value.action.data))
                                     failed_to_parse_json = true;
                                 else
+                                {
                                     command_result = MiscThings::unlock_shout_level(json.id);
+                                    if (command_result.first && !MiscThings::player_has_shouts_to_unlock())
+                                    {
+                                        const char* action_names[] = { Capabilities::UnlockShoutLevel::Name };
+                                        unregister_actions(action_names, std::size(action_names));
+                                    }
+                                }
+                                    
                             }
 
 

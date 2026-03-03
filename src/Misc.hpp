@@ -87,8 +87,12 @@ namespace MiscThings {
     bool is_fighting_dragons_allowed();
     bool is_intro();
     bool is_intro2();
+    bool escaped_helgen();
+    bool is_interior_cell();
+    bool player_has_shouts_to_unlock();
 
-
+    bool is_in_main_menu();
+        
     std::pair<bool, std::string> get_locations_around();
     bool is_location_in_the_list(RE::TESObjectREFR* object);
     std::string insert_location_into_list_and_get_info(RE::TESObjectREFR* refr);

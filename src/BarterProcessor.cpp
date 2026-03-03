@@ -2131,7 +2131,7 @@ void debug_scan(float dtime)
 
         if (const auto ui = RE::UI::GetSingleton(); ui) {
             //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-            if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
+            if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
                     {
@@ -2200,7 +2200,7 @@ void debug_scan(float dtime)
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
 
 
-                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -2225,7 +2225,7 @@ void debug_scan(float dtime)
                             */
 
 
-                            search_var = "Enter the Keep";
+                            search_var = "WORD OF POWER LEARNED";
                             search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
