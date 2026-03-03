@@ -198,6 +198,50 @@ bool register_unlock_shout_action()
 }
 
 
+bool register_get_objects_around()
+{
+    neurosdk_action actions[] = { Capabilities::GetObjectsAround::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
+bool register_walk_to_object()
+{
+    neurosdk_action actions[] = { Capabilities::WalkToObject::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
+bool register_look_at_object()
+{
+    neurosdk_action actions[] = { Capabilities::WalkToObject::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
+bool register_quest_actions()
+{
+    neurosdk_action actions[] = { Capabilities::GetCurrentQuests::Action, Capabilities::FollowQuest::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
 
 bool unregister_look_action()
 {
@@ -208,6 +252,7 @@ bool unregister_look_action()
 
     return false;
 }
+
 
 
 

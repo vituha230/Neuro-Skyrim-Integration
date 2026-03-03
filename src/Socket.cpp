@@ -289,11 +289,18 @@ bool neuro::NeuroSocket::register_allowed_actions()
     {
         if (!MiscThings::is_intro()) //must be watched to refresh
         {
-            actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+            if (MiscThings::is_objects_around_valid())
+            {
+                actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
+                actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+            }
 
-            actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
+            if (MiscThings::have_any_quests())
+            {
+                actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
+                actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
+            }
+
 
             if (!MiscThings::is_intro2()) //must be watched to refresh
             {
@@ -329,8 +336,12 @@ bool neuro::NeuroSocket::register_allowed_actions()
         }
         else
         {
-            actions_to_register[action_pos] = Capabilities::LookAtObject::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+            if (MiscThings::is_objects_around_valid())
+            {
+                actions_to_register[action_pos] = Capabilities::LookAtObject::Action; action_pos++;
+                actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+            }
+
         }
     }
     

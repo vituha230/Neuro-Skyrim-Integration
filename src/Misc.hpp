@@ -129,6 +129,7 @@ namespace MiscThings {
     bool is_enemy_to_actor(RE::TESObjectREFR* object);
     bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest);
 
+    bool have_any_quests();
 
 
     namespace General::Script

@@ -35,6 +35,10 @@ void unregister_all_actions();
 void register_allowed_actions();
 bool register_unlock_shout_action();
 bool unregister_look_action();
+bool register_get_objects_around();
+bool register_walk_to_object();
+bool register_look_at_object();
+bool register_quest_actions();
 
 
 /*

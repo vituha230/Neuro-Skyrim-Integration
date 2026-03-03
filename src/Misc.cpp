@@ -1480,7 +1480,7 @@ namespace MiscThings {
 
         if (!got_any_quests)
         {
-            result.first = true;
+            result.first = false;
             result.second = "No active quests found. ";
         }
         else
@@ -1492,6 +1492,15 @@ namespace MiscThings {
 
         return result;
     }
+
+
+    bool have_any_quests()
+    {
+        auto test_result = get_current_quests();
+
+        return test_result.first;
+    }
+
 
 
 
@@ -1648,7 +1657,11 @@ namespace MiscThings {
                                                         found = true;
 
                                                         if (!quest_list_valid)
+                                                        {
                                                             quest_list_valid = true;
+                                                            register_quest_actions();
+                                                        }
+                                                            
                                                         //result = "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
 
 

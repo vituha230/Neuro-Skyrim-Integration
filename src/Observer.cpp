@@ -61,6 +61,7 @@ namespace Observer {
 	bool jail_escaping_notified = false;
 
 
+	bool old_objects_around_valid = false;
 
 
 
@@ -1472,6 +1473,23 @@ namespace Observer {
 				bool serving_jail = jail_quest->IsRunning() && (jail_quest->GetCurrentStageID() < 20) && !escaping_jail && !MiscThings::is_intro() && !MiscThings::is_intro2() && MiscThings::escaped_helgen();
 
 				
+
+				bool objects_around_valid = MiscThings::is_objects_around_valid();
+
+				if (objects_around_valid && !old_objects_around_valid)
+				{
+					if (!MiscThings::is_intro())
+						register_walk_to_object();
+					else
+						register_look_at_object();
+
+					register_get_objects_around();
+				}
+
+				old_objects_around_valid = MiscThings::is_objects_around_valid();
+
+
+
 			
 				if (serving_jail && !jail_serving_notified)
 				{
