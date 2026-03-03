@@ -286,7 +286,7 @@ namespace Observer {
 				float scan_distance = 4000.0f;
 				auto player_cell = player->GetParentCell();
 				if (player_cell && player_cell->IsInteriorCell())
-					scan_distance = 2000.0f;
+					scan_distance = 3000.0f;
 
 				if (!player->IsDead())
 				{
@@ -330,9 +330,6 @@ namespace Observer {
 									//little flags
 									if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
 										return RE::BSContainer::ForEachResult::kContinue;
-
-
-
 								}
 
 
@@ -412,15 +409,11 @@ namespace Observer {
 								{
 									//and now with smaller range
 
-
-
-
 									if (base_type == RE::FormType::Container)
 									{
 										if (!MiscThings::is_object_in_the_list(a_ref))
 											result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
 									}
-
 
 									if (base_obj)
 									{

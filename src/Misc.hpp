@@ -128,6 +128,8 @@ namespace MiscThings {
 
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
 
+    RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist);
+
 
     bool is_enemy_to_actor(RE::TESObjectREFR* object);
     bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest);

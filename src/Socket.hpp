@@ -104,6 +104,17 @@ namespace Capabilities
     } // namespace SelectChoiceOption
     */
 
+    namespace ExploreWorld
+    {
+        constexpr char Name[] = "explore";
+        constexpr char Desc[] =
+            R"(Walk in some direction, exploring the surroundings)";
+        constexpr char JsonSchema[] = "{}";
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    }
+
+
     namespace WalkToObject
     {
         constexpr char Name[] = "walk_to_object_and_interact";

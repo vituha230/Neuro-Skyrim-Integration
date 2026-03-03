@@ -197,6 +197,8 @@ namespace WalkerProcessor {
 
     bool was_already_dead = false;
 
+    bool explore_mode = false;
+    float min_dist = 20000.0f;
 
 
     void set_crime_mode(bool state)
@@ -430,7 +432,6 @@ namespace WalkerProcessor {
                             marker_ref->MoveTo(target_ref);
 
                             correct_marker_pos();
-
                         }
                         else
                             ;//idk do nothing? its probably already on target anyway
@@ -505,20 +506,48 @@ namespace WalkerProcessor {
                         path.push_back(hazard.get()->data.location);
 
                     if (std::size(path) > 2)
+                    {
                         had_any_path_found_this_run = true;
+                        if (explore_mode)
+                        {
+                            min_dist = 20000.0f;
+                            send_random_context("[You found a direction to explore, and started walking");
+                        }
+                    }
                     else
                     {
-                        if (target_ref)
+                        if (explore_mode)
                         {
-                            if (target_is_too_high())
+                            //try to find different object
+                            if (min_dist > 100.0f)
                             {
-                                if (!too_high_notified)
+                                min_dist /= 2.0f;
+                                auto result_probe = explore_world();
+                            }
+                            else
+                            {
+                                min_dist = 20000.0f;
+                                reset_walker();
+                                send_random_context("You cannot find any interesting direction to explore");
+                            }
+
+                            return;
+                        }
+                        else
+                        {
+                            if (target_ref)
+                            {
+                                if (target_is_too_high())
                                 {
-                                    too_high_notified = true;
-                                    send_random_context(MiscThings::insert_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
+                                    if (!too_high_notified)
+                                    {
+                                        too_high_notified = true;
+                                        send_random_context(MiscThings::insert_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
+                                    }
                                 }
                             }
                         }
+
                     }
 
 
@@ -3048,6 +3077,99 @@ namespace WalkerProcessor {
 
         return result;
     }
+
+
+
+    std::pair<bool, std::string> explore_world()
+    {
+        float max_dist = 50000.0f;
+
+
+        std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            min_dist = 20000.0f;
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            min_dist = 20000.0f;
+            result.first = false;
+            result.second = "You cannot walk yet";
+            return result;
+        }
+
+
+        RE::TESObjectREFR* random_target = nullptr;
+
+        while (min_dist > 100.0f && !random_target)
+        {
+            random_target = MiscThings::find_distant_unseen_reference(min_dist, max_dist);
+            min_dist -= 200.0f;
+        }
+            
+        if (!random_target)
+        {
+            min_dist = 20000.0f;
+            result.first = false;
+            result.second = "Cannot find anything interesting to explore here...";
+            return result;
+        }
+
+
+        if (have_target_to_walk)
+        {
+            if (target_ref != random_target)
+                reset_walker();
+            else
+            {
+                min_dist = 20000.0f;
+                result.first = true;
+                result.second = "[You look around, searching for directions to explore...]";
+                return result;
+            }
+        }
+
+
+
+        right_attack_cancel();
+        left_attack_cancel();
+
+
+        target_ref = random_target;
+        have_target_to_walk = true;
+        reminder_start_pos = player->GetPosition();
+        reminder_start_pos = player->GetPosition();
+        reminder_target_name = "somewhere";
+        explore_mode = true;
+
+        interaction_after_walk = -1;
+
+        result.first = true;
+        if (!MiscThings::is_intro())
+            result.second = "[You look around, searching for directions to explore...]";
+        else
+            result.second = "Cannot walk right now. Looking at target instead";
+
+        return result;
+    }
+
+
 
 
     std::pair<bool, std::string> walk_to_object_by_index(int index, int interaction)

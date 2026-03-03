@@ -20,6 +20,7 @@ neurosdk_action ActionsList[] = {
                                     
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
+                                    Capabilities::ExploreWorld::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -49,6 +50,7 @@ neurosdk_action ActionsListNoForces[] = {
 
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
+                                    Capabilities::ExploreWorld::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -289,6 +291,7 @@ bool neuro::NeuroSocket::register_allowed_actions()
     {
         if (!MiscThings::is_intro()) //must be watched to refresh
         {
+            
             if (MiscThings::is_objects_around_valid())
             {
                 actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
@@ -317,6 +320,7 @@ bool neuro::NeuroSocket::register_allowed_actions()
 
                 if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
                 {
+                    actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
                     actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
                 }
 
@@ -643,6 +647,16 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                         }
                         else
                         {
+
+                            if (name == Capabilities::ExploreWorld::Name)
+                            {
+
+                                command_result = WalkerProcessor::explore_world();
+
+                            }
+
+
+
                             if (name == Capabilities::WalkToObject::Name)
                             {
                                 Impl::JSON::NeuroChoiceJson json{};
