@@ -2608,6 +2608,8 @@ namespace MiscThings {
 
 
 
+    bool last_free_was_left = false;
+
     RE::BGSEquipSlot* get_free_slot()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -2626,8 +2628,17 @@ namespace MiscThings {
             if (!equipped_list[0])
                 return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand
 
+            //both are busy
 
-            return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+            last_free_was_left = !last_free_was_left;
+
+            if (last_free_was_left)
+                return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+            else
+                return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+                
+
+            
         }
 
         return nullptr;
