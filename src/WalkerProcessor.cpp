@@ -2854,7 +2854,7 @@ namespace WalkerProcessor {
                 if (interaction_after_walk == 3)
                 {
 
-                    if (target_ref->IsActor() && target_ref->IsDead())
+                    if (target_ref->IsActor() && target_ref->IsDead() && !was_already_dead)
                     {
                         if (was_charging_ranged)
                         {
@@ -4256,6 +4256,10 @@ namespace WalkerProcessor {
     }
 
 
+
+
+
+
     bool is_offensive_spell(bool right)
     {
         bool result = false;
@@ -4909,7 +4913,7 @@ namespace WalkerProcessor {
                         {
                             gave_attacking_info = true;
 
-                            if (target_ref->IsActor())
+                            if (target_ref->IsActor() && !was_already_dead)
                             {
                                 bool immortal = false;
                                 auto target_actor = (RE::Actor*)target_ref;
@@ -4936,10 +4940,10 @@ namespace WalkerProcessor {
                                 else
                                 {
                                     if (last_attacking_target != target_name)
-                                        attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                        attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
                                     else
                                         if (last_attacking_weapon != attacking_weapon)
-                                            attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                            attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
                                         else
                                             if (last_attacking_health != attacking_health)
                                                 attacking_info = "Enemy health: " + attacking_health;
@@ -5075,7 +5079,7 @@ namespace WalkerProcessor {
                             {
                                 gave_attacking_info = true;
 
-                                if (target_ref->IsActor())
+                                if (target_ref->IsActor() && !was_already_dead)
                                 {
                                     bool immortal = false;
                                     auto target_actor = (RE::Actor*)target_ref;
@@ -5100,10 +5104,10 @@ namespace WalkerProcessor {
                                     else
                                     {
                                         if (last_attacking_target != target_name)
-                                            attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                            attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
                                         else
                                             if (last_attacking_weapon != attacking_weapon)
-                                                attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + ". Enemy health: " + attacking_health;
+                                                attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
                                             else
                                                 if (last_attacking_health != attacking_health)
                                                     attacking_info = "Enemy health: " + attacking_health;
@@ -5760,7 +5764,21 @@ namespace WalkerProcessor {
                         if (search_next_target_timer > 1.0f)
                         {
                             reset_walker();
-                            send_random_context("[Fight ended. Choose next action to do. You can walk somewhere, interact with something, follow some quest.]");
+                            std::string advice = "";
+
+                            if (MiscThings::is_objects_around_valid())
+                                advice = "walk somewhere, interact with something";
+
+                            if (MiscThings::have_any_quests())
+                                if (advice != "")
+                                    advice += ", follow some quest";
+                                else
+                                    advice = "follow some quest";
+
+                            if (advice != "")
+                                advice = "You can " + advice;
+
+                            send_random_context("[Fight ended. Choose next action to do. " + advice + "]");
                         }
                         else
                             search_next_target_timer += dtime;

@@ -2750,6 +2750,27 @@ namespace MiscThings {
         return false;
     }
 
+    bool is_spell_equipped(bool right, RE::MagicItem* test_spell)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell;
+
+            if (right)
+                spell = player->selectedSpells[0];
+            else
+                spell = player->selectedSpells[1];
+
+            if (spell)
+                result = spell == test_spell;
+        }
+
+        return result;
+    }
+
 
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
     {
@@ -2802,16 +2823,35 @@ namespace MiscThings {
                         if (is_equipped(object))
                         {
                             result.first = actor_equip->UnequipObject((RE::Actor*)player_ref, object);
-                            result.second = "[Unequipping [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+                            result.second = "[Unequipped [id " + std::to_string(item_id) + "] " + object->GetName() + "]";
                         }
                         else
                         {
+                            std::string equip_hand = "";
+
                             if (object->IsWeapon())
-                                actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, get_free_slot());
+                            {
+                                auto slot = get_free_slot();
+                                
+
+                                if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
+                                    equip_hand = " in right hand";
+
+                                if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //right hand
+                                    equip_hand = " in left hand";
+
+                                auto weapon = (RE::TESObjectWEAP*)object;
+
+                                if (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow())
+                                    equip_hand = " in both hands";
+
+                                actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot);
+                            }
                             else
                                 actor_equip->EquipObject((RE::Actor*)player_ref, object);
 
-                            result.second = "[Equipping [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+
+                            result.second = "[Equipped [id " + std::to_string(item_id) + "] " + object->GetName() + equip_hand + "...]";
                         }
 
                         result.first = true;
@@ -3236,15 +3276,31 @@ namespace MiscThings {
 
                     }
 
-
-
                     description = " " + descr;
 
                     if (a_spell->menuDispObject)
                     {
                         if (a_spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
                         {
-                            *active_spells += "[id " + std::to_string(i) + "] " + name + " - " + description + "[Takes hand slot]\n";
+                            
+                            bool right_equipped = is_spell_equipped(true, (RE::MagicItem*)a_spell);
+                            bool left_equipped = is_spell_equipped(false, (RE::MagicItem*)a_spell);
+
+                            std::string equip_info = "";
+                           
+                            if (!right_equipped && !left_equipped)
+                                equip_info = "[Unequipped]";
+                            else
+                                if (right_equipped && !left_equipped)
+                                    equip_info = "[Equipped in right hand, can also be equipped in left hand]";
+                                else
+                                    if (!right_equipped && left_equipped)
+                                        equip_info = "[Equipped in left hand, can also be equipped in right hand]";
+                                    else
+                                        equip_info = "[Equipped in both hands]";
+
+
+                            *active_spells += "[id " + std::to_string(i) + "] " + name + " - " + description + equip_info + "\n";
                             spells.push_back({ i, a_spell, nullptr });
                             i++;
                             *max_id = i;
@@ -3550,25 +3606,35 @@ namespace MiscThings {
                         use_ult();
                         result.first = true;
                         if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
-                            result.second = "[Casting spell:  [id " + std::to_string(id) + "] " + spell->GetFullName();
+                            result.second = "[Casting spell:  [id " + std::to_string(id) + "] " + spell->GetFullName() + "]";
                         else
-                            result.second = "[Using ult: [id " + std::to_string(id) + "] " + spell->GetFullName();
+                            result.second = "[Using ult: [id " + std::to_string(id) + "] " + spell->GetFullName() + "]";
                     }
                     else
                     {
                         if (slot_id == 0x00013F44) //either hand
                         {
-                            equip_manager->EquipSpell(player_actor, spell, get_free_slot());
+                            auto slot = get_free_slot();
+                            std::string equip_hand = "";
+
+                            if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
+                                equip_hand = " in right hand";
+
+                            if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
+                                equip_hand = " in left hand";
+
+
+                            equip_manager->EquipSpell(player_actor, spell, slot);
                             result.first = true;
                             if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
-                                result.second = "[Equipping [id " + std::to_string(id) + "] " + spell->GetFullName();
+                                result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                             else
-                                result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName();
+                                result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                         }
                         else
                         {
                             result.first = false;
-                            result.second = "Cannot use [id " + std::to_string(id) + "] " + spell->GetFullName();
+                            result.second = "Cannot use [id " + std::to_string(id) + "] " + spell->GetFullName() + "]";
                         }
                     }
                 }
