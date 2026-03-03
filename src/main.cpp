@@ -201,6 +201,15 @@ bool register_unlock_shout_action()
 
 
 
+bool unregister_look_action()
+{
+    const char* action_names[] = { Capabilities::LookAtObject::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
 
 
 
@@ -653,6 +662,8 @@ namespace Hooks {
         static RE::UI_MESSAGE_RESULTS thunk(RE::LoadingMenu* menu, RE::UIMessage& a_message) {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS OPENED");
+
+                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
 
                 unregister_all_actions();
 

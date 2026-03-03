@@ -192,6 +192,7 @@ namespace WalkerProcessor {
 
     bool too_high_notified = false;
 
+    bool looking_mode = false;
 
 
     void set_crime_mode(bool state)
@@ -2381,6 +2382,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        looking_mode = false;
 
         too_high_notified = false; 
 
@@ -3253,6 +3255,100 @@ namespace WalkerProcessor {
 
         return result;
     }
+
+
+
+    std::pair<bool, std::string> look_at_object_by_index(int index)
+    {
+
+        std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            result.first = false;
+            result.second = "You cannot look yet";
+            return result;
+        }
+
+
+        if (MiscThings::is_objects_around_valid())
+        {
+            auto objects_around = MiscThings::get_p_objects_around();
+
+            auto object = objects_around->find(index);
+
+            if (object != objects_around->end())
+            {
+                
+
+                if (have_target_to_walk)
+                {
+                    if (target_ref != object->second)
+                        reset_walker();
+                    else
+                    {
+                        result.first = false;
+                        result.second = "You are already looking at this object!";
+                        return result;
+                    }
+                }
+
+
+
+                right_attack_cancel();
+                left_attack_cancel();
+
+
+
+                target_ref = object->second;
+
+                have_target_to_walk = true;
+
+                reminder_start_pos = player->GetPosition();
+                reminder_start_pos = player->GetPosition();
+                reminder_target_name = MiscThings::insert_into_list_and_get_info(object->second);
+
+                interaction_after_walk = -1;
+
+                looking_mode = true;
+
+                result.first = true;
+                if (!MiscThings::is_intro())
+                    result.second = "[Looking at " + reminder_target_name + "...]";
+                else
+                    result.second = "[Looking at " + reminder_target_name + "...]";
+
+                return result;
+            }
+            else
+                reset_walker();
+
+        }
+
+        result.first = false;
+        result.second = "Invalid object ID"; //TODO more info
+
+        return result;
+    }
+
 
 
 
@@ -5958,7 +6054,7 @@ namespace WalkerProcessor {
                                                                 if (target_ref)
                                                                 {
                                                                     //std::string target_name = target_ref->GetDisplayFullName();
-                                                                    if (!chill_with_context)
+                                                                    if (!chill_with_context && !looking_mode)
                                                                         send_random_context(get_success_message());
                                                                 }
 

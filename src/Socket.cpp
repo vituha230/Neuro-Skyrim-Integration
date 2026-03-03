@@ -19,6 +19,7 @@
 neurosdk_action ActionsList[] = {  
                                     
                                     Capabilities::WalkToObject::Action,
+                                    Capabilities::LookAtObject::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -47,6 +48,7 @@ neurosdk_action ActionsList[] = {
 neurosdk_action ActionsListNoForces[] = {
 
                                     Capabilities::WalkToObject::Action,
+                                    Capabilities::LookAtObject::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -279,46 +281,59 @@ bool neuro::NeuroSocket::register_allowed_actions()
 
     int action_pos = 0;
 
-    actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
-    actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
 
-    if (!MiscThings::is_intro()) //must be watched to refresh
+    auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+    int unbound_quest_stage = threshold_quest->GetCurrentStageID();
+
+    if (unbound_quest_stage >= 15)
     {
-        actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
-        actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
-
-        if (!MiscThings::is_intro2()) //must be watched to refresh
+        if (!MiscThings::is_intro()) //must be watched to refresh
         {
-            actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
 
-            if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
-            {
-                actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
-            }
-            
-            actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
-            actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
 
-            if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
+            if (!MiscThings::is_intro2()) //must be watched to refresh
             {
-                actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+                actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
+                actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
+
+                if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
+                {
+                    actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+                }
+
+                actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
+                actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
+
+                if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
+                {
+                    actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+                }
+
+                if (MapProcessor::map_is_allowed()) //must be watched to refresh
+                {
+                    actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
+                }
+
+                if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
+                {
+                    actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+                }
+
             }
 
-            if (MapProcessor::map_is_allowed()) //must be watched to refresh
-            {
-                actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
-            }
-                
-            if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
-            {
-                actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
-            }
-            
+            bool stop_here = false;
         }
-
-        bool stop_here = false;
+        else
+        {
+            actions_to_register[action_pos] = Capabilities::LookAtObject::Action; action_pos++;
+            actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+        }
     }
+    
 
     if (action_pos <= 0)
         return true;
@@ -634,7 +649,17 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                                     command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
                             }
 
+                            if (name == Capabilities::LookAtObject::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
 
+                                // operator bool overload for glz::error_ctx returns true on failure!
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = WalkerProcessor::look_at_object_by_index(json.id);
+                            }
 
 
                             if (name == Capabilities::FollowQuest::Name)

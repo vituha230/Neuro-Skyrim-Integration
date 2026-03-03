@@ -116,6 +116,18 @@ namespace Capabilities
     }
 
 
+    namespace LookAtObject
+    {
+        constexpr char Name[] = "look_at_object";
+        constexpr char Desc[] =
+            R"(Look at object specified by its ID)";
+        constexpr char JsonSchema[] =
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id"] })";//
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    }
+
+
     namespace GetObjectsAround
     {
         constexpr char Name[] = "get_objects_around";

@@ -1292,11 +1292,13 @@ namespace Observer {
 
 		if (wait_and_send_game_start_context)
 		{
-			if (start_game_timer > 7.0f)
+			if (start_game_timer > 11.777f)
 			{
 				//game start context
 				send_random_context("You awake on a carriage going down a mountain to Helgen. You were unfortunate enough to stumble across an imperial raid on rebels while crossing the border and were arrested with other Stormcloaks, a horse thief, and Ulfric Stormcloak himself. Everyone assumes correctly that they are being led to their execution.");
 				wait_and_send_game_start_context = false;
+				register_allowed_actions();
+
 			}
 			else
 				start_game_timer += dtime;
@@ -1312,7 +1314,7 @@ namespace Observer {
 			{
 				if (unbound_quest_stage < 50)
 				{
-					if (green_light_delay > 10.0f)
+					if (green_light_delay > 15.0f && !wait_and_send_game_start_context)
 					{
 						observers_green_light = true;
 					}
@@ -1374,10 +1376,17 @@ namespace Observer {
 								wait_and_send_game_start_context = true;
 
 							if (unbound_quest_stage == 54)
+							{
+								unregister_all_actions();
 								send_random_context("[You are getting out of the carriage with the others...]");
+							}
+								
 
 							if (unbound_quest_stage == 70)
+							{
 								send_random_context("[You got out of the carriage]");
+							}
+								
 
 							if (unbound_quest_stage == 80)
 								send_random_context("[You walk after captain towards the block, other prisoners are already there...]");
@@ -1392,7 +1401,11 @@ namespace Observer {
 								send_random_context("[Stormcloak soldier has been beheaded by Headsman]");
 
 							if (unbound_quest_stage == 95)
+							{
+								unregister_all_actions();
 								send_random_context("[You walk towards the block...]");
+							}
+								
 
 							if (unbound_quest_stage == 97)
 								send_random_context("[You are pushed down on the beheading block]");
@@ -1413,7 +1426,12 @@ namespace Observer {
 								send_random_context("[You stood up]");
 
 							if (unbound_quest_stage == 160)
+							{
+								unregister_look_action();
+								register_allowed_actions();
 								send_random_context("[YOU CAN WALK NOW]");
+							}
+								
 
 							old_unbound_quest_stage = unbound_quest_stage;
 						}
@@ -1446,7 +1464,7 @@ namespace Observer {
 
 				//auto serving_jail = player->playerFlags.servingJailTime;
 				auto jail_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("JailQuest");
-				bool serving_jail = jail_quest->IsRunning() && (jail_quest->GetCurrentStageID() < 20) && !escaping_jail;
+				bool serving_jail = jail_quest->IsRunning() && (jail_quest->GetCurrentStageID() < 20) && !escaping_jail && !MiscThings::is_intro() && !MiscThings::is_intro2() && MiscThings::escaped_helgen();
 
 				
 			
@@ -1479,6 +1497,7 @@ namespace Observer {
 						int unbound_quest_stage = threshold_quest->GetCurrentStageID();
 						if (unbound_quest_stage == 80)
 						{
+							register_allowed_actions();
 							send_random_context("[You stop near the execution site with the others. ]");
 						}
 					}
