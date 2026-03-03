@@ -2759,10 +2759,13 @@ namespace MiscThings {
         {
             RE::MagicItem* spell;
 
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
+
             if (right)
-                spell = player->selectedSpells[0];
+                spell = (RE::MagicItem*)equipped_list[1];
             else
-                spell = player->selectedSpells[1];
+                spell = (RE::MagicItem*)equipped_list[0];
 
             if (spell)
                 result = spell == test_spell;

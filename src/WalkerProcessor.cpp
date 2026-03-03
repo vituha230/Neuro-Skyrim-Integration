@@ -4192,29 +4192,23 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player->AsReference();
         if (player && player_actor)
         {
-            auto left_spell = player->selectedSpells[0];
-            auto right_spell = player->selectedSpells[1];
+            RE::MagicItem* spell;
+
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
 
             if (right)
-            {
-
-                if (right_spell)
-                    result = right_spell->CalculateMagickaCost(player_actor);
-
-                auto cast_type = right_spell->avEffectSetting->data.castingType;
-                if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                    result = 1.0f;
-
-            }
+                spell = (RE::MagicItem*)equipped_list[1];
             else
-            {
-                if (left_spell)
-                    result = left_spell->CalculateMagickaCost(player_actor);
+                spell = (RE::MagicItem*)equipped_list[0];
 
-                auto cast_type = left_spell->avEffectSetting->data.castingType;
+            if (spell)
+            {
+                result = spell->CalculateMagickaCost(player_actor);
+
+                auto cast_type = spell->avEffectSetting->data.castingType;
                 if (cast_type == RE::MagicSystem::CastingType::kConcentration)
                     result = 1.0f;
-
             }
 
         }
