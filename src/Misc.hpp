@@ -126,6 +126,8 @@ namespace MiscThings {
 
     bool player_is_full_hp();
 
+    bool is_object_still_valid(RE::TESObjectREFR* test_object);
+
 
     bool is_enemy_to_actor(RE::TESObjectREFR* object);
     bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest);

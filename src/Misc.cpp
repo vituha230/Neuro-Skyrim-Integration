@@ -3976,6 +3976,99 @@ namespace MiscThings {
 
 
 
+    bool is_object_valid(RE::TESObjectREFR* a_ref)
+    {
+        if (a_ref->AsReference()->modelState == 0)
+            return false;
+
+        auto base_obj = a_ref->GetBaseObject();
+
+        if (base_obj)
+        {
+
+            auto base_type = base_obj->GetFormType();
+
+            bool is_harvestable = false;
+
+            std::string name = "";
+            name = a_ref->GetDisplayFullName();
+
+            if (base_type == RE::FormType::Tree)
+            {
+                auto tree_form = (RE::TESObjectTREE*)base_obj;
+
+                auto test_flags = a_ref->AsReference()->GetFormFlags();
+
+                bool already_harvested = false;
+
+                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                    already_harvested = true;
+
+                if (test_flags & 2048) //this is potentially only one we need here
+                    already_harvested = true;
+
+                if (tree_form->produceItem && !already_harvested)
+                {
+                    return true;
+                }
+                else
+                    return false;
+            }
+
+            if (base_type == RE::FormType::Flora)
+            {
+                auto tree_form = (RE::TESFlora*)base_obj;
+
+                auto test_flags = a_ref->AsReference()->GetFormFlags();
+                bool already_harvested = false;
+                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                    already_harvested = true;
+
+                if (tree_form->produceItem && !already_harvested)
+                {
+                    return true;
+                }
+                else
+                    return false;
+            }
+
+        }
+
+        return true;
+    }
+
+
+    bool is_object_still_valid(RE::TESObjectREFR* test_object)
+    {
+        auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
+
+        for (std::pair<int, RE::TESObjectREFR*> object : objects_around)
+        {
+            if (object.second == test_object) //it existed in our list...
+            {
+                bool its_valid = false;
+
+                RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 50000.0,
+                    [&](RE::TESObjectREFR* a_ref) {
+                        if (test_object == a_ref) //it exists right now...
+                        {
+                            its_valid = is_object_valid(test_object);
+                            return RE::BSContainer::ForEachResult::kStop;
+                        }
+
+                        return RE::BSContainer::ForEachResult::kContinue;
+                    });
+
+                return its_valid;
+            }
+        }
+       
+        return false;
+    }
+
+
+
+
     std::pair<bool, std::string> GetObjectsAround(int type)
     {
         std::pair<bool, std::string> result{};
@@ -4310,69 +4403,12 @@ namespace MiscThings {
                 {
                     if (object.second == a_ref)
                     {
-                        auto base_obj = a_ref->GetBaseObject();
-                        
-                        if (base_obj)
-                        {
-                            auto base_type = base_obj->GetFormType();
+                        if (is_object_valid(a_ref))
+                            local_copy.push_back(object);
 
-                            bool is_harvestable = false;
-
-                            std::string name = "";
-                            name = a_ref->GetDisplayFullName();
-
-                            //if (name == "Coin Purse")
-                            //    bool break_here = false;
-
-                            if (base_type == RE::FormType::Tree)
-                            {
-                                auto tree_form = (RE::TESObjectTREE*)base_obj;
-
-                                auto test_flags = a_ref->AsReference()->GetFormFlags();
-
-                                bool already_harvested = false;
-
-                                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-                                    already_harvested = true;
-
-                                if (test_flags & 2048) //this is potentially only one we need here
-                                    already_harvested = true;
-
-                                if (tree_form->produceItem && !already_harvested)
-                                {
-                                    local_copy.push_back(object);
-                                    return RE::BSContainer::ForEachResult::kContinue;
-                                }
-                                else
-                                    return RE::BSContainer::ForEachResult::kContinue;
-                            }
-
-                            if (base_type == RE::FormType::Flora)
-                            {
-                                auto tree_form = (RE::TESFlora*)base_obj;
-
-                                auto test_flags = a_ref->AsReference()->GetFormFlags();
-                                bool already_harvested = false;
-                                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-                                    already_harvested = true;
-
-                                if (tree_form->produceItem && !already_harvested)
-                                {
-                                    local_copy.push_back(object);
-                                    return RE::BSContainer::ForEachResult::kContinue;
-                                }
-                                else
-                                    return RE::BSContainer::ForEachResult::kContinue;
-                            }
-
-                        }
-
-                        local_copy.push_back(object);
                         return RE::BSContainer::ForEachResult::kContinue;
-                    }
-                        
+                    } 
                 }
-
                 return RE::BSContainer::ForEachResult::kContinue;
             });
 

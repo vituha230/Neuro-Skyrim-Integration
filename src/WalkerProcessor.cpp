@@ -3101,6 +3101,14 @@ namespace WalkerProcessor {
 
             if (object != objects_around->end())
             {
+
+                if (!MiscThings::is_object_still_valid(object->second))
+                {
+                    result.first = false;
+                    result.second = "This object doesnt exist anymore";
+                    return result;
+                }
+
                 if ((!object->second->IsHumanoid() || (object->second->IsHumanoid() && object->second->IsDead())) && interaction == 2)
                 {
                     result.first = false;
