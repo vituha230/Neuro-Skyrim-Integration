@@ -27,6 +27,7 @@ namespace BookProcessor {
 	bool sent_quit_force = false;
 	float try_taking_again_time = 0.0f;
 	float in_book_time = 0.0f;
+	bool book_text_sent = false;
 
 
 	bool quit_menu()
@@ -269,6 +270,7 @@ namespace BookProcessor {
 		try_taking_again_time = 0.0f;
 
 		in_book_time = 0.0f;
+		book_text_sent = false;
 	}
 
 
@@ -346,31 +348,43 @@ namespace BookProcessor {
 			{
 				if (in_book_time > 1.5f)
 				{
-					if (!book_request_sent)
+					if (!book_text_sent)
 					{
-						
-						if (force_choice(get_options(), get_force_message(), force_type::book))
-							book_request_sent = true;
+						book_text_sent = true;
+						send_random_context(get_force_message());
 					}
 					else
 					{
-						start_turning_pages = true;
-						if (book_choice_valid && !done)
+						if (in_book_time > 7.0f)
 						{
-							if (book_choice == 1)
+							if (!book_request_sent)
 							{
-								send_random_context("[Trying to take the book...]");
 
-								take_steal_book();
+								if (force_choice(get_options(), "Choose what to do next. ", force_type::book))
+									book_request_sent = true;
+							}
+							else
+							{
+								start_turning_pages = true;
+								if (book_choice_valid && !done)
+								{
+									if (book_choice == 1)
+									{
+										send_random_context("[Trying to take the book...]");
 
-								set_universal_block(1.5f);
+										take_steal_book();
 
-								catch_result = true;
-								done = true;
-								//reset_menu();
+										set_universal_block(1.5f);
+
+										catch_result = true;
+										done = true;
+										//reset_menu();
+									}
+								}
 							}
 						}
 					}
+					
 				}
 				
 			}

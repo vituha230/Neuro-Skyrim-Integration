@@ -626,6 +626,28 @@ namespace Hooks {
         static inline void Install() { originalFunction = REL::Relocation<std::uintptr_t>(RE::VTABLE_ContainerMenu[0]).write_vfunc(0x4, thunk); }
     };
 
+    struct BookProcessMessage {
+        static RE::UI_MESSAGE_RESULTS thunk(RE::BookMenu* menu, RE::UIMessage& a_message) {
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
+                RE::ConsoleLog::GetSingleton()->Print("BOOK MENU WAS OPENED");
+
+                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
+
+                unregister_all_actions();
+
+            }
+
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
+
+                register_allowed_actions();
+            }
+
+            return originalFunction(menu, a_message);
+        }
+        static inline REL::Relocation<decltype(thunk)> originalFunction;
+        static inline void Install() { originalFunction = REL::Relocation<std::uintptr_t>(RE::VTABLE_BookMenu[0]).write_vfunc(0x4, thunk); }
+    };
+
 
     struct TweenMenuProcessMessage {
         static RE::UI_MESSAGE_RESULTS thunk(RE::TweenMenu* menu, RE::UIMessage& a_message) {
@@ -2449,7 +2471,7 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
     Hooks::LevelupProcessMessage::Install();
     Hooks::MessageBoxProcessMessage::Install();
     Hooks::SleepWaitProcessMessage::Install();
-
+    Hooks::BookProcessMessage::Install();
     Hooks::RaceSexMenuProcessMessage::Install();
 
 

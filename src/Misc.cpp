@@ -4195,18 +4195,31 @@ namespace MiscThings {
 
         std::vector<std::pair<int, RE::TESObjectREFR*>> local_copy{};
 
-        for (auto object : objects_around)
-        {
-            if (object.second->data.objectReference)
-                local_copy.push_back(object);
-        }
+
+        RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 50000.0,
+            [&](RE::TESObjectREFR* a_ref) {
+
+                for (std::pair<int, RE::TESObjectREFR*> object : objects_around)
+                {
+                    if (object.second == a_ref)
+                        local_copy.push_back(object);
+                }
+
+                return RE::BSContainer::ForEachResult::kContinue;
+            });
 
 
         std::sort(local_copy.begin(), local_copy.end(), [&](std::pair<int, RE::TESObjectREFR*> left, std::pair<int, RE::TESObjectREFR*> right) {
-            if (left.second->data.objectReference && right.second->data.objectReference)
+            //if (decltype(left.second) != RE::TESObjectREFR*)
+
+            if (left.second->data.objectReference && left.second->data.objectReference && 
+                right.second->data.objectReference)
                 return left.second->GetDistance(player) < right.second->GetDistance(player); //switch > to < for inversed order. this is last->closest
             else
                 return false;
+
+            //left.second->data.objectReference->IsDestroyed();
+
             //std::string name_left = left.second->GetDisplayFullName();
             //std::string name_right = right.second->GetDisplayFullName();
             //return name_left < name_right; //alphabetical order. top = A
