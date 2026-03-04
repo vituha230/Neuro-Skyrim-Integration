@@ -406,7 +406,7 @@ namespace LockpickProcessor {
 									//it stopped moving, wait for it to return to original position and reset
 									if (get_lock_angle() < 45.0f)
 									{
-										send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(max_lock_angle*100/90) + " degrees (has to reach 100% to open). Try different pick angle. (from 0 to 180)]").c_str());
+										send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(max_lock_angle*100/90) + "% (has to reach 100% to open). Try different pick angle. (from 0 to 180)]").c_str());
 										reset_lockpicking(); //MAYBE GIVE DIFFERENT PROMPT ON RETRY?
 									}
 								}

@@ -947,6 +947,8 @@ namespace WalkerProcessor {
             auto mulY = camera_dirY * desired_direction_norm;
 
 
+
+            bool use_y = false;
             //if (target_ref && !use_last_point_of_last_path && (current_path_point < ((int)std::size(path) - 2)))
             if (target_ref && !use_last_point_of_last_path && (current_path_point < ((int)std::size(path) - 2)))
             {
@@ -981,10 +983,11 @@ namespace WalkerProcessor {
                     //camera_dirZ_noZ = camera_dirZ_noZ / camera_dirZ_noZ.Length();
                     //mulY = camera_dirY * pos_difY_norm;
                     //mulZ = camera_dirZ * desired_direction_norm;// pos_difY_norm;
-
+                    use_y = true;
                 }
 
             }
+
 
             if (mulY < 0)
             {
@@ -996,10 +999,11 @@ namespace WalkerProcessor {
             }
 
 
-
             mouse_x = mulX * 125.0f;//200 //150
             mouse_y = mulZ * 60.0f;//200
 
+            if (!use_y)
+                mouse_y = 0.0f;
 
             if (abs(mouse_x) > 100.0f)
             {
