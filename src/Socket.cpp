@@ -10,6 +10,7 @@
 
 
 extern bool is_in_game();
+extern bool resend_active_force();
 
 
 
@@ -197,7 +198,10 @@ bool neuro::NeuroSocket::Initialize()
     }
     */
 
-    std::string in_game_text = "You are ingame. Use commands to interact with the world";
+    register_allowed_actions();
+
+
+    std::string in_game_text = "You are ingame. Use commands to interact with the world. ";
 
     if (!is_in_game())
         in_game_text = "You are not in game. Wait for game to start. ";
@@ -293,66 +297,75 @@ bool neuro::NeuroSocket::register_allowed_actions()
     auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
     int unbound_quest_stage = threshold_quest->GetCurrentStageID();
 
-    if (unbound_quest_stage >= 15)
+    int active_force = get_active_force();
+
+    if (active_force == -1)
     {
-        if (!MiscThings::is_intro()) //must be watched to refresh
+        if (unbound_quest_stage >= 15)
         {
-            
-            if (MiscThings::is_objects_around_valid())
+            if (!MiscThings::is_intro()) //must be watched to refresh
             {
-                actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
-                actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
-            }
 
-            if (MiscThings::have_any_quests())
+                if (MiscThings::is_objects_around_valid())
+                {
+                    actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
+                    actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+                }
+
+                if (MiscThings::have_any_quests())
+                {
+                    actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
+                    actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
+                }
+
+
+                if (!MiscThings::is_intro2()) //must be watched to refresh
+                {
+                    actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
+                    actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
+
+                    if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
+                    {
+                        actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+                    }
+
+                    actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
+                    actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
+
+                    if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
+                    {
+                        actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+                    }
+
+                    if (MapProcessor::map_is_allowed()) //must be watched to refresh
+                    {
+                        actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
+                    }
+
+                    if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
+                    {
+                        actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+                    }
+
+                }
+
+                bool stop_here = false;
+            }
+            else
             {
-                actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
-                actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
-            }
-
-
-            if (!MiscThings::is_intro2()) //must be watched to refresh
-            {
-                actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
-                actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
-
-                if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
+                if (MiscThings::is_objects_around_valid())
                 {
-                    actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
-                }
-
-                actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
-                actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
-
-                if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
-                {
-                    actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
-                    actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
-                }
-
-                if (MapProcessor::map_is_allowed()) //must be watched to refresh
-                {
-                    actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
-                }
-
-                if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
-                {
-                    actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+                    actions_to_register[action_pos] = Capabilities::LookAtObject::Action; action_pos++;
+                    actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
                 }
 
             }
-
-            bool stop_here = false;
         }
-        else
-        {
-            if (MiscThings::is_objects_around_valid())
-            {
-                actions_to_register[action_pos] = Capabilities::LookAtObject::Action; action_pos++;
-                actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
-            }
-
-        }
+    }
+    else
+    {
+        resend_active_force();
     }
     
 

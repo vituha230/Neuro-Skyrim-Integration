@@ -159,11 +159,26 @@ void register_allowed_actions()
 }
 
 
+
+std::vector<MenuOption> options_to_remember{};
+std::string message_to_remember{};
+int force_to_remember{};
+
+bool resend_active_force()
+{
+    set_active_force(-1);
+    return force_choice(options_to_remember, message_to_remember, force_to_remember);
+}
+
 //universal force choice
 bool force_choice(std::vector<MenuOption> options, std::string message, int force_type)
 {
     if (get_active_force() == -1)
     {
+        options_to_remember = options;
+        message_to_remember = message;
+        force_to_remember = force_type;
+
         neurosdk_action force_action = Capabilities::SelectForceChoice::Action;
 
         if (force_type == force_type::alchemy_ingredients)
