@@ -3627,6 +3627,8 @@ namespace MiscThings {
                     if (slot_id == 0x00025BEE) //voice
                     {
                         equip_manager->EquipSpell(player_actor, spell, equip_slot);
+                        right_attack_cancel();
+                        left_attack_cancel();
                         use_ult();
                         result.first = true;
                         if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
@@ -3692,6 +3694,8 @@ namespace MiscThings {
                                 {
                                     equip_manager->EquipShout(player_actor, shout);
                                     //use_ult();
+                                    right_attack_cancel();
+                                    left_attack_cancel();
                                     make_long_ult_cast();
                                     result.first = true;
                                     result.second = "[Using [id " + std::to_string(id) + "] " + shout->GetFullName();

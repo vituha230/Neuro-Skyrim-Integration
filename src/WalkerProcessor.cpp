@@ -6283,7 +6283,7 @@ namespace WalkerProcessor {
                                                         return; 
                                                     }
                                                         
-                                                    if (MiscThings::is_intro() || locking_failed || lock_camera_onto_target(target_ref, dtime) || location_mode)
+                                                    if (MiscThings::is_intro() || locking_failed || lock_camera_onto_target(target_ref, dtime) || (get_targeted_ref() == target_ref) || location_mode)
                                                     {
                                                         auto result_target = get_targeted_ref();
 
