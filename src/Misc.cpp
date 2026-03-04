@@ -494,6 +494,16 @@ namespace MiscThings {
         }
 
 
+        object_p = General::Script::GetObject(trap, "PhysicsTrap");
+        if (object_p)
+        {
+            if (object_p->currentState == "Done")
+            {
+                result = 9; //falling rocks
+            }
+        }
+
+
 
         return result;
     }

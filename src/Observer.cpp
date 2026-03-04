@@ -1116,6 +1116,12 @@ namespace Observer {
 												result.push_back("[ " + name + " started burning]");
 											}
 
+											if (new_state.trap_firing == 9)
+											{
+												if (std::size(result) == 0 || result.at(std::size(result) - 1) != "[Boulders fall from the ceiling!]")
+													result.push_back("[Boulders fall from the ceiling!]");
+											}
+
 
 											//only when close.
 
