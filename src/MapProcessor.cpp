@@ -34,6 +34,9 @@ namespace MapProcessor {
 	float click_location_timeout = 0.0f;
 
 
+	RE::TESObjectREFR* chosen_marker_refr = nullptr;
+
+
 	bool can_fast_travel(int id)
 	{
 		bool result = false;
@@ -68,6 +71,11 @@ namespace MapProcessor {
 	std::vector<MenuOption> get_location_options()
 	{
 		std::vector<MenuOption> result{};
+		std::vector<MenuOption> pre_result{};
+		std::vector<bool> can_travel{};
+
+		auto player = RE::PlayerCharacter::GetSingleton();
+		auto player_pos = player->GetPosition();
 
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::MapMenu>();
@@ -75,6 +83,11 @@ namespace MapProcessor {
 		if (menu)
 		{
 			int id = 0;
+
+
+			int closest_id = -1;
+			float closest_distance = FLT_MAX;
+
 
 			for (auto &marker : menu->mapMarkers)
 			{
@@ -91,27 +104,32 @@ namespace MapProcessor {
 
 						if (RE::LookupReferenceByHandle(marker.ref, a_refrOut))
 						{
-							if (a_refrOut)
+							if (a_refrOut && a_refrOut.get())
 							{
 								auto data = (RE::ExtraMapMarker*)a_refrOut->extraList.GetByType(RE::ExtraDataType::kMapMarker);
 								if (data && data->mapData && data->mapData->flags)
 								{
-									bool can_travel = data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo);
+									can_travel.push_back(data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo));
 
-									std::string can_travel_text = "";
+									auto distance = player->GetDistance(a_refrOut.get());
 
-									if (can_travel)
-										can_travel_text = ". Can fast travel there. ";
-									else
-										can_travel_text = ". Cannot fast-travel there. ";
+									if (distance < closest_distance)
+									{
+										closest_id = id;
+										closest_distance = distance;
+									}
+										
+
+									
+
+
 
 
 									//if (marker.)
 									option.id = id;
 									option.text = marker.fullName->fullName;
-									option.text += can_travel_text;
 
-									result.push_back(option);
+									pre_result.push_back(option);
 								}
 							}
 						}
@@ -120,6 +138,39 @@ namespace MapProcessor {
 
 				id++;
 			}
+
+
+			for (auto option_raw : pre_result)
+			{
+				MenuOption option{};
+				int local_id = option_raw.id;
+				option.id = local_id;
+				option.text = option_raw.text;
+
+				if (local_id < std::size(can_travel))
+				{
+					if (local_id != closest_id && closest_distance < 10000.0f)
+					{
+						std::string can_travel_text = "";
+
+						if (can_travel.at(local_id))
+							can_travel_text = ". Can fast travel there. ";
+						else
+							can_travel_text = ". Cannot fast-travel there. ";
+
+						option.text += can_travel_text;
+					}
+					else
+						option.text += ". YOU ARE HERE. ";
+				}
+
+
+				result.push_back(option);
+
+			}
+
+
+
 
 			result.push_back({ -1, "[CLOSE MAP]" } );
 		}
@@ -356,6 +407,7 @@ namespace MapProcessor {
 			return result;
 		}
 
+		auto menu = ui->GetMenu(RE::MapMenu::MENU_NAME);
 
 		if (id == -1)
 		{
@@ -382,6 +434,36 @@ namespace MapProcessor {
 		{
 			location_choice = id;
 			location_choice_valid = true;
+
+			auto menu = ui->GetMenu<RE::MapMenu>();
+			if (id < std::size(menu->mapMarkers))
+			{
+				auto marker = menu->mapMarkers[id];
+				RE::NiPointer<RE::TESObjectREFR> a_refrOut;
+
+				RE::LookupReferenceByHandle(marker.ref, a_refrOut);
+					
+				
+
+				if (a_refrOut)
+				{
+					chosen_marker_refr = a_refrOut.get();
+				}
+				else
+				{
+					result.first = false;
+					result.second = "This location is inaccessible";
+					return result;
+				}
+					
+			}
+			else
+			{
+				result.first = false;
+				result.second = "This location is inaccessible";
+				return result;
+			}
+
 			result.first = true;
 			result.second = "[Processing...]";
 		}
@@ -507,6 +589,9 @@ namespace MapProcessor {
 
 		if (get_active_force() == force_type::map_location || get_active_force() == force_type::map_undiscovered)
 			set_active_force(-1);
+
+
+		chosen_marker_refr = nullptr;
 
 	}
 
@@ -751,9 +836,29 @@ namespace MapProcessor {
 					}
 					else
 					{
+						
+						
+
+						//auto current_root = menu->camera.ro;
+
+						if (!catch_result && chosen_marker_refr)
+						{
+							auto normal_camera = (RE::TESCamera*)(&menu->camera);
+							auto old_camera_root = normal_camera->cameraRoot;
+							auto camera_position = normal_camera->cameraRoot->world.translate;
+
+							auto target_marker_pos = chosen_marker_refr->GetPosition();
+							target_marker_pos.x += 200.0f;
+							target_marker_pos.y += 400.0f;
+							target_marker_pos.z = camera_position.z;
+
+							menu->camera.SetMapCameraRoot(old_camera_root.get(), target_marker_pos);
+						}
+
 						catch_result = true;
-						//perk_up();//also zoom mouse NO NEED ITS ALREADY ZOOMED
+
 						leftclick();
+						//perk_up();//also zoom mouse
 
 						click_location_timeout += dtime;
 
@@ -841,8 +946,35 @@ namespace MapProcessor {
 					}
 					else
 					{
-						//catch_result = true;
+						if (!catch_result && chosen_marker_refr)
+						{
+							auto normal_camera = (RE::TESCamera*)(&menu->camera);
+							auto old_camera_root = normal_camera->cameraRoot;
+							auto camera_position = normal_camera->cameraRoot->world.translate;
+
+							auto target_marker_pos = chosen_marker_refr->GetPosition();
+							target_marker_pos.x += 200.0f;
+							target_marker_pos.y += 400.0f;
+							target_marker_pos.z = camera_position.z;
+
+							menu->camera.SetMapCameraRoot(old_camera_root.get(), target_marker_pos);
+
+							//menu->camera.SetCameraRoot(old_camera_root);
+
+						}
+
+						catch_result = true;
+
 						leftclick();
+						//perk_up();//also zoom mouse
+
+						click_location_timeout += dtime;
+
+						if (click_location_timeout > 5.0f)
+						{
+							send_random_context("Cannot travel there right now");
+							reset_menu();
+						}
 					}
 
 					//send_random_context("[Cannot fast travel there]");

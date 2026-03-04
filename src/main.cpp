@@ -102,7 +102,6 @@ bool API_CONTROL_CRAFTING = false;
 bool do_debug_scan = false;
 
 
-
 /////////////////////////////////////////////////////////
 //clean this mess later
 int update_cycle = 0;
@@ -122,6 +121,9 @@ float subtitle_history_clear_time = 0.0f;
 bool restore_actions = false;
 float restore_actions_timer = 0.0f;
 
+bool in_game = false;
+
+
 /////////////////////////////////////////////////////////
 
 
@@ -129,6 +131,16 @@ float restore_actions_timer = 0.0f;
 std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 
 
+bool is_in_game()
+{
+    RE::UI* ui = RE::UI::GetSingleton();
+
+    bool in_game_doublecheck = false;
+    if (ui && !ui->IsMenuOpen(RE::MainMenu::MENU_NAME) && !ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME))
+        in_game_doublecheck = true;
+
+    return in_game && in_game_doublecheck;
+}
 
 void unregister_all_actions()
 {
@@ -725,6 +737,8 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS OPENED");
 
+                in_game = false;
+
                 menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
 
                 unregister_all_actions();
@@ -762,6 +776,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS CLOSED");
 
+                in_game = true;
 
                 register_allowed_actions();
 
@@ -2246,7 +2261,7 @@ class MyHook {
 
         //right_attack();
    
-
+        
         _Update(a, dtime);
 
         update_cycle++;

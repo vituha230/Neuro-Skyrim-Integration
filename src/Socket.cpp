@@ -9,6 +9,7 @@
 //using namespace Red;
 
 
+extern bool is_in_game();
 
 
 
@@ -196,8 +197,13 @@ bool neuro::NeuroSocket::Initialize()
     }
     */
 
+    std::string in_game_text = "You are ingame. Use commands to interact with the world";
 
-    return SendContext("You are playing Skyrim, an action RPG.",
+    if (!is_in_game())
+        in_game_text = "You are not in game. Wait for game to start. ";
+
+
+    return SendContext(("You are playing Skyrim, an action RPG. " + in_game_text + "Try to have a fun adventure. ").c_str(),
         true) &&
         IsAlive();
 }
