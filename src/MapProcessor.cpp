@@ -844,15 +844,19 @@ namespace MapProcessor {
 						if (!catch_result && chosen_marker_refr)
 						{
 							auto normal_camera = (RE::TESCamera*)(&menu->camera);
-							auto old_camera_root = normal_camera->cameraRoot;
-							auto camera_position = normal_camera->cameraRoot->world.translate;
+							auto old_camera_root = menu->camera.cameraRoot;
+							auto camera_position = menu->camera.cameraRoot->world.translate;
 
 							auto target_marker_pos = chosen_marker_refr->GetPosition();
 							target_marker_pos.x += 200.0f;
 							target_marker_pos.y += 400.0f;
 							target_marker_pos.z = camera_position.z;
 
-							menu->camera.SetMapCameraRoot(old_camera_root.get(), target_marker_pos);
+							menu->camera.cameraRoot->world.translate = target_marker_pos;
+
+							//menu->camera.SetMapCameraRoot(old_camera_root.get(), target_marker_pos);
+							//menu->camera.SetCameraRoot(old_camera_root);
+
 						}
 
 						catch_result = true;
@@ -949,16 +953,17 @@ namespace MapProcessor {
 						if (!catch_result && chosen_marker_refr)
 						{
 							auto normal_camera = (RE::TESCamera*)(&menu->camera);
-							auto old_camera_root = normal_camera->cameraRoot;
-							auto camera_position = normal_camera->cameraRoot->world.translate;
+							auto old_camera_root = menu->camera.cameraRoot;
+							auto camera_position = menu->camera.cameraRoot->world.translate;
 
 							auto target_marker_pos = chosen_marker_refr->GetPosition();
 							target_marker_pos.x += 200.0f;
 							target_marker_pos.y += 400.0f;
 							target_marker_pos.z = camera_position.z;
 
-							menu->camera.SetMapCameraRoot(old_camera_root.get(), target_marker_pos);
+							menu->camera.cameraRoot->world.translate = target_marker_pos;
 
+							//menu->camera.SetMapCameraRoot(old_camera_root.get(), target_marker_pos);
 							//menu->camera.SetCameraRoot(old_camera_root);
 
 						}
