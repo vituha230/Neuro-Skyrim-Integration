@@ -15,7 +15,7 @@
 namespace WalkerProcessor {
 
 
-
+    //bool reset_by_explorer = false;
 
     bool crime_mode = false;
 
@@ -2413,8 +2413,22 @@ namespace WalkerProcessor {
     bool backup_input_cancel = false;
 
 
+    //void reset_explore_mode()
+    //{
+    //    explore_mode = false;
+    //    min_dist = 20000.0f;
+    //}
+
     void reset_walker()
     {
+
+        //if (!reset_by_explorer) //it renews explore_mode anyway
+        //{
+            explore_mode = false;
+            min_dist = 20000.0f;
+        //}
+
+        //reset_by_explorer = false;
 
         was_already_dead = false;
 

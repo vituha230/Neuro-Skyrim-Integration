@@ -1026,7 +1026,56 @@ namespace Observer {
 											if (new_state.trap_firing == 2)
 											{
 												std::string name = MiscThings::insert_into_list_custom_name("Pressure plate", a_ref);
-												result.push_back("[ " + name + " was triggered!]");
+												
+												std::vector<RE::TESObjectREFR*> activator_candidates{};
+												std::string activator_name = "";
+
+												RE::TES::GetSingleton()->ForEachReferenceInRange(a_ref, 300.0f,
+													[&](RE::TESObjectREFR* a_ref) {
+
+														if (MiscThings::is_new_object_valid(a_ref))
+															activator_candidates.push_back(a_ref);
+
+														return RE::BSContainer::ForEachResult::kContinue;
+													});
+
+													std::sort(activator_candidates.begin(), activator_candidates.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
+														if (left->data.objectReference && left->data.objectReference &&
+															right->data.objectReference)
+															return left->GetDistance(a_ref) < right->GetDistance(a_ref); //switch > to < for inversed order. this is last->closest
+														else
+															return false;
+														});
+
+													RE::TESObjectREFR* the_activator = nullptr;
+													for (auto candidate : activator_candidates)
+													{
+														if (candidate != a_ref)
+														{
+															the_activator = candidate;
+															break;
+														}
+													}
+
+													if (the_activator)
+													{
+														if (the_activator == player_ref)
+															activator_name = "You";
+														else
+														{
+															activator_name = the_activator->GetDisplayFullName();
+														}
+													}
+
+													if (activator_name == "")
+													{
+														result.push_back("[ " + name + " was triggered!]");
+													}
+													else
+													{
+														result.push_back("[" + activator_name + " triggered " + name + "!]");
+													}
+
 											}
 
 

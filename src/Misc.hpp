@@ -127,6 +127,8 @@ namespace MiscThings {
     bool player_is_full_hp();
 
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
+    bool is_new_object_valid(RE::TESObjectREFR* a_ref);
+
 
     RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist);
 

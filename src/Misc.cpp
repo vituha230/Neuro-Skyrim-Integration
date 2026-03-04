@@ -3975,6 +3975,193 @@ namespace MiscThings {
     }
 
 
+    bool is_new_object_valid(RE::TESObjectREFR* a_ref)
+    {
+        std::string name = a_ref->GetName();
+        std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
+        auto base_obj = a_ref->GetBaseObject();
+        RE::FormType base_type{};
+
+        if (base_obj)
+        {
+            base_type = base_obj->GetFormType();
+            bool debug_type = true;
+        }
+        else
+        {
+            bool no_base_object = true;
+        }
+
+        if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
+        {
+
+            if (MiscThings::has_digits(name))
+                return false;
+
+            if (a_ref->AsReference()->modelState == 0)
+                return false; //skip objects without world model
+
+
+            if (base_type == RE::FormType::Activator)
+            {
+                auto test = (RE::TESObjectACTI*)base_obj;
+                std::string model = test->GetModel();
+                if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                    return false;
+
+                //little flags
+                if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                    return false;
+            }
+
+
+
+            if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
+                return false;
+
+            if (name.find("Do Not Delete") != std::string::npos)
+                return false;
+
+            if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
+                return false;
+
+            if (name.find("default") != std::string::npos)
+                return false;
+
+
+
+            if (auto extra = a_ref->extraList.GetByType(RE::ExtraDataType::kItemDropper); extra)
+            {
+                auto extra_dropper = (RE::ExtraItemDropper*)extra;
+
+                if (extra_dropper && extra_dropper->dropper && extra_dropper->dropper.get())
+                {
+                    auto dropper = extra_dropper->dropper.get().get();
+
+                    if (dropper)
+                    {
+                        if (dropper->IsActor())
+                        {
+                            return false; //exclude dropped items, they have weird position.
+                        }
+                    }
+                }
+            }
+
+
+            if (a_ref->AsReference()->IsActor())
+            {
+                return true;
+            }
+
+
+            if (base_type == RE::FormType::Door)
+            {
+                return true;
+            }
+
+
+
+            if (base_type == RE::FormType::Activator)
+            {
+                return true;
+            }
+
+            if (base_type == RE::FormType::Furniture) //pullchains/levers
+            {
+                auto furniture = (RE::TESFurniture*)base_obj;
+                auto workbenchtype = furniture->workBenchData.benchType;
+                if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                {
+                    if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+
+
+
+
+            if (base_type == RE::FormType::Container)
+            {
+                return true;
+            }
+
+            if (base_obj)
+            {
+                bool is_harvestable = false;
+
+                if (base_type == RE::FormType::Tree)
+                {
+                    auto tree_form = (RE::TESObjectTREE*)base_obj;
+
+                    auto test_flags = a_ref->AsReference()->GetFormFlags();
+
+                    bool already_harvested = false;
+
+                    if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                        already_harvested = true;
+
+                    if (test_flags & 2048) //this is potentially only one we need here
+                        already_harvested = true;
+
+
+
+
+                    if (tree_form->produceItem && !already_harvested)
+                        is_harvestable = true;
+                }
+
+                if (base_type == RE::FormType::Flora)
+                {
+                    auto tree_form = (RE::TESFlora*)base_obj;
+
+                    auto test_flags = a_ref->AsReference()->GetFormFlags();
+                    bool already_harvested = false;
+                    if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                        already_harvested = true;
+
+                    if (tree_form->produceItem && !already_harvested)
+                        is_harvestable = true;
+                }
+
+
+                if (is_harvestable)
+                {
+                    return true;
+                }
+            }
+
+            if (base_type == RE::FormType::Furniture) //workbenches and beds
+            {
+                bool this_isnt_a_furniture = false;
+                auto furniture = (RE::TESFurniture*)base_obj;
+                auto workbenchtype = furniture->workBenchData.benchType;
+                if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
+                        return true;
+                }
+            }
+
+            if (base_obj->IsInventoryObject())
+            {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+
+
 
     RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist)
     {
@@ -4117,11 +4304,57 @@ namespace MiscThings {
 
 
 
-                    if (a_ref->GetDistance(player_ref) < 1000.0f)
-                    {
-                        //and now with smaller range
 
-                        if (base_type == RE::FormType::Container)
+                    if (base_type == RE::FormType::Container)
+                    {
+                        if (!MiscThings::is_object_in_the_list(a_ref))
+                            if (player_ref->GetDistance(a_ref) > min_dist)
+                            {
+                                candidates.push_back(a_ref);
+                                return RE::BSContainer::ForEachResult::kContinue;
+                            }
+                    }
+
+                    if (base_obj)
+                    {
+                        bool is_harvestable = false;
+
+                        if (base_type == RE::FormType::Tree)
+                        {
+                            auto tree_form = (RE::TESObjectTREE*)base_obj;
+
+                            auto test_flags = a_ref->AsReference()->GetFormFlags();
+
+                            bool already_harvested = false;
+
+                            if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                                already_harvested = true;
+
+                            if (test_flags & 2048) //this is potentially only one we need here
+                                already_harvested = true;
+
+
+
+
+                            if (tree_form->produceItem && !already_harvested)
+                                is_harvestable = true;
+                        }
+
+                        if (base_type == RE::FormType::Flora)
+                        {
+                            auto tree_form = (RE::TESFlora*)base_obj;
+
+                            auto test_flags = a_ref->AsReference()->GetFormFlags();
+                            bool already_harvested = false;
+                            if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                                already_harvested = true;
+
+                            if (tree_form->produceItem && !already_harvested)
+                                is_harvestable = true;
+                        }
+
+
+                        if (is_harvestable)
                         {
                             if (!MiscThings::is_object_in_the_list(a_ref))
                                 if (player_ref->GetDistance(a_ref) > min_dist)
@@ -4130,95 +4363,42 @@ namespace MiscThings {
                                     return RE::BSContainer::ForEachResult::kContinue;
                                 }
                         }
+                    }
 
-                        if (base_obj)
+                    if (base_type == RE::FormType::Furniture) //workbenches and beds
+                    {
+                        bool this_isnt_a_furniture = false;
+                        auto furniture = (RE::TESFurniture*)base_obj;
+                        auto workbenchtype = furniture->workBenchData.benchType;
+                        if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
                         {
-                            bool is_harvestable = false;
-
-                            if (base_type == RE::FormType::Tree)
-                            {
-                                auto tree_form = (RE::TESObjectTREE*)base_obj;
-
-                                auto test_flags = a_ref->AsReference()->GetFormFlags();
-
-                                bool already_harvested = false;
-
-                                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-                                    already_harvested = true;
-
-                                if (test_flags & 2048) //this is potentially only one we need here
-                                    already_harvested = true;
-
-
-
-
-                                if (tree_form->produceItem && !already_harvested)
-                                    is_harvestable = true;
-                            }
-
-                            if (base_type == RE::FormType::Flora)
-                            {
-                                auto tree_form = (RE::TESFlora*)base_obj;
-
-                                auto test_flags = a_ref->AsReference()->GetFormFlags();
-                                bool already_harvested = false;
-                                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-                                    already_harvested = true;
-
-                                if (tree_form->produceItem && !already_harvested)
-                                    is_harvestable = true;
-                            }
-
-
-                            if (is_harvestable)
-                            {
+                            if (!MiscThings::is_object_in_the_list(a_ref))
+                                if (player_ref->GetDistance(a_ref) > min_dist)
+                                {
+                                    candidates.push_back(a_ref);
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                }
+                        }
+                        else
+                        {
+                            if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
                                 if (!MiscThings::is_object_in_the_list(a_ref))
                                     if (player_ref->GetDistance(a_ref) > min_dist)
                                     {
                                         candidates.push_back(a_ref);
                                         return RE::BSContainer::ForEachResult::kContinue;
                                     }
-                            }
                         }
+                    }
 
-                        if (base_type == RE::FormType::Furniture) //workbenches and beds
-                        {
-                            bool this_isnt_a_furniture = false;
-                            auto furniture = (RE::TESFurniture*)base_obj;
-                            auto workbenchtype = furniture->workBenchData.benchType;
-                            if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                    if (base_obj->IsInventoryObject())
+                    {
+                        if (!MiscThings::is_object_in_the_list(a_ref))
+                            if (player_ref->GetDistance(a_ref) > min_dist)
                             {
-                                if (!MiscThings::is_object_in_the_list(a_ref))
-                                    if (player_ref->GetDistance(a_ref) > min_dist)
-                                    {
-                                        candidates.push_back(a_ref);
-                                        return RE::BSContainer::ForEachResult::kContinue;
-                                    }
+                                candidates.push_back(a_ref);
+                                return RE::BSContainer::ForEachResult::kContinue;
                             }
-                            else
-                            {
-                                if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-                                    if (!MiscThings::is_object_in_the_list(a_ref))
-                                        if (player_ref->GetDistance(a_ref) > min_dist)
-                                        {
-                                            candidates.push_back(a_ref);
-                                            return RE::BSContainer::ForEachResult::kContinue;
-                                        }
-                            }
-                        }
-
-                        if (a_ref->GetDistance(player_ref) < 500.0f)
-                        {
-                            if (base_obj->IsInventoryObject())
-                            {
-                                if (!MiscThings::is_object_in_the_list(a_ref))
-                                    if (player_ref->GetDistance(a_ref) > min_dist)
-                                    {
-                                        candidates.push_back(a_ref);
-                                        return RE::BSContainer::ForEachResult::kContinue;
-                                    }
-                            }
-                        }
                     }
                 }
 

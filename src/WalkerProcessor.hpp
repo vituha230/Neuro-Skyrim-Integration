@@ -12,6 +12,8 @@ namespace WalkerProcessor {
 	void install_hook();
 
 	void reset_walker();
+	//void reset_explore_mode();
+
 
 	void walk_to_object_by_refr(RE::TESObjectREFR* target, int action);
 

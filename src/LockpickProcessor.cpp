@@ -56,7 +56,7 @@ namespace LockpickProcessor {
 		std::pair<bool, std::string> result{};
 
 
-		if (angle == -1000)
+		if (angle == -1)
 		{
 			quit_menu();
 			result.first = true;
@@ -64,9 +64,9 @@ namespace LockpickProcessor {
 			return result;
 		}
 
-		if (angle <= 90 && angle >= -90)
+		if (angle <= 180 && angle >= 0)
 		{
-			angle_choice = angle;
+			angle_choice = angle - 90;
 			angle_choice_valid = true;
 			result.first = true;
 			result.second = "[Trying to pick the lock...]";
@@ -406,7 +406,7 @@ namespace LockpickProcessor {
 									//it stopped moving, wait for it to return to original position and reset
 									if (get_lock_angle() < 45.0f)
 									{
-										send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(max_lock_angle) + " degrees (has to reach 90 to open)]").c_str());
+										send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(max_lock_angle*100/90) + " degrees (has to reach 100% to open). Try different pick angle. (from 0 to 180)]").c_str());
 										reset_lockpicking(); //MAYBE GIVE DIFFERENT PROMPT ON RETRY?
 									}
 								}
@@ -421,7 +421,7 @@ namespace LockpickProcessor {
 						if (lock_level_text != "")
 						{
 							
-							if (force_choice({}, "You are lockpicking. You have " + get_picks_amount() + " lockpicks. " + lock_level_text + ". Choose angle of pick to try. Valid range: from -90 to 90. You can send -1000 to quit lockpicking. ", force_type::lockpick_angle))
+							if (force_choice({}, "You are lockpicking. You have " + get_picks_amount() + " lockpicks. " + lock_level_text + ". Choose angle of pick to try. Valid range: from 0 to 180. You can send -1 to quit lockpicking. ", force_type::lockpick_angle))
 								angle_choice_request_sent = true;
 						}
 
