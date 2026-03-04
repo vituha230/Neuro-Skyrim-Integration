@@ -1500,7 +1500,7 @@ private:
 
         if (restore_actions)
         {
-            if (restore_actions_timer > 1.0f)
+            if (restore_actions_timer > 1.5f && Observer::are_surroundings_scanned())
             {
                 m_neuroSocket->register_allowed_actions();
                 restore_actions_timer = 0.0f;

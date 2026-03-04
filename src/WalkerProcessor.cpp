@@ -5129,7 +5129,7 @@ namespace WalkerProcessor {
                         dont_use_left |= has_spell_equipped(true) && (!has_something_equipped(false) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(true)) && !has_spell_equipped(false)));
                         bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
 
-                        dont_use_right |= has_ranged_weapon_equipped(true) && no_ammo();
+                        dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
 
                         if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                             attack_action = 1;
@@ -5196,13 +5196,8 @@ namespace WalkerProcessor {
                                 if (!has_something_equipped(false) && has_something_equipped(true) && is_melee_weapon(true))
                                 {
                                     attacking_info = "[You are blocking";
-                                    if (player->GetDistance(target_ref) > 20.0f)
+                                    if (player->GetDistance(target_ref) > 100.0f)
                                         cursor_up();
-                                    else
-                                    {
-                                        if (is_melee_weapon(false) && player->GetDistance(target_ref) > 40.0f)
-                                            cursor_up();
-                                    }
                                 }
                                 else
                                 {
@@ -5210,6 +5205,9 @@ namespace WalkerProcessor {
                                         attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
                                     else
                                         attacking_weapon = get_equipped_weapon_name(false);
+
+                                    if (is_melee_weapon(false) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
+                                        cursor_up();
                                 }
                             }
 
@@ -5288,7 +5286,7 @@ namespace WalkerProcessor {
                             dont_use_left |= has_ranged_weapon_equipped(false);
 
                             bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
-                            dont_use_right |= has_ranged_weapon_equipped(true) && no_ammo(); //right hand check is intended. here only care for bows
+                            dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                                 attack_action = 1;

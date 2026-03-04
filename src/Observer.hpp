@@ -22,4 +22,6 @@ namespace Observer {
 
 	void detect_locations(float dtime);
 
+	bool are_surroundings_scanned();
+
 }

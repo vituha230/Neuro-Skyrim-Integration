@@ -16,6 +16,7 @@ namespace Observer {
 
 
 
+	bool surroundings_scanned = false;
 
 
 	float detect_threats_time = 0.0f;
@@ -39,6 +40,8 @@ namespace Observer {
 
 	int old_unbound_quest_stage = 0;
 	bool first_cycle = true;
+	bool first_cycle2 = true;
+
 
 	bool old_mount_state = false;
 	RE::ActorPtr mount = nullptr;
@@ -99,6 +102,7 @@ namespace Observer {
 
 		old_unbound_quest_stage = false;
 		first_cycle = true;
+		first_cycle2 = true;
 		last_saved_time = 0.0f;
 
 		detect_locations_timer = 0.0f;
@@ -110,6 +114,11 @@ namespace Observer {
 
 		jail_serving_notified = false;
 		jail_escaping_notified = false;
+
+
+		observers_green_light = false;
+		surroundings_scanned = false;
+
 	}
 
 
@@ -270,13 +279,22 @@ namespace Observer {
 
 	
 
+	bool are_surroundings_scanned()
+	{
+		return surroundings_scanned;
+	}
 
 	void detect_interesting_objects(float dtime)
 	{
 		if (observers_green_light)
 		{
-			if (detect_interesting_time > 5.0f)
+			if (detect_interesting_time > 5.0f || (first_cycle2 && detect_interesting_time > 2.0f))
 			{
+				if (first_cycle2)
+					first_cycle2 = false;
+
+				surroundings_scanned = true;
+
 				detect_interesting_time = 0.0f;
 				std::vector<interesting_object> result{};
 				auto player = RE::PlayerCharacter::GetSingleton();
