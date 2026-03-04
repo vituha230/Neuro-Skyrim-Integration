@@ -4962,7 +4962,13 @@ namespace WalkerProcessor {
         if (target_ref && player_ref)
         {
             if (attack_action < 0 || attack_action > 1)
-                attack_action = 0;
+            {
+                bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
+                dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
+                
+                attack_action = dont_use_right;
+            }
+                
 
 
             //if (close_enough())
@@ -4978,15 +4984,19 @@ namespace WalkerProcessor {
 
                     dont_check_mana = is_casting_something(true);
 
-                    if ((!dont_check_mana && has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true)))) || (has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_is_full_hp()))
+                    bool low_mana_check = (!dont_check_mana && has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
+
+                    if (low_mana_check)
+                        low_mana_detected;
+
+                    if (low_mana_check || (has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_is_full_hp()))
                     {
-                        
 
                         //set_universal_block(1.0f);
                         right_attack_cancel();
                         //was_charging_ranged = false;
                         attack_action = 1;
-                        low_mana_detected = true;
+                        
                         return false;
                     }
 
@@ -5152,8 +5162,12 @@ namespace WalkerProcessor {
 
                         dont_check_mana = is_casting_something(false);
 
+                        bool low_mana_check = (!dont_check_mana && has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
 
-                        if ((!dont_check_mana && has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false)))) || (has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_is_full_hp()))
+                        if (low_mana_check)
+                            low_mana_detected;
+
+                        if (low_mana_check || (has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_is_full_hp()))
                         {
                             //set_universal_block(1.0f);
                             left_attack_cancel();
