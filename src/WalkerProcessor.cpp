@@ -916,7 +916,7 @@ namespace WalkerProcessor {
             float mouse_x = 0.0f;
             float mouse_y = 0.0f;
 
-            auto mulX = camera_dirX * pos_dif_norm;
+            
             //auto test_crossX = camera_dirY.Cross(pos_dif_norm);
 
             //auto camera_dirX_noZ = camera_dirY;
@@ -934,9 +934,18 @@ namespace WalkerProcessor {
                     mulX = 100.0f;
             }
                */ 
+            //auto mulX = 0.0f;
+            //auto mulY = 0.0f;
+            //auto mulZ = 0.0f;
 
-            auto mulY = 0.0f;
-            auto mulZ = 0.0f;
+            auto desired_direction = pos_dif_norm;
+            auto desired_direction_norm = desired_direction / desired_direction.Length();
+
+            auto mulX = camera_dirX * desired_direction_norm;
+            auto mulZ = camera_dirZ * desired_direction_norm;
+            desired_direction_norm.z = 0.0f;
+            auto mulY = camera_dirY * desired_direction_norm;
+
 
             //if (target_ref && !use_last_point_of_last_path && (current_path_point < ((int)std::size(path) - 2)))
             if (target_ref && !use_last_point_of_last_path && (current_path_point < ((int)std::size(path) - 2)))
@@ -949,11 +958,11 @@ namespace WalkerProcessor {
 
                 
 
-                auto desired_direction = along_next_path_points_vector();
+                desired_direction = along_next_path_points_vector();
 
                 if (desired_direction != RE::NiPoint3::Zero())
                 {
-                    auto desired_direction_norm = desired_direction / desired_direction.Length();
+                    desired_direction_norm = desired_direction / desired_direction.Length();
 
                     //if ((int)std::size(path) - current_path_point > 7 && pos_difY.Length() < 300.0f)
                     auto pos_difY_norm = pos_dif_norm;
@@ -973,20 +982,20 @@ namespace WalkerProcessor {
                     //mulY = camera_dirY * pos_difY_norm;
                     //mulZ = camera_dirZ * desired_direction_norm;// pos_difY_norm;
 
-                    if (mulY < 0)
-                    {
-                        mulZ = 0.0f;// -mulZ;
-                        if (mulX < 0.0f)
-                            mulX = -0.3f + mulX;
-                        else
-                            mulX = 0.3f + mulX;
-                    }
-
                 }
 
             }
 
-             
+            if (mulY < 0)
+            {
+                mulZ = 0.0f;// -mulZ;
+                if (mulX < 0.0f)
+                    mulX = -0.3f + mulX;
+                else
+                    mulX = 0.3f + mulX;
+            }
+
+
 
             mouse_x = mulX * 125.0f;//200 //150
             mouse_y = mulZ * 60.0f;//200

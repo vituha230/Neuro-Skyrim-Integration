@@ -133,7 +133,7 @@ namespace SleepWaitProcessor {
 			
 
 
-		if (choice == -1)
+		if (choice == -1 || choice == 0)
 		{
 			quit_menu();
 			result.first = true;

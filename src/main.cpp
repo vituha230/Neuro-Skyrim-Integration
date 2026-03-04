@@ -4,6 +4,10 @@
 //crucial:
 
 
+//TODO trap trigger is a door, doesnt say what its attatched to. also its not removed from valid objects after destruction.
+
+
+
 //TODO maybe give more context on actors' state (at least for things like "started running away"
 
 
