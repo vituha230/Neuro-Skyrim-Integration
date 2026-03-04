@@ -476,6 +476,12 @@ void mouse_look(float x, float y)
 }
 
 
+void mouse_cursor_move(float x, float y)
+{
+    RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y);
+}
+
+
 
 
 void mouse_mouse_x(float angle)
@@ -520,6 +526,13 @@ void mouse_mouse_y(float angle)
 
 void mouse_mouse_x_y(float x, float y)
 {
+    RE::MouseMoveEvent* mouse_event = &RE::BSInputEventQueue::GetSingleton()->mouseEvents[0];
+    //mouse_event->mouseInputX = angle_to_move;
+    //mouse_event->userEvent = "RotatePick";
+    //menu->ProcessMouseMove(mouse_event);
+
+
+
     //clear_input_queue();
     auto test = RE::BSInputEventQueue::GetSingleton();
 

@@ -221,6 +221,14 @@ namespace TrainingProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::TrainingMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
+
 		if (choice == -1)
 		{
 			quit_menu();

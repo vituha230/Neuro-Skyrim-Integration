@@ -74,6 +74,9 @@ void quicksave();
 
 void mouse_look(float x, float y);
 
+void mouse_cursor_move(float x, float y);
+
+
 
 void dialogue_cursor_down();
 void dialogue_cursor_up();

@@ -711,6 +711,21 @@ std::pair<bool, std::string> set_item_choice(int id)
 {
 	std::pair<bool, std::string> result{};
 
+	auto ui = RE::UI::GetSingleton();
+	if (!ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
+
+	if (!ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
+
 	if (id == -1)
 	{
 		quit_menu();
@@ -722,7 +737,7 @@ std::pair<bool, std::string> set_item_choice(int id)
 	if (id == -2)
 	{
 		//take all
-		RE::UI* ui = RE::UI::GetSingleton();
+		
 		auto menu = ui->GetMenu<RE::ContainerMenu>();
 		if (menu && menu->uiMovie)
 		{

@@ -49,6 +49,14 @@ std::pair<bool, std::string> choose_craft_more(int amount_more)
 {
 	std::pair<bool, std::string> result{};
 
+	auto ui = RE::UI::GetSingleton();
+	if (!ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
+
 	if (amount_more == -1)
 	{
 		quit_menu();

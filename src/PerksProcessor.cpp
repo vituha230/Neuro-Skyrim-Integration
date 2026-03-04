@@ -449,6 +449,14 @@ namespace PerksProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::StatsMenu::MENU_NAME) || !ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
+
 
 		if (choice == -1)
 		{
@@ -485,6 +493,14 @@ namespace PerksProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::StatsMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
+
 
 		if (tree_id == -1)
 		{
@@ -494,8 +510,6 @@ namespace PerksProcessor {
 			return result;
 		}
 
-
-		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::StatsMenu>();
 
 		if (in_perks && menu) //TODO: return not bool but informative message on what was the error if there was one
@@ -1202,6 +1216,13 @@ namespace PerksProcessor {
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::StatsMenu>();
 		std::pair<bool, std::string> result{};
+
+		if (!ui->IsMenuOpen(RE::StatsMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
 
 
 		if (perk_id == -1)

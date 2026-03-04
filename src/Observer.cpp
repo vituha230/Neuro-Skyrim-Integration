@@ -141,7 +141,7 @@ namespace Observer {
 		if (!threats_response_request_sent)
 		{
 			result.first = true;
-			result.second = "No threats found";
+			result.second = "[Error]";
 		}
 		else
 		{

@@ -169,6 +169,15 @@ namespace DialogueProcessor {
     {
         std::pair<bool, std::string> result{};
 
+        auto ui = RE::UI::GetSingleton();
+        if (!ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
+        {
+            result.first = true;
+            result.second = "[Error]";
+            return result;
+        }
+
+
         if (id == -1)
         {
             //RE::MenuTopicManager* topic_manager = RE::MenuTopicManager::GetSingleton();

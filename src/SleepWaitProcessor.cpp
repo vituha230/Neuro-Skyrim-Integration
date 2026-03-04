@@ -117,6 +117,14 @@ namespace SleepWaitProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::SleepWaitMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
+
 		std::string sleep_or_wait = "";
 		std::string action = "";
 

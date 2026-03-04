@@ -877,6 +877,14 @@ namespace RaceProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
+
 		if (!race_defined)
 		{
 			return set_race_choice(choice);

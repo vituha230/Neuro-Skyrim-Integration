@@ -5,7 +5,11 @@
 
 
 //TODO trap trigger is a door, doesnt say what its attatched to. also its not removed from valid objects after destruction.
-
+//TODO if menu is closed manually it might not reregister actions (example - lockpicking)
+//TODO explore is bugged, gives no result/info when cant find anything interesting
+//TODO commands not unregistered while mining ore
+//TODO closed door on the way force doesnt unregister commands
+//TODO when lockpick is broke and we are out of lockpicks - doesnt detect it, menu closes, force stays.
 
 
 //TODO maybe give more context on actors' state (at least for things like "started running away"

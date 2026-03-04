@@ -369,7 +369,8 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     }
     else
     {
-        resend_active_force();
+        if (reconnect)
+            resend_active_force();
     }
     
 
@@ -581,7 +582,12 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                             command_result = TrainingProcessor::set_training_choice(json.id); break;
 
                         default:
+                        {
                             command_result = { true, "You dont have any choices to make" };
+                            register_allowed_actions();
+                            break;
+                        }
+                            
                         }
                     }
                 }
@@ -609,7 +615,8 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                     }
                     else
                     {
-                        command_result = { true, "You dont have any choices to make. " };
+                        command_result = { true, "You dont have any choices to make" };
+                        register_allowed_actions();
                     }
 
                 }
@@ -630,6 +637,7 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                     else
                     {
                         command_result = { false, "This command is not for talking! You will be notified when you are in dialogue. You can try starting a dialogue by interacting with someone (use walk_to_object, with target ID and action 1 (interact)). " };
+                        register_allowed_actions();
                     }
                 }
 
@@ -639,8 +647,10 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                     const char* action_names[] = { action_to_unregister.name };
 
                     unregister_actions(action_names, std::size(action_names)); //lets try not caring about result... surely it will work 1st time?
-
                     set_active_force(-1);
+
+                    if (command_result.second == "[Error]")
+                        register_allowed_actions();
                 }
 
 

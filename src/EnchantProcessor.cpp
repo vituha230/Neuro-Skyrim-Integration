@@ -327,6 +327,14 @@ std::pair<bool, std::string> set_enchant_type(int in_type)
 {
 	std::pair<bool, std::string> result{};
 
+	auto ui = RE::UI::GetSingleton();
+	if (!ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
+
 	if (in_type == -1)
 	{
 		quit_menu();
@@ -710,6 +718,13 @@ std::pair<bool, std::string> set_slider_choice(int pos)
 {
 	std::pair<bool, std::string> result{};
 
+	auto ui = RE::UI::GetSingleton();
+	if (!ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
 
 	if (pos == -1)
 	{
@@ -742,6 +757,13 @@ std::pair<bool, std::string> set_item_choice(int id)
 {
 	std::pair<bool, std::string> result{};
 
+	auto ui = RE::UI::GetSingleton();
+	if (!ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
 
 	if (id == -1)
 	{

@@ -26,6 +26,7 @@ namespace LockpickProcessor {
 	bool was_stuck = false;
 	bool victory = false;
 	bool do_lock_moving = false;
+	bool no_lockpicks = false;
 
 
 	void reset_lockpicking()
@@ -39,6 +40,7 @@ namespace LockpickProcessor {
 		move_onetime = false;
 		was_stuck = false;
 		do_lock_moving = false;
+		no_lockpicks = false;
 
 	}
 
@@ -54,6 +56,13 @@ namespace LockpickProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::LockpickingMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
 
 		if (angle == -1)
 		{
@@ -351,102 +360,109 @@ namespace LockpickProcessor {
 
 			if (in_lockpicking)
 			{
-				//auto test = RE::BSInputDeviceManager::GetSingleton();
-				//auto test2 = RE::ControlMap::GetSingleton();
-
-
-				if (angle_choice_valid)
+				if (!no_lockpicks)
 				{
-					if (detect_pick_broke()) //this check acts funny so do it in 2 places
+					//auto test = RE::BSInputDeviceManager::GetSingleton();
+									//auto test2 = RE::ControlMap::GetSingleton();
+
+
+					if (angle_choice_valid)
 					{
-						send_random_context("[The lockpick broke]");
-						reset_lockpicking();
-						if (get_picks_amount_int() == 0)
-							send_random_context("[Out of lockpicks. Exiting lockpicking menu]");
-					}
-					else
-					{
-						if (get_pick_angle() != angle_choice)
-							move_pick_to_angle(angle_choice);
+						if (detect_pick_broke()) //this check acts funny so do it in 2 places
+						{
+							send_random_context("[The lockpick broke]");
+							reset_lockpicking();
+							if (get_picks_amount_int() == 0)
+							{
+								send_random_context("[Out of lockpicks. Exiting lockpicking menu]");
+								no_lockpicks = true;
+							}
+
+						}
 						else
 						{
-							if (detect_pick_broke()) //this check acts funny so do it in 2 places
-							{
-								send_random_context("[The lockpick broke]");
-								reset_lockpicking();
-							}
+							if (get_pick_angle() != angle_choice)
+								move_pick_to_angle(angle_choice);
 							else
 							{
-								//if (menu && menu->unk10A)
-								if (!is_lock_stuck(dtime) && !was_stuck)
+								if (detect_pick_broke()) //this check acts funny so do it in 2 places
 								{
-									if (max_lock_angle < get_lock_angle())
-										max_lock_angle = get_lock_angle();
-
-									do_lock_moving = true;
-
-									if (detect_win())
-									{
-										do_lock_moving = false;
-										cancel_forward_lockpick();
-										send_random_context("[Successfully picked the lock]");
-										reset_lockpicking();
-									}
-
-
+									send_random_context("[The lockpick broke]");
+									reset_lockpicking();
 								}
 								else
 								{
-									do_lock_moving = false;
-									was_stuck = true;
-									cancel_forward_lockpick();
-									//it stopped moving, wait for it to return to original position and reset
-									if (get_lock_angle() < 45.0f)
+									//if (menu && menu->unk10A)
+									if (!is_lock_stuck(dtime) && !was_stuck)
 									{
-										send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(max_lock_angle*100/90) + "% (has to reach 100% to open). Try different pick angle. (from 0 to 180)]").c_str());
-										reset_lockpicking(); //MAYBE GIVE DIFFERENT PROMPT ON RETRY?
+										if (max_lock_angle < get_lock_angle())
+											max_lock_angle = get_lock_angle();
+
+										do_lock_moving = true;
+
+										if (detect_win())
+										{
+											do_lock_moving = false;
+											cancel_forward_lockpick();
+											send_random_context("[Successfully picked the lock]");
+											reset_lockpicking();
+										}
+
+
+									}
+									else
+									{
+										do_lock_moving = false;
+										was_stuck = true;
+										cancel_forward_lockpick();
+										//it stopped moving, wait for it to return to original position and reset
+										if (get_lock_angle() < 45.0f)
+										{
+											send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(max_lock_angle * 100 / 90) + "% (has to reach 100% to open). Try different pick angle. (from 0 to 180)]").c_str());
+											reset_lockpicking(); //MAYBE GIVE DIFFERENT PROMPT ON RETRY?
+										}
 									}
 								}
 							}
 						}
 					}
-				}
-				else
-					if (!angle_choice_request_sent && !victory)
-					{
-						std::string lock_level_text = get_lock_level_text();
-						if (lock_level_text != "")
+					else
+						if (!angle_choice_request_sent && !victory)
 						{
-							
-							if (force_choice({}, "You are lockpicking. You have " + get_picks_amount() + " lockpicks. " + lock_level_text + ". Choose angle of pick to try. Valid range: from 0 to 180. You can send -1 to quit lockpicking. ", force_type::lockpick_angle))
+							std::string lock_level_text = get_lock_level_text();
+							if (lock_level_text != "")
 							{
-								/*
-								auto test_new_input3 = RE::ControlMap::GetSingleton();
 
-								for (int i = 0; i < 20; i++)
+								if (force_choice({}, "You are lockpicking. You have " + get_picks_amount() + " lockpicks. " + lock_level_text + ". Choose angle of pick to try. Valid range: from 0 to 180. You can send -1 to quit lockpicking. ", force_type::lockpick_angle))
 								{
-									auto ii = static_cast<RE::UserEvents::INPUT_CONTEXT_ID>(i);
+									/*
+									auto test_new_input3 = RE::ControlMap::GetSingleton();
 
-									test_new_input3->PopInputContext(ii);
+									for (int i = 0; i < 20; i++)
+									{
+										auto ii = static_cast<RE::UserEvents::INPUT_CONTEXT_ID>(i);
+
+										test_new_input3->PopInputContext(ii);
+									}
+									//test_new_input3->PushInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kGameplay);
+									test_new_input3->PushInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kLockpicking);
+									*/
+
+
+									angle_choice_request_sent = true;
+
 								}
-								//test_new_input3->PushInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kGameplay);
-								test_new_input3->PushInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kLockpicking);
-								*/
-
-
-								angle_choice_request_sent = true;
 
 							}
-								
+
 						}
-
-					}
-
+				}
 			}
 			else
 			{
 				reset_lockpicking();
 				victory = false;
+				no_lockpicks = false;
 			}
 
 		}

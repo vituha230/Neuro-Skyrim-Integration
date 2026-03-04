@@ -149,7 +149,7 @@ namespace MapProcessor {
 
 				if (local_id < std::size(can_travel))
 				{
-					if (local_id != closest_id && closest_distance < 10000.0f)
+					if (local_id != closest_id || closest_distance > 10000.0f)
 					{
 						std::string can_travel_text = "";
 
@@ -398,7 +398,13 @@ namespace MapProcessor {
 	{
 		std::pair<bool, std::string> result{};
 
-		RE::UI* ui = RE::UI::GetSingleton();
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
 
 		if (!ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
 		{
@@ -497,6 +503,12 @@ namespace MapProcessor {
 		{
 			float cursor_posX = menu_cursor->cursorPosX / menu_cursor->screenWidthX;
 			float cursor_posY = menu_cursor->cursorPosY / menu_cursor->screenWidthY;
+
+			//mouse_cursor_move(menu_cursor->screenWidthX / 2 - menu_cursor->cursorPosX, -(menu_cursor->screenWidthY / 2 - menu_cursor->cursorPosY));
+			//mouse_cursor_move(menu_cursor->screenWidthX - menu_cursor->cursorPosX, -(menu_cursor->screenWidthY - menu_cursor->cursorPosY));
+
+
+
 
 			if ((id * 4 + 3)< std::size(menu->markerData))
 			{
@@ -607,6 +619,14 @@ namespace MapProcessor {
 	std::pair<bool, std::string> set_undiscovered_choice(int choice)
 	{
 		std::pair<bool, std::string> result{};
+
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
 
 
 		if (choice == -1)

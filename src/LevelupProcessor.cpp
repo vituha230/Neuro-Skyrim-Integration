@@ -44,6 +44,14 @@ namespace LevelupProcessor {
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::LevelUpMenu>();
 
+		if (!ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
+
+
 		if (in_levelup && menu) //TODO: return not bool but informative message on what was the error if there was one
 		{
 			switch (attribute)

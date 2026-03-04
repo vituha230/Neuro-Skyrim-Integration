@@ -101,6 +101,14 @@ namespace BarterProcessor {
     {
         std::pair<bool, std::string> result{};
 
+        auto ui = RE::UI::GetSingleton();
+        if (!ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+        {
+            result.first = true;
+            result.second = "[Error]";
+            return result;
+        }
+
         if (in_type == -1)
         {
             quit_menu();
@@ -228,6 +236,13 @@ namespace BarterProcessor {
     {
         std::pair<bool, std::string> result{};
 
+        auto ui = RE::UI::GetSingleton();
+        if (!ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+        {
+            result.first = true;
+            result.second = "[Error]";
+            return result;
+        }
 
         if (id == -1)
         {
@@ -275,6 +290,13 @@ namespace BarterProcessor {
     {
         std::pair<bool, std::string> result{};
 
+        auto ui = RE::UI::GetSingleton();
+        if (!ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+        {
+            result.first = true;
+            result.second = "[Error]";
+            return result;
+        }
 
         if (pos == -1)
         {
@@ -330,6 +352,13 @@ namespace BarterProcessor {
     {
         std::pair<bool, std::string> result{};
 
+        auto ui = RE::UI::GetSingleton();
+        if (!ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+        {
+            result.first = true;
+            result.second = "[Error]";
+            return result;
+        }
 
         if (choice == -1)
         {
@@ -384,6 +413,14 @@ namespace BarterProcessor {
     std::pair<bool, std::string> set_item_choice(int id)
     {
         std::pair<bool, std::string> result{};
+
+        auto ui = RE::UI::GetSingleton();
+        if (!ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+        {
+            result.first = true;
+            result.second = "[Error]";
+            return result;
+        }
 
 
         if (id == -1)

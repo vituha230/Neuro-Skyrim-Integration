@@ -783,6 +783,14 @@ std::pair<bool, std::string> set_category_choice(int id)
 {
 	std::pair<bool, std::string> result{};
 
+	auto ui = RE::UI::GetSingleton();
+	if (!ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
+
 	if (id == -1)
 	{
 		quit_menu();
@@ -822,6 +830,13 @@ std::pair<bool, std::string> set_item_choice(int id)
 {
 	std::pair<bool, std::string> result{};
 
+	auto ui = RE::UI::GetSingleton();
+	if (!ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
 
 	if (id == -1)
 	{
