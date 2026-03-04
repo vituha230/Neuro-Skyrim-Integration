@@ -3580,6 +3580,70 @@ namespace MiscThings {
 
 
 
+    bool have_force_only_menu_open()
+    {
+        bool result = false;
+
+        RE::UI* ui = RE::UI::GetSingleton();
+
+        if (ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::StatsMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::TrainingMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::SleepWaitMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::BookMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::GiftMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::LockpickingMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+            result = true;
+
+        if (ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
+            result = true;
+
+        return result;
+    }
+
+
+
+
+
 
     std::pair<bool, std::string> use_spell_by_index(int id)
     {

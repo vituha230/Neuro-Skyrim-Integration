@@ -853,7 +853,6 @@ namespace MapProcessor {
 							target_marker_pos.z = camera_position.z;
 
 							menu->camera.cameraRoot->world.translate = target_marker_pos;
-
 							//menu->camera.SetMapCameraRoot(old_camera_root.get(), target_marker_pos);
 							//menu->camera.SetCameraRoot(old_camera_root);
 

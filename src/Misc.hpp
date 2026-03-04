@@ -129,6 +129,7 @@ namespace MiscThings {
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
     bool is_new_object_valid(RE::TESObjectREFR* a_ref);
 
+    bool have_force_only_menu_open();
 
     RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist);
 

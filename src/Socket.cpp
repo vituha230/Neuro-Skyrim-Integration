@@ -198,7 +198,8 @@ bool neuro::NeuroSocket::Initialize()
     }
     */
 
-    register_allowed_actions();
+
+    register_allowed_actions(true);
 
 
     std::string in_game_text = "You are ingame. Use commands to interact with the world. ";
@@ -282,7 +283,7 @@ bool neuro::NeuroSocket::unregister_all()
 
 neurosdk_action actions_to_register[ActionsCount]{};
 
-bool neuro::NeuroSocket::register_allowed_actions()
+bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 {
     if (MiscThings::is_in_main_menu())
         return false;
@@ -301,65 +302,68 @@ bool neuro::NeuroSocket::register_allowed_actions()
 
     if (active_force == -1)
     {
-        if (unbound_quest_stage >= 15)
+        if (!reconnect || !MiscThings::have_force_only_menu_open())
         {
-            if (!MiscThings::is_intro()) //must be watched to refresh
+            if (unbound_quest_stage >= 15)
             {
-
-                if (MiscThings::is_objects_around_valid())
+                if (!MiscThings::is_intro()) //must be watched to refresh
                 {
-                    actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
-                    actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
-                }
 
-                if (MiscThings::have_any_quests())
-                {
-                    actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
-                    actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
-                }
-
-
-                if (!MiscThings::is_intro2()) //must be watched to refresh
-                {
-                    actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
-                    actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
-
-                    if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
+                    if (MiscThings::is_objects_around_valid())
                     {
-                        actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
                     }
 
-                    actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
-                    actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
-
-                    if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
+                    if (MiscThings::have_any_quests())
                     {
-                        actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
                     }
 
-                    if (MapProcessor::map_is_allowed()) //must be watched to refresh
+
+                    if (!MiscThings::is_intro2()) //must be watched to refresh
                     {
-                        actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
+
+                        if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
+                        {
+                            actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+                        }
+
+                        actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
+
+                        if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
+                        {
+                            actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
+                            actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+                        }
+
+                        if (MapProcessor::map_is_allowed()) //must be watched to refresh
+                        {
+                            actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
+                        }
+
+                        if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
+                        {
+                            actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+                        }
+
                     }
 
-                    if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
-                    {
-                        actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
-                    }
-
+                    bool stop_here = false;
                 }
-
-                bool stop_here = false;
-            }
-            else
-            {
-                if (MiscThings::is_objects_around_valid())
+                else
                 {
-                    actions_to_register[action_pos] = Capabilities::LookAtObject::Action; action_pos++;
-                    actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
-                }
+                    if (MiscThings::is_objects_around_valid())
+                    {
+                        actions_to_register[action_pos] = Capabilities::LookAtObject::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+                    }
 
+                }
             }
         }
     }

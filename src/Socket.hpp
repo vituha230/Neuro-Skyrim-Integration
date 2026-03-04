@@ -108,7 +108,7 @@ namespace Capabilities
     {
         constexpr char Name[] = "explore";
         constexpr char Desc[] =
-            R"(Walk in some direction, exploring the surroundings)";
+            R"([WILL CANCEL CURRENT WALKING OPERATION] Walk in some direction, exploring the surroundings)";
         constexpr char JsonSchema[] = "{}";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
@@ -121,7 +121,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Walk to object specified by its ID and do action ID)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object. ", "type": "integer" }, "id2": { "description": "The ID of the action to do after walk. 0 - do nothing (walk up and stare at), 1 - interact, 2 - pickpocket (works only on humanoids), 3 - attack ", "type": "integer" } }, "required": ["id1", "id2"] })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object. ", "type": "integer" }, "id2": { "description": "[WILL CANCEL CURRENT WALKING OPERATION] The ID of the action to do after walk. 0 - do nothing (walk up and stare at), 1 - interact, 2 - pickpocket (works only on humanoids), 3 - attack ", "type": "integer" } }, "required": ["id1", "id2"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     }
@@ -446,7 +446,7 @@ namespace neuro {
         bool register_actions(neurosdk_action actions[], int size);
         bool unregister_actions(const char** action_names, int size);
         bool unregister_all();
-        bool register_allowed_actions();
+        bool register_allowed_actions(bool reconnect = false);
 
 
         static void LogNeuro(neurosdk_severity_e aSeverity, char *aMsg, void* aUserData);

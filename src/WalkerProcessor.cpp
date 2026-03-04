@@ -3088,6 +3088,9 @@ namespace WalkerProcessor {
         if (ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
             result = "Cannot walk while creating your character!";
 
+        if (ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
+            result = "Cannot walk while in map!";
+
 
         return result;
     }
