@@ -103,7 +103,7 @@ bool API_CONTROL_LOCKPICK = false;
 bool API_CONTROL_CRAFTING = false;
 
 
-bool do_debug_scan = false;
+bool do_debug_scan = true;
 
 
 /////////////////////////////////////////////////////////
@@ -1285,6 +1285,37 @@ namespace Hooks {
 
             }
             else
+                if (a_message.type == RE::UI_MESSAGE_TYPE::kScaleformEvent)
+                {
+                    if (const auto data = static_cast<RE::BSUIScaleformData*>(a_message.data); data)
+                    {
+                        RE::GFxEvent* event = (RE::GFxEvent*)(data->scaleformEvent);
+
+                        bool stop_here = false;
+                        //if (event && event->type == RE::GFxEvent::EventType::kMouseUp || event->type == RE::GFxEvent::EventType::kKeyUp) //always let button ups
+                            //dont_skip_this_message = true;
+                    }
+                }
+                else
+                    if (a_message.type == RE::UI_MESSAGE_TYPE::kUserEvent)
+                    {
+                        if (const auto data = static_cast<RE::BSUIScaleformData*>(a_message.data); data)
+                        {
+                            RE::GFxEvent* event = (RE::GFxEvent*)(data->scaleformEvent);
+
+                            bool stop_here = false;
+                            //if (event && event->type == RE::GFxEvent::EventType::kMouseUp || event->type == RE::GFxEvent::EventType::kKeyUp) //always let button ups
+                                //dont_skip_this_message = true;
+                        }
+                    }
+                    else
+                    {
+                        if (a_message.type != RE::UI_MESSAGE_TYPE::kUpdate)
+                        {
+                            bool stop_here = false;
+                        }
+                    }
+            /*
                 if (API_CONTROL_LOCKPICK)
                 {
                     bool dont_skip_this_message = false;
@@ -1308,7 +1339,7 @@ namespace Hooks {
                     if (a_message.type == RE::UI_MESSAGE_TYPE::kScaleformEvent && allowed_events > 0) //i like this. now only integration messages count
                         allowed_events--;
                 }
-
+*/
             //get_category_list();
 
 

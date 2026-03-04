@@ -460,9 +460,30 @@ void cancel_forward_lockpick()
 }
 
 
+void lockpick_move_x(float angle)
+{
+    //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->look, RE::INPUT_DEVICES::kGamepad);
+    //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 0.0, angle);
+    //RE::BSInputEventQueue::GetSingleton()->AddThumbstickEvent(0.0f, 0.0f);
+    RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(angle, 0.0, "RotatePick");
+
+}
+
+
+void mouse_look(float x, float y)
+{
+    RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y, "Look");
+}
+
+
+
+
 void mouse_mouse_x(float angle)
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    auto test = RE::ControlMap::GetSingleton();
+
+    //mouse_mouse_x_y(angle, 0.0f);
+    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(angle, 0.0);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
     set_allowed_events(1);
@@ -480,7 +501,8 @@ void mouse_mouse_x(float angle)
 
 void mouse_mouse_y(float angle)
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    //mouse_mouse_x_y(0.0f, angle);
+    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(0.0, angle);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
     set_allowed_events(1);
@@ -499,6 +521,7 @@ void mouse_mouse_y(float angle)
 void mouse_mouse_x_y(float x, float y)
 {
     //clear_input_queue();
+    auto test = RE::BSInputEventQueue::GetSingleton();
 
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);

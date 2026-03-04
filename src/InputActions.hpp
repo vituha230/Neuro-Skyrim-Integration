@@ -72,6 +72,11 @@ void right_attack_bow();
 
 void quicksave();
 
+void mouse_look(float x, float y);
+
 
 void dialogue_cursor_down();
 void dialogue_cursor_up();
+
+
+void lockpick_move_x(float angle);

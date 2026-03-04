@@ -13,7 +13,6 @@
 
 namespace LockpickProcessor {
 
-
 	bool in_lockpicking = false;
 
 
@@ -318,16 +317,9 @@ namespace LockpickProcessor {
 			angle_to_move = ang_dif;
 
 
-		mouse_mouse_x(angle_to_move);
+		lockpick_move_x(angle_to_move);
 
 
-		/*
-		if (current_angle < angle_choice)
-			mouse_right();
-		if (current_angle > angle_choice)
-			mouse_left();
-
-			*/
 	}
 
 
@@ -338,6 +330,7 @@ namespace LockpickProcessor {
 
 	void processor(float dtime)
 	{
+
 
 		RE::UI* ui = RE::UI::GetSingleton();
 
@@ -358,6 +351,10 @@ namespace LockpickProcessor {
 
 			if (in_lockpicking)
 			{
+				//auto test = RE::BSInputDeviceManager::GetSingleton();
+				//auto test2 = RE::ControlMap::GetSingleton();
+
+
 				if (angle_choice_valid)
 				{
 					if (detect_pick_broke()) //this check acts funny so do it in 2 places
@@ -422,7 +419,25 @@ namespace LockpickProcessor {
 						{
 							
 							if (force_choice({}, "You are lockpicking. You have " + get_picks_amount() + " lockpicks. " + lock_level_text + ". Choose angle of pick to try. Valid range: from 0 to 180. You can send -1 to quit lockpicking. ", force_type::lockpick_angle))
+							{
+								/*
+								auto test_new_input3 = RE::ControlMap::GetSingleton();
+
+								for (int i = 0; i < 20; i++)
+								{
+									auto ii = static_cast<RE::UserEvents::INPUT_CONTEXT_ID>(i);
+
+									test_new_input3->PopInputContext(ii);
+								}
+								//test_new_input3->PushInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kGameplay);
+								test_new_input3->PushInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kLockpicking);
+								*/
+
+
 								angle_choice_request_sent = true;
+
+							}
+								
 						}
 
 					}

@@ -1189,7 +1189,9 @@ namespace WalkerProcessor {
             }
 
 
-            mouse_mouse_x_y(mouse_x, -mouse_y);
+            //mouse_mouse_x_y(mouse_x, -mouse_y);
+            mouse_look(mouse_x, -mouse_y);
+
 
             /*
             if (abs(mouse_x) < 1.0f && abs(mouse_y) >= 1.0f)
@@ -1486,7 +1488,8 @@ namespace WalkerProcessor {
             float x = 8*radius*cos(wiggle_camera_time*2.0f * std::numbers::pi);
             float y = 2*radius*sin(wiggle_camera_time * std::numbers::pi); //was 1* before, revert if bad
 
-            mouse_mouse_x_y(x, y);
+            mouse_look(x, y);
+            //mouse_mouse_x_y(x, y);
         }
 
         return result;
@@ -1508,7 +1511,8 @@ namespace WalkerProcessor {
                 flicking = true;
                 flick_time += dtime;
                 carry();
-                mouse_mouse_x_y(40.0f, -10.0f);
+                //mouse_mouse_x_y(40.0f, -10.0f);
+                mouse_look(40.0f, -10.0f);
             }
             else
             {
@@ -2188,7 +2192,8 @@ namespace WalkerProcessor {
             if (abs(mouse_x) < 5.0f && abs(mouse_y) < 5.0f)
                 return true;
 
-        mouse_mouse_x_y(mouse_x, -mouse_y);
+        mouse_look(mouse_x, -mouse_y);
+        //mouse_mouse_x_y(mouse_x, -mouse_y);
 
         /*
         if (abs(mouse_x) < 1.0f && abs(mouse_y) >= 1.0f)
@@ -2475,7 +2480,9 @@ namespace WalkerProcessor {
             backup_input_cancel = true;
             right_attack_cancel();
             left_attack_cancel();
-            mouse_mouse_x_y(0.0f, 0.0f); //experimental
+            //mouse_mouse_x_y(0.0f, 0.0f); //experimental
+            mouse_look(0.0f, 0.0f);
+
             //perk_up_cancel();
         }
 
@@ -6299,7 +6306,7 @@ namespace WalkerProcessor {
                                                         return; 
                                                     }
                                                         
-                                                    if (MiscThings::is_intro() || locking_failed || lock_camera_onto_target(target_ref, dtime) || (get_targeted_ref() == target_ref) || location_mode)
+                                                    if (MiscThings::is_intro() || locking_failed || (get_targeted_ref() == target_ref) || lock_camera_onto_target(target_ref, dtime) || location_mode)
                                                     {
                                                         auto result_target = get_targeted_ref();
 

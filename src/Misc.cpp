@@ -1009,7 +1009,9 @@ namespace MiscThings {
         RE::UIMessageQueue::GetSingleton()->AddMessage(RE::TweenMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 
         right_attack_cancel(); //alt tabs usually kill leftclick so it stays clicked. ruins walker's mouse actions 
-        mouse_mouse_x_y(0, 0);
+        //mouse_mouse_x_y(0, 0);
+        mouse_look(0, 0);
+
         clear_input_queue();
     }
 
