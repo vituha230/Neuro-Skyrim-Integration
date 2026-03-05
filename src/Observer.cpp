@@ -809,7 +809,7 @@ namespace Observer {
 										if (p_target)
 										{
 											auto target_refr = p_target.get();
-											if (target_refr && target_refr != player_ref)
+											if (target_refr && target_refr != player_ref && a_ref && a_ref != player_ref)
 											{
 												std::string target_short_name = target_refr->GetDisplayFullName();
 												std::string actor_short_name = a_ref->GetDisplayFullName();
@@ -826,9 +826,12 @@ namespace Observer {
 													auto target_name = MiscThings::insert_into_list_and_get_info(target_refr);
 													std::string actor_name = MiscThings::insert_into_list_and_get_info(a_ref);
 
-													std::string message = "[" + actor_name + interaction_name + target_name;
+													if (target_name != "" && actor_name != "")
+													{
+														std::string message = "[" + actor_name + interaction_name + target_name;
+														result.push_back(message);
+													}
 
-													result.push_back(message);
 												}
 											}
 										}

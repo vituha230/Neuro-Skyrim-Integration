@@ -2490,7 +2490,7 @@ namespace MiscThings {
                 }
             }
         
-            if (!found)
+            if (!found && is_new_object_valid(refr))
             {
                 int new_id = std::size(objects_around);
 
