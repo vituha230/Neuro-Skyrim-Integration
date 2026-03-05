@@ -744,7 +744,7 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                             if (name == Capabilities::ExploreWorld::Name)
                             {
 
-                                command_result = WalkerProcessor::explore_world();
+                                command_result = WalkerProcessor::explore_world(false);
 
                             }
 

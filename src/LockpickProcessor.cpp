@@ -418,8 +418,19 @@ namespace LockpickProcessor {
 										//it stopped moving, wait for it to return to original position and reset
 										if (get_lock_angle() < 45.0f)
 										{
-											send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(max_lock_angle * 100 / 90) + "% (has to reach 100% to open). Try different pick angle. (from 0 to 180)]").c_str());
+											int how_good = max_lock_angle * 100 / 90;
+											std::string how_good_text = "";
+
+											if (how_good == 0)
+												how_good_text = "You were far from correct";
+											else
+												if (how_good > 90)
+													how_good_text = "You almost got it";
+
+
+											send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(how_good) + "% (has to reach 100% to open). Try different pick angle. (from 0 to 180). " + how_good_text + "]").c_str());
 											reset_lockpicking(); //MAYBE GIVE DIFFERENT PROMPT ON RETRY?
+											set_universal_block(1.5f);
 										}
 									}
 								}

@@ -21,7 +21,7 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target);
 	std::pair<bool, std::string> look_at_object_by_index(int index);
 
-	std::pair<bool, std::string> explore_world();
+	std::pair<bool, std::string> explore_world(bool internal_call);
 
 
 	std::pair<bool, std::string> set_closed_door_choice(int choice);
@@ -61,5 +61,9 @@ namespace WalkerProcessor {
 	bool walker_active();
 	bool is_walking_important_path();
 	bool target_is_too_high();
+
+
+
+	bool is_exploring();
 
 }

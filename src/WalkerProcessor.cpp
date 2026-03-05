@@ -216,6 +216,11 @@ namespace WalkerProcessor {
     }
 
 
+    bool is_exploring()
+    {
+        return explore_mode;
+    }
+
 
     bool is_fighting()
     {
@@ -525,7 +530,7 @@ namespace WalkerProcessor {
                             if (min_dist > 100.0f)
                             {
                                 min_dist /= 2.0f;
-                                auto result_probe = explore_world();
+                                auto result_probe = explore_world(true);
                             }
                             else
                             {
@@ -1340,7 +1345,7 @@ namespace WalkerProcessor {
     {
         std::pair<bool, std::string> result{};
 
-        if (!door_is_closed_request_sent)
+        if (!door_is_closed_request_sent && !confirming_closed_door_interaction)
         {
             result.first = true;
             result.second = "[Error]";
@@ -3150,7 +3155,7 @@ namespace WalkerProcessor {
 
 
 
-    std::pair<bool, std::string> explore_world()
+    std::pair<bool, std::string> explore_world(bool internal_call)
     {
         float max_dist = 50000.0f;
 
@@ -3184,6 +3189,13 @@ namespace WalkerProcessor {
             return result;
         }
 
+
+        if (explore_mode && !internal_call)
+        {
+            result.first = false;
+            result.second = "You are already exploring";
+            return result;
+        }
 
         RE::TESObjectREFR* random_target = nullptr;
 
@@ -3234,7 +3246,7 @@ namespace WalkerProcessor {
         if (!MiscThings::is_intro())
             result.second = "[You look around, searching for directions to explore...]";
         else
-            result.second = "Cannot walk right now. Looking at target instead";
+            result.second = "Cannot explore right now";
 
         return result;
     }
@@ -5113,7 +5125,7 @@ namespace WalkerProcessor {
                                     start_attacking_info = "[You are casting ";
                                 }
 
-                                attacking_weapon = get_equipped_spell_name(true);
+                                attacking_weapon = get_equipped_spell_name(true) + ". ";
                             }
                             
                         }
@@ -5139,9 +5151,9 @@ namespace WalkerProcessor {
                             else
                             {
                                 if (has_ranged_weapon_equipped(true) && no_ammo())
-                                    attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
+                                    attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
                                 else
-                                    attacking_weapon = get_equipped_weapon_name(true);
+                                    attacking_weapon = get_equipped_weapon_name(true) + ". ";
 
                                 if (is_melee_weapon(true) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
                                     cursor_up();
@@ -5163,7 +5175,7 @@ namespace WalkerProcessor {
                                     cur_health = 1;
                                     immortal = true;
                                 }
-                                attacking_health += ". Enemy health : " + std::to_string(cur_health) + "/" + std::to_string(max_health);
+                                attacking_health += "Enemy health : " + std::to_string(cur_health) + "/" + std::to_string(max_health);
                                 if (immortal)
                                     ;// attacking_info += ". The target is not dying for some reason...";
                             }
@@ -5319,7 +5331,7 @@ namespace WalkerProcessor {
                                         start_attacking_info = "[You are casting ";
                                     }
 
-                                    attacking_weapon += get_equipped_spell_name(false);
+                                    attacking_weapon += get_equipped_spell_name(false) + ". ";
                                 }
 
                             }
@@ -5337,9 +5349,9 @@ namespace WalkerProcessor {
                                 else
                                 {
                                     if (has_ranged_weapon_equipped(true) && no_ammo())
-                                        attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + ")";
+                                        attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
                                     else
-                                        attacking_weapon = get_equipped_weapon_name(false);
+                                        attacking_weapon = get_equipped_weapon_name(false) + ". ";
 
                                     if (is_melee_weapon(false) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
                                         cursor_up();
@@ -5361,7 +5373,7 @@ namespace WalkerProcessor {
                                         cur_health = 1;
                                         immortal = true;
                                     }
-                                    attacking_health += ". Enemy health : " + std::to_string(cur_health) + "/" + std::to_string(max_health);
+                                    attacking_health += "Enemy health : " + std::to_string(cur_health) + "/" + std::to_string(max_health);
                                     if (immortal)
                                         ;// attacking_health += ". The target is not dying for some reason...";
                                 }
@@ -5381,7 +5393,7 @@ namespace WalkerProcessor {
                                                 attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
                                             else
                                                 if (last_attacking_health != attacking_health)
-                                                    attacking_info = "Enemy health: " + attacking_health;
+                                                    attacking_info = attacking_health;
                                     }
                                 }
 

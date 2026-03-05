@@ -6,7 +6,8 @@
 
 //TODO trap trigger is a door, doesnt say what its attatched to. also its not removed from valid objects after destruction.
 //TODO exit cave option when nothing interesting found anymore
-
+//TODO attempt to interact with closed door in walker (when it was initially targeted) gave [Error] but nothing was restored 
+//TODO custom shift for metal cell door
 
 
 //TODO maybe give more context on actors' state (at least for things like "started running away"
