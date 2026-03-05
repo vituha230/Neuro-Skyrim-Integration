@@ -76,6 +76,7 @@ void mouse_look(float x, float y);
 
 void mouse_cursor_move(float x, float y);
 
+bool is_casting_input(bool right);
 
 
 void dialogue_cursor_down();

@@ -36,7 +36,7 @@ namespace WalkerProcessor {
 	bool walk_to_location_by_refr(RE::TESObjectREFR* refr);
 
 
-	bool walk_to_player_marker();
+	bool walk_to_player_marker(RE::TESObjectREFR* target_location);
 
 	bool has_ranged_weapon_equipped(bool right);
 
@@ -44,11 +44,12 @@ namespace WalkerProcessor {
 
 	bool no_ammo();
 
+	bool was_casting_clairvoyance();
 
 	float get_weapon_range(bool right);
 	float get_weapon_projectile_speed(bool right);
 	bool get_current_active_hand();
-	bool is_casting_something(bool right);
+	bool is_casting_walker(bool right);
 	void stop_casting_hand(bool right);
 
 

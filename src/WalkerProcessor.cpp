@@ -17,6 +17,8 @@ namespace WalkerProcessor {
 
     //bool reset_by_explorer = false;
 
+    bool runaway_mode = false;
+
     bool crime_mode = false;
 
     bool gave_attacking_info = false;
@@ -99,7 +101,7 @@ namespace WalkerProcessor {
     float walk_unstuck_time = 0.0f;
     int unstuck_attempts = 0;
 
-
+    float attack_spell_cast_timeout = 0.0f;
 
     bool paused_before_interaction = false;
 
@@ -201,6 +203,7 @@ namespace WalkerProcessor {
     float min_dist = 20000.0f;
 
 
+
     void set_crime_mode(bool state)
     {
         crime_mode = state;
@@ -244,7 +247,7 @@ namespace WalkerProcessor {
 
         //GetAttackState()
         if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
-            is_casting_something(true) || is_casting_something(false))
+            is_casting_walker(true) || is_casting_walker(false))
             ready_weapon();
     }
 
@@ -951,6 +954,8 @@ namespace WalkerProcessor {
 
             bool use_y = false;
             //if (target_ref && !use_last_point_of_last_path && (current_path_point < ((int)std::size(path) - 2)))
+
+            
             if (target_ref && !use_last_point_of_last_path && (current_path_point < ((int)std::size(path) - 2)))
             {
                 //auto camera_dirZ_noZ = camera_dirZ;
@@ -979,7 +984,7 @@ namespace WalkerProcessor {
                     //mulX = camera_dirX * desired_direction_norm;
                     mulZ = camera_dirZ * desired_direction_norm;
                     desired_direction_norm.z = 0.0f;
-                    mulY = camera_dirY * desired_direction_norm;
+                    //mulY = camera_dirY * desired_direction_norm;
 
                     //camera_dirZ_noZ = camera_dirZ_noZ / camera_dirZ_noZ.Length();
                     //mulY = camera_dirY * pos_difY_norm;
@@ -988,7 +993,7 @@ namespace WalkerProcessor {
                 }
 
             }
-
+            
 
             if (mulY < 0)
             {
@@ -1156,7 +1161,11 @@ namespace WalkerProcessor {
                     else
                         reminder_message = "[You keep walking to ";
 
-                    reminder_message += reminder_target_name + ". ";
+                    if (runaway_mode)
+                        reminder_message = "[You keep running away. ";
+                    else
+                        reminder_message += reminder_target_name + ". ";
+
                     reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
                     reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
 
@@ -2298,7 +2307,7 @@ namespace WalkerProcessor {
 
 
 
-    bool is_casting = false;
+    bool is_casting_clairvoyance = false;
 
 
     void stop_casting_hand(bool right)
@@ -2317,8 +2326,16 @@ namespace WalkerProcessor {
         }
     }
 
-    bool is_casting_something(bool right)
+
+    bool was_casting_clairvoyance()
     {
+        return is_casting_clairvoyance;
+    }
+
+    bool is_casting_walker(bool right)
+    {
+        bool result = false;
+
         auto player = RE::PlayerCharacter::GetSingleton();
         auto left_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand);
         auto right_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kRightHand);
@@ -2327,17 +2344,17 @@ namespace WalkerProcessor {
         {
             auto state = right_caster->state;
             if (state != RE::MagicCaster::State::kNone)
-                return true;
+                result = true;
         }
         else
         {
             auto state = left_caster->state;
             if (state != RE::MagicCaster::State::kNone && !MiscThings::is_intro2() )
-                return true;
+                result = true;
         }
 
 
-        return false;
+        return result;
     }
 
 
@@ -2406,11 +2423,14 @@ namespace WalkerProcessor {
 
         bool result = false;
 
-        if (!is_casting_something(false) || is_casting)
+        if (is_casting_walker(false))
+            left_attack_cancel();
+
+        if ((!is_casting_walker(false) && !is_casting_input(false)) || is_casting_clairvoyance)
         {
-            if (!is_casting)
+            if (!is_casting_clairvoyance)
             {
-                is_casting = true;
+                is_casting_clairvoyance = true;
                 start_casting();
                 start_casting_time = 0.0f;
             }
@@ -2419,7 +2439,7 @@ namespace WalkerProcessor {
                 //if (start_casting_time > 0.5f) //hazards spawn immidiately after start, dont need to wait.
                 //{
                 stop_casting();
-                is_casting = false;
+                is_casting_clairvoyance = false;
                 start_casting_time = 0.0f;
                 result = true;
                 //}
@@ -2447,7 +2467,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
-
+        attack_spell_cast_timeout = 0.0f;
         //if (!reset_by_explorer) //it renews explore_mode anyway
         //{
         if (!explore_mode)
@@ -2458,6 +2478,8 @@ namespace WalkerProcessor {
         //}
 
         //reset_by_explorer = false;
+
+        runaway_mode = false;
 
         was_already_dead = false;
 
@@ -2500,7 +2522,7 @@ namespace WalkerProcessor {
         lock_camera_wants_to_crouch = false;
         path_valid = false;
         current_path_point = -1;
-        is_casting = false;
+        is_casting_clairvoyance = false;
         start_casting_time = 0.0f;
         init_delay = false;
         walk_timeout = 0.0f;
@@ -2631,7 +2653,7 @@ namespace WalkerProcessor {
             lock_camera_wants_to_crouch = false;
             path_valid = false;
             current_path_point = -1;
-            is_casting = false;
+            is_casting_clairvoyance = false;
             start_casting_time = 0.0f;
             walk_timeout = 0.0f;
             attacking_done = true;
@@ -3665,6 +3687,9 @@ namespace WalkerProcessor {
                 if (have_target_to_walk)
                     reset_walker();
 
+                auto player = RE::PlayerCharacter::GetSingleton();
+                reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
+                reminder_start_pos = player->GetPosition();
 
                 location_mode = true;
                 target_ref = location;
@@ -3684,7 +3709,7 @@ namespace WalkerProcessor {
     }
 
 
-    bool walk_to_player_marker()
+    bool walk_to_player_marker(RE::TESObjectREFR* target_location)
     {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
@@ -3734,6 +3759,12 @@ namespace WalkerProcessor {
                 target_ref = location;
                 have_target_to_walk = true;
                 interaction_after_walk = -1;
+
+                if (target_location)
+                    reminder_target_name = MiscThings::insert_location_into_list_and_get_info(target_location);
+
+                reminder_start_pos = player->GetPosition();
+
 
                 //clear_input_queue();
 
@@ -4142,6 +4173,10 @@ namespace WalkerProcessor {
             have_target_to_walk = true;
             interaction_after_walk = interaction;
 
+            auto player = RE::PlayerCharacter::GetSingleton();
+            reminder_target_name = MiscThings::insert_location_into_list_and_get_info(target);
+            reminder_start_pos = player->GetPosition();
+
         }
     }
 
@@ -4234,6 +4269,9 @@ namespace WalkerProcessor {
             target_ref = target;
             have_target_to_walk = true;
             interaction_after_walk = 0;
+            runaway_mode = true;
+            //reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
+            reminder_start_pos = player->GetPosition();
             result.first = true;
             result.second = "[Running away...]";
         }
@@ -4370,15 +4408,25 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player->AsReference();
         if (player && player_actor)
         {
-            RE::MagicItem* spell;
+            RE::MagicItem* spell = nullptr;
 
             auto actor_process = player->currentProcess;
             auto equipped_list = actor_process->equippedObjects;
 
+            auto equipped_right = equipped_list[1];
+            auto equipped_left = equipped_list[0];
+
             if (right)
-                spell = (RE::MagicItem*)equipped_list[1];
+            {
+                if (equipped_right->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_right;
+            }
             else
-                spell = (RE::MagicItem*)equipped_list[0];
+            {
+                if (equipped_left->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_left;
+            }
+
 
             if (spell)
             {
@@ -4405,22 +4453,31 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            auto left_spell = player->selectedSpells[0];
-            auto right_spell = player->selectedSpells[1];
+            RE::MagicItem* spell = nullptr;
+
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
+
+            auto equipped_right = equipped_list[1];
+            auto equipped_left = equipped_list[0];
 
             if (right)
             {
-                if (right_spell)
-                    if (right_spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-                        result = right_spell->GetFullName();
-
+                if (equipped_right->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_right;
             }
             else
             {
-                if (left_spell)
-                    if (left_spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-                        result = left_spell->GetFullName();
+                if (equipped_left->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_left;
             }
+
+
+            if (spell)
+                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                    result = spell->GetFullName();
+
+
 
         }
 
@@ -4439,39 +4496,38 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            auto left_spell = player->selectedSpells[0];
-            auto right_spell = player->selectedSpells[1];
+            RE::MagicItem* spell = nullptr;
+
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
+
+            auto equipped_right = equipped_list[1];
+            auto equipped_left = equipped_list[0];
 
             if (right)
             {
-                if (right_spell)
-                    if (right_spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-                    {
-                        for (auto effect : right_spell->effects)
-                        {
-                            if (effect->IsHostile())
-                            {
-                                result = true;
-                                break;
-                            }
-                        }
-                    }
+                if (equipped_right->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_right;
             }
             else
             {
-                if (left_spell)
-                    if (left_spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                if (equipped_left->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_left;
+            }
+
+            if (spell)
+                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                {
+                    for (auto effect : spell->effects)
                     {
-                        for (auto effect : left_spell->effects)
+                        if (effect->IsHostile())
                         {
-                            if (effect->IsHostile())
-                            {
-                                result = true;
-                                break;
-                            }
+                            result = true;
+                            break;
                         }
                     }
-            }
+                }
+
         }
         return result;
     }
@@ -4484,22 +4540,28 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            auto left_spell = player->selectedSpells[0];
-            auto right_spell = player->selectedSpells[1];
+            RE::MagicItem* spell = nullptr;
+
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
+
+            auto equipped_right = equipped_list[1];
+            auto equipped_left = equipped_list[0];
 
             if (right)
             {
-                if (right_spell)
-                    if (right_spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-                        result = true;
-                    
+                if (equipped_right->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_right;
             }
             else
             {
-                if (left_spell)
-                    if (left_spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-                        result = true;
+                if (equipped_left->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_left;
             }
+
+            if (spell)
+                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                    result = true;
 
         }
         return result;
@@ -4666,6 +4728,40 @@ namespace WalkerProcessor {
     }
 
 
+    bool is_concentration_spell(bool right)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        RE::MagicItem* spell = nullptr;
+
+        auto actor_process = player->currentProcess;
+        auto equipped_list = actor_process->equippedObjects;
+
+        auto equipped_right = equipped_list[1];
+        auto equipped_left = equipped_list[0];
+
+        if (right)
+        {
+            if (equipped_right->GetFormType() == RE::FormType::Spell)
+                spell = (RE::MagicItem*)equipped_right;
+        }
+        else
+        {
+            if (equipped_left->GetFormType() == RE::FormType::Spell)
+                spell = (RE::MagicItem*)equipped_left;
+        }
+
+
+        if (spell)
+        {
+            auto cast_type = spell->avEffectSetting->data.castingType;
+            if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                return true;
+        }
+
+        return false;
+    }
+
 
     float get_attack_time(bool right)
     {
@@ -4674,52 +4770,45 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            auto left_spell = player->selectedSpells[0];
-            auto right_spell = player->selectedSpells[1];
+            //auto left_spell = player->selectedSpells[0];
+            //auto right_spell = player->selectedSpells[1];
+            RE::MagicItem* spell = nullptr;
+
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
+
+            auto equipped_right = equipped_list[1];
+            auto equipped_left = equipped_list[0];
 
             if (right)
             {
-                if (right_spell)
+                if (equipped_right->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_right;
+            } 
+            else
+            {
+                if (equipped_left->GetFormType() == RE::FormType::Spell)
+                    spell = (RE::MagicItem*)equipped_left;
+            }
+
+            if (spell)
+            {
+                if (spell->avEffectSetting)
                 {
-                    if (right_spell->avEffectSetting)
-                    {
-                        auto cast_type = right_spell->avEffectSetting->data.castingType;
-                        if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                            result = 10.0f;
-                        else
-                            result = 1.3f;
-                    }
-                }
-                else
-                {
-                    //not a spell..
-                    if (has_ranged_weapon_equipped(true) && !no_ammo())
-                        result = 2.4f;//result = 2.7f;
+                    auto cast_type = spell->avEffectSetting->data.castingType;
+                    if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                        result = 10.0f;
                     else
-                        result = 0.8f;
-                }  
+                        result = 1.3f;
+                }
             }
             else
             {
-                if (left_spell)
-                {
-                    if (left_spell->avEffectSetting)
-                    {
-                        auto cast_type = left_spell->avEffectSetting->data.castingType;
-                        if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                            result = 10.0f;
-                        else
-                            result = 1.3f;
-                    }
-                }
+                //not a spell..
+                if (has_ranged_weapon_equipped(true) && !no_ammo())
+                    result = 2.4f;//result = 2.7f;
                 else
-                {
-                    //not a spell..
-                    if (has_ranged_weapon_equipped(false) && !no_ammo())
-                        result = 2.4f;
-                    else
-                        result = 0.8f;
-                }
+                    result = 0.8f;
             }
 
         }
@@ -4748,35 +4837,28 @@ namespace WalkerProcessor {
 
         if (player)
         {
-            auto left_hand = player->currentProcess->equippedObjects[0];
-            auto right_hand = player->currentProcess->equippedObjects[1];
+            RE::TESForm* hand_contents = nullptr;
+
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
+
+            auto equipped_right = equipped_list[1];
+            auto equipped_left = equipped_list[0];
 
             if (right)
-            {
-                if (right_hand)
-                {
-                    if (right_hand->formType == RE::FormType::Spell)
-                        return true;
-
-                    auto weapon = (RE::TESObjectWEAP*)right_hand;
-                    if (!weapon->IsMelee())
-                        return true;
-                        
-                }
-
-            }
+                hand_contents = equipped_right;
             else
-            {
-                if (left_hand)
-                {
-                    if (left_hand->formType == RE::FormType::Spell)
-                        return true;
+                hand_contents = equipped_left;
 
-                    auto weapon = (RE::TESObjectWEAP*)left_hand;
-                    if (!weapon->IsMelee())
-                        return true;
-                        
-                }
+            if (hand_contents)
+            {
+                if (hand_contents->formType == RE::FormType::Spell)
+                    return true;
+
+                auto weapon = (RE::TESObjectWEAP*)hand_contents;
+                if (!weapon->IsMelee())
+                    return true;
+
             }
 
         }
@@ -4792,73 +4874,51 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            auto left_hand = player->currentProcess->equippedObjects[0];
-            auto right_hand = player->currentProcess->equippedObjects[1];
+            RE::TESForm* hand_contents = nullptr;
+
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
+
+            auto equipped_right = equipped_list[1];
+            auto equipped_left = equipped_list[0];
 
             if (right)
-            {
-                if (right_hand)
-                {
-                    if (right_hand->formType == RE::FormType::Spell)
-                    {
-                        //spell
-                        auto spell = (RE::SpellItem*)right_hand;
-
-                        for (auto effect : spell->effects)
-                        {
-                            auto effectSetting = effect->baseEffect;
-                            auto speed = effectSetting->data.projectileBase->data.speed;
-
-                            if (speed > 0.0f)
-                                return speed;
-                        }
-
-                        return 99999.0f;
-
-                    }
-
-                    auto weapon = (RE::TESObjectWEAP*)right_hand;
-                    if (!weapon->IsMelee())
-                    {
-                        //bow
-                        return 2759.74896969697;
-                    }
-
-                }
-
-            }
+                hand_contents = equipped_right;
             else
+                hand_contents = equipped_left;
+
+
+            if (hand_contents)
             {
-                if (left_hand)
+                if (hand_contents->formType == RE::FormType::Spell)
                 {
-                    if (left_hand->formType == RE::FormType::Spell)
+                    //spell
+                    auto spell = (RE::SpellItem*)hand_contents;
+
+                    for (auto effect : spell->effects)
                     {
-                        //spell
-                        auto spell = (RE::SpellItem*)left_hand;
+                        auto effectSetting = effect->baseEffect;
+                        auto speed = effectSetting->data.projectileBase->data.speed;
 
-                        for (auto effect : spell->effects)
-                        {
-                            auto effectSetting = effect->baseEffect;
-                            auto speed = effectSetting->data.projectileBase->data.speed;
-
-                            if (speed > 0.0f)
-                                return speed;
-                        }
-
-                        return 99999.0f;
+                        if (speed > 0.0f)
+                            return speed;
                     }
 
+                    return 99999.0f;
 
-                    auto weapon = (RE::TESObjectWEAP*)left_hand;
+                }
+                else
+                {
+                    auto weapon = (RE::TESObjectWEAP*)hand_contents;
                     if (!weapon->IsMelee())
                     {
                         //bow
                         return 2759.74896969697;
                     }
-
                 }
-            }
 
+
+            }
         }
 
 
@@ -4873,90 +4933,56 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            auto left_hand = player->currentProcess->equippedObjects[0];
-            auto right_hand = player->currentProcess->equippedObjects[1];
+            RE::TESForm* hand_contents = nullptr;
+
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedObjects;
+
+            auto equipped_right = equipped_list[1];
+            auto equipped_left = equipped_list[0];
 
             if (right)
-            {
-                if (right_hand)
-                {
-                    if (right_hand->formType == RE::FormType::Spell)
-                    {
-                        //spell
-                        auto spell = (RE::SpellItem*)right_hand;
-
-                        auto range1 = spell->GetRange();
-                        if (range1 > 0)
-                            return range1;
-
-                        if (spell->GetDelivery() != RE::MagicSystem::Delivery::kSelf)
-                        {
-                            auto spell = (RE::SpellItem*)right_hand;
-
-                            for (auto effect : spell->effects)
-                            {
-                                auto effectSetting = effect->baseEffect;
-                                auto range2 = effectSetting->data.projectileBase->data.range;
-
-                                if (range2 > 0.0f)
-                                    return range2;
-                            }
-                        }
-
-                    }
-
-                    auto weapon = (RE::TESObjectWEAP*)right_hand;
-                    if (!weapon->IsMelee())
-                    {
-                        //bow
-                        if (!no_ammo())
-                            return 5000.0f;
-                    }
-
-                }
-
-            }
+                hand_contents = equipped_right;
             else
+                hand_contents = equipped_left;
+
+            if (hand_contents)
             {
-                if (left_hand)
+                if (hand_contents->formType == RE::FormType::Spell)
                 {
-                    if (left_hand->formType == RE::FormType::Spell)
+                    //spell
+                    auto spell = (RE::SpellItem*)hand_contents;
+
+                    auto range1 = spell->GetRange();
+                    if (range1 > 0)
+                        return range1;
+
+                    if (spell->GetDelivery() != RE::MagicSystem::Delivery::kSelf)
                     {
-                        //spell
-                        auto spell = (RE::SpellItem*)left_hand;
-
-                        auto range1 = spell->GetRange();
-                        if (range1 > 0)
-                            return range1;
-
-                        if (spell->GetDelivery() != RE::MagicSystem::Delivery::kSelf)
+                        for (auto effect : spell->effects)
                         {
-                            auto spell = (RE::SpellItem*)left_hand;
+                            auto effectSetting = effect->baseEffect;
+                            auto range2 = effectSetting->data.projectileBase->data.range;
 
-                            for (auto effect : spell->effects)
-                            {
-                                auto effectSetting = effect->baseEffect;
-                                auto range2 = effectSetting->data.projectileBase->data.range;
-
-                                if (range2 > 0.0f)
-                                    return range2;
-                            }
+                            if (range2 > 0.0f)
+                                return range2;
                         }
-
                     }
-                        
+                    else
+                        return 999999.0f;
 
-                    auto weapon = (RE::TESObjectWEAP*)left_hand;
+                }
+                else
+                {
+                    auto weapon = (RE::TESObjectWEAP*)hand_contents;
                     if (!weapon->IsMelee())
                     {
                         //bow
                         if (!no_ammo())
                             return 5000.0f;
                     }
-
                 }
             }
-
         }
 
 
@@ -4975,8 +5001,15 @@ namespace WalkerProcessor {
 
 
 
+   
+
+
+
     bool attack_target(float dtime)
     {
+
+        lock_camera_onto_target(target_ref, dtime);
+
         bool result = false;
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
@@ -5010,18 +5043,18 @@ namespace WalkerProcessor {
                 if (attack_action == 0)
                 {
 
-                    if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.1f))
+                    if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
                         low_mana_detected = false;
 
 
                     bool dont_check_mana = false;
 
-                    dont_check_mana = is_casting_something(true);
+                    dont_check_mana = !is_concentration_spell(true) && is_casting_walker(true);
 
                     bool low_mana_check = (!dont_check_mana && has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
 
                     if (low_mana_check)
-                        low_mana_detected;
+                        low_mana_detected = true;
 
                     if (low_mana_check || (has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_is_full_hp()))
                     {
@@ -5048,22 +5081,46 @@ namespace WalkerProcessor {
 
                         bool casting = false;
 
+                        bool skip_cast = false;
+
                         if (has_spell_equipped(true))
                         {
                             if (attack_action_time > 0.7f);
-                                was_charging_ranged = true;
+                            was_charging_ranged = true;
 
-                            right_attack_spell();
-                            if (!is_offensive_spell(true))
+                            if (!is_casting_walker(true))
                             {
-                                casting = true;
-                                start_attacking_info = "[You are casting ";
+                                if (attack_spell_cast_timeout > 1.0f)
+                                {
+                                    skip_cast = true;
+                                    attack_spell_cast_timeout = 0.0f;
+                                    right_attack_cancel();
+                                    attack_action_time = 0.0f;
+                                }
+                                else
+                                    attack_spell_cast_timeout += dtime;
                             }
+                            else
+                                attack_spell_cast_timeout = 0.0f;
 
-                            attacking_weapon = get_equipped_spell_name(true);
+
+                            if (!skip_cast)
+                            {
+                                right_attack_spell();
+                                if (!is_offensive_spell(true))
+                                {
+                                    casting = true;
+                                    start_attacking_info = "[You are casting ";
+                                }
+
+                                attacking_weapon = get_equipped_spell_name(true);
+                            }
+                            
                         }
                         else
                         {
+                            attack_spell_cast_timeout = 0.0f;
+
                             if (has_ranged_weapon_equipped(true))
                             {
                                 if (attack_action_time > 0.9f);
@@ -5149,6 +5206,8 @@ namespace WalkerProcessor {
                     else
                     {
                         //end of attack
+                        attack_spell_cast_timeout = 0.0f;
+
                         gave_attacking_info = false;
                         was_charging_ranged = false;
                         right_attack_cancel();
@@ -5189,17 +5248,17 @@ namespace WalkerProcessor {
 
                     if (attack_action == 1)
                     {
-                        if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.1f))
+                        if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
                             low_mana_detected = false;
 
                         bool dont_check_mana = false;
 
-                        dont_check_mana = is_casting_something(false);
+                        dont_check_mana = !is_concentration_spell(false) && is_casting_walker(false);
 
                         bool low_mana_check = (!dont_check_mana && has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
 
                         if (low_mana_check)
-                            low_mana_detected;
+                            low_mana_detected = true;
 
                         if (low_mana_check || (has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_is_full_hp()))
                         {
@@ -5226,20 +5285,48 @@ namespace WalkerProcessor {
 
                             if (has_spell_equipped(false))
                             {
-                                if (attack_action_time > 0.7f);
-                                was_charging_ranged = true;
 
-                                left_attack_spell();
-                                if (!is_offensive_spell(left))
+                                bool skip_cast = false;
+
+                                if (!is_casting_walker(false))
                                 {
-                                    casting = true;
-                                    start_attacking_info = "[You are casting ";
+                                    if (attack_spell_cast_timeout > 1.0f)
+                                    {
+                                        skip_cast = true;
+                                        attack_spell_cast_timeout = 0.0f;
+                                        left_attack_cancel();
+                                        attack_action_time = 0.0f;
+                                    }
+                                        
+                                    else
+                                        attack_spell_cast_timeout += dtime;
+                                }
+                                else
+                                {
+                                    if (attack_action_time > 0.7f);
+                                        was_charging_ranged = true;
+
+                                    attack_spell_cast_timeout = 0.0f;
+                                }
+                                    
+
+                                if (!skip_cast)
+                                {
+                                    left_attack_spell();
+                                    if (!is_offensive_spell(left))
+                                    {
+                                        casting = true;
+                                        start_attacking_info = "[You are casting ";
+                                    }
+
+                                    attacking_weapon += get_equipped_spell_name(false);
                                 }
 
-                                attacking_weapon += get_equipped_spell_name(false);
                             }
                             else
                             {
+                                attack_spell_cast_timeout = 0.0f;
+
                                 left_attack();
                                 if (!has_something_equipped(false) && has_something_equipped(true) && is_melee_weapon(true))
                                 {
@@ -5313,7 +5400,7 @@ namespace WalkerProcessor {
                         else
                         {
                             gave_attacking_info = false;
-
+                            attack_spell_cast_timeout = 0.0f;
                             was_charging_ranged = false;
 
                             left_attack_cancel();

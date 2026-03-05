@@ -5,7 +5,6 @@
 
 
 //TODO trap trigger is a door, doesnt say what its attatched to. also its not removed from valid objects after destruction.
-//TODO commands not unregistered while mining ore
 //TODO exit cave option when nothing interesting found anymore
 
 

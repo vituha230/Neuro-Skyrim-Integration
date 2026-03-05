@@ -1,8 +1,11 @@
 
 
-
+#include "WalkerProcessor.hpp"
 #include "InputActions.hpp"
 #include "main.hpp"
+
+
+//extern bool was_casting_clairvoyance();
 
 //from barter
 
@@ -15,19 +18,39 @@
 bool long_cast_ult = false;
 float use_ult_time = 0.0f;
 bool canceled_inputs = false;
-
+bool were_casting_something_right = false;
+bool were_casting_something_left = false;
 
 
 void reset_input_processor()
 {
+    were_casting_something_left = false;
+    were_casting_something_right = false;
     long_cast_ult = false;
     use_ult_time = 0.0f;
     canceled_inputs = false;
+
 }
 
+/*
+void set_were_casting_something_left(bool set)
+{
+    were_casting_something_left = set;
+}
 
+void set_were_casting_something_right(bool set)
+{
+    were_casting_something_right = set;
+}
+*/
 
-
+bool is_casting_input(bool right)
+{
+    if (right)
+        return were_casting_something_right;
+    else
+        return were_casting_something_left;
+}
 
 
 void right_attack()
@@ -60,6 +83,7 @@ void right_attack_bow()
 
 void right_attack_spell()
 {
+    were_casting_something_right = true;
     //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->rightAttack, RE::INPUT_DEVICES::kGamepad);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0f, 1000.0f);
@@ -69,15 +93,20 @@ void right_attack_spell()
 
 void left_attack_spell()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
-    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->leftAttack, RE::INPUT_DEVICES::kGamepad);
-    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0, 1000.0f);
-    //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
-    set_allowed_events(2);
+    if (!WalkerProcessor::was_casting_clairvoyance())
+    {
+        were_casting_something_left = true;
+        //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+        int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->leftAttack, RE::INPUT_DEVICES::kGamepad);
+        RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0, 1000.0f);
+        //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
+        set_allowed_events(2);
+    }
 }
 
 void right_attack_cancel()
 {
+    were_casting_something_right = false;
     //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->rightAttack, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0f, 0.0f);
@@ -89,6 +118,7 @@ void right_attack_cancel()
 
 void left_attack_cancel()
 {
+    were_casting_something_left = false;
     //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->leftAttack, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0f, 0.0f);

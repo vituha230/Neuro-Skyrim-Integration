@@ -18,7 +18,7 @@ namespace MiscThings {
         int cur_health = player->GetActorValue(RE::ActorValue::kHealth);
         int max_health = player->GetActorValueMax(RE::ActorValue::kHealth);
 
-        return cur_health == max_health;
+        return cur_health >= max_health*0.9;
 
     }
 

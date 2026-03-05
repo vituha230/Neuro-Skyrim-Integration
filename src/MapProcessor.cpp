@@ -748,7 +748,7 @@ namespace MapProcessor {
 					{
 						wait_and_quit_and_walk_to_marker = false;
 						wait_and_quit_and_walk_to_marker_time = 0.0f;
-						WalkerProcessor::walk_to_player_marker();
+						WalkerProcessor::walk_to_player_marker(chosen_marker_refr);
 						idk_what_to_do = false;
 					}
 					else
