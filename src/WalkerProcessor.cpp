@@ -5185,7 +5185,7 @@ namespace WalkerProcessor {
                                             attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
                                         else
                                             if (last_attacking_health != attacking_health)
-                                                attacking_info = "Enemy health: " + attacking_health;
+                                                attacking_info = attacking_health;
                                 }
 
                             }

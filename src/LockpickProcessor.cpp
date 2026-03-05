@@ -203,7 +203,7 @@ namespace LockpickProcessor {
 
 		const auto inv = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
 			{
-				return a_object.IsLockpick();// a_object.IsObject();
+				return a_object.IsLockpick() || a_object.GetFormID() == 0x3A070;;// a_object.IsObject();
 			});
 
 
@@ -230,7 +230,7 @@ namespace LockpickProcessor {
 
 		const auto inv = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
 			{
-				return a_object.IsLockpick();// a_object.IsObject();
+				return a_object.IsLockpick() || a_object.GetFormID() == 0x3A070;// a_object.IsObject();
 			});
 
 
