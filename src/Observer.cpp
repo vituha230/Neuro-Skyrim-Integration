@@ -207,10 +207,6 @@ namespace Observer {
 									MiscThings::pause_game();
 								}
 							}
-
-
-
-
 						}
 						else
 						{
@@ -290,7 +286,7 @@ namespace Observer {
 
 	void detect_interesting_objects(float dtime)
 	{
-		if (observers_green_light)
+		if (observers_green_light && !MiscThings::have_force_only_menu_open())
 		{
 			if (detect_interesting_time > 5.0f || (first_cycle2 && detect_interesting_time > 2.0f))
 			{
@@ -1417,7 +1413,7 @@ namespace Observer {
 
 
 
-		if (last_saved_time > 300000.0f)
+		if (last_saved_time > 300.0f && !WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1)
 		{
 			quicksave();
 			last_saved_time = 0.0f;
