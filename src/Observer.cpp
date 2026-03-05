@@ -179,7 +179,7 @@ namespace Observer {
 			{
 				auto attackers = MiscThings::get_player_attackers();
 
-				if (std::size(attackers) != 0 && !WalkerProcessor::is_fighting())
+				if (std::size(attackers) != 0 && !WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open())
 				{
 					//wait a little then notify
 

@@ -385,6 +385,7 @@ std::vector<MenuOption> get_enchantment_options()
 	}
 
 	result.push_back({ -1, "[QUIT ENCHANTING TABLE]" });
+	result.push_back({ -2, "[GO BACK]" });
 
 	return result;
 }

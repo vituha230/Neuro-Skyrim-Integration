@@ -840,7 +840,7 @@ void processor(float dtime)
 					if (!item_choice_request_sent)
 					{
 
-						if (force_choice(get_items_options(), "There is nothing to take. Send -1 to exit. ", force_type::gift_item))
+						if (force_choice(get_items_options(), "There is nothing to take. ", force_type::gift_item))
 						{
 							missing_item_detected = false;
 							last_cursor_move = 0;

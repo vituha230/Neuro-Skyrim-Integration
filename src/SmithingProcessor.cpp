@@ -266,6 +266,10 @@ std::vector<MenuOption> get_items_options()
 		MenuOption option = { item.first, item.second.name + ", " + item.second.ingredients_required + can_craft_text};
 		result.push_back(option);
 	}
+
+	result.push_back({ -1, "[QUIT CRAFTING]" });
+	result.push_back({ -2, "[GO BACK TO CATEGORY SELECTION]" });
+
 	return result;
 }
 
@@ -278,6 +282,9 @@ std::vector<MenuOption> get_categories_options()
 		MenuOption option = { category.first, category.second };
 		result.push_back(option);
 	}
+
+	result.push_back({ -1, "[QUIT CRAFTING]" });
+
 	return result;
 }
 
@@ -1030,22 +1037,22 @@ std::string get_force_message(bool category)
 					std::string menu_name = var1.GetString();
 
 					if (menu_name == "Smelter: Choose an item to create")
-						result = "You are at smelter. Select item to craft. Send - 1 to quit smelting. ";
+						result = "You are at smelter. Select item to craft. ";
 
 					if (menu_name == "Tanning Rack: Choose an item to create")
-						result = "You are at tanning rack. Select item to craft. Send - 1 to quit menu. ";
+						result = "You are at tanning rack. Select item to craft. ";
 
 					if (menu_name == "Weapon Smithing: Choose an item to improve")
-						result = "You are at grindstone. Select item to improve. Send - 1 to quit menu. ";
+						result = "You are at grindstone. Select item to improve. ";
 
 					if (menu_name == "Armor Smithing: Choose an item to improve")
-						result = "You are at workbench. Select item to improve. Send - 1 to quit menu. ";
+						result = "You are at workbench. Select item to improve. ";
 
 					if (result == "") //blacksmith forge
 						if (category)
-							result = "You are at blacksmith forge. Select item category. Send -1 to quit smithing. ";
+							result = "You are at blacksmith forge. Select item category. ";
 						else
-							result = "You are at blacksmith forge. Select item to craft. Send -1 to quit smithing. Send -2 to go back to category selection.";
+							result = "You are at blacksmith forge. Select item to craft. ";
 				}
 
 

@@ -3216,6 +3216,9 @@ namespace WalkerProcessor {
 
         if (have_target_to_walk)
         {
+            if (!internal_call)
+                Observer::reset_threats();
+
             if (target_ref != random_target)
                 reset_walker();
             else
@@ -3400,6 +3403,8 @@ namespace WalkerProcessor {
 
                 if (have_target_to_walk)
                 {
+                    Observer::reset_threats();
+
                     if (target_ref != object->second)
                         reset_walker();
                     else
@@ -3529,6 +3534,7 @@ namespace WalkerProcessor {
 
                 if (have_target_to_walk)
                 {
+                    Observer::reset_threats();
                     if (target_ref != object->second)
                         reset_walker();
                     else
@@ -3641,6 +3647,8 @@ namespace WalkerProcessor {
                             return result;
                         }
 
+                        Observer::reset_threats();
+
                         reset_walker();
                     }
                         
@@ -3696,6 +3704,8 @@ namespace WalkerProcessor {
 
             if (location)
             {
+                Observer::reset_threats();
+
                 if (have_target_to_walk)
                     reset_walker();
 
@@ -3766,6 +3776,7 @@ namespace WalkerProcessor {
                 if (have_target_to_walk)
                     reset_walker();
 
+                Observer::reset_threats();
 
                 location_mode = true;
                 target_ref = location;
@@ -3987,6 +3998,8 @@ namespace WalkerProcessor {
 
                                                 if (have_target_to_walk)
                                                 {
+                                                    Observer::reset_threats();
+
                                                     if (target_ref != quests_target_ref)
                                                         reset_walker();
                                                     else
@@ -4273,6 +4286,8 @@ namespace WalkerProcessor {
 
         if (target)
         {
+            //Observer::reset_threats();
+
             if (have_target_to_walk)
                 reset_walker();
 
@@ -4289,6 +4304,7 @@ namespace WalkerProcessor {
         }
         else
         {
+            Observer::reset_threats();
             result.first = false;
             result.second = "Nowhere to run!";
         }
