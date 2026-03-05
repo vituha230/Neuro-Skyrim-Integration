@@ -66,6 +66,8 @@ namespace Observer {
 
 	bool old_objects_around_valid = false;
 
+	RE::TESObjectREFR* old_occupied_furniture = nullptr;
+
 
 
 	void set_threat_action_taken()
@@ -118,6 +120,8 @@ namespace Observer {
 
 		observers_green_light = false;
 		surroundings_scanned = false;
+
+		old_occupied_furniture = nullptr;
 
 	}
 
@@ -1664,6 +1668,31 @@ namespace Observer {
 					}
 						
 				}
+
+				
+				RE::TESObjectREFR* occupied_furniture = nullptr;
+
+				if (player->currentProcess && player->currentProcess->middleHigh && player->currentProcess->middleHigh->occupiedFurniture && player->currentProcess->middleHigh->occupiedFurniture.get())
+				{
+					occupied_furniture = player->currentProcess->middleHigh->occupiedFurniture.get().get();
+				}
+
+				if (occupied_furniture != old_occupied_furniture)
+				{
+					if (occupied_furniture)
+					{
+						unregister_all_actions2();
+					}
+					else
+					{
+						register_allowed_actions();
+					}
+				}
+					
+				old_occupied_furniture = occupied_furniture;
+
+
+
 
 
 

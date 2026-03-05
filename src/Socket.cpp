@@ -74,6 +74,36 @@ neurosdk_action ActionsListNoForces[] = {
                                     Capabilities::GoToLocation::Action
 };
 
+
+
+neurosdk_action ActionsListNoForces2[] = {
+
+                                    //Capabilities::WalkToObject::Action,
+                                    //Capabilities::LookAtObject::Action,
+                                    //Capabilities::ExploreWorld::Action,
+
+                                    //Capabilities::GetCurrentQuests::Action,
+                                    //Capabilities::FollowQuest::Action,
+
+                                    //Capabilities::GetLocations::Action,
+
+
+                                    //Capabilities::GetSpells::Action,
+                                    Capabilities::CastEquipSpell::Action,
+                                   // Capabilities::UnlockShoutLevel::Action, //TODO: probably calculate ourselves and force just like levelup
+
+                                    //Capabilities::GetInventory::Action,
+                                    Capabilities::UseInventoryItem::Action,
+                                    Capabilities::CallWaitMenu::Action,
+                                    Capabilities::OpenMap::Action,
+                                    //Capabilities::GetGold::Action,
+
+                                    //Capabilities::GetObjectsAround::Action, //idk about this one
+                                    //Capabilities::GoToLocation::Action
+};
+
+
+
 /*
 neurosdk_action ActionsList[] = { QueryQuestContext::Action,
                                  QueryQuests::Action,
@@ -92,7 +122,7 @@ neurosdk_action ActionsList[] = { QueryQuestContext::Action,
 
 constexpr auto ActionsCount = std::size(ActionsList);
 constexpr auto ActionsCountNoForces = std::size(ActionsListNoForces);
-
+constexpr auto ActionsCountNoForces2 = std::size(ActionsListNoForces2);
 
 neuro::NeuroSocket::NeuroSocket()
     : m_context(nullptr)
@@ -279,6 +309,36 @@ bool neuro::NeuroSocket::unregister_all()
 
     return true;
 }
+
+
+bool neuro::NeuroSocket::unregister_all2()
+{
+    if (!IsAlive())
+        return false;
+
+
+    const char* action_names[ActionsCountNoForces2];
+
+    for (int i = 0; i < ActionsCountNoForces2; i++)
+    {
+        action_names[i] = ActionsListNoForces2[i].name;
+    }
+
+    if (ActionsCountNoForces2 <= 0)
+        return true;
+
+    neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsUnregister,
+                                         .value = {.actions_unregister = {.action_names = action_names,
+                                                                        .action_names_len = ActionsCountNoForces2}} };
+
+    if (const auto status = neurosdk_context_send(&m_context, &capabilityMessage); status != NeuroSDK_None)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 
 
 neurosdk_action actions_to_register[ActionsCount]{};

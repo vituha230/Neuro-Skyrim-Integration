@@ -157,6 +157,16 @@ void unregister_all_actions()
 }
 
 
+
+void unregister_all_actions2()
+{
+    restore_actions = false;
+    restore_actions_timer = 0.0f;
+
+    m_neuroSocket->unregister_all2(); //for mining ores and other furniture (can walk and inspect inventory, but no using it or casting spells or calling wait menu and map)
+}
+
+
 void register_allowed_actions()
 {
     restore_actions = true;

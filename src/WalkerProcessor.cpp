@@ -5458,6 +5458,7 @@ namespace WalkerProcessor {
                     }
                     else
                     {
+                        register_allowed_actions();
                         //cut_navmesh_on_target(get_targeted_ref());
                         walk_backward_a_little = true;
                         //reset_walker(); //resets after walk
@@ -6427,6 +6428,7 @@ namespace WalkerProcessor {
                                                                     }
                                                                     else
                                                                     {
+                                                                        register_allowed_actions();
                                                                         //cut_navmesh_on_target(get_targeted_ref());
                                                                         walk_backward_a_little = true;
                                                                         //reset_walker(); //resets after walk
@@ -6645,6 +6647,7 @@ namespace WalkerProcessor {
                                                                         }
                                                                         else
                                                                         {
+                                                                            register_allowed_actions();
                                                                             cut_navmesh_on_target(get_targeted_ref());
                                                                             walk_backward_a_little = true;
                                                                             //reset_walker(); //resets after walk
@@ -6765,6 +6768,7 @@ namespace WalkerProcessor {
                                                         }
                                                         else
                                                         {
+                                                            register_allowed_actions();
                                                             cut_navmesh_on_target(get_targeted_ref());
                                                             walk_backward_a_little = true;
                                                             //reset_walker(); //resets after walk

@@ -446,6 +446,7 @@ namespace neuro {
         bool register_actions(neurosdk_action actions[], int size);
         bool unregister_actions(const char** action_names, int size);
         bool unregister_all();
+        bool unregister_all2();
         bool register_allowed_actions(bool reconnect = false);
 
 
