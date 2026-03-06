@@ -64,7 +64,7 @@ void right_attack()
 
 void left_attack()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->leftAttack, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0f);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
@@ -73,7 +73,7 @@ void left_attack()
 
 void right_attack_bow()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->rightAttack, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0f, 100000000.0f);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
@@ -84,7 +84,7 @@ void right_attack_bow()
 void right_attack_spell()
 {
     were_casting_something_right = true;
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->rightAttack, RE::INPUT_DEVICES::kGamepad);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0f, 1000.0f);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
@@ -96,7 +96,7 @@ void left_attack_spell()
     if (!WalkerProcessor::was_casting_clairvoyance())
     {
         were_casting_something_left = true;
-        //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
         int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->leftAttack, RE::INPUT_DEVICES::kGamepad);
         RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0, 1000.0f);
         //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
@@ -107,7 +107,7 @@ void left_attack_spell()
 void right_attack_cancel()
 {
     were_casting_something_right = false;
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->rightAttack, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0f, 0.0f);
     my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->rightAttack, RE::INPUT_DEVICES::kGamepad);
@@ -119,7 +119,7 @@ void right_attack_cancel()
 void left_attack_cancel()
 {
     were_casting_something_left = false;
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->leftAttack, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0f, 0.0f);
     my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->leftAttack, RE::INPUT_DEVICES::kGamepad);
@@ -133,7 +133,7 @@ void clear_input_queue()
 {
     auto event_queue = RE::BSInputEventQueue::GetSingleton();
 
-    
+
     RE::BSInputEventQueue::GetSingleton()->kinectEventCount = 0;
     RE::BSInputEventQueue::GetSingleton()->connectEventCount = 0;
     RE::BSInputEventQueue::GetSingleton()->thumbstickEventCount = 0;
@@ -153,7 +153,7 @@ void clear_input_queue()
 /*
 void ready_weapon()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->readyWeapon, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0); //i hope this works
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0); //i hope this works
@@ -163,7 +163,7 @@ void ready_weapon()
 
 void unslow_walk()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->run, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0); //i hope this works
     set_allowed_events(2);
@@ -171,7 +171,7 @@ void unslow_walk()
 
 void slow_walk()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->run, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 1.0); //i hope this works
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0); //i hope this works
@@ -180,7 +180,7 @@ void slow_walk()
 
 void press_t()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->wait, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -189,7 +189,7 @@ void press_t()
 
 void uncarry()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0); //i hope this works
     set_allowed_events(2);
@@ -197,7 +197,7 @@ void uncarry()
 
 void carry()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 1.0); //i hope this works
     set_allowed_events(2);
@@ -205,7 +205,7 @@ void carry()
 
 void crouch()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sneak, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -214,7 +214,7 @@ void crouch()
 
 void jump()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->jump, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -243,7 +243,7 @@ void use_ult()
 
 void local_map_toggle()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->localMap, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -253,7 +253,7 @@ void local_map_toggle()
 
 void cursor_down()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->back, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -262,7 +262,7 @@ void cursor_down()
 
 void cursor_up()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -272,7 +272,7 @@ void cursor_up()
 
 void left()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->strafeLeft, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -281,7 +281,7 @@ void left()
 
 void right()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->strafeRight, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -290,28 +290,28 @@ void right()
 
 void perk_right()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->strafeRight, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
 }
 
 void perk_right_cancel()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->strafeRight, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
 }
 
 void perk_left()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->strafeLeft, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
 }
 
 void perk_left_cancel()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->strafeLeft, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
 }
@@ -320,11 +320,11 @@ void perk_left_cancel()
 
 void perk_up()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->zoomIn, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -333,12 +333,12 @@ void perk_up()
 
 void perk_down()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->zoomOut, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
 
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->back, RE::INPUT_DEVICES::kKeyboard);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0); //with this it cannot even move
@@ -347,10 +347,10 @@ void perk_down()
 
 void perk_up_cancel()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->zoomIn, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -359,14 +359,14 @@ void perk_up_cancel()
 
 void perk_down_cancel()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->zoomOut, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
 }
 
 void confirm_dialogue()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 100.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -378,7 +378,7 @@ void confirm_dialogue()
 
 void confirm()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -389,7 +389,7 @@ void confirm()
 
 void confirm_noblock()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -399,7 +399,7 @@ void confirm_noblock()
 void confirm_workbench()
 {
     //wtf does it want
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -411,7 +411,7 @@ void confirm_workbench()
 
 void confirm_craft()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->readyWeapon, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -432,7 +432,7 @@ void ready_weapon()
 
 void cancel()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->pause, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -443,7 +443,7 @@ void cancel()
 
 void cancel10()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->pause, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
@@ -461,7 +461,7 @@ void cancel10()
 
 void leftclick()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->rightAttack, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
@@ -474,7 +474,7 @@ void leftclick()
 //from lockpicking. these are a bit different
 void forward_lockpick()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -483,7 +483,7 @@ void forward_lockpick()
 
 void cancel_forward_lockpick()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
     set_allowed_events(1);
@@ -519,7 +519,7 @@ void mouse_mouse_x(float angle)
     auto test = RE::ControlMap::GetSingleton();
 
     //mouse_mouse_x_y(angle, 0.0f);
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(angle, 0.0);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
     set_allowed_events(1);
@@ -538,7 +538,7 @@ void mouse_mouse_x(float angle)
 void mouse_mouse_y(float angle)
 {
     //mouse_mouse_x_y(0.0f, angle);
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(0.0, angle);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
     set_allowed_events(1);
@@ -587,7 +587,7 @@ void mouse_mouse_x_y(float x, float y)
 
 void clear_leftclick()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->rightAttack, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
     set_allowed_events(2);
@@ -601,7 +601,7 @@ void mouse_mouse_x_y_limited(float x, float y)
 
     //clear_input_queue();
 
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     if (RE::BSInputEventQueue::GetSingleton()->mouseEventCount < 5) {
         RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y);
     }
@@ -612,7 +612,7 @@ void walk_forward_limited()
 
     //clear_input_queue();
 
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     if (RE::BSInputEventQueue::GetSingleton()->buttonEventCount < 5) {
         int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
         RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
@@ -626,7 +626,7 @@ void walk_forward_limited()
 
 void sprint()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprintStart, RE::INPUT_DEVICES::kGamepad);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0f, 100000000.0f);
 
@@ -650,7 +650,7 @@ void sprint()
 
 void unsprint()
 {
-    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprint, RE::INPUT_DEVICES::kGamepad);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 0.0, 0.0);
 
@@ -667,7 +667,7 @@ void unsprint()
 
 void dialogue_cursor_down()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->zoomOut, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
@@ -676,7 +676,7 @@ void dialogue_cursor_down()
 
 void dialogue_cursor_up()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->zoomIn, RE::INPUT_DEVICES::kMouse);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 0.0, 0.0);
@@ -736,7 +736,7 @@ void input_processor(float dtime)
                     reset_input_processor();
                 }
             }
-                
+
         }
 
 
