@@ -503,6 +503,54 @@ namespace MiscThings {
             }
         }
 
+        object_p = General::Script::GetObject(trap, "Tripwire");
+        if (object_p)
+        {
+            if (object_p->currentState == "DoNothing")
+            {
+                result = 10; //tripwire
+            }
+        }
+
+        object_p = General::Script::GetObject(trap, "TrapBear");
+        if (object_p)
+        {
+            if (object_p->currentState == "Closed")
+            {
+                result = 11; //beartrap rearmed
+            }
+
+            if (object_p->currentState == "Open")
+            {
+                result = 12; //beartrap triggered
+            }
+
+        }
+
+        object_p = General::Script::GetObject(trap, "MaceTrap");
+        if (object_p)
+        {
+            if (object_p->currentState == "doOnce")
+            {
+                result = 13; //mammoth skull
+            }
+        }
+
+
+        object_p = General::Script::GetObject(trap, "TrapTriggerHinge");
+        if (object_p)
+        {
+            if (object_p->currentState == "triggered")
+            {
+                result = 14; //hinge triggered
+            }
+
+            if (object_p->currentState == "disarmed")
+            {
+                result = 15; //hinge disarmed
+            }
+
+        }
 
 
         return result;
@@ -1224,6 +1272,12 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("TrapHingeTrigger01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 34.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         
 
@@ -2125,34 +2179,87 @@ namespace MiscThings {
 
             if (base_type == RE::FormType::Door)
             {
-                auto door_object = (RE::TESObjectDOOR*)object;
+                auto door_object = (RE::TESObjectDOOR*)base_obj;
             
-                auto extra = object->extraList.GetByType(RE::ExtraDataType::kTeleport);
 
-                std::string leads_to = "";
+                std::string model = door_object->GetModel();
 
-                if (extra)
+                if (model.find("TrapHingeTrigger01") != std::string::npos)
                 {
-                    auto extra_teleport = (RE::ExtraTeleport*)extra;
+                    result = "[Trap hinge";
 
-                    if (auto teleport_target_data = extra_teleport->teleportData; teleport_target_data)
-                        if (auto teleport_target_handle = teleport_target_data->linkedDoor; teleport_target_handle)
-                            if (auto teleport_target_refr = teleport_target_handle.get(); teleport_target_refr)
-                                if (auto target_cell = teleport_target_refr->GetParentCell(); target_cell)
-                                {
-                                    leads_to = target_cell->GetName();
+                    auto extra = object->extraList.GetByType(RE::ExtraDataType::kActivateRef);
+                    std::string attatched_to = "";
 
-                                    if (leads_to == "")
+                    if (extra)
+                    {
+                        auto extra_activate = (RE::ExtraActivateRef*)extra;
+                        
+                        for (auto parent : extra_activate->parents)
+                        {
+                            if (parent && parent->activateRef && parent->activateRef.get() && parent->activateRef.get().get())
+                            {
+                                result += ", attatched to " + insert_into_list_and_get_info(parent->activateRef.get().get());
+                            }
+                        }
+                    }
+
+                    result += "]";
+
+                    /*
+                    auto object_p = General::Script::GetObject(object, "TrapTriggerHinge");
+                    if (object_p)
+                    {
+                        RE::BSFixedString prop_name = "trapLinkedRef";
+                        RE::TESObjectREFR* linked = General::Script::GetVariable<RE::TESObjectREFR*>(object_p, prop_name);
+                        if (linked) //THIS IS WHAT IS GOING TO BE TRIGGERED BY IT. the one who activates this, is in ActivateRef extradata of object
+                        {
+                            result += ", attatched to " + insert_into_list_and_get_info(linked);
+                        }
+
+                        if (object_p->currentState == "Triggered")
+                        {
+                            ;// result = 14; //hinge triggered
+                        }
+
+                        if (object_p->currentState == "Disarmed")
+                        {
+                            ;// result = 15; //hinge disarmed
+                        }
+                    }
+                    */
+                    
+                }
+                else
+                {
+                    auto extra = object->extraList.GetByType(RE::ExtraDataType::kTeleport);
+
+                    std::string leads_to = "";
+
+                    if (extra)
+                    {
+                        auto extra_teleport = (RE::ExtraTeleport*)extra;
+
+                        if (auto teleport_target_data = extra_teleport->teleportData; teleport_target_data)
+                            if (auto teleport_target_handle = teleport_target_data->linkedDoor; teleport_target_handle)
+                                if (auto teleport_target_refr = teleport_target_handle.get(); teleport_target_refr)
+                                    if (auto target_cell = teleport_target_refr->GetParentCell(); target_cell)
+                                    {
+                                        leads_to = target_cell->GetName();
+
+                                        if (leads_to == "")
+                                            leads_to = "outside";
+                                    }
+                                    else
                                         leads_to = "outside";
-                                }
-                                else
-                                    leads_to = "outside";
+                    }
+
+                    if (leads_to != "")
+                        result = "[Door to " + leads_to + "]";
+                    else
+                        result = "[Door]";
                 }
 
-                if (leads_to != "")
-                    result = "[Door to " + leads_to + "]";
-                else
-                    result = "[Door]";
             }
             
 
@@ -4147,6 +4254,22 @@ namespace MiscThings {
 
             if (base_type == RE::FormType::Door)
             {
+                auto object_p = General::Script::GetObject(a_ref, "TrapTriggerHinge");
+                if (object_p)
+                {
+                    //RE::BSFixedString prop_name = "trapLinkedRef";
+                    //RE::TESObjectREFR* linked = General::Script::GetVariable<RE::TESObjectREFR*>(object_p, prop_name);
+                    //if (linked) //THIS IS WHAT IS GOING TO BE TRIGGERED BY IT. the one who activates this, is in ActivateRef extradata of object
+                    //{
+                    //    result += ", attatched to " + insert_into_list_and_get_info(linked);
+                    //}
+
+                    if (object_p->currentState != "Active")
+                    {
+                        return false;
+                    }
+                }
+
                 return true;
             }
 

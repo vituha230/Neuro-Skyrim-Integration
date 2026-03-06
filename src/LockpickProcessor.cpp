@@ -389,6 +389,7 @@ namespace LockpickProcessor {
 								{
 									send_random_context("[The lockpick broke]");
 									reset_lockpicking();
+									set_universal_block(1.5f);
 								}
 								else
 								{

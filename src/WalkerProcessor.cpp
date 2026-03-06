@@ -1311,6 +1311,17 @@ namespace WalkerProcessor {
             auto base_obj = target_ref->GetBaseObject();
             if (base_obj && base_obj->GetFormType() == RE::FormType::Door && !turning_around)
             {
+                auto door_object = (RE::TESObjectDOOR*)base_obj;
+
+                std::string model = door_object->GetModel();
+
+                if (model.find("TrapHingeTrigger01") != std::string::npos)
+                {
+                    return false;
+                }
+
+
+
                 if (last_targeted_ref == target_ref)
                 {
                     if (have_door_targeted_time > 0.3f)
@@ -2800,7 +2811,19 @@ namespace WalkerProcessor {
         if (refr)
             if (auto base_obj = refr->GetBaseObject(); base_obj)
                 if (base_obj->GetFormType() == RE::FormType::Door)
+                {
+                    auto door_object = (RE::TESObjectDOOR*)base_obj;
+
+                    std::string model = door_object->GetModel();
+
+                    if (model.find("TrapHingeTrigger01") != std::string::npos)
+                    {
+                        return false;
+                    }
+
                     result = true;
+                }
+                    
 
 
         return result;

@@ -682,6 +682,58 @@ namespace Observer {
 	}
 
 
+
+	std::string get_trap_activator_name(RE::TESObjectREFR* a_ref)
+	{
+		std::vector<RE::TESObjectREFR*> activator_candidates{};
+		std::string activator_name = "";
+
+		auto player = RE::PlayerCharacter::GetSingleton();
+		auto player_ref = player->AsReference();
+
+		RE::TES::GetSingleton()->ForEachReferenceInRange(a_ref, 300.0f,
+			[&](RE::TESObjectREFR* a_ref) {
+
+				if (MiscThings::is_new_object_valid(a_ref))
+					activator_candidates.push_back(a_ref);
+
+				return RE::BSContainer::ForEachResult::kContinue;
+			});
+
+		std::sort(activator_candidates.begin(), activator_candidates.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
+			if (left->data.objectReference && left->data.objectReference &&
+				right->data.objectReference)
+				return left->GetDistance(a_ref) < right->GetDistance(a_ref); //switch > to < for inversed order. this is last->closest
+			else
+				return false;
+			});
+
+		RE::TESObjectREFR* the_activator = nullptr;
+		for (auto candidate : activator_candidates)
+		{
+			if (candidate != a_ref)
+			{
+				the_activator = candidate;
+				break;
+			}
+		}
+
+		if (the_activator)
+		{
+			if (the_activator == player_ref)
+				activator_name = "You";
+			else
+			{
+				activator_name = the_activator->GetDisplayFullName();
+			}
+		}
+
+		return activator_name;
+	}
+
+
+
+
 	void detect_events(float dtime)
 	{
 		if (observers_green_light)
@@ -917,252 +969,275 @@ namespace Observer {
 											}
 										}
 									}
-									else
+
+									if (true)//(extra)
 									{
-										if (true)//(extra)
+										//auto extra_action = (RE::ExtraAction*)extra;
+										//int action_data = static_cast<int>(*extra_action->action);
+
+										//new_state = { 0, 0, action_data, pillar_face, trap_firing };
+
+
+										if (old_state.action_flags != new_state.action_flags)
 										{
-											//auto extra_action = (RE::ExtraAction*)extra;
-											//int action_data = static_cast<int>(*extra_action->action);
-
-											//new_state = { 0, 0, action_data, pillar_face, trap_firing };
 
 
-											if (old_state.action_flags != new_state.action_flags)
+											if (true)//(action_data & (int)RE::OBJECT_ACTION::kOpen)
 											{
-
-
-												if (true)//(action_data & (int)RE::OBJECT_ACTION::kOpen)
+												auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
+												if (extra_anim)
 												{
-													auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
-													if (extra_anim)
+													auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
+													if (extra_anim_graph->animGraphMgr)
 													{
-														auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
-														if (extra_anim_graph->animGraphMgr)
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
 														{
-															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
-															{
-																std::string name = MiscThings::insert_into_list_custom_name("Large wooden bridge", a_ref);
+															std::string name = MiscThings::insert_into_list_custom_name("Large wooden bridge", a_ref);
 
-																if (activation == 0)
-																	result.push_back("[ " + name + " closed]");
+															if (activation == 0)
+																result.push_back("[ " + name + " closed]");
 
-																if (activation == 1)
-																	result.push_back("[ " + name + " opened]");
-															}
-
-															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
-															{
-																std::string name = MiscThings::insert_into_list_custom_name("Heavy wooden gate", a_ref);
-
-																if (activation == 0)
-																	result.push_back("[ " + name + " opened]");
-
-																if (activation == 1)
-																	result.push_back("[ " + name + " closed]");
-															}
-
-															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
-															{
-																std::string name = MiscThings::insert_into_list_custom_name("Metal gate", a_ref);
-
-																if (activation == 0)
-																	result.push_back("[ " + name + " opened]");
-
-																if (activation == 1)
-																	result.push_back("[ " + name + " closed]");
-															}
-
-
-
-
-
-															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PuzzleDoorKeyHole01")
-															{
-																std::string name = "Ancient Nordic Door";
-
-																//if (activation == 0)
-																//	result.push_back("[" + name + " 0]");
-
-																if (activation == 1)
-																	result.push_back("[" + name + " is opening...]");
-
-																//if (activation == 2)
-																//	result.push_back("[" + name + " 2]");
-
-
-																//if (activation == 3)
-																//	result.push_back("[" + name + " 3]");
-
-																if (activation == 4)
-																	result.push_back("[" + name + " didn't move]");
-															}
-															//
-
+															if (activation == 1)
+																result.push_back("[ " + name + " opened]");
 														}
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
+														{
+															std::string name = MiscThings::insert_into_list_custom_name("Heavy wooden gate", a_ref);
+
+															if (activation == 0)
+																result.push_back("[ " + name + " opened]");
+
+															if (activation == 1)
+																result.push_back("[ " + name + " closed]");
+														}
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
+														{
+															std::string name = MiscThings::insert_into_list_custom_name("Metal gate", a_ref);
+
+															if (activation == 0)
+																result.push_back("[ " + name + " opened]");
+
+															if (activation == 1)
+																result.push_back("[ " + name + " closed]");
+														}
+
+
+
+
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PuzzleDoorKeyHole01")
+														{
+															std::string name = "Ancient Nordic Door";
+
+															//if (activation == 0)
+															//	result.push_back("[" + name + " 0]");
+
+															if (activation == 1)
+																result.push_back("[" + name + " is opening...]");
+
+															//if (activation == 2)
+															//	result.push_back("[" + name + " 2]");
+
+
+															//if (activation == 3)
+															//	result.push_back("[" + name + " 3]");
+
+															if (activation == 4)
+																result.push_back("[" + name + " didn't move]");
+														}
+														//
+
 													}
 												}
 											}
 										}
+									}
 
-										if (old_state.pillar_face_code != new_state.pillar_face_code)
+									if (old_state.pillar_face_code != new_state.pillar_face_code)
+									{
+										if (new_state.pillar_face_code > 0 && new_state.pillar_face_code < 4)
 										{
-											if (new_state.pillar_face_code > 0 && new_state.pillar_face_code < 4)
-											{
-												std::string pillar_name = MiscThings::get_stateless_info(a_ref);
-												std::string pillar_face_name = MiscThings::get_pillar_face_name(a_ref, new_state.pillar_face_code);
+											std::string pillar_name = MiscThings::get_stateless_info(a_ref);
+											std::string pillar_face_name = MiscThings::get_pillar_face_name(a_ref, new_state.pillar_face_code);
 
-												std::string solved_text = "";
+											std::string solved_text = "";
 
-												if (pillar_face_name != "")
-													solved_text = MiscThings::get_pillar_solved_text(a_ref);
+											if (pillar_face_name != "")
+												solved_text = MiscThings::get_pillar_solved_text(a_ref);
 
-												result.push_back(pillar_name + " turned to " + pillar_face_name + solved_text);
-											}
+											result.push_back(pillar_name + " turned to " + pillar_face_name + solved_text);
 										}
+									}
 
-										if (old_state.trap_firing == 6)
+									if (old_state.trap_firing == 6)
+									{
+										if (player->GetDistance(a_ref) < 400.0f)
 										{
-											if (player->GetDistance(a_ref) < 400.0f)
+											long long now = std::chrono::steady_clock::now().time_since_epoch().count();
+											float dtime = (double)(now - last_periodic_info) / 1000000000.0;
+											if (dtime > 2.0f)
 											{
-												long long now = std::chrono::steady_clock::now().time_since_epoch().count();
-												float dtime = (double)(now - last_periodic_info) / 1000000000.0;
-												if (dtime > 2.0f)
-												{
-													last_periodic_info = now;
-													std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
-													result.push_back("[ " + name + " swinged!]");
-												}
-											}
-										}
-
-
-										if (old_state.trap_firing != new_state.trap_firing)
-										{
-											if (new_state.trap_firing == 1)
-											{
-												if (std::size(result) == 0 || result.at(std::size(result) - 1) != "[Dart trap triggered!]")
-													result.push_back("[Dart trap triggered!]");
-											}
-
-											if (new_state.trap_firing == 2)
-											{
-												std::string name = MiscThings::insert_into_list_custom_name("Pressure plate", a_ref);
-												
-												std::vector<RE::TESObjectREFR*> activator_candidates{};
-												std::string activator_name = "";
-
-												RE::TES::GetSingleton()->ForEachReferenceInRange(a_ref, 300.0f,
-													[&](RE::TESObjectREFR* a_ref) {
-
-														if (MiscThings::is_new_object_valid(a_ref))
-															activator_candidates.push_back(a_ref);
-
-														return RE::BSContainer::ForEachResult::kContinue;
-													});
-
-													std::sort(activator_candidates.begin(), activator_candidates.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
-														if (left->data.objectReference && left->data.objectReference &&
-															right->data.objectReference)
-															return left->GetDistance(a_ref) < right->GetDistance(a_ref); //switch > to < for inversed order. this is last->closest
-														else
-															return false;
-														});
-
-													RE::TESObjectREFR* the_activator = nullptr;
-													for (auto candidate : activator_candidates)
-													{
-														if (candidate != a_ref)
-														{
-															the_activator = candidate;
-															break;
-														}
-													}
-
-													if (the_activator)
-													{
-														if (the_activator == player_ref)
-															activator_name = "You";
-														else
-														{
-															activator_name = the_activator->GetDisplayFullName();
-														}
-													}
-
-													if (activator_name == "")
-													{
-														result.push_back("[ " + name + " was triggered!]");
-													}
-													else
-													{
-														result.push_back("[" + activator_name + " triggered " + name + "!]");
-													}
-
-											}
-
-
-											if (new_state.trap_firing == 3)
-											{
-												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
-												result.push_back("[ " + name + " launched!]");
-											}
-
-
-											if (new_state.trap_firing == 4)
-											{
-												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
-												result.push_back("[ " + name + " went back]");
-											}
-
-											if (new_state.trap_firing == 5)
-											{
+												last_periodic_info = now;
 												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
-												result.push_back("[ " + name + " deactivated]");
-											}
-
-											if (new_state.trap_firing == 6)
-											{
-												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
-												result.push_back("[ " + name + " started swinging!]");
-											}
-
-											if (new_state.trap_firing == 7)
-											{
-												std::string name = MiscThings::insert_into_list_custom_name("Trap oil lamp", a_ref);
-												result.push_back("[ " + name + " fell down and exploded!]");
-											}
-
-											if (new_state.trap_firing == 8)
-											{
-												std::string name = MiscThings::insert_into_list_custom_name("Oil on the floor", a_ref);
-												result.push_back("[ " + name + " started burning]");
-											}
-
-											if (new_state.trap_firing == 9)
-											{
-												if (std::size(result) == 0 || result.at(std::size(result) - 1) != "[Boulders fall from the ceiling!]")
-													result.push_back("[Boulders fall from the ceiling!]");
-											}
-
-
-											//only when close.
-
-
-
-										}
-
-										if (old_state.destructible_state != new_state.destructible_state)
-										{
-											if (new_state.destructible_state == 1)
-											{
-												std::string name = MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref);
-
-												result.push_back(name + " was destroyed");
+												result.push_back("[ " + name + " swinged!]");
 											}
 										}
 									}
 
 
+									if (old_state.trap_firing != new_state.trap_firing)
+									{
+										if (new_state.trap_firing == 1)
+										{
+											if (std::size(result) == 0 || result.at(std::size(result) - 1) != "[Dart trap triggered!]")
+												result.push_back("[Dart trap triggered!]");
+										}
 
+										if (new_state.trap_firing == 2)
+										{
+											std::string name = MiscThings::insert_into_list_custom_name("Pressure plate", a_ref);
+
+											std::string activator_name = get_trap_activator_name(a_ref);
+
+											if (activator_name == "")
+											{
+												result.push_back("[ " + name + " was triggered!]");
+											}
+											else
+											{
+												result.push_back("[" + activator_name + " triggered " + name + "!]");
+											}
+
+										}
+
+
+										if (new_state.trap_firing == 3)
+										{
+											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
+											result.push_back("[ " + name + " launched!]");
+										}
+
+
+										if (new_state.trap_firing == 4)
+										{
+											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
+											result.push_back("[ " + name + " went back]");
+										}
+
+										if (new_state.trap_firing == 5)
+										{
+											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
+											result.push_back("[ " + name + " deactivated]");
+										}
+
+										if (new_state.trap_firing == 6)
+										{
+											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
+											result.push_back("[ " + name + " started swinging!]");
+										}
+
+										if (new_state.trap_firing == 7)
+										{
+											std::string name = MiscThings::insert_into_list_custom_name("Trap oil lamp", a_ref);
+											result.push_back("[ " + name + " fell down and exploded!]");
+										}
+
+										if (new_state.trap_firing == 8)
+										{
+											std::string name = MiscThings::insert_into_list_custom_name("Oil on the floor", a_ref);
+											result.push_back("[ " + name + " started burning]");
+										}
+
+										if (new_state.trap_firing == 9)
+										{
+											if (std::size(result) == 0 || result.at(std::size(result) - 1) != "[Boulders fall from the ceiling!]")
+												result.push_back("[Boulders fall from the ceiling!]");
+										}
+
+										if (new_state.trap_firing == 10)
+										{
+											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+
+											std::string activator_name = get_trap_activator_name(a_ref);
+
+											if (activator_name != "")
+												result.push_back("[" + activator_name + " triggered " + name + "!]");
+											else
+												result.push_back("[ " + name + " was triggered!]");
+										}
+
+
+										if (new_state.trap_firing == 11)
+										{
+											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+
+											std::string activator_name = get_trap_activator_name(a_ref);
+
+											if (activator_name != "")
+												result.push_back("[" + activator_name + " triggered " + name + "!]");
+											else
+												result.push_back("[ " + name + " was triggered!]");
+										}
+
+
+										if (new_state.trap_firing == 12)
+										{
+											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											result.push_back("[ " + name + " was rearmed]");
+										}
+
+
+										if (new_state.trap_firing == 13)
+										{
+											if (base_type == RE::FormType::Activator)
+											{
+												auto acti = (RE::TESObjectACTI*)base_obj;
+												std::string model = acti->GetModel();
+
+												if (model.find("TrapSkullRam0") != std::string::npos)
+												{
+													result.push_back("[Mammoth skull on a rope swings!]");
+												}
+
+												if (model.find("TrapMace01") != std::string::npos)
+												{
+													result.push_back("[Mace on a rope swings!]");
+												}
+											}
+										}
+
+
+										if (new_state.trap_firing == 14)
+										{
+											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											result.push_back("[ " + name + " was triggered!]");
+										}
+
+
+										if (new_state.trap_firing == 15)
+										{
+											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											result.push_back("[ " + name + " was disarmed]");
+										}
+
+
+										//only when close.
+
+
+
+									}
+
+									if (old_state.destructible_state != new_state.destructible_state)
+									{
+										if (new_state.destructible_state == 1)
+										{
+											std::string name = MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref);
+
+											result.push_back(name + " was destroyed");
+										}
+									}
 
 									objects_to_track.insert_or_assign(a_ref, new_state);
 								}
