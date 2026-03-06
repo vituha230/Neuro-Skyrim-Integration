@@ -7,7 +7,6 @@
 //TODO trap trigger is a door, doesnt say what its attatched to. also its not removed from valid objects after destruction.
 //TODO exit cave option when nothing interesting found anymore
 //TODO custom shift for metal cell door
-//TODO fix unstuck mechanism only trying walk backwards
 //TODO actions register watchdog (autodetect when no actions are registered for no reason)
 
 
