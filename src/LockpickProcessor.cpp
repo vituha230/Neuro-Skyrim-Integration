@@ -377,7 +377,7 @@ namespace LockpickProcessor {
 								send_random_context("[Out of lockpicks. Exiting lockpicking menu]");
 								no_lockpicks = true;
 							}
-
+							set_universal_block(1.5f);
 						}
 						else
 						{
@@ -425,7 +425,7 @@ namespace LockpickProcessor {
 											if (how_good == 0)
 												how_good_text = "You were far from correct";
 											else
-												if (how_good > 90)
+												if (how_good > 80)
 													how_good_text = "You almost got it";
 
 

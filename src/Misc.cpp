@@ -2501,6 +2501,22 @@ namespace MiscThings {
                     name = "Dragon";
             }
 
+            auto base_obj = refr->GetBaseObject();
+            auto base_type = base_obj->GetFormType();
+
+            if (base_type == RE::FormType::Container)
+            {
+                auto door_obj = (RE::TESObjectCONT*)base_obj;
+                std::string model = door_obj->GetModel();
+
+                if (model.find("Ruins_LargeChest") != std::string::npos)
+                {
+                    name = "Large Treasure Chest";
+                }
+            }
+
+
+
             std::string category = get_object_category(refr);
             int pillar_face_code = get_pillar_face_name(refr);
             std::string pillar_face_name = get_pillar_face_name(refr, pillar_face_code);
