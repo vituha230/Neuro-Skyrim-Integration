@@ -5553,6 +5553,11 @@ namespace WalkerProcessor {
     {
         bool result = false;
 
+        auto result_target = get_targeted_ref();
+
+        if ((interaction_after_walk == 1 || interaction_after_walk == 2) && !(MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || (quest_mode && !target_is_interactive())))
+            return false;
+
         switch (interaction_after_walk) {
 
         case (1):
@@ -6518,6 +6523,8 @@ namespace WalkerProcessor {
                                                                             lock_camera_onto_target(target_ref, dtime); //keep camera locked in until the walker is reset externally if no action specified
                                                                             if (quest_mode && result_target)
                                                                                 interaction_after_walk = 1; //interact if there is something and it was quest
+                                                                            if (explore_mode)
+                                                                                explore_mode = false; //so we can explore again
                                                                         }
                                                                     }   
                                                                 }
