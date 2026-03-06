@@ -58,6 +58,11 @@ namespace RaceProcessor {
 	bool name_field_called = false;
 	bool rolled_over = false;
 
+
+	float last_pause_time = 0.0f;
+
+
+
 	std::string typed_string = "";
 
 	struct item_data {
@@ -351,7 +356,7 @@ namespace RaceProcessor {
 
 	void reset_menu()
 	{
-
+		last_pause_time = 0.0f;
 		in_racemenu = false;
 		last_cursor_move = 0;
 		missing_item_detected = false;
@@ -1229,16 +1234,20 @@ namespace RaceProcessor {
 											}
 											else
 											{
+												if (last_pause_time > 1.0f)
+												{
+													send_random_context("[Character creation is done!]");
 
-												send_random_context("[Character creation is done!]");
+													name_defined = true;
+													//menu->ChangeName(typed_string.c_str()); //this jus closes menu (and probably sets the name) but it wasnt typed
 
-												name_defined = true;
-												//menu->ChangeName(typed_string.c_str()); //this jus closes menu (and probably sets the name) but it wasnt typed
+													menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onPress", nullptr, nullptr, 0);
+													menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onRelease", nullptr, nullptr, 0);
 
-												menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onPress", nullptr, nullptr, 0);
-												menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onRelease", nullptr, nullptr, 0);
-
-												set_universal_block(1.0f);
+													set_universal_block(2.0f);
+												}
+												else
+													last_pause_time += dtime + 0.01;
 
 											}
 										}
