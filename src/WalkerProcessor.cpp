@@ -3405,7 +3405,7 @@ namespace WalkerProcessor {
                 {
                     Observer::reset_threats();
 
-                    if (target_ref != object->second)
+                    if (target_ref != object->second || interaction != interaction_after_walk)
                         reset_walker();
                     else
                     {
