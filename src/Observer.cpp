@@ -247,7 +247,7 @@ namespace Observer {
 								}
 								else
 								{
-									if (!WalkerProcessor::walker_active())
+									if (threats_response_choice != 2 && threats_response_choice != 1 && !WalkerProcessor::walker_active())
 									{
 										//walker inactive, but we have threats. reset threats
 										reset_threats();
@@ -662,6 +662,7 @@ namespace Observer {
 
 	struct old_object_state {
 		bool dead{};
+		bool fleeing{};
 		RE::RefHandle target;
 		int action_flags;
 		int pillar_face_code;
@@ -782,13 +783,21 @@ namespace Observer {
 
 							auto actor_ref = (RE::Actor*)a_ref;
 
+							//actor_ref->currentProcess->high.
+
+							
+
 							if (objects_to_track.find(a_ref) == objects_to_track.end())
 							{
 								auto new_target = 0;
 								if (actor_ref->currentProcess)
 									new_target = actor_ref->currentProcess->target;
 
-								old_object_state state = { a_ref->IsDead(), new_target, (int)actor_ref->actorState1.flyState, 0, -1, -1 };
+								bool is_fleeing = false;
+								if (actor_ref->combatController)
+									is_fleeing = actor_ref->combatController->IsFleeing();//actor_ref->currentProcess->middleHigh->unk326;
+
+								old_object_state state = { a_ref->IsDead(), is_fleeing,  new_target, (int)actor_ref->actorState1.flyState, 0, -1, -1 };
 								objects_to_track.insert({ a_ref, state });
 							}
 							else
@@ -796,11 +805,16 @@ namespace Observer {
 								auto old_entry = objects_to_track.find(a_ref);
 								old_object_state old_state = old_entry->second;
 
+								bool is_fleeing = false;
+								if (actor_ref->combatController)
+									is_fleeing = actor_ref->combatController->IsFleeing();//actor_ref->currentProcess->middleHigh->unk326;
+
 								auto new_target = 0;
 								if (actor_ref->currentProcess)
 									new_target = actor_ref->currentProcess->target;
 
-								old_object_state new_state = { a_ref->IsDead(), new_target, old_state.action_flags, old_state.pillar_face_code, old_state.trap_firing , old_state.destructible_state };
+								old_object_state new_state = { a_ref->IsDead(), is_fleeing, new_target, old_state.action_flags, old_state.pillar_face_code, old_state.trap_firing , old_state.destructible_state };
+
 
 								if (old_state.dead != new_state.dead)
 								{
@@ -847,6 +861,29 @@ namespace Observer {
 									if (!dont_add)
 										result.push_back(message_text);
 								}
+
+
+								if (old_state.fleeing != new_state.fleeing)
+								{
+									if (!a_ref->IsDead())
+									{
+										std::string victim_name = MiscThings::insert_into_list_and_get_info(a_ref);
+
+										std::string message_text = "";
+
+										if (new_state.fleeing)
+											message_text = "[" + victim_name + " is fleeing]";
+										else
+											message_text = "[" + victim_name + " stopped fleeing]";
+
+										if (victim_name != "")
+											result.push_back(message_text);
+									}
+
+									objects_to_track.insert_or_assign(a_ref, new_state);
+								}
+
+
 
 
 								if (old_state.target != new_state.target)
@@ -911,7 +948,7 @@ namespace Observer {
 							{
 								if (objects_to_track.find(a_ref) == objects_to_track.end())
 								{
-									old_object_state state = { 0, 0, 0, 0, -1 };
+									old_object_state state = { 0, 0, 0, 0, 0, -1, -1 };
 									RE::ExtraDataList* extralist = &a_ref->extraList;
 									auto extra = extralist->GetByType(RE::ExtraDataType::kAction);
 									int pillar_face = MiscThings::get_pillar_face_name(a_ref);
@@ -926,7 +963,7 @@ namespace Observer {
 									//	action_data = static_cast<int>(*extra_action->action);
 									//}
 
-									state = { 0, 0, activation, pillar_face, trap_firing, destructible_state };
+									state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state };
 
 									objects_to_track.insert({ a_ref, state });
 								}
@@ -941,7 +978,7 @@ namespace Observer {
 									int activation = MiscThings::two_state_activator_state(a_ref);
 									int destructible_state = MiscThings::get_destructible_state(a_ref);
 
-									old_object_state new_state = { 0, 0, activation, pillar_face, trap_firing, destructible_state };
+									old_object_state new_state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state };
 
 
 									if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
@@ -1265,7 +1302,7 @@ namespace Observer {
 									if (actor_ref->currentProcess)
 										new_target = actor_ref->currentProcess->target;
 
-									old_object_state state = { a_ref->IsDead(), new_target, 0 };
+									old_object_state state = { a_ref->IsDead(), 0, new_target, 0 };
 									objects_to_track.insert({ a_ref, state });
 								}
 								else
@@ -1274,7 +1311,7 @@ namespace Observer {
 									old_object_state old_state = old_entry->second;
 
 
-									old_object_state new_state = { old_state.dead , old_state.target, (int)actor_ref->actorState1.flyState };
+									old_object_state new_state = { old_state.dead, 0, old_state.target, (int)actor_ref->actorState1.flyState };
 
 									objects_to_track.insert_or_assign(a_ref, new_state);
 

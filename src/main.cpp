@@ -4,12 +4,9 @@
 //crucial:
 
 
-//TODO trap trigger is a door, doesnt say what its attatched to. also its not removed from valid objects after destruction.
 //TODO exit cave option when nothing interesting found anymore
 //TODO actions register watchdog (autodetect when no actions are registered for no reason)
 
-
-//TODO maybe give more context on actors' state (at least for things like "started running away"
 
 
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
