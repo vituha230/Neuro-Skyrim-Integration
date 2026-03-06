@@ -253,7 +253,7 @@ void local_map_toggle()
 
 void cursor_down()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->back, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -262,7 +262,7 @@ void cursor_down()
 
 void cursor_up()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -272,7 +272,7 @@ void cursor_up()
 
 void left()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->strafeLeft, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
@@ -281,7 +281,7 @@ void left()
 
 void right()
 {
-    RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
+    //RE::BSInputEventQueue::GetSingleton()->ClearInputQueue();
     int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->strafeRight, RE::INPUT_DEVICES::kKeyboard);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
     RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);

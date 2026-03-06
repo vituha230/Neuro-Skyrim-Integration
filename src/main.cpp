@@ -8,6 +8,8 @@
 //TODO exit cave option when nothing interesting found anymore
 //TODO custom shift for metal cell door
 //TODO fix unstuck mechanism only trying walk backwards
+//TODO actions register watchdog (autodetect when no actions are registered for no reason)
+
 
 //TODO maybe give more context on actors' state (at least for things like "started running away"
 
