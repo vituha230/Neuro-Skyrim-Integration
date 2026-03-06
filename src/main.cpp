@@ -6,7 +6,7 @@
 
 //TODO exit cave option when nothing interesting found anymore
 //TODO actions register watchdog (autodetect when no actions are registered for no reason)
-
+//TODO add pause after name entered in character creation
 
 
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more

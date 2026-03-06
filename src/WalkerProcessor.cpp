@@ -4450,6 +4450,31 @@ namespace WalkerProcessor {
 
 
 
+    RE::TESForm* get_hand_contents(bool right)
+    {
+        RE::TESForm* hand_contents = nullptr;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto actor_process = player->currentProcess;
+        auto equipped_list = actor_process->equippedObjects;
+
+        auto equipped_right = equipped_list[1];
+        auto equipped_left = equipped_list[0];
+
+        if (right)
+        {
+            if (equipped_right && equipped_right->GetFormType() == RE::FormType::Spell)
+                hand_contents = equipped_right;
+        }
+        else
+        {
+            if (equipped_left && equipped_left->GetFormType() == RE::FormType::Spell)
+                hand_contents = equipped_left;
+        }
+
+        return hand_contents;
+    }
+
 
     float get_spell_cost(bool right)
     {
@@ -4459,27 +4484,9 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player->AsReference();
         if (player && player_actor)
         {
-            RE::MagicItem* spell = nullptr;
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
 
-            auto actor_process = player->currentProcess;
-            auto equipped_list = actor_process->equippedObjects;
-
-            auto equipped_right = equipped_list[1];
-            auto equipped_left = equipped_list[0];
-
-            if (right)
-            {
-                if (equipped_right->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_right;
-            }
-            else
-            {
-                if (equipped_left->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_left;
-            }
-
-
-            if (spell)
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
             {
                 result = spell->CalculateMagickaCost(player_actor);
 
@@ -4504,27 +4511,10 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::MagicItem* spell = nullptr;
-
-            auto actor_process = player->currentProcess;
-            auto equipped_list = actor_process->equippedObjects;
-
-            auto equipped_right = equipped_list[1];
-            auto equipped_left = equipped_list[0];
-
-            if (right)
-            {
-                if (equipped_right->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_right;
-            }
-            else
-            {
-                if (equipped_left->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_left;
-            }
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
 
 
-            if (spell)
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                     result = spell->GetFullName();
 
@@ -4547,26 +4537,9 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::MagicItem* spell = nullptr;
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
 
-            auto actor_process = player->currentProcess;
-            auto equipped_list = actor_process->equippedObjects;
-
-            auto equipped_right = equipped_list[1];
-            auto equipped_left = equipped_list[0];
-
-            if (right)
-            {
-                if (equipped_right->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_right;
-            }
-            else
-            {
-                if (equipped_left->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_left;
-            }
-
-            if (spell)
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                 {
                     for (auto effect : spell->effects)
@@ -4591,26 +4564,9 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::MagicItem* spell = nullptr;
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
 
-            auto actor_process = player->currentProcess;
-            auto equipped_list = actor_process->equippedObjects;
-
-            auto equipped_right = equipped_list[1];
-            auto equipped_left = equipped_list[0];
-
-            if (right)
-            {
-                if (equipped_right->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_right;
-            }
-            else
-            {
-                if (equipped_left->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_left;
-            }
-
-            if (spell)
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                     result = true;
 
@@ -4783,27 +4739,10 @@ namespace WalkerProcessor {
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
-        RE::MagicItem* spell = nullptr;
-
-        auto actor_process = player->currentProcess;
-        auto equipped_list = actor_process->equippedObjects;
-
-        auto equipped_right = equipped_list[1];
-        auto equipped_left = equipped_list[0];
-
-        if (right)
-        {
-            if (equipped_right->GetFormType() == RE::FormType::Spell)
-                spell = (RE::MagicItem*)equipped_right;
-        }
-        else
-        {
-            if (equipped_left->GetFormType() == RE::FormType::Spell)
-                spell = (RE::MagicItem*)equipped_left;
-        }
+        RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
 
 
-        if (spell)
+        if (spell && spell->GetFormType() == RE::FormType::Spell)
         {
             auto cast_type = spell->avEffectSetting->data.castingType;
             if (cast_type == RE::MagicSystem::CastingType::kConcentration)
@@ -4823,26 +4762,9 @@ namespace WalkerProcessor {
         {
             //auto left_spell = player->selectedSpells[0];
             //auto right_spell = player->selectedSpells[1];
-            RE::MagicItem* spell = nullptr;
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
 
-            auto actor_process = player->currentProcess;
-            auto equipped_list = actor_process->equippedObjects;
-
-            auto equipped_right = equipped_list[1];
-            auto equipped_left = equipped_list[0];
-
-            if (right)
-            {
-                if (equipped_right->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_right;
-            } 
-            else
-            {
-                if (equipped_left->GetFormType() == RE::FormType::Spell)
-                    spell = (RE::MagicItem*)equipped_left;
-            }
-
-            if (spell)
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
             {
                 if (spell->avEffectSetting)
                 {
@@ -4888,18 +4810,7 @@ namespace WalkerProcessor {
 
         if (player)
         {
-            RE::TESForm* hand_contents = nullptr;
-
-            auto actor_process = player->currentProcess;
-            auto equipped_list = actor_process->equippedObjects;
-
-            auto equipped_right = equipped_list[1];
-            auto equipped_left = equipped_list[0];
-
-            if (right)
-                hand_contents = equipped_right;
-            else
-                hand_contents = equipped_left;
+            RE::TESForm* hand_contents = get_hand_contents(right);
 
             if (hand_contents)
             {
@@ -4925,18 +4836,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::TESForm* hand_contents = nullptr;
-
-            auto actor_process = player->currentProcess;
-            auto equipped_list = actor_process->equippedObjects;
-
-            auto equipped_right = equipped_list[1];
-            auto equipped_left = equipped_list[0];
-
-            if (right)
-                hand_contents = equipped_right;
-            else
-                hand_contents = equipped_left;
+            RE::TESForm* hand_contents = get_hand_contents(right);
 
 
             if (hand_contents)
@@ -4984,18 +4884,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::TESForm* hand_contents = nullptr;
-
-            auto actor_process = player->currentProcess;
-            auto equipped_list = actor_process->equippedObjects;
-
-            auto equipped_right = equipped_list[1];
-            auto equipped_left = equipped_list[0];
-
-            if (right)
-                hand_contents = equipped_right;
-            else
-                hand_contents = equipped_left;
+            RE::TESForm* hand_contents = get_hand_contents(right);
 
             if (hand_contents)
             {
