@@ -5865,7 +5865,13 @@ namespace WalkerProcessor {
             send_random_context("Cannot do this while on mount: " + mount_name);
         }
         else
-            send_random_context("[" + blocking_object_name + " blocks the object]");
+        {
+            if (blocking_object_name == "Something")
+                send_random_context("[" + blocking_object_name + " blocks the object. Maybe it is inaccessible at all]");
+            else
+                send_random_context("[" + blocking_object_name + " blocks the object]");
+        }
+            
 
         remove_navmesh_cutter();
         reset_walker();//there is something but it cannot be moved
