@@ -141,6 +141,9 @@ namespace MiscThings {
 
     bool have_any_quests();
 
+    bool is_inventory_item_in_the_list(RE::TESBoundObject* item);
+    std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item);
+
 
     namespace General::Script
     {

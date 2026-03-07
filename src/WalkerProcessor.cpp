@@ -4463,12 +4463,12 @@ namespace WalkerProcessor {
 
         if (right)
         {
-            if (equipped_right && equipped_right->GetFormType() == RE::FormType::Spell)
+            //if (equipped_right && equipped_right->GetFormType() == RE::FormType::Spell)
                 hand_contents = equipped_right;
         }
         else
         {
-            if (equipped_left && equipped_left->GetFormType() == RE::FormType::Spell)
+            //if (equipped_left && equipped_left->GetFormType() == RE::FormType::Spell)
                 hand_contents = equipped_left;
         }
 

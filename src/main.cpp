@@ -1559,6 +1559,7 @@ private:
                 Observer::detect_threats(dtime); //uses pause. must be here
                 Observer::detect_interesting_objects(dtime);
                 Observer::detect_events(dtime);
+                Observer::inventory_monitor(dtime);
                 Observer::player_state_monitor(dtime);
                 Observer::detect_locations(dtime);
 

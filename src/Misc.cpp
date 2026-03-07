@@ -2692,7 +2692,7 @@ namespace MiscThings {
         //int price; //TODO: replace with something useful (maybe type of item)
     };
 
-    std::map<int, item_data> items_list{};
+    std::map<int, item_data> inventory_items_list{};
 
 
 
@@ -2966,11 +2966,11 @@ namespace MiscThings {
         }
 
 
-        if (items_list.find(item_id) != items_list.end())
+        if (inventory_items_list.find(item_id) != inventory_items_list.end())
         {
-            auto object = items_list.find(item_id)->second.object;
+            auto object = inventory_items_list.find(item_id)->second.object;
 
-
+            //check if item is still there
             RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
                 {
                     return true;// a_object.IsObject();
@@ -3115,18 +3115,225 @@ namespace MiscThings {
     }
 
 
+    std::string get_inventory_item_full_info(RE::TESBoundObject* item)
+    {
+        std::string result = "";
+
+        auto item_form = (RE::TESForm*)item;
+
+        std::string actions = "";
+
+
+        RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
+            {
+                return true;// a_object.IsObject();
+            });
+
+
+        if (inventory.find(item) == inventory.end())
+            return result; //not found
+        
+
+        auto& [quantity, data] = inventory.find(item)->second;
+
+        std::string gold_name = "Gold";
+
+        if (item_form)
+        {
+            if (item_form->IsArmor() || item_form->IsWeapon() || item_form->IsAmmo())
+            {
+                std::string hand_text = "";
+                std::string twohanded = "";
+                if (item_form->IsWeapon())
+                {
+                    hand_text = get_equipped_hand_text(item);
+
+
+                    auto weapon = (RE::TESObjectWEAP*)item_form;
+
+                    if (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow())
+                        twohanded = "[Two-handed]";
+                    else
+                        twohanded = "[One-handed]";
+
+                }
+
+
+                std::string stats = "";
+
+                auto base_type = item_form->GetFormType();
+
+
+                if (base_type == RE::FormType::Weapon)
+                {
+
+                    auto weapon = (RE::TESObjectWEAP*)item_form;
+
+                    auto damage = weapon->attackDamage;
+
+                    std::stringstream ss;
+                    ss << std::fixed << std::setprecision(1) << weapon->weight;
+                    std::string weight_text_number = ss.str();
+
+
+                    std::string damage_text = "Damage: " + std::to_string(damage);
+                    std::string weight_text = "Weight: " + weight_text_number;
+
+                    stats = "[" + damage_text + ", " + weight_text + "]";
+                }
+
+
+                if (base_type == RE::FormType::Armor)
+                {
+
+                    auto armor = (RE::TESObjectARMO*)item_form;
+
+                    std::string heavy = "";
+
+                    if (armor->IsHeavyArmor())
+                        heavy = "Heavy, ";
+
+
+                    auto armor_val = armor->armorRating;
+
+                    std::stringstream ss;
+                    ss << std::fixed << std::setprecision(1) << armor->weight;
+                    std::string weight_text_number = ss.str();
+
+                    std::string armor_val_text = "Armor: " + std::to_string(armor_val);
+                    std::string weight_text = "Weight: " + weight_text_number;
+
+                    stats = "[" + heavy + armor_val_text + ", " + weight_text + "]";
+                }
 
 
 
+                if (is_equipped(item))
+                    actions += "[Equipped" + hand_text + "][Can unequip]";
+                else
+                    actions += "[Can equip]" + twohanded;
+
+                actions += stats;
+            }
+
+            if (item_form->formType == RE::FormType::Ingredient || item_form->formType == RE::FormType::AlchemyItem)
+                actions += "[Can consume]";
+
+            if (quantity > 0 && item->GetName() != gold_name)
+            {
+                result += get_object_category(item_form);
+                result += actions + " ";
+                result += item->GetName();
+                result += " x";
+                result += std::to_string(quantity) + " ";
+                //result += "\n"; //TODO: replace with comma later
+
+                //item_data database_data{};
+                //database_data.amount = data.first;
+                //database_data.object = data.second->GetObject();
+
+                //inventory_items_list.insert({ id , database_data });
+            }
+        }
+
+        return result;
+    }
+
+
+
+
+    std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item)
+    {
+        std::string result = "";
+
+
+        RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
+            {
+                return true;// a_object.IsObject();
+            });
+
+
+        if (inventory.find(item) == inventory.end())
+            return result; //not found
+
+
+
+        bool found = false;
+        for (auto inventory_entry : inventory_items_list)
+        {
+            if (inventory_entry.second.object == item)
+            {
+
+                std::string info = get_inventory_item_full_info(item);
+
+                if (info == "")
+                    return result; //nothing
+
+                result = "[id " + std::to_string(inventory_entry.first) + "]" + info;
+                found = true;
+                break;
+            }
+        }
+
+
+        if (!found)
+        {
+            auto entry_ptr = inventory.find(item);
+
+            if (entry_ptr == inventory.end())
+                return result;
+
+            auto& [quantity, data] = entry_ptr->second;
+
+            std::string info = get_inventory_item_full_info(item);
+
+            if (info == "")
+                return result;
+
+            result = "[id " + std::to_string(std::size(inventory_items_list)) + "]" + info;
+
+            item_data database_data{};
+            database_data.amount = quantity;
+            database_data.object = data->GetObject();
+
+            inventory_items_list.insert({ std::size(inventory_items_list) , database_data });
+
+            if (!inventory_valid)
+                inventory_valid = true;
+        }
+
+
+        return result;
+    }
+
+
+
+
+    bool is_inventory_item_in_the_list(RE::TESBoundObject* item)
+    {
+        bool result = false;
+
+        if (inventory_valid)
+        {
+            for (auto list_entry : inventory_items_list)
+            {
+                if (list_entry.second.object == item)
+                {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 
 
     std::pair<bool, std::string> GetInventory()
     {
         std::pair<bool, std::string> result{};
 
-        inventory_valid = false;
-        //inventory.clear();
-        items_list.clear();
+        //inventory_valid = false;
+        //inventory_items_list.clear();
 
         std::string inventory_contents = "Your inventory contents:\n";
 
@@ -3136,119 +3343,15 @@ namespace MiscThings {
             });
 
 
-
-        std::string gold_name = "Gold";
-
-
-        int id = 0;
         for (auto& [item, data] : inventory)
         {
-           // auto item_ref = item->AsReference();
-            auto item_form = (RE::TESForm*)item;
+            std::string info = insert_item_into_inventory_list_and_get_info(item);
 
+            if (info == "")
+                continue;
 
-            std::string actions = "";
-
-            if (item_form)
-            {
-                if (item_form->IsArmor() || item_form->IsWeapon() || item_form->IsAmmo())
-                {
-                    std::string hand_text = "";
-                    std::string twohanded = "";
-                    if (item_form->IsWeapon())
-                    {
-                        hand_text = get_equipped_hand_text(item);
-
-                        
-                        auto weapon = (RE::TESObjectWEAP*)item_form;
-
-                        if (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow())
-                            twohanded = "[Two-handed]";
-                        else
-                            twohanded = "[One-handed]";
-                            
-                    }
-                    
-
-                    std::string stats = "";
-
-                    auto base_type = item_form->GetFormType();
-
-
-                    if (base_type == RE::FormType::Weapon)
-                    {
-
-                        auto weapon = (RE::TESObjectWEAP*)item_form;
-
-                        auto damage = weapon->attackDamage;
-
-                        std::stringstream ss;
-                        ss << std::fixed << std::setprecision(1) << weapon->weight;
-                        std::string weight_text_number = ss.str();
-
-
-                        std::string damage_text = "Damage: " + std::to_string(damage);
-                        std::string weight_text = "Weight: " + weight_text_number;
-
-                        stats = " [" + damage_text + ", " + weight_text + "]";
-                    }
-
-
-                    if (base_type == RE::FormType::Armor)
-                    {
-
-                        auto armor = (RE::TESObjectARMO*)item_form;
-
-                        std::string heavy = "";
-
-                        if (armor->IsHeavyArmor())
-                            heavy = "Heavy, ";
-
-
-                        auto armor_val = armor->armorRating;
-
-                        std::stringstream ss;
-                        ss << std::fixed << std::setprecision(1) << armor->weight;
-                        std::string weight_text_number = ss.str();
-
-                        std::string armor_val_text = "Armor: " + std::to_string(armor_val);
-                        std::string weight_text = "Weight: " + weight_text_number;
-
-                        stats = " [" + heavy + armor_val_text + ", " + weight_text + "]";
-                    }
-
-
-
-                    if (is_equipped(item))
-                        actions += "[Equipped" + hand_text + "][Can unequip]";
-                    else
-                        actions += "[Can equip]" + twohanded;
-
-                    actions += stats;
-                }
-                
-                if (item_form->formType == RE::FormType::Ingredient || item_form->formType == RE::FormType::AlchemyItem)
-                    actions += "[Can consume]";
-
-                if (data.first > 0 && item->GetName() != gold_name)
-                {
-                    inventory_contents += "[id " + std::to_string(id) + "] ";
-                    inventory_contents += item->GetName();
-                    inventory_contents += " x";
-                    inventory_contents += std::to_string(data.first) + " ";
-                    inventory_contents += get_object_category(item_form);
-                    inventory_contents += actions;
-                    inventory_contents += "\n"; //TODO: replace with comma later
-
-                    item_data database_data{};
-                    database_data.amount = data.first;
-                    database_data.object = data.second->GetObject();
-
-                    items_list.insert({ id , database_data });
-                    id++;
-
-                }
-            }
+            inventory_contents += info;
+            inventory_contents += "\n";
         }
 
         auto player = RE::PlayerCharacter::GetSingleton();

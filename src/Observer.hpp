@@ -13,6 +13,7 @@ namespace Observer {
 
 	void detect_interesting_objects(float dtime);
 
+	void inventory_monitor(float dtime);
 
 	void clear_objects_to_track();
 	void detect_events(float dtime);
@@ -24,4 +25,5 @@ namespace Observer {
 
 	bool are_surroundings_scanned();
 
+	
 }

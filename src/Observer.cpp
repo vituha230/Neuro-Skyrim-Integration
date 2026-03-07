@@ -63,6 +63,10 @@ namespace Observer {
 	bool jail_serving_notified = false;
 	bool jail_escaping_notified = false;
 
+	bool player_monitor_finished = false;
+
+	float inventory_monitor_timer = 0.0f;
+
 
 	bool old_objects_around_valid = false;
 
@@ -123,6 +127,10 @@ namespace Observer {
 
 		old_occupied_furniture = nullptr;
 
+		player_monitor_finished = false;
+
+
+		inventory_monitor_timer = 0.0f;
 	}
 
 
@@ -1481,6 +1489,51 @@ namespace Observer {
 
 
 
+	void inventory_monitor(float dtime)
+	{
+
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (player_monitor_finished && observers_green_light && !ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME) && !ui->IsMenuOpen(RE::MainMenu::MENU_NAME) && !MiscThings::is_intro() && !MiscThings::is_intro2())
+		{
+			if (inventory_monitor_timer > 0.5f)
+			{
+				std::string new_info = "";
+
+				RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
+					{
+						return true;// a_object.IsObject();
+					});
+
+
+				for (auto& [item, data] : inventory)
+				{
+					if (!MiscThings::is_inventory_item_in_the_list(item))
+					{
+						std::string info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
+
+						if (info == "")
+							continue;
+
+						new_info += info + "\n";
+					}
+				}
+
+				if (new_info != "")
+				{
+					std::string message = "[New items in the inventory: ";
+					message += new_info;
+					send_random_context(message);
+				}
+			}
+			else
+				inventory_monitor_timer += dtime;
+
+		}
+	}
+
+
+
 
 
 	void player_state_monitor(float dtime)
@@ -1854,6 +1907,8 @@ namespace Observer {
 						std::string message = "[Your state: Health " + health_text + ", Stamina: " + stamina_text + ", Magicka: " + mana_text + "]";
 
 						send_random_context(message);
+
+						player_monitor_finished = true;
 
 					}
 
