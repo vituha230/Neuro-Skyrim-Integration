@@ -11,6 +11,7 @@ namespace MiscThings {
 
 
 
+
     bool player_hp_more_than(float val_percent)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -3368,7 +3369,7 @@ namespace MiscThings {
             if (info == "")
                 continue;
 
-            inventory_contents += info;
+            inventory_contents += info + " x" + std::to_string(data.first);
             inventory_contents += "\n";
         }
 
@@ -3477,12 +3478,11 @@ namespace MiscThings {
 
 
     struct spell {
-        int id;
         RE::SpellItem* spell;
         RE::TESShout* shout;
     };
 
-    std::vector<spell> spells{};
+    std::map<int, spell> spells{};
 
 
 
@@ -3590,7 +3590,7 @@ namespace MiscThings {
 
 
                             *active_spells += "[id " + std::to_string(i) + "] " + name + " - " + description + equip_info + "\n";
-                            spells.push_back({ i, a_spell, nullptr });
+                            spells.insert({ i, {a_spell, nullptr } });
                             i++;
                             *max_id = i;
                         }
@@ -3614,7 +3614,7 @@ namespace MiscThings {
                                         ult_type = "[Instant use]";
 
                                     *ults += "[id " + std::to_string(i) + "] " + name + " - " + description + " " + ult_type + "\n";
-                                    spells.push_back({ i, a_spell, nullptr });
+                                    spells.insert({ i, {a_spell, nullptr } });
                                     i++;
                                     *max_id = i;
                                 }
@@ -3721,7 +3721,7 @@ namespace MiscThings {
                 description = descr;
 
                 shouts += "[id " + std::to_string(max_id) + "] " + name + " - " + description + "\n";
-                spells.push_back({ max_id, nullptr, shout_p });
+                spells.insert({ max_id, {nullptr, shout_p } });
                 max_id++;
             }
         }
@@ -3783,9 +3783,9 @@ namespace MiscThings {
             send_random_context("Available spells: " + get_spells_result.second);
         }
 
-        if (shout_id >= 0 && shout_id < std::size(spells))
+        if (spells.find(shout_id) != spells.end())
         {
-            auto shout_p = spells.at(shout_id).shout;
+            auto shout_p = spells.find(shout_id)->second.shout;
             if (shout_p)
             {
                 for (auto variation : shout_p->variations)
@@ -3939,11 +3939,13 @@ namespace MiscThings {
         }
 
 
-        if (player_actor && id >= 0 && id < std::size(spells))
+        if (player_actor && spells.find(id) != spells.end())
         {
-            if (spells.at(id).spell)
+            auto spell_entry = spells.find(id);
+
+            if (spell_entry->second.spell)
             {
-                RE::SpellItem* spell = spells.at(id).spell;
+                RE::SpellItem* spell = spell_entry->second.spell;
 
                 auto equip_slot = spell->GetEquipSlot();
 
@@ -3996,9 +3998,9 @@ namespace MiscThings {
             }
             else
             {
-                if (spells.at(id).shout)
+                if (spell_entry->second.shout)
                 {
-                    RE::TESShout* shout = spells.at(id).shout;
+                    RE::TESShout* shout = spell_entry->second.shout;
 
                     auto equip_slot = shout->GetEquipSlot();
 
@@ -5291,5 +5293,33 @@ namespace MiscThings {
 
         return result;
     }
+
+
+
+
+
+    int get_id_for_an_object()
+    {
+        //check existing lists. if found - return its id. if not found, make up new id.
+
+        
+        int result = -1;
+        int candidate = 0;
+
+        while (result == -1)
+        {
+            if (spells.find(candidate) == spells.end() &&
+                inventory_items_list.find(candidate) == inventory_items_list.end() &&
+                objects_around.find(candidate) == objects_around.end() &&
+                locations_around.find(candidate) == locations_around.end())
+
+                result = candidate;
+        }
+
+        return result;
+    }
+
+
+
 
 }
