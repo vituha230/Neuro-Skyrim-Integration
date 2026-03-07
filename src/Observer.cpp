@@ -150,9 +150,9 @@ namespace Observer {
 	std::vector<MenuOption> get_threat_options()
 	{
 		std::vector<MenuOption> threat_options;
-		threat_options.push_back({ 0, "Fight back" });
-		threat_options.push_back({ 1, "Run" });
-		threat_options.push_back({ 2, "Ignore" });
+		threat_options.push_back({ 1, "Fight back" });
+		threat_options.push_back({ 2, "Run" });
+		threat_options.push_back({ 3, "Ignore" });
 
 		return threat_options;
 	}
@@ -169,7 +169,7 @@ namespace Observer {
 		}
 		else
 		{
-			if (id >= 0 && id < 3)
+			if (id >= 1 && id <= 3)
 			{
 				threats_response_choice = id;
 				threats_response_choice_valid = true;
@@ -246,7 +246,7 @@ namespace Observer {
 
 								if (!action_taken)
 								{
-									if (threats_response_choice == 0)
+									if (threats_response_choice == 1)
 									{
 										runaway_in_a_row = 0;
 										if (DialogueProcessor::is_in_dialogue(nullptr))
@@ -255,7 +255,7 @@ namespace Observer {
 										action_taken = true;
 									}
 
-									if (threats_response_choice == 1)
+									if (threats_response_choice == 2)
 									{
 										std::string message = WalkerProcessor::run_away().second;
 
@@ -267,7 +267,7 @@ namespace Observer {
 										action_taken = true;
 									}
 
-									if (threats_response_choice == 2)
+									if (threats_response_choice == 3)
 									{
 										runaway_in_a_row = 0;
 										action_taken = true;
@@ -275,7 +275,7 @@ namespace Observer {
 								}
 								else
 								{
-									if (threats_response_choice != 2 && threats_response_choice != 1 && !WalkerProcessor::walker_active())
+									if (threats_response_choice != 2 && threats_response_choice != 3 && !WalkerProcessor::walker_active())
 									{
 										//walker inactive, but we have threats. reset threats
 										reset_threats();
