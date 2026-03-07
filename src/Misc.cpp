@@ -2478,7 +2478,7 @@ namespace MiscThings {
                     heavy = "Heavy, ";
 
 
-                auto armor_val = armor->armorRating;
+                auto armor_val = armor->armorRating / 100;
 
                 std::stringstream ss;
                 ss << std::fixed << std::setprecision(1) << armor->weight;
@@ -3198,7 +3198,7 @@ namespace MiscThings {
                         heavy = "Heavy, ";
 
 
-                    auto armor_val = armor->armorRating;
+                    auto armor_val = armor->armorRating / 100;
 
                     std::stringstream ss;
                     ss << std::fixed << std::setprecision(1) << armor->weight;

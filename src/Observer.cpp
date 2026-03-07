@@ -1532,7 +1532,7 @@ namespace Observer {
 
 				std::string removed_info = "";
 
-				for (auto it = p_inventory->cbegin(); it != p_inventory->cend() /* not hoisted */; /* no increment */)
+				for (auto it = p_inventory->cbegin(); it != p_inventory->cend();)
 				{
 					auto item = it->second.object;
 
@@ -1553,36 +1553,6 @@ namespace Observer {
 					}
 				}
 
-				/*
-				for (auto it = p_inventory->begin(); it != p_inventory->end(); ++it)
-				{
-					auto item = it->second.object;
-
-					if (inventory.find(item) == inventory.end() || inventory.find(item)->second.first <= 0)
-					{
-						std::string info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
-
-						if (info != "")
-						{
-							removed_info += info + "\n";
-						}
-						int erased = MiscThings::remove_item_from_inventory_list(item);
-						while (erased > 0)
-						{
-							++it;
-							erased--;
-						}
-							
-					}
-				}
-				*/
-
-				/*
-				for (auto inventory_entry : *p_inventory)
-				{
-
-				}
-				*/
 
 				if (removed_info != "")
 				{
