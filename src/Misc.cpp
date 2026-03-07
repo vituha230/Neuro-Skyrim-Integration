@@ -3077,6 +3077,7 @@ namespace MiscThings {
                     else
                     {
                         player_actor->DropObject(object, nullptr, 1);
+                        result.first = true;
                         result.second = "[Dropping [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
                         return result;
                     }
