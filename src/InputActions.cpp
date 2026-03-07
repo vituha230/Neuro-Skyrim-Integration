@@ -508,7 +508,7 @@ void mouse_look(float x, float y)
 
 void mouse_cursor_move(float x, float y)
 {
-    RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y);
+    RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y, "Cursor");
 }
 
 

@@ -68,11 +68,17 @@ namespace MapProcessor {
 	}
 
 
+
+	std::map<int, RE::TESObjectREFR*> markers_to_remember{};
+
+
 	std::vector<MenuOption> get_location_options()
 	{
+		markers_to_remember.clear();
+
 		std::vector<MenuOption> result{};
-		std::vector<MenuOption> pre_result{};
-		std::vector<bool> can_travel{};
+		std::map<int, MenuOption> pre_result{};
+		std::map<int, bool> can_travel{};
 
 		auto player = RE::PlayerCharacter::GetSingleton();
 		auto player_pos = player->GetPosition();
@@ -109,7 +115,7 @@ namespace MapProcessor {
 								auto data = (RE::ExtraMapMarker*)a_refrOut->extraList.GetByType(RE::ExtraDataType::kMapMarker);
 								if (data && data->mapData && data->mapData->flags)
 								{
-									can_travel.push_back(data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo));
+									can_travel.insert({ id, data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo) });
 
 									auto distance = player->GetDistance(a_refrOut.get());
 
@@ -123,33 +129,33 @@ namespace MapProcessor {
 									option.id = id;
 									option.text = marker.fullName->fullName;
 
-									pre_result.push_back(option);
+									pre_result.insert({ id, option });
 
-									id++;
+									//markers_to_remember.insert({ id, a_refrOut.get() });
 								}
 							}
 						}
 					}
 				}
 
-				
+				id++;
 			}
 
 
 			for (auto option_raw : pre_result)
 			{
 				MenuOption option{};
-				int local_id = option_raw.id;
+				int local_id = option_raw.second.id;
 				option.id = local_id;
-				option.text = option_raw.text;
+				option.text = option_raw.second.text;
 
-				if (local_id < std::size(can_travel))
+				if (can_travel.find(local_id) != can_travel.end())
 				{
 					if (local_id != closest_id || closest_distance > 10000.0f)
 					{
 						std::string can_travel_text = "";
 
-						if (can_travel.at(local_id))
+						if (can_travel.find(local_id)->second)
 							can_travel_text = ". Can fast travel there. ";
 						else
 							can_travel_text = ". Cannot fast-travel there. ";
@@ -160,9 +166,7 @@ namespace MapProcessor {
 						option.text += ". YOU ARE HERE. ";
 				}
 
-
 				result.push_back(option);
-
 			}
 
 
@@ -481,7 +485,7 @@ namespace MapProcessor {
 
 
 
-	float K = 10.0f;
+	float K = 100.0f;
 
 
 
@@ -555,12 +559,38 @@ namespace MapProcessor {
 
 
 
-
 					if (camera_posX_ok && camera_posY_ok)
 					{
-							
+						float dif_posX = marker_posX - cursor_posX;
+						float dif_posY = marker_posY - cursor_posY;
+
+						float mouse_moveX = dif_posX * K;
+						float mouse_moveY = dif_posY * K;
+
+						if (abs(mouse_moveX) < 1.0f)
+							if (mouse_moveX < 0)
+								mouse_moveX = -1.0f;
+							else
+								mouse_moveX = 1.0f;
+
+						if (abs(mouse_moveY) < 1.0f)
+							if (mouse_moveY < 0)
+								mouse_moveY = -1.0f;
+							else
+								mouse_moveY = 1.0f;
+
+
+						mouse_cursor_move(mouse_moveX, mouse_moveY);
+
+						if (abs(dif_posX) < 0.006 && abs(dif_posY) < 0.006)
 							result = true;
 					}
+
+					//if (camera_posX_ok && camera_posY_ok)
+					//{
+							
+					//		result = true;
+					//}
 					
 				}
 
@@ -965,6 +995,7 @@ namespace MapProcessor {
 					}
 					else
 					{
+						/*
 						if (!catch_result && chosen_marker_refr)
 						{
 							auto normal_camera = (RE::TESCamera*)(&menu->camera);
@@ -980,8 +1011,9 @@ namespace MapProcessor {
 
 							//menu->camera.SetMapCameraRoot(old_camera_root.get(), target_marker_pos);
 							//menu->camera.SetCameraRoot(old_camera_root);
-
 						}
+						*/
+
 
 						catch_result = true;
 
