@@ -551,7 +551,7 @@ namespace WalkerProcessor {
                                     if (!too_high_notified)
                                     {
                                         too_high_notified = true;
-                                        send_random_context(MiscThings::insert_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
+                                        send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
                                     }
                                 }
                             }
@@ -3457,7 +3457,7 @@ namespace WalkerProcessor {
                         {
                             if (interaction == 1)
                             {
-                                mount_name = MiscThings::insert_into_list_and_get_info(mount_refr);
+                                mount_name = MiscThings::insert_object_into_list_and_get_info(mount_refr);
                                 result.first = true;
                                 result.second = "[Getting off " + mount_name + "...]";
                                 confirm();
@@ -3480,7 +3480,7 @@ namespace WalkerProcessor {
 
                 reminder_start_pos = player->GetPosition();
                 reminder_start_pos = player->GetPosition();
-                reminder_target_name = MiscThings::insert_into_list_and_get_info(object->second);
+                reminder_target_name = MiscThings::insert_object_into_list_and_get_info(object->second);
 
 
                 if (interaction > 0 && interaction < 4)
@@ -3581,7 +3581,7 @@ namespace WalkerProcessor {
 
                 reminder_start_pos = player->GetPosition();
                 reminder_start_pos = player->GetPosition();
-                reminder_target_name = MiscThings::insert_into_list_and_get_info(object->second);
+                reminder_target_name = MiscThings::insert_object_into_list_and_get_info(object->second);
 
                 interaction_after_walk = -1;
 
@@ -5009,7 +5009,7 @@ namespace WalkerProcessor {
 
                     if (attack_action_time < get_attack_time(true) && !(has_spell_equipped(true) && !is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
                     {
-                        std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);
+                        std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                         
                         std::string attacking_info = "";
 
@@ -5211,7 +5211,7 @@ namespace WalkerProcessor {
 
                         if (attack_action_time < get_attack_time(false) && !(has_spell_equipped(false) && !is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
                         {
-                            std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);
+                            std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                             
                             std::string attacking_info = "";
 
@@ -5384,7 +5384,7 @@ namespace WalkerProcessor {
                 if (target_ref->IsDead())
                 {
                     /* //now sent from observer
-                    std::string victim_name = MiscThings::insert_into_list_and_get_info(target_ref);
+                    std::string victim_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                     std::string message_text = "[" + victim_name + " died]";
 
                     auto target_actor = (RE::Actor*)target_ref;
@@ -5398,7 +5398,7 @@ namespace WalkerProcessor {
 
                             if (killer_actor)
                             {
-                                std::string killer_name = MiscThings::insert_into_list_and_get_info(killer_actor);
+                                std::string killer_name = MiscThings::insert_object_into_list_and_get_info(killer_actor);
                                 if (killer_actor == player_actor)
                                     killer_name = "You";
 
@@ -5516,7 +5516,7 @@ namespace WalkerProcessor {
                         interaction_context_sent = true;
                         if (target_ref)
                         {
-                            std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);//target_ref->GetDisplayFullName();
+                            std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);//target_ref->GetDisplayFullName();
                             auto base_obj = target_ref->GetBaseObject();
                             if (base_obj->IsInventoryObject())
                             {
@@ -5684,7 +5684,7 @@ namespace WalkerProcessor {
             if (location_mode)
                 result = "You cannot walk yet. Looking at location"; //default
             else
-                result = "You cannot walk yet. Looking at " + MiscThings::insert_into_list_and_get_info(target_ref);
+                result = "You cannot walk yet. Looking at " + MiscThings::insert_object_into_list_and_get_info(target_ref);
         }
         else
         {
@@ -5695,7 +5695,7 @@ namespace WalkerProcessor {
                 if (quest_mode && (target_name == ""))
                     target_name = "quest target point";
                 else
-                    target_name = MiscThings::insert_into_list_and_get_info(target_ref);
+                    target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
 
                 result = "You walked up to " + target_name; //default
 
@@ -5704,7 +5704,7 @@ namespace WalkerProcessor {
                 case 1:
                     {
                         if (target_ref->IsInventoryObject())
-                            result = "Picked up " + MiscThings::insert_into_list_and_get_info(target_ref);
+                            result = "Picked up " + MiscThings::insert_object_into_list_and_get_info(target_ref);
                         else
                             result += " and interacted with this object";
 
@@ -5843,7 +5843,7 @@ namespace WalkerProcessor {
             std::string result_target_name = result_target->GetDisplayFullName();
             if (result_target_name != "")
             {
-                blocking_object_name = MiscThings::insert_into_list_and_get_info(result_target);
+                blocking_object_name = MiscThings::insert_object_into_list_and_get_info(result_target);
 
             }
 
@@ -5865,7 +5865,7 @@ namespace WalkerProcessor {
             if (mount_ptr)
             {
                 RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount_ptr.get();
-                mount_name = MiscThings::insert_into_list_and_get_info(mount_refr);
+                mount_name = MiscThings::insert_object_into_list_and_get_info(mount_refr);
             }
             send_random_context("Cannot do this while on mount: " + mount_name);
         }
@@ -5966,7 +5966,7 @@ namespace WalkerProcessor {
                     {
                         reset_walker();
                         auto new_target = next_targets.at(0);
-                        std::string new_target_name = MiscThings::insert_into_list_and_get_info(new_target);
+                        std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
 
                         right_attack_cancel();
                         left_attack_cancel();
@@ -6518,7 +6518,7 @@ namespace WalkerProcessor {
                                                                                     if (std::size(next_targets) > 0)
                                                                                     {
                                                                                         auto new_target = next_targets.at(std::size(next_targets) - 1);
-                                                                                        std::string new_target_name = MiscThings::insert_into_list_and_get_info(new_target);
+                                                                                        std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
                                                                                         right_attack_cancel();
                                                                                         left_attack_cancel();
                                                                                         walk_to_object_by_refr(new_target, 3);
@@ -6568,7 +6568,7 @@ namespace WalkerProcessor {
                                                                                             if (std::size(next_targets) > 0)
                                                                                             {
                                                                                                 auto new_target = next_targets.at(std::size(next_targets) - 1);
-                                                                                                std::string new_target_name = MiscThings::insert_into_list_and_get_info(new_target);
+                                                                                                std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
                                                                                                 right_attack_cancel();
                                                                                                 left_attack_cancel();
                                                                                                 walk_to_object_by_refr(new_target, 3);
@@ -6619,7 +6619,7 @@ namespace WalkerProcessor {
                                                     if (!too_high_notified)
                                                     {
                                                         too_high_notified = true;
-                                                        send_random_context(MiscThings::insert_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
+                                                        send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
                                                     }
                                                     lock_camera_onto_target(target_ref, dtime);
                                                     return;

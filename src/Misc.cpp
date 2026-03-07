@@ -225,14 +225,14 @@ namespace MiscThings {
 
                         if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
                         {
-                            std::string name = MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref);
+                            std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref);
 
                             result = name;
                         }
 
                         if (model.find("PuzzleDoorKeyHole01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
-                            std::string name = MiscThings::insert_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
+                            std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
                             result = name;
                         }
 
@@ -245,7 +245,7 @@ namespace MiscThings {
 
                         if (model.find("CaveGSecretDoor") != std::string::npos)
                         {
-                            std::string name = MiscThings::insert_into_list_custom_name("[Secret door] Stone wall door", a_ref);
+                            std::string name = MiscThings::insert_object_into_list_custom_name("[Secret door] Stone wall door", a_ref);
                             result = name;
                         }
                     }
@@ -262,19 +262,19 @@ namespace MiscThings {
                         {
                             if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
                             {
-                                std::string name = MiscThings::insert_into_list_custom_name("Large wooden bridge", a_ref);
+                                std::string name = MiscThings::insert_object_into_list_custom_name("Large wooden bridge", a_ref);
                                 result = name;
                             }
 
                             if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
                             {
-                                std::string name = MiscThings::insert_into_list_custom_name("Heavy wooden gate", a_ref);
+                                std::string name = MiscThings::insert_object_into_list_custom_name("Heavy wooden gate", a_ref);
                                 result = name;
                             }
 
                             if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
                             {
-                                std::string name = MiscThings::insert_into_list_custom_name("Metal gate", a_ref);
+                                std::string name = MiscThings::insert_object_into_list_custom_name("Metal gate", a_ref);
                                 result = name;
                             }
 
@@ -2209,7 +2209,7 @@ namespace MiscThings {
                         {
                             if (parent && parent->activateRef && parent->activateRef.get() && parent->activateRef.get().get())
                             {
-                                result += ", attatched to " + insert_into_list_and_get_info(parent->activateRef.get().get());
+                                result += ", attatched to " + insert_object_into_list_and_get_info(parent->activateRef.get().get());
                             }
                         }
                     }
@@ -2224,7 +2224,7 @@ namespace MiscThings {
                         RE::TESObjectREFR* linked = General::Script::GetVariable<RE::TESObjectREFR*>(object_p, prop_name);
                         if (linked) //THIS IS WHAT IS GOING TO BE TRIGGERED BY IT. the one who activates this, is in ActivateRef extradata of object
                         {
-                            result += ", attatched to " + insert_into_list_and_get_info(linked);
+                            result += ", attatched to " + insert_object_into_list_and_get_info(linked);
                         }
 
                         if (object_p->currentState == "Triggered")
@@ -2582,7 +2582,7 @@ namespace MiscThings {
     }
 
 
-    std::string insert_into_list_custom_name(std::string name, RE::TESObjectREFR* refr)
+    std::string insert_object_into_list_custom_name(std::string name, RE::TESObjectREFR* refr)
     {
         std::string result = "";
 
@@ -2615,7 +2615,7 @@ namespace MiscThings {
 
 
 
-    std::string insert_into_list_and_get_info(RE::TESObjectREFR* refr)
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr)
     {
         std::string result = "";
 
@@ -4287,7 +4287,7 @@ namespace MiscThings {
                     //RE::TESObjectREFR* linked = General::Script::GetVariable<RE::TESObjectREFR*>(object_p, prop_name);
                     //if (linked) //THIS IS WHAT IS GOING TO BE TRIGGERED BY IT. the one who activates this, is in ActivateRef extradata of object
                     //{
-                    //    result += ", attatched to " + insert_into_list_and_get_info(linked);
+                    //    result += ", attatched to " + insert_object_into_list_and_get_info(linked);
                     //}
 
                     if (object_p->currentState != "Active")
@@ -5156,7 +5156,7 @@ namespace MiscThings {
                     if (player_ref->GetDistance(this_object) < 10000.0f)
                     {
                         //std::string category = get_object_category(object.second);
-                        result.second += insert_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
+                        result.second += insert_object_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
                         result.second += +"\n";
                     }
                 }

@@ -50,9 +50,9 @@ namespace MiscThings {
     std::vector<RE::Actor*> get_player_attackers();
 
     //int insert_ref_into_obj_list(RE::TESObjectREFR* refr);
-    std::string insert_into_list_and_get_info(RE::TESObjectREFR* refr);
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr);
     std::string insert_quest_into_list_and_get_info(std::string quest_text);
-    std::string insert_into_list_custom_name(std::string name, RE::TESObjectREFR* refr);
+    std::string insert_object_into_list_custom_name(std::string name, RE::TESObjectREFR* refr);
 
 
     bool is_game_paused();

@@ -394,7 +394,7 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text)
                                //"Dialogue: [Type \(lineDataDeref.type)] \(localizedSpeakerName) says \"\(line)\"";
 
     
-    std::string speaker_name = MiscThings::insert_into_list_and_get_info(speaker);//speaker->GetName();
+    std::string speaker_name = MiscThings::insert_object_into_list_and_get_info(speaker);//speaker->GetName();
 
 
     if (speaker_name[0] == '\0')

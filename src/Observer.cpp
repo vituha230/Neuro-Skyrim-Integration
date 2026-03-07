@@ -192,7 +192,7 @@ namespace Observer {
 							std::string attacked_by = "";
 							for (auto attacker : attackers)
 							{
-								attacked_by += MiscThings::insert_into_list_and_get_info(attacker);
+								attacked_by += MiscThings::insert_object_into_list_and_get_info(attacker);
 								attacked_by += "; ";
 							}
 
@@ -388,14 +388,14 @@ namespace Observer {
 								if (a_ref->AsReference()->IsActor())
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
-										result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+										result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
 								}
 
 
 								if (base_type == RE::FormType::Door)
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
-										result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+										result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
 								}
 
 
@@ -403,7 +403,7 @@ namespace Observer {
 								if (base_type == RE::FormType::Activator)
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
-										result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+										result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
 								}
 
 								if (base_type == RE::FormType::Furniture) //pullchains/levers
@@ -415,7 +415,7 @@ namespace Observer {
 										if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+												result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
 										}
 									}
 								}
@@ -430,7 +430,7 @@ namespace Observer {
 									if (base_type == RE::FormType::Container)
 									{
 										if (!MiscThings::is_object_in_the_list(a_ref))
-											result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+											result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
 									}
 
 									if (base_obj)
@@ -475,7 +475,7 @@ namespace Observer {
 										if (is_harvestable)
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+												result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
 										}
 									}
 
@@ -487,13 +487,13 @@ namespace Observer {
 										if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+												result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
 										}
 										else
 										{
 											if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
 												if (!MiscThings::is_object_in_the_list(a_ref))
-													result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref }); //bed
+													result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref }); //bed
 										}
 									}
 
@@ -502,7 +502,7 @@ namespace Observer {
 										if (base_obj->IsInventoryObject())
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_into_list_and_get_info(a_ref), a_ref });
+												result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
 										}
 									}
 
@@ -531,7 +531,7 @@ namespace Observer {
 											if (a_ref->GetDistance(player_ref) < 300.0f)
 											{
 												if (!MiscThings::is_object_in_the_list(a_ref))
-													result.push_back({ MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
+													result.push_back({ MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
 											}
 										}
 
@@ -549,7 +549,7 @@ namespace Observer {
 											if (a_ref->GetDistance(player_ref) < 500.0f)
 											{
 												if (!MiscThings::is_object_in_the_list(a_ref))
-													result.push_back({ MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
+													result.push_back({ MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
 											}
 										}
 									}
@@ -822,7 +822,7 @@ namespace Observer {
 
 									objects_to_track.insert_or_assign(a_ref, new_state);
 
-									std::string victim_name = MiscThings::insert_into_list_and_get_info(a_ref);
+									std::string victim_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 									std::string message_text = "[" + victim_name + " died]";
 
 									auto target_actor = (RE::Actor*)a_ref;
@@ -843,7 +843,7 @@ namespace Observer {
 
 											if (killer_actor)
 											{
-												std::string killer_name = MiscThings::insert_into_list_and_get_info(killer_actor);
+												std::string killer_name = MiscThings::insert_object_into_list_and_get_info(killer_actor);
 												if (killer_actor == player_actor)
 													killer_name = "You";
 
@@ -867,7 +867,7 @@ namespace Observer {
 								{
 									if (!a_ref->IsDead())
 									{
-										std::string victim_name = MiscThings::insert_into_list_and_get_info(a_ref);
+										std::string victim_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 
 										std::string message_text = "";
 
@@ -912,8 +912,8 @@ namespace Observer {
 													if (actor_ref->race->fullName == "Dragon Race" && target_refr->IsActor())
 														interaction_name = " killed ";
 
-													auto target_name = MiscThings::insert_into_list_and_get_info(target_refr);
-													std::string actor_name = MiscThings::insert_into_list_and_get_info(a_ref);
+													auto target_name = MiscThings::insert_object_into_list_and_get_info(target_refr);
+													std::string actor_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 
 													if (target_name != "" && actor_name != "")
 													{
@@ -990,7 +990,7 @@ namespace Observer {
 
 											if (model.find("CaveGSecretDoor") != std::string::npos)
 											{
-												std::string name = MiscThings::insert_into_list_custom_name("Secret stone wall door", a_ref);
+												std::string name = MiscThings::insert_object_into_list_custom_name("Secret stone wall door", a_ref);
 
 												if (activation == 0)
 													result.push_back("[ " + name + " opened]");
@@ -1029,7 +1029,7 @@ namespace Observer {
 													{
 														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
 														{
-															std::string name = MiscThings::insert_into_list_custom_name("Large wooden bridge", a_ref);
+															std::string name = MiscThings::insert_object_into_list_custom_name("Large wooden bridge", a_ref);
 
 															if (activation == 0)
 																result.push_back("[ " + name + " closed]");
@@ -1040,7 +1040,7 @@ namespace Observer {
 
 														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
 														{
-															std::string name = MiscThings::insert_into_list_custom_name("Heavy wooden gate", a_ref);
+															std::string name = MiscThings::insert_object_into_list_custom_name("Heavy wooden gate", a_ref);
 
 															if (activation == 0)
 																result.push_back("[ " + name + " opened]");
@@ -1051,7 +1051,7 @@ namespace Observer {
 
 														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
 														{
-															std::string name = MiscThings::insert_into_list_custom_name("Metal gate", a_ref);
+															std::string name = MiscThings::insert_object_into_list_custom_name("Metal gate", a_ref);
 
 															if (activation == 0)
 																result.push_back("[ " + name + " opened]");
@@ -1117,7 +1117,7 @@ namespace Observer {
 											if (dtime > 2.0f)
 											{
 												last_periodic_info = now;
-												std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
+												std::string name = MiscThings::insert_object_into_list_custom_name("Trap swinging blade", a_ref);
 												result.push_back("[ " + name + " swinged!]");
 											}
 										}
@@ -1134,7 +1134,7 @@ namespace Observer {
 
 										if (new_state.trap_firing == 2)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("Pressure plate", a_ref);
+											std::string name = MiscThings::insert_object_into_list_custom_name("Pressure plate", a_ref);
 
 											std::string activator_name = get_trap_activator_name(a_ref);
 
@@ -1152,38 +1152,38 @@ namespace Observer {
 
 										if (new_state.trap_firing == 3)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
+											std::string name = MiscThings::insert_object_into_list_custom_name("Trap swinging wall", a_ref);
 											result.push_back("[ " + name + " launched!]");
 										}
 
 
 										if (new_state.trap_firing == 4)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging wall", a_ref);
+											std::string name = MiscThings::insert_object_into_list_custom_name("Trap swinging wall", a_ref);
 											result.push_back("[ " + name + " went back]");
 										}
 
 										if (new_state.trap_firing == 5)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
+											std::string name = MiscThings::insert_object_into_list_custom_name("Trap swinging blade", a_ref);
 											result.push_back("[ " + name + " deactivated]");
 										}
 
 										if (new_state.trap_firing == 6)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap swinging blade", a_ref);
+											std::string name = MiscThings::insert_object_into_list_custom_name("Trap swinging blade", a_ref);
 											result.push_back("[ " + name + " started swinging!]");
 										}
 
 										if (new_state.trap_firing == 7)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("Trap oil lamp", a_ref);
+											std::string name = MiscThings::insert_object_into_list_custom_name("Trap oil lamp", a_ref);
 											result.push_back("[ " + name + " fell down and exploded!]");
 										}
 
 										if (new_state.trap_firing == 8)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("Oil on the floor", a_ref);
+											std::string name = MiscThings::insert_object_into_list_custom_name("Oil on the floor", a_ref);
 											result.push_back("[ " + name + " started burning]");
 										}
 
@@ -1195,7 +1195,7 @@ namespace Observer {
 
 										if (new_state.trap_firing == 10)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 
 											std::string activator_name = get_trap_activator_name(a_ref);
 
@@ -1208,7 +1208,7 @@ namespace Observer {
 
 										if (new_state.trap_firing == 11)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 
 											std::string activator_name = get_trap_activator_name(a_ref);
 
@@ -1221,7 +1221,7 @@ namespace Observer {
 
 										if (new_state.trap_firing == 12)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											result.push_back("[ " + name + " was rearmed]");
 										}
 
@@ -1248,14 +1248,14 @@ namespace Observer {
 
 										if (new_state.trap_firing == 14)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											result.push_back("[ " + name + " was triggered!]");
 										}
 
 
 										if (new_state.trap_firing == 15)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											result.push_back("[ " + name + " was disarmed]");
 										}
 
@@ -1270,7 +1270,7 @@ namespace Observer {
 									{
 										if (new_state.destructible_state == 1)
 										{
-											std::string name = MiscThings::insert_into_list_custom_name("[Destructible] Cobweb", a_ref);
+											std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref);
 
 											result.push_back(name + " was destroyed");
 										}
@@ -1324,7 +1324,7 @@ namespace Observer {
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kCruising)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											std::string action = " is flying";
 											if (result.empty())
 												result.push_back("[" + name + action + in_the_distance + "]");
@@ -1332,7 +1332,7 @@ namespace Observer {
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kLanding)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											std::string action = " is landing";
 											if (result.empty())
 												result.push_back("[" + name + action + in_the_distance + "]");
@@ -1340,7 +1340,7 @@ namespace Observer {
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kHovering)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											if (result.empty())
 												std::string action = " is hovering";
 
@@ -1348,7 +1348,7 @@ namespace Observer {
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kTakeOff)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											std::string action = " takes off";
 											if (result.empty())
 												result.push_back("[" + name + action + in_the_distance + "]");
@@ -1356,7 +1356,7 @@ namespace Observer {
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kPerching)
 										{
-											std::string name = MiscThings::insert_into_list_and_get_info(a_ref);
+											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											std::string action = " is perching";
 											//result.push_back("[" + name + action + "]"); //looks like perching randomly comes with other types making no sense
 										}
@@ -1757,7 +1757,7 @@ namespace Observer {
 						if (mount_ptr)
 						{
 							RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount_ptr.get();
-							mount_name = MiscThings::insert_into_list_and_get_info(mount_refr);
+							mount_name = MiscThings::insert_object_into_list_and_get_info(mount_refr);
 						}
 
 						send_random_context("[You got onto " + mount_name + "]");
@@ -1768,7 +1768,7 @@ namespace Observer {
 						if (mount)
 						{
 							RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount.get();
-							mount_name = MiscThings::insert_into_list_and_get_info(mount_refr);
+							mount_name = MiscThings::insert_object_into_list_and_get_info(mount_refr);
 						}
 						mount = nullptr;
 
