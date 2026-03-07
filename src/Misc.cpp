@@ -198,7 +198,7 @@ namespace MiscThings {
 
         if (player_ref)
         {
-            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 300.0f,
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 600.0f,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
 
@@ -3315,7 +3315,12 @@ namespace MiscThings {
             database_data.amount = quantity;
             database_data.object = data->GetObject();
 
-            inventory_items_list.insert({ std::size(inventory_items_list) , database_data });
+
+            int new_id = 0;
+            if (std::size(inventory_items_list) > 0)
+                new_id = inventory_items_list.rbegin()->first + 1;
+
+            inventory_items_list.insert({ new_id , database_data });
 
             if (!inventory_valid)
                 inventory_valid = true;
@@ -4114,6 +4119,18 @@ namespace MiscThings {
 
         return result;
     }
+
+
+    bool helgen_bride_destroyed()
+    {
+        bool result = false;
+        auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+        if (threshold_quest)
+            if (threshold_quest->GetCurrentStageID() >= 500)
+                result = true;
+        return result;
+    }
+
 
     bool is_intro()
     {

@@ -95,6 +95,7 @@ namespace MiscThings {
     bool is_fighting_dragons_allowed();
     bool is_intro();
     bool is_intro2();
+    bool helgen_bride_destroyed();
     bool escaped_helgen();
     bool is_interior_cell();
     bool player_has_shouts_to_unlock();

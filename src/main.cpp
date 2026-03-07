@@ -6,11 +6,8 @@
 
 //TODO exit cave option when nothing interesting found anymore
 //TODO actions register watchdog (autodetect when no actions are registered for no reason)
-//TODO more info about why [Cant walk there]. maybe look for repetitive fails to walk, refreshing object list if it happens
-//     also can catch helgen keep rocks breaking the bridge event. 
-//     refreshing objects will not help for quests if they were not completed (loot the barrel and pick the cell door). [Cant walk there] must be reasoned
-//TODO unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 
+//TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 
 
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more

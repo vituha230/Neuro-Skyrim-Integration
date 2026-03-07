@@ -74,6 +74,10 @@ namespace Observer {
 
 
 
+
+	int runaway_in_a_row = 0;
+
+
 	void set_threat_action_taken()
 	{
 		threats_response_request_sent = true;
@@ -121,6 +125,7 @@ namespace Observer {
 		jail_serving_notified = false;
 		jail_escaping_notified = false;
 
+		runaway_in_a_row = 0;
 
 		observers_green_light = false;
 		surroundings_scanned = false;
@@ -241,6 +246,7 @@ namespace Observer {
 								{
 									if (threats_response_choice == 0)
 									{
+										runaway_in_a_row = 0;
 										if (DialogueProcessor::is_in_dialogue(nullptr))
 											DialogueProcessor::quit_menu();
 										WalkerProcessor::walk_to_object_by_refr(attackers.at(0), 3);
@@ -249,12 +255,19 @@ namespace Observer {
 
 									if (threats_response_choice == 1)
 									{
-										send_random_context(WalkerProcessor::run_away().second);
+										std::string message = WalkerProcessor::run_away().second;
+
+										runaway_in_a_row++;
+										if (runaway_in_a_row >= 3)
+											message += "[You will not have much progress in the game if you keep running away from fights every time]";
+
+										send_random_context(message);
 										action_taken = true;
 									}
 
 									if (threats_response_choice == 2)
 									{
+										runaway_in_a_row = 0;
 										action_taken = true;
 									}
 								}

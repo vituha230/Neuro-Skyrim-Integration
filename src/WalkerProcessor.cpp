@@ -3832,11 +3832,6 @@ namespace WalkerProcessor {
     }
     
 
-    
-
-
-
-
     std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target)
     {
 
@@ -6144,6 +6139,7 @@ namespace WalkerProcessor {
                             if (!get_targeted_ref() || !is_targeted_door_locked()) //we still have the door targeted and it is unlocked now. or it was unlocked.
                             {
                                 //door is opened (now?)
+                                register_allowed_actions();
                                 catch_door_result = false;
                                 if (!get_targeted_ref() || is_door(get_targeted_ref()))
                                 {
@@ -6186,6 +6182,7 @@ namespace WalkerProcessor {
                                                                             if (result_string != "")
                                                                                 MiscThings::update_old_topleft_nofification(result_string);
 
+                                                                            register_allowed_actions();
                                                                             send_random_context("[" + result_string + "]");
                                                                             reset_walker();
                                                                         }
@@ -6294,7 +6291,7 @@ namespace WalkerProcessor {
                                                 }
                                                 else
                                                 {
-                                                    std::string fail_text = "[Cant walk there]";
+                                                    std::string fail_text = "[Cant walk there. Maybe this target is not accessible anymore. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
                                                     if (potential_block != "")
                                                         fail_text = "[ " + potential_block + " blocks the path]";
@@ -6714,7 +6711,7 @@ namespace WalkerProcessor {
                                                             walk_forward();
                                                         else
                                                         {
-                                                            std::string fail_text = "[Cant walk there]";
+                                                            std::string fail_text = "[Cant walk there. Maybe this target is not accessible anymore. Do something else or try again later]";
                                                             std::string potential_block = MiscThings::get_potential_blocking_object();
                                                             if (potential_block != "")
                                                                 fail_text = "[ " + potential_block + " blocks the path]";
@@ -6751,7 +6748,7 @@ namespace WalkerProcessor {
                                                 }
                                                 else
                                                 {
-                                                    std::string fail_text = "[Cant walk there]";
+                                                    std::string fail_text = "[Cant walk there. Maybe this target is not accessible anymore. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
                                                     if (potential_block != "")
                                                         fail_text = "[ " + potential_block + " blocks the path]";
