@@ -2686,14 +2686,15 @@ namespace MiscThings {
             });
      */
 
-    struct item_data {
-        RE::TESBoundObject* object;
-        int amount;
-        //int price; //TODO: replace with something useful (maybe type of item)
-    };
+
 
     std::map<int, item_data> inventory_items_list{};
 
+
+    std::map<int, item_data>* get_p_inventory_items_list()
+    {
+        return &inventory_items_list;
+    }
 
 
 
@@ -3124,7 +3125,7 @@ namespace MiscThings {
 
         std::string actions = "";
 
-
+        /*
         RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
             {
                 return true;// a_object.IsObject();
@@ -3136,6 +3137,8 @@ namespace MiscThings {
         
 
         auto& [quantity, data] = inventory.find(item)->second;
+        */
+
 
         std::string gold_name = "Gold";
 
@@ -3220,13 +3223,11 @@ namespace MiscThings {
             if (item_form->formType == RE::FormType::Ingredient || item_form->formType == RE::FormType::AlchemyItem)
                 actions += "[Can consume]";
 
-            if (quantity > 0 && item->GetName() != gold_name)
+            if (item->GetName() != gold_name)
             {
                 result += get_object_category(item_form);
                 result += actions + " ";
                 result += item->GetName();
-                result += " x";
-                result += std::to_string(quantity) + " ";
                 //result += "\n"; //TODO: replace with comma later
 
                 //item_data database_data{};
@@ -3242,10 +3243,45 @@ namespace MiscThings {
 
 
 
+    int remove_item_from_inventory_list(RE::TESBoundObject* item)
+    {
+        for (std::pair<int, item_data> inventory_entry : inventory_items_list)
+        {
+            if (inventory_entry.second.object == item)
+            {
+                return (int)inventory_items_list.erase(inventory_entry.first);
+            }
+        }
+
+        return 0;
+    }
+
 
     std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item)
     {
         std::string result = "";
+
+
+
+
+
+        bool found = false;
+        for (std::pair<int, item_data> inventory_entry : inventory_items_list)
+        {
+            if (inventory_entry.second.object == item)
+            {
+
+                std::string info = get_inventory_item_full_info(item);
+
+                if (info == "")
+                    return result; //nothing
+       
+                //std::string quantity_text = std::to_string(inventory_entry.second.amount);
+                result = "[id " + std::to_string(inventory_entry.first) + "]" + info;// +" x" + quantity_text;
+                found = true;
+                break;
+            }
+        }
 
 
         RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
@@ -3256,25 +3292,6 @@ namespace MiscThings {
 
         if (inventory.find(item) == inventory.end())
             return result; //not found
-
-
-
-        bool found = false;
-        for (auto inventory_entry : inventory_items_list)
-        {
-            if (inventory_entry.second.object == item)
-            {
-
-                std::string info = get_inventory_item_full_info(item);
-
-                if (info == "")
-                    return result; //nothing
-
-                result = "[id " + std::to_string(inventory_entry.first) + "]" + info;
-                found = true;
-                break;
-            }
-        }
 
 
         if (!found)
@@ -3288,7 +3305,7 @@ namespace MiscThings {
 
             std::string info = get_inventory_item_full_info(item);
 
-            if (info == "")
+            if (info == "" || quantity <= 0)
                 return result;
 
             result = "[id " + std::to_string(std::size(inventory_items_list)) + "]" + info;

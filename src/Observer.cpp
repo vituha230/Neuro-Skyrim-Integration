@@ -1498,13 +1498,13 @@ namespace Observer {
 		{
 			if (inventory_monitor_timer > 0.5f)
 			{
+				/////// ITEMS ADDED
 				std::string new_info = "";
 
 				RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
 					{
 						return true;// a_object.IsObject();
 					});
-
 
 				for (auto& [item, data] : inventory)
 				{
@@ -1525,6 +1525,73 @@ namespace Observer {
 					message += new_info;
 					send_random_context(message);
 				}
+
+				///// ITEMS REMOVED
+
+				auto p_inventory = MiscThings::get_p_inventory_items_list();
+
+				std::string removed_info = "";
+
+				for (auto it = p_inventory->cbegin(); it != p_inventory->cend() /* not hoisted */; /* no increment */)
+				{
+					auto item = it->second.object;
+
+					if (inventory.find(item) == inventory.end() || inventory.find(item)->second.first <= 0)
+					{
+						std::string info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
+
+						if (info != "")
+						{
+							removed_info += info + "\n";
+						}
+
+						it = p_inventory->erase(it);    // or "it = m.erase(it)" since C++11
+					}
+					else
+					{
+						++it;
+					}
+				}
+
+				/*
+				for (auto it = p_inventory->begin(); it != p_inventory->end(); ++it)
+				{
+					auto item = it->second.object;
+
+					if (inventory.find(item) == inventory.end() || inventory.find(item)->second.first <= 0)
+					{
+						std::string info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
+
+						if (info != "")
+						{
+							removed_info += info + "\n";
+						}
+						int erased = MiscThings::remove_item_from_inventory_list(item);
+						while (erased > 0)
+						{
+							++it;
+							erased--;
+						}
+							
+					}
+				}
+				*/
+
+				/*
+				for (auto inventory_entry : *p_inventory)
+				{
+
+				}
+				*/
+
+				if (removed_info != "")
+				{
+					std::string message = "[No longer in the inventory: ";
+					message += removed_info;
+					send_random_context(message);
+				}
+
+
 			}
 			else
 				inventory_monitor_timer += dtime;
