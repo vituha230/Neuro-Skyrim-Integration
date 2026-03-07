@@ -12,10 +12,6 @@
 namespace Observer {
 
 
-
-
-
-
 	bool surroundings_scanned = false;
 
 

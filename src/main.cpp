@@ -488,7 +488,7 @@ public:
             if (const auto ui = RE::UI::GetSingleton(); ui) {
                 if (const auto menu = ui->GetMenu(RE::DialogueMenu::MENU_NAME); menu) {
                     //menu->menuFlags.set(RE::UI_MENU_FLAGS::kPausesGame); //works
-                    menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                    //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
 
                     //clear_input_queue();
@@ -577,7 +577,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("SLEEPWAIT MENU WAS OPENED");
 
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); 
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); 
 
                 unregister_all_actions();
             }
@@ -599,7 +599,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("MESSAGEBOX MENU WAS OPENED");
 
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
                 //unregister_all_actions();
                 //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
@@ -627,7 +627,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("LEVELUP MENU WAS OPENED");
 
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
                 unregister_all_actions();
 
@@ -656,7 +656,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("STATS MENU WAS OPENED");
 
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
                 unregister_all_actions();
 
@@ -685,7 +685,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("ONTAINER MENU WAS OPENED");
 
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
                 unregister_all_actions();
 
@@ -713,7 +713,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("BOOK MENU WAS OPENED");
 
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
 
                 unregister_all_actions();
 
@@ -736,7 +736,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("TWEEN MENU WAS OPENED");
 
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
                 unregister_all_actions();
 
@@ -767,7 +767,7 @@ namespace Hooks {
 
                 in_game = false;
 
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
 
                 unregister_all_actions();
 
@@ -913,7 +913,7 @@ namespace Hooks {
 
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow)
             {
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
                 unregister_all_actions();
             }
 
@@ -1220,7 +1220,7 @@ namespace Hooks {
             }
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("Barter MENU WAS OPENED");
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
                 unregister_all_actions();
 
@@ -1282,7 +1282,7 @@ namespace Hooks {
             }
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("Lockpicking MENU WAS OPENED");
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
                 unregister_all_actions();
 
@@ -1370,7 +1370,7 @@ namespace Hooks {
             }
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("Crafting MENU WAS OPENED");
-                menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
                 unregister_all_actions();
 
