@@ -73,6 +73,8 @@ namespace Observer {
 	RE::TESObjectREFR* old_occupied_furniture = nullptr;
 
 
+	bool not_first_inventory_info = false; //do not reset 
+
 
 
 	int runaway_in_a_row = 0;
@@ -414,14 +416,23 @@ namespace Observer {
 								if (a_ref->AsReference()->IsActor())
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
-										result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
+									{
+										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+										if (info != "")
+											result.push_back({ info, a_ref });
+									}
+										
 								}
 
 
 								if (base_type == RE::FormType::Door)
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
-										result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
+									{
+										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+										if (info != "")
+											result.push_back({ info, a_ref });
+									}
 								}
 
 
@@ -429,7 +440,11 @@ namespace Observer {
 								if (base_type == RE::FormType::Activator)
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
-										result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
+									{
+										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+										if (info != "")
+											result.push_back({ info, a_ref });
+									}
 								}
 
 								if (base_type == RE::FormType::Furniture) //pullchains/levers
@@ -441,7 +456,11 @@ namespace Observer {
 										if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
+											{
+												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+												if (info != "")
+													result.push_back({ info, a_ref });
+											}
 										}
 									}
 								}
@@ -456,7 +475,11 @@ namespace Observer {
 									if (base_type == RE::FormType::Container)
 									{
 										if (!MiscThings::is_object_in_the_list(a_ref))
-											result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
+										{
+											std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+											if (info != "")
+												result.push_back({ info, a_ref });
+										}
 									}
 
 									if (base_obj)
@@ -501,7 +524,11 @@ namespace Observer {
 										if (is_harvestable)
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
+											{
+												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+												if (info != "")
+													result.push_back({ info, a_ref });
+											}
 										}
 									}
 
@@ -513,13 +540,21 @@ namespace Observer {
 										if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
+											{
+												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+												if (info != "")
+													result.push_back({ info, a_ref });
+											}
 										}
 										else
 										{
 											if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
 												if (!MiscThings::is_object_in_the_list(a_ref))
-													result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref }); //bed
+												{
+													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+													if (info != "")
+														result.push_back({ info, a_ref });
+												}
 										}
 									}
 
@@ -528,7 +563,11 @@ namespace Observer {
 										if (base_obj->IsInventoryObject())
 										{
 											if (!MiscThings::is_object_in_the_list(a_ref))
-												result.push_back({ MiscThings::insert_object_into_list_and_get_info(a_ref), a_ref });
+											{
+												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+												if (info != "")
+													result.push_back({ info, a_ref });
+											}
 										}
 									}
 
@@ -557,7 +596,11 @@ namespace Observer {
 											if (a_ref->GetDistance(player_ref) < 300.0f)
 											{
 												if (!MiscThings::is_object_in_the_list(a_ref))
-													result.push_back({ MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
+												{
+													std::string info = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref);
+													if (info != "")
+														result.push_back({ info, a_ref });
+												}
 											}
 										}
 
@@ -637,7 +680,7 @@ namespace Observer {
 
 						});
 
-					std::string info_string = "[You see objects around you: \n";
+					std::string info_string = "";
 
 
 					bool veryclose_line_made = false;
@@ -646,36 +689,40 @@ namespace Observer {
 
 					for (auto result_entry : result)
 					{
+						if (result_entry.info != "")
+						{
+							if (player_ref->GetDistance(result_entry.refr) < 450.0f)
+								if (!veryclose_line_made)
+								{
+									info_string += "\nVery close:\n";
+									veryclose_line_made = true;
+								}
 
-						if (player_ref->GetDistance(result_entry.refr) < 450.0f)
-							if (!veryclose_line_made)
-							{
-								info_string += "\nVery close:\n";
-								veryclose_line_made = true;
-							}
-
-						if (player_ref->GetDistance(result_entry.refr) >= 450.0f && player_ref->GetDistance(result_entry.refr) < 2000.0f)
-							if (!nearby_line_made)
-							{
-								info_string += "\nNearby:\n";
-								nearby_line_made = true;
-							}
-
-
-						if (player_ref->GetDistance(result_entry.refr) >= 2000.0f && player_ref->GetDistance(result_entry.refr) < 10000.0f)
-							if (!faraway_line_made)
-							{
-								info_string += "\nFar away:\n";
-								faraway_line_made = true;
-							}
+							if (player_ref->GetDistance(result_entry.refr) >= 450.0f && player_ref->GetDistance(result_entry.refr) < 2000.0f)
+								if (!nearby_line_made)
+								{
+									info_string += "\nNearby:\n";
+									nearby_line_made = true;
+								}
 
 
-
-						info_string += result_entry.info + "\n";
+							if (player_ref->GetDistance(result_entry.refr) >= 2000.0f && player_ref->GetDistance(result_entry.refr) < 10000.0f)
+								if (!faraway_line_made)
+								{
+									info_string += "\nFar away:\n";
+									faraway_line_made = true;
+								}
+							info_string += result_entry.info + "\n";
+						}
+						
 					}
 
-					if (std::size(result) != 0)
+					if (info_string != "")
+					{
+						info_string = "[You see objects around you: \n" + info_string;
 						send_random_context(info_string);
+					}
+						
 				}
 
 			}
@@ -1539,7 +1586,15 @@ namespace Observer {
 
 				if (new_info != "")
 				{
-					std::string message = "[New items in the inventory: ";
+					std::string message = "";
+					if (!not_first_inventory_info)
+					{
+						not_first_inventory_info = true;
+						message = "[Your inventory contents: ";
+					}
+					else
+						message = "[New items in the inventory: ";
+
 					message += new_info;
 					send_random_context(message);
 				}

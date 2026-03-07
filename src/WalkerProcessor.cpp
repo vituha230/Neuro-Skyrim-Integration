@@ -6311,7 +6311,7 @@ namespace WalkerProcessor {
                                                 }
                                                 else
                                                 {
-                                                    std::string fail_text = "[Cant walk there. Maybe this target is not accessible anymore. Do something else or try again later]";
+                                                    std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
                                                     if (potential_block != "")
                                                         fail_text = "[ " + potential_block + " blocks the path]";
@@ -6731,7 +6731,7 @@ namespace WalkerProcessor {
                                                             walk_forward();
                                                         else
                                                         {
-                                                            std::string fail_text = "[Cant walk there. Maybe this target is not accessible anymore. Do something else or try again later]";
+                                                            std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                             std::string potential_block = MiscThings::get_potential_blocking_object();
                                                             if (potential_block != "")
                                                                 fail_text = "[ " + potential_block + " blocks the path]";
@@ -6768,7 +6768,7 @@ namespace WalkerProcessor {
                                                 }
                                                 else
                                                 {
-                                                    std::string fail_text = "[Cant walk there. Maybe this target is not accessible anymore. Do something else or try again later]";
+                                                    std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
                                                     if (potential_block != "")
                                                         fail_text = "[ " + potential_block + " blocks the path]";
