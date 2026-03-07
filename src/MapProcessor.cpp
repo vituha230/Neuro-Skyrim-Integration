@@ -119,24 +119,20 @@ namespace MapProcessor {
 										closest_distance = distance;
 									}
 										
-
-									
-
-
-
-
 									//if (marker.)
 									option.id = id;
 									option.text = marker.fullName->fullName;
 
 									pre_result.push_back(option);
+
+									id++;
 								}
 							}
 						}
 					}
 				}
 
-				id++;
+				
 			}
 
 

@@ -6,6 +6,8 @@
 
 //TODO exit cave option when nothing interesting found anymore
 //TODO actions register watchdog (autodetect when no actions are registered for no reason)
+//TODO fix map. riverwood says "can fast travel there" even though we actually cant. make mouse move again for better precision (arrows are not enough)
+
 
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 
@@ -19,6 +21,8 @@
 //TODO raycast object detection (!!! uuh maybe leave as is)
 //TODO: check all menus after force/choice merge
 //TODO: add notifications when someone attacks you
+
+//TODO remove uncraftable items from crafting options (but still give info about them)
 
 
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME container menu bugged, after taking 1st item it doesnt force and looks like the scan is broken in this case
