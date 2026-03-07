@@ -11,18 +11,28 @@ namespace MiscThings {
 
 
 
-    bool player_is_full_hp()
+    bool player_hp_more_than(float val_percent)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
         int cur_health = player->GetActorValue(RE::ActorValue::kHealth);
         int max_health = player->GetActorValueMax(RE::ActorValue::kHealth);
 
-        return cur_health >= max_health*0.9;
+        return cur_health >= max_health*val_percent/100.0f;
 
     }
 
 
+    bool player_hp_less_than(float val_percent)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        int cur_health = player->GetActorValue(RE::ActorValue::kHealth);
+        int max_health = player->GetActorValueMax(RE::ActorValue::kHealth);
+
+        return cur_health < max_health * val_percent / 100.0f;
+
+    }
 
 
     long long time_of_death = 0;

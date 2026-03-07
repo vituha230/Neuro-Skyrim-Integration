@@ -124,7 +124,9 @@ namespace MiscThings {
 
     std::pair<bool, std::string> unlock_shout_level(int shout_id);
 
-    bool player_is_full_hp();
+    bool player_hp_more_than(float val_percent);
+    bool player_hp_less_than(float val_percent);
+
 
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
     bool is_new_object_valid(RE::TESObjectREFR* a_ref);

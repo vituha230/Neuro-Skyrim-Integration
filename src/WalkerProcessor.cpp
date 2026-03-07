@@ -4956,7 +4956,7 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player_ref;
 
 
-        if (!(player_actor->IsWeaponDrawn()))
+        if (!(player_actor->IsWeaponDrawn()) && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
         {
             right_attack(); //this is "readyWeapon"
             //set_universal_block(0.5f);
@@ -4996,7 +4996,7 @@ namespace WalkerProcessor {
                     if (low_mana_check)
                         low_mana_detected = true;
 
-                    if (low_mana_check || (has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_is_full_hp()))
+                    if (low_mana_check || (has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_hp_more_than(100.0f)))
                     {
 
                         //set_universal_block(1.0f);
@@ -5007,7 +5007,7 @@ namespace WalkerProcessor {
                         return false;
                     }
 
-                    if (attack_action_time < get_attack_time(true) && !(has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_is_full_hp()))
+                    if (attack_action_time < get_attack_time(true) && !(has_spell_equipped(true) && !is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
                     {
                         std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);
                         
@@ -5200,7 +5200,7 @@ namespace WalkerProcessor {
                         if (low_mana_check)
                             low_mana_detected = true;
 
-                        if (low_mana_check || (has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_is_full_hp()))
+                        if (low_mana_check || (has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
                         {
                             //set_universal_block(1.0f);
                             left_attack_cancel();
@@ -5209,7 +5209,7 @@ namespace WalkerProcessor {
                             return false;
                         }
 
-                        if (attack_action_time < get_attack_time(false) && !(has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_is_full_hp()))
+                        if (attack_action_time < get_attack_time(false) && !(has_spell_equipped(false) && !is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
                         {
                             std::string target_name = MiscThings::insert_into_list_and_get_info(target_ref);
                             
@@ -6100,7 +6100,7 @@ namespace WalkerProcessor {
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_actor = (RE::Actor*)player->AsReference();
 
-                    if (player_actor && player_actor->IsWeaponDrawn() && interaction_after_walk != 3)
+                    if (player_actor && (player_actor->IsWeaponDrawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3)
                     {
                         if (!tried_to_draw_weapon1 || draw_weapon_check_time1 > 2.0f)
                         {
@@ -6117,8 +6117,7 @@ namespace WalkerProcessor {
                         draw_weapon_check_time1 = 0.0f;
                     }
 
-
-                    if (player_actor && !player_actor->IsWeaponDrawn() && interaction_after_walk == 3)
+                    if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState != RE::WEAPON_STATE::kDrawing) && interaction_after_walk == 3)
                     {
                         if (!tried_to_draw_weapon2 || draw_weapon_check_time2 > 2.0f)
                         {
