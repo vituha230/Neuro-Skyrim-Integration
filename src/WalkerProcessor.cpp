@@ -4791,7 +4791,21 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player->AsReference();
         auto worn_ammo = player_actor->GetCurrentAmmo();
 
-        return !worn_ammo;
+        RE::TESForm* hand_contents = get_hand_contents(true); //check if we have bow in right hand
+
+        bool have_bow = false;
+
+        if (hand_contents)
+        {
+            if (hand_contents->formType != RE::FormType::Spell)
+            {
+                auto weapon = (RE::TESObjectWEAP*)hand_contents;
+                if (!weapon->IsMelee())
+                    have_bow = true;
+            }
+        }
+
+        return !worn_ammo && have_bow;
 
     }
 
