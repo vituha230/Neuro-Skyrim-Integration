@@ -5298,7 +5298,7 @@ namespace MiscThings {
 
 
 
-    int get_id_for_an_object()
+    int get_id_for_an_object(RE::TESForm* object)
     {
         //check existing lists. if found - return its id. if not found, make up new id.
 
