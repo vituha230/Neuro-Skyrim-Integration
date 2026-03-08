@@ -90,7 +90,7 @@ namespace Capabilities
             R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "0 to cancel walking, 1 to try lockpicking", "type": "integer" } }, "required": ["id"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
-    } 
+    }
 
     namespace SelectMessageBoxOption
     {
@@ -168,7 +168,7 @@ namespace Capabilities
         constexpr char Name[] = "use_inventory_item";
         constexpr char Desc[] =
             R"(Use inventory item. Requires item ID and action ID. )";
-        constexpr char JsonSchema[] = 
+        constexpr char JsonSchema[] =
             R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object to use. Use get_inventory to get list of object IDs. ", "type": "integer" }, "id2": { "description": "The ID of the action to do on item. Available actions: 1 - equip/use, 2 - drop", "type": "integer" } }, "required": ["id1", "id2"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
@@ -236,7 +236,7 @@ namespace Capabilities
     } // namespace SelectChoiceOption
 
 
-   
+
     namespace OpenMap
     {
         constexpr char Name[] = "open_map";
@@ -331,10 +331,10 @@ public:
     }
 
 
-    StringView& operator=(const StringView& other) 
+    StringView& operator=(const StringView& other)
     {
         data = other.data;
-        return *this; 
+        return *this;
     }
 
 };
@@ -395,7 +395,7 @@ namespace neuro {
         * \brief Send some context on what's happening ingame to Neuro (dialogue, we got in a car/out of a car, we got in a fight, we died...).
         * \param aContext The context to be told Neuro.
         * \param aSilent Whether Neuro should react to the provided context. Default is false.
-        * 
+        *
         * \return The success of the operation.
         */
         bool SendContext(StringView aContext, bool aSilent = false);
@@ -405,41 +405,41 @@ namespace neuro {
         * \param aActionId The ID of the action Neuro made.
         * \param aMsg The message to be sent to Neuro.
         * \param aSuccess Whether the action was successful and thus shouldn't be retried.
-        * 
+        *
         * \return The success of the operation.
         */
         bool RespondToAction(StringView aActionId, StringView aMsg, bool aSuccess = true);
 
         /**
          * \brief Send a message telling Neuro to do something.
-         * 
+         *
          * \param aActionName The name of the action to take. We don't support multiple actions for this.
          * \param aQuery A short description for what Neuro should do.
          * \param aState A string describing the state of the game.
-         * 
+         *
          * \return The success of the operation.
          */
         bool SendForcedAction(StringView aActionName, StringView aQuery, StringView aState, StringView aPriority = "medium");
 
         /**
          * \brief Poll Neuro's socket and check for new messages.
-         * 
+         *
          * \param aClosure The processor function. NOTE: The strings in the action message are owned by the message and should be copied before use.
-         * 
+         *
          * \return Whether or not all operations succeeded. If this returns false, you should *probably* kill the socket and create a new one.
          */
 
 
-        
-        //template<typename L>
-        //    requires Red::Detail::IsClosure<L, void, const neurosdk_message_action_t&>
+
+         //template<typename L>
+         //    requires Red::Detail::IsClosure<L, void, const neurosdk_message_action_t&>
 
 
 
         bool Tick(); //const neurosdk_message_action_t& aClosure)
 
-        
-        
+
+
 
 
         /**
@@ -461,7 +461,7 @@ namespace neuro {
         bool register_allowed_actions(bool reconnect = false);
 
 
-        static void LogNeuro(neurosdk_severity_e aSeverity, char *aMsg, void* aUserData);
+        static void LogNeuro(neurosdk_severity_e aSeverity, char* aMsg, void* aUserData);
     };
 
 }
