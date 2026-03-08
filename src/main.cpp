@@ -3,13 +3,12 @@
 
 //crucial:
 
-//TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
-//TODO remove uncraftable items from crafting options (but still give info about them)
+
 //TODO combine close-lying little objects into one context entry
 //TODO option to stop fight and surrender to guards
 //TODO probably fully automate after-talk get-in into the travel carriage
 //TODO spin mechanic. spin 3 times = knocked down/paralyzed and falls
-
+//TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 

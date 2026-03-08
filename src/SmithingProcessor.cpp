@@ -262,9 +262,12 @@ std::vector<MenuOption> get_items_options()
 				can_craft_text = ". Cannot be crafted.";
 		}
 			
+		if (item.second.can_craft)
+		{
+			MenuOption option = { item.first, item.second.name + ", " + item.second.ingredients_required + can_craft_text };
+			result.push_back(option);
+		}
 
-		MenuOption option = { item.first, item.second.name + ", " + item.second.ingredients_required + can_craft_text};
-		result.push_back(option);
 	}
 
 	result.push_back({ -1, "[QUIT CRAFTING]" });
@@ -1028,6 +1031,33 @@ std::string get_force_message(bool category)
 
 	auto menu = ui->GetMenu<RE::CraftingMenu>();
 
+	std::string cannot_craft_list_text = "";
+
+	std::string craft_upgrade = "";
+
+	if (upgrade_mode)
+		craft_upgrade = "upgrade";
+	else
+		craft_upgrade = "craft";
+
+	if (items_list_valid)
+	{
+		for (std::pair<int, item_data> item : items_list)
+		{
+			std::string can_craft_text = "";
+			if (!item.second.can_craft)
+			{
+				cannot_craft_list_text += item.second.name + ", " + item.second.ingredients_required + "; ";
+			}
+		}
+	}
+
+
+	if (cannot_craft_list_text != "")
+	{
+		cannot_craft_list_text = "Items you cannot " + craft_upgrade + " yet: " + cannot_craft_list_text;
+	}
+
 	if (ui && menu && ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
 		if (menu->uiMovie && menu->subMenu)
 			//if (menu->uiMovie->GetVariable(&var1, "_root.Menu.BottomBarInfo.PlayerInfoCard_mc.SkillLevelLabel.text")) 
@@ -1055,6 +1085,8 @@ std::string get_force_message(bool category)
 							result = "You are at blacksmith forge. Select item to craft. ";
 				}
 
+
+	result += cannot_craft_list_text;
 
 	return result;
 }
