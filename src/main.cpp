@@ -298,6 +298,15 @@ bool unregister_look_action()
 
 
 
+bool register_exit_dungeon()
+{
+    neurosdk_action actions[] = { Capabilities::ExitDungeon::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
 
 
 

@@ -42,6 +42,7 @@ bool register_walk_to_object();
 bool register_look_at_object();
 bool register_quest_actions();
 
+bool register_exit_dungeon();
 
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);

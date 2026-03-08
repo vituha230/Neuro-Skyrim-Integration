@@ -23,6 +23,7 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
                                     Capabilities::ExploreWorld::Action,
+                                    Capabilities::ExitDungeon::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -53,6 +54,7 @@ neurosdk_action ActionsListNoForces[] = {
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
                                     Capabilities::ExploreWorld::Action,
+                                    Capabilities::ExitDungeon::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,

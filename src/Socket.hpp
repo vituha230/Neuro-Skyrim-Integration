@@ -115,6 +115,17 @@ namespace Capabilities
     }
 
 
+    namespace ExitDungeon
+    {
+        constexpr char Name[] = "exit_dungeon";
+        constexpr char Desc[] =
+            R"([WILL CANCEL CURRENT WALKING OPERATION] Walk towards the exit)";
+        constexpr char JsonSchema[] = "{}";
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    }
+
+
     namespace WalkToObject
     {
         constexpr char Name[] = "walk_to_object_and_interact";

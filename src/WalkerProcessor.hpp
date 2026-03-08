@@ -28,6 +28,7 @@ namespace WalkerProcessor {
 
 
 	std::pair<bool, std::string> run_away();
+	std::pair<bool, std::string> exit_dungeon();
 
 
 	bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime);

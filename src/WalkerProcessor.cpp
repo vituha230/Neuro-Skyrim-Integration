@@ -1167,7 +1167,7 @@ namespace WalkerProcessor {
                         reminder_message = "[You keep walking to ";
 
                     if (runaway_mode)
-                        reminder_message = "[You keep running away. ";
+                        reminder_message = "[You keep " + reminder_target_name;
                     else
                         reminder_message += reminder_target_name + ". ";
 
@@ -3233,6 +3233,7 @@ namespace WalkerProcessor {
             min_dist = 20000.0f;
             result.first = false;
             result.second = "Cannot find anything interesting to explore here...";
+            register_exit_dungeon();
             return result;
         }
 
@@ -4224,6 +4225,57 @@ namespace WalkerProcessor {
     }
 
 
+    std::pair<bool, std::string> exit_dungeon()
+    {
+        std::pair<bool, std::string> result{};
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
+
+
+        auto player_pos = player->GetPosition();
+
+        auto test_z_dif = player_pos.z - target->GetPosition().z;
+
+
+        if (MiscThings::is_intro())
+        {
+            result.first = false;
+            result.second = "Cannot exit dungeon right now";
+            return result;
+        }
+
+        if (target)
+        {
+            //Observer::reset_threats();
+
+            if (have_target_to_walk)
+                reset_walker();
+
+            location_mode = true;
+
+            target_ref = target;
+            have_target_to_walk = true;
+            interaction_after_walk = 0;
+            runaway_mode = true;
+            reminder_target_name = "walking towards the exit. ";
+            reminder_start_pos = player->GetPosition();
+            result.first = true;
+            result.second = "[You are waalking towards the exit...]";
+        }
+        else
+        {
+            Observer::reset_threats();
+            result.first = false;
+            result.second = "Cant find the exit! Maybe you need to find it yourself...";
+        }
+
+        return result;
+    }
+
+
+
+
     std::pair<bool, std::string> run_away()
     {
         std::pair<bool, std::string> result{};
@@ -4231,64 +4283,6 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
 
-        /*
-        RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
-
-
-        std::vector<RE::TESObjectREFR*> test_vectors{};
-
-        for (auto marker : map_markers)
-        {
-            if (marker.get())
-            {
-                auto real_marker = marker.get().get();
-
-                auto test_name = real_marker->GetDisplayFullName();
-
-                auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
-
-                if (data && data->mapData)
-                {
-                    std::string marker_name = data->mapData->locationName.GetFullName();
-                    auto type = data->mapData->type;
-
-                    //if (type == RE::MARKER_TYPE::kNone) marker_category = "Location";
-                    if (type == RE::MARKER_TYPE::kSettlement)
-                    {
-                        if (data && data->mapData)// && !data->mapData->flags)
-                        {
-                            std::string marker_name = data->mapData->locationName.GetFullName();
-
-                            if (marker_name != "")
-                            {
-                                auto distance = real_marker->GetDistance(player);
-                                if (distance > 10000.0f)
-                                {
-                                    test_vectors.push_back(real_marker);
-                                    //target = real_marker;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        auto player_pos = player->GetPosition();
-
-        std::sort(test_vectors.begin(), test_vectors.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
-            //return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
-            RE::NiPoint3 pos_left = left->GetPosition();
-            RE::NiPoint3 pos_right = right->GetPosition();
-
-            return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
-
-            });
-
-        if (!test_vectors.empty())
-            target = test_vectors.at(0);
-*/
         
         auto player_pos = player->GetPosition();
         
@@ -4315,7 +4309,7 @@ namespace WalkerProcessor {
             have_target_to_walk = true;
             interaction_after_walk = 0;
             runaway_mode = true;
-            //reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
+            reminder_target_name = "running away. ";
             reminder_start_pos = player->GetPosition();
             result.first = true;
             result.second = "[Running away...]";
