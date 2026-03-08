@@ -6148,7 +6148,7 @@ namespace WalkerProcessor {
                         draw_weapon_check_time1 = 0.0f;
                     }
 
-                    if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState != RE::WEAPON_STATE::kDrawing) && interaction_after_walk == 3)
+                    if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk == 3)
                     {
                         if (!tried_to_draw_weapon2 || draw_weapon_check_time2 > 2.0f)
                         {

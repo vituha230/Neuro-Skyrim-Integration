@@ -2971,8 +2971,7 @@ namespace MiscThings {
 
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
-
-
+        auto player_actor = (RE::Actor*)player->AsReference();
 
         if (MiscThings::is_intro() || MiscThings::is_intro2())
         {
@@ -3016,6 +3015,10 @@ namespace MiscThings {
                         {
                             result.first = actor_equip->UnequipObject((RE::Actor*)player_ref, object);
                             result.second = "[Unequipped [id " + std::to_string(item_id) + "] " + object->GetName() + "]";
+
+                            if (object->IsWeapon())
+                                if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                    ready_weapon(); //show off unequipped hands
                         }
                         else
                         {
@@ -3038,9 +3041,13 @@ namespace MiscThings {
                                     equip_hand = " in both hands";
 
                                 actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot);
+
+                                if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                    ready_weapon(); //show off new weapon
                             }
                             else
                                 actor_equip->EquipObject((RE::Actor*)player_ref, object);
+
 
 
                             result.second = "[Equipped [id " + std::to_string(item_id) + "] " + object->GetName() + equip_hand + "...]";
@@ -4011,7 +4018,13 @@ namespace MiscThings {
                             equip_manager->EquipSpell(player_actor, spell, slot);
                             result.first = true;
                             if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
+                            {
+                                if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                    ready_weapon(); //show off new weapon
+
                                 result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                            }
+                                
                             else
                                 result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                         }
