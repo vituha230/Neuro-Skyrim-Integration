@@ -460,6 +460,8 @@ namespace neuro {
         bool unregister_all2();
         bool register_allowed_actions(bool reconnect = false);
 
+        bool action_register_watchdog(float dtime);
+
 
         static void LogNeuro(neurosdk_severity_e aSeverity, char* aMsg, void* aUserData);
     };

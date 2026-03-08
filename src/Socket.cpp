@@ -14,7 +14,9 @@ extern bool resend_active_force();
 
 
 
-
+bool had_connection = false;
+bool ever_registered = false;
+bool something_is_registered = false;
 
 
 
@@ -78,7 +80,7 @@ neurosdk_action ActionsListNoForces[] = {
 
 
 
-neurosdk_action ActionsListNoForces2[] = {
+neurosdk_action ActionsListNoForces2[] = { //these are for moments when we cant look (mining ore, sitting on chair, etc)
 
                                     //Capabilities::WalkToObject::Action,
                                     //Capabilities::LookAtObject::Action,
@@ -240,6 +242,8 @@ bool neuro::NeuroSocket::Initialize()
         in_game_text = "You are not in game. Wait for game to start. ";
 
 
+    had_connection = true;
+
     return SendContext(("You are playing Skyrim, an action RPG. " + in_game_text + "Try to have a fun adventure. ").c_str(),
         true) &&
         IsAlive();
@@ -247,10 +251,20 @@ bool neuro::NeuroSocket::Initialize()
 
 
 
+
+
 bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
 {
     if (!IsAlive())
+    {
+        something_is_registered = false;
+        ever_registered = false;
+        had_connection = false;
         return false;
+    }
+        
+    if (size <= 0)
+        return true;
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
                                          .value = {.actions_register = {.actions = actions,
@@ -261,6 +275,9 @@ bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
         return false;
     }
 
+    if (!(size == 1 && (actions[0].name == Capabilities::SelectForceChoice::Name || actions[0].name == Capabilities::SelectForceChoiceMultiple::Name || actions[0].name == Capabilities::SelectForceChoiceString::Name))) //exclude forces
+        something_is_registered = true;
+
     return true;
 }
 
@@ -269,7 +286,12 @@ bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
 bool neuro::NeuroSocket::unregister_actions(const char** action_names, int size)
 {
     if (!IsAlive())
+    {
+        something_is_registered = false;
+        ever_registered = false;
+        had_connection = false;
         return false;
+    }
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsUnregister,
                                          .value = {.actions_unregister = {.action_names = action_names,
@@ -287,7 +309,12 @@ bool neuro::NeuroSocket::unregister_actions(const char** action_names, int size)
 bool neuro::NeuroSocket::unregister_all()
 {
     if (!IsAlive())
+    {
+        something_is_registered = false;
+        ever_registered = false;
+        had_connection = false;
         return false;
+    }
 
 
     const char* action_names[ActionsCountNoForces];
@@ -309,6 +336,8 @@ bool neuro::NeuroSocket::unregister_all()
         return false;
     }
 
+    something_is_registered = false;
+
     return true;
 }
 
@@ -316,7 +345,12 @@ bool neuro::NeuroSocket::unregister_all()
 bool neuro::NeuroSocket::unregister_all2()
 {
     if (!IsAlive())
+    {
+        something_is_registered = false;
+        ever_registered = false;
+        had_connection = false;
         return false;
+    }
 
 
     const char* action_names[ActionsCountNoForces2];
@@ -351,7 +385,12 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
         return false;
 
     if (!IsAlive())
+    {
+        something_is_registered = false;
+        ever_registered = false;
+        had_connection = false;
         return false;
+    }
 
 
     int action_pos = 0;
@@ -451,6 +490,10 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     if (action_pos <= 0)
         return true;
 
+    ever_registered = true;
+    something_is_registered = true;
+
+
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
                                          .value = {.actions_register = {.actions = actions_to_register,
                                                                         .actions_len = action_pos}} };
@@ -465,7 +508,25 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
 
 
+float action_watchdog_timer = 0.0f;
 
+bool neuro::NeuroSocket::action_register_watchdog(float dtime)
+{
+    if (had_connection && ever_registered && !something_is_registered && (get_active_force() == -1) && !MiscThings::have_force_only_menu_open())
+    {
+        if (action_watchdog_timer > 20.0f)
+        {
+            action_watchdog_timer = 0.0f;
+            register_allowed_actions();
+            return true;
+        }
+    }
+    else
+        action_watchdog_timer = 0.0f;
+
+
+    return false;
+}
 
 
 
@@ -508,6 +569,9 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
 {
     if (!IsAlive())
     {
+        something_is_registered = false;
+        ever_registered = false;
+        had_connection = false;
         return false;
     }
 

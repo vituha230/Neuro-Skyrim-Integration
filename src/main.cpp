@@ -4,10 +4,6 @@
 //crucial:
 
 
-//TODO exit cave option when nothing interesting found anymore
-//TODO actions register watchdog (autodetect when no actions are registered for no reason)
-
-
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 
 
@@ -362,6 +358,8 @@ void tick_socket(float dtime)
                 reconnect = true;
                 reconnect_pause = 0.0f;
             }
+            else
+                m_neuroSocket->action_register_watchdog(dtime);
     }
 
     if (reconnect)
