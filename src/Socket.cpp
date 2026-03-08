@@ -42,7 +42,8 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::CallWaitMenu::Action,
                                     Capabilities::OpenMap::Action,
                                     Capabilities::GetGold::Action,
-                                    
+                                    Capabilities::Spin::Action,
+
                                     Capabilities::SelectForceChoice::Action,
                                     Capabilities::SelectForceChoiceMultiple::Action,
                                     Capabilities::SelectForceChoiceString::Action,
@@ -73,6 +74,7 @@ neurosdk_action ActionsListNoForces[] = {
                                     Capabilities::CallWaitMenu::Action,
                                     Capabilities::OpenMap::Action,
                                     Capabilities::GetGold::Action,
+                                    Capabilities::Spin::Action,
 
                                     Capabilities::GetObjectsAround::Action, //idk about this one
                                     Capabilities::GoToLocation::Action
@@ -94,6 +96,7 @@ neurosdk_action ActionsListNoForces2[] = { //these are for moments when we cant 
 
                                     //Capabilities::GetSpells::Action,
                                     Capabilities::CastEquipSpell::Action,
+                                    Capabilities::Spin::Action,
                                    // Capabilities::UnlockShoutLevel::Action, //TODO: probably calculate ourselves and force just like levelup
 
                                     //Capabilities::GetInventory::Action,
@@ -427,6 +430,8 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                     {
                         actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::Spin::Action; action_pos++;
+
 
                         if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
                         {
@@ -852,6 +857,21 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                                 else
                                     command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
                             }
+
+
+
+                            if (name == Capabilities::Spin::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson2 json2{};
+
+                                // operator bool overload for glz::error_ctx returns true on failure!
+                                if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = WalkerProcessor::make_spins(json2.id1, json2.id2);
+                            }
+
+
 
                             if (name == Capabilities::LookAtObject::Name)
                             {

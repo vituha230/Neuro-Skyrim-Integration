@@ -3,11 +3,10 @@
 
 //crucial:
 
-
+//TODO polish spin
 //TODO combine close-lying little objects into one context entry
 //TODO option to stop fight and surrender to guards
 //TODO probably fully automate after-talk get-in into the travel carriage
-//TODO spin mechanic. spin 3 times = knocked down/paralyzed and falls
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
@@ -19,7 +18,7 @@
 
 
 //TODO inventory weight control (maybe force throw away things?)
-//TODO raycast object detection (!!! uuh maybe leave as is)
+//TODO raycast object detection (!!! uuh maybe leave as is) CAN BE USEFUL FOR CHESTS
 //TODO: check all menus after force/choice merge
 
 

@@ -104,6 +104,21 @@ namespace Capabilities
     } // namespace SelectChoiceOption
     */
 
+
+
+    namespace Spin
+    {
+        constexpr char Name[] = "spin";
+        constexpr char Desc[] =
+            R"(Do some spins. Requires id1 (amount of spins) and id2 (speed))";
+        constexpr char JsonSchema[] =
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "Amount of spins to do ", "type": "integer" }, "id2": { "description": "Speed. Valid range: from 1 to 5 ", "type": "integer" } }, "required": ["id1", "id2"] })";//
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    }
+
+
+
     namespace ExploreWorld
     {
         constexpr char Name[] = "explore";

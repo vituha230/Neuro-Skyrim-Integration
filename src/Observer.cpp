@@ -1663,7 +1663,8 @@ namespace Observer {
 
 	void player_state_monitor(float dtime)
 	{
-		
+		auto player = RE::PlayerCharacter::GetSingleton();
+
 		if (wait_and_send_game_start_context)
 		{
 			if (start_game_timer > 11.777f)
@@ -1734,7 +1735,7 @@ namespace Observer {
 
 					auto control_map = RE::ControlMap::GetSingleton();
 					bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
-					bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+					bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
 					old_can_interact = can_interact;
 					old_can_look = can_look;
 				}
@@ -1815,7 +1816,6 @@ namespace Observer {
 
 
 				state_monitor_timer = 0.0f;
-				auto player = RE::PlayerCharacter::GetSingleton();
 				auto player_ref = player->AsReference();
 				auto player_actor = (RE::Actor*)player_ref;
 
@@ -1831,7 +1831,7 @@ namespace Observer {
 
 				auto control_map = RE::ControlMap::GetSingleton();
 				bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-				bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+				bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
 				bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
 

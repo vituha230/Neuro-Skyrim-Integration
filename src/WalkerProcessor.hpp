@@ -67,4 +67,8 @@ namespace WalkerProcessor {
 
 	bool is_exploring();
 
+
+
+	std::pair<bool, std::string> make_spins(int amount, int speed);
+
 }

@@ -738,7 +738,5 @@ void input_processor(float dtime)
             }
 
         }
-
-
     }
 }

@@ -4169,9 +4169,11 @@ namespace MiscThings {
 
     bool is_intro()
     {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         bool result = false;
@@ -4188,9 +4190,11 @@ namespace MiscThings {
 
     bool is_intro2()
     {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
 

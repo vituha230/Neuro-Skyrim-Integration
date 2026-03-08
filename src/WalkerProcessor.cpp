@@ -191,6 +191,14 @@ namespace WalkerProcessor {
     std::string last_attacking_health = "";
 
 
+    bool do_spins = false;
+    int amount_of_spins = 0;
+    int spin_speed = 0;
+    RE::NiMatrix3 spins_start_camera_dir{};
+    bool spin_step_one = false;
+    int amount_of_spins_done = 0;
+    float spin_timeout = 0.0f;
+
 
     bool too_high_notified = false;
 
@@ -2494,8 +2502,18 @@ namespace WalkerProcessor {
     //    min_dist = 20000.0f;
     //}
 
+
+
     void reset_walker()
     {
+
+        do_spins = false;
+        amount_of_spins = 0;
+        spin_speed = 0;
+        spin_step_one = false;
+        amount_of_spins_done = 0;
+        spin_timeout = 0.0f;
+
         attack_spell_cast_timeout = 0.0f;
         //if (!reset_by_explorer) //it renews explore_mode anyway
         //{
@@ -3217,7 +3235,7 @@ namespace WalkerProcessor {
 
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
@@ -3328,7 +3346,7 @@ namespace WalkerProcessor {
 
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
@@ -3556,7 +3574,7 @@ namespace WalkerProcessor {
 
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
@@ -3637,12 +3655,12 @@ namespace WalkerProcessor {
     {
         std::pair<bool, std::string> result{};
 
+        auto player = RE::PlayerCharacter::GetSingleton();
 
-
-
+        
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
@@ -3678,7 +3696,7 @@ namespace WalkerProcessor {
             {
                 auto location = locations_list->at(index);
 
-                auto player = RE::PlayerCharacter::GetSingleton();
+                
                 auto player_pos = player->GetPosition();
                 auto test_z_dif = player_pos.z - location->GetPosition().z;
 
@@ -3732,9 +3750,10 @@ namespace WalkerProcessor {
 
     bool walk_to_location_by_refr(RE::TESObjectREFR* refr)
     {
+        auto player = RE::PlayerCharacter::GetSingleton();
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
@@ -3755,7 +3774,7 @@ namespace WalkerProcessor {
                 if (have_target_to_walk)
                     reset_walker();
 
-                auto player = RE::PlayerCharacter::GetSingleton();
+                
                 reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
                 reminder_start_pos = player->GetPosition();
 
@@ -3779,9 +3798,11 @@ namespace WalkerProcessor {
 
     bool walk_to_player_marker(RE::TESObjectREFR* target_location)
     {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
@@ -3793,7 +3814,7 @@ namespace WalkerProcessor {
 
         auto test_new_input = RE::BSInputEventQueue::GetSingleton();
 
-        auto player = RE::PlayerCharacter::GetSingleton();
+        
         RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
 
         std::vector<std::string> location_list{};
@@ -3860,9 +3881,11 @@ namespace WalkerProcessor {
 
         std::pair<bool, std::string> result{};
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
@@ -3938,7 +3961,7 @@ namespace WalkerProcessor {
 
         if (MiscThings::is_quest_list_valid())
         {
-            auto player = RE::PlayerCharacter::GetSingleton();
+            
             auto player_ref = player->AsReference();
 
             auto quest_list = MiscThings::get_p_quest_list();
@@ -4123,9 +4146,11 @@ namespace WalkerProcessor {
     {
         bool result = false;
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
@@ -5909,6 +5934,75 @@ namespace WalkerProcessor {
 
 
 
+
+    std::pair<bool, std::string> make_spins(int amount, int speed)
+    {
+        std::pair<bool, std::string> result{};
+
+
+
+
+        if (amount <= 0 || amount >= 100)
+        {
+            result.first = false;
+            result.second = "Cannot make this amount of spins";
+            return result;
+        }
+
+        if (speed == 0 || speed > 5 || speed < -5)
+        {
+            result.first = false;
+            result.second = "Invalid speed. Valid range: from -5 to 5, excluding 0";
+            return result;
+        }
+
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            result.first = false;
+            result.second = "You cannot spin yet";
+            return result;
+        }
+
+        auto camera = RE::PlayerCamera::GetSingleton();
+        spins_start_camera_dir = camera->cameraRoot.get()->world.rotate;
+
+        do_spins = true;
+        spin_speed = speed;
+        amount_of_spins = amount;
+        amount_of_spins_done = 0;
+        spin_timeout = 0.0f;
+
+        result.first = true;
+        result.second = "[You start spinning...]";
+        return result;
+
+
+    }
+
+
+
+
+
+
 	float walker_processor_timer = 0.0f;
 
 	void processor(float dtime)
@@ -5968,19 +6062,138 @@ namespace WalkerProcessor {
 
         try
         {
+            auto player = RE::PlayerCharacter::GetSingleton();
 
             auto control_map = RE::ControlMap::GetSingleton();
             bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
-            bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+            bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
             bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
             //if (player_actor && !player_actor->movementController->controlsDriven)
             if (!can_walk && !can_look)
             {
                 reset_walker();
+
             }
 
 
+
+            if (do_spins)
+            {
+                if (spin_timeout > 20.0f)
+                {
+                    do_spins = false;
+                    amount_of_spins = 0;
+                    spin_step_one = false;
+                    send_random_context("[Spinning done]");
+                    spin_timeout = 0.0f;
+                    return;
+                }
+                else
+                    spin_timeout += dtime;
+
+
+                auto camera = RE::PlayerCamera::GetSingleton();
+                auto camera_dir = camera->cameraRoot.get()->world.rotate;
+
+                auto camera_dirX = camera_dir.GetVectorX();
+                auto camera_dirY = camera_dir.GetVectorY();
+                auto camera_dirZ = camera_dir.GetVectorZ();
+
+                auto start_camera_dirX = spins_start_camera_dir.GetVectorX();
+                auto start_camera_dirY = spins_start_camera_dir.GetVectorY();
+                auto start_camera_dirZ = spins_start_camera_dir.GetVectorZ();
+
+                auto difX = camera_dirX - start_camera_dirX;
+                auto difY = camera_dirY - start_camera_dirY;
+                auto difZ = camera_dirZ - start_camera_dirZ;
+
+                
+
+                if (difX.Length() > 0.3f || difY.Length() > 0.3f || difZ.Length() > 0.3f)
+                    spin_step_one = true;
+
+                bool spin_step_two = difX.Length() < 0.1f && difY.Length() < 0.1f && difZ.Length() < 0.1f;
+
+                if (amount_of_spins <= 0)
+                {
+                    send_random_context("[Spinning done]");
+                    do_spins = false;
+                    amount_of_spins = 0;
+                    spin_step_one = false;
+                    spin_step_two = false;
+                    spin_timeout = 0.0f;
+                }
+                else
+                {
+                    if (spin_step_one && spin_step_two)
+                    {
+                        amount_of_spins--;
+                        amount_of_spins_done++;
+                        spin_step_one = false;
+                        spin_step_two = false;
+                        send_random_context("[Did " + std::to_string(amount_of_spins_done) + " spins]");
+
+
+                        if (amount_of_spins_done > 4)
+                        {
+                            amount_of_spins = 0;
+                            spin_timeout = 0.0f;
+                            spin_step_one = false;
+
+
+                            std::string message = "[You feel dizzy";
+
+                            
+                            auto player_ref = player->AsReference();
+
+                            auto caster_123 = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
+                            auto paralysis_spell = RE::TESForm::LookupByID(0x5AD5F)->As<RE::SpellItem>();
+
+                            if (caster_123 && paralysis_spell)
+                            {
+                                auto old_delivery = paralysis_spell->GetDelivery();
+                                auto old_duration = paralysis_spell->effects[0]->effectItem.duration;
+                                auto old_cost = paralysis_spell->effects[0]->cost;
+
+                                paralysis_spell->SetDelivery(RE::MagicSystem::Delivery::kSelf);
+                                paralysis_spell->effects[0]->effectItem.duration = 1;
+                                paralysis_spell->effects[0]->cost = 0;
+                                caster_123->CastSpellImmediate(paralysis_spell, false, player_ref, 1.0f, false, 1.0f, nullptr);
+
+                                paralysis_spell->SetDelivery(old_delivery);
+                                paralysis_spell->effects[0]->effectItem.duration = old_duration;
+                                paralysis_spell->data.costOverride = old_cost;
+
+                                //auto event = new RE::TESMagicEffectApplyEvent;
+                                //RE::TESMagicEffectApplyEvent event{};
+                                //event.caster = player_ref->GetHandle().get();
+                                //event.target = event.caster;
+                                //event.magicEffect = 0x73f30;
+                                //RE::ScriptEventSourceHolder::GetSingleton()->SendEvent<RE::TESMagicEffectApplyEvent>(&event);
+
+                               
+                                /*
+                                		NiPointer<TESObjectREFR> target;       // 00
+		                                NiPointer<TESObjectREFR> caster;       // 08
+		                                FormID                   magicEffect;  // 10
+		                                std::uint32_t            pad14;        // 14
+        */
+
+                                    //BSTEventSource<TESMagicEffectApplyEvent>
+                                //RE::BSTEventSink<RE::TESMagicEffectApplyEvent>::ProcessEvent()
+                                message += " and fall";
+                            }
+
+                            send_random_context(message + "]");
+                        }
+                    }
+
+                    mouse_look(spin_speed * 50.0f, 0.0f);
+                }
+
+                return;
+            }
 
 
             if (!RE::UI::GetSingleton()->IsMenuOpen(RE::TweenMenu::MENU_NAME) && !RE::UI::GetSingleton()->IsMenuOpen(RE::LevelUpMenu::MENU_NAME) && !RE::UI::GetSingleton()->IsMenuOpen(RE::StatsMenu::MENU_NAME) && (init_delay || true))
