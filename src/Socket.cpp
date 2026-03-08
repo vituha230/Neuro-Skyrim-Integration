@@ -399,7 +399,11 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                         if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
                         {
-                            actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
+                            if (!was_exit_dungeon_registered())
+                            {
+                                actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
+                            }
+
                             actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
                         }
 
@@ -411,6 +415,14 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
                         {
                             actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+                        }
+                        else
+                        {
+                            if (was_exit_dungeon_registered())
+                            {
+                                actions_to_register[action_pos] = Capabilities::ExitDungeon::Action; action_pos++;
+                            }
+                                
                         }
 
                     }
@@ -751,6 +763,12 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                             }
 
 
+                            if (name == Capabilities::ExitDungeon::Name)
+                            {
+
+                                command_result = WalkerProcessor::exit_dungeon();
+
+                            }
 
                             if (name == Capabilities::WalkToObject::Name)
                             {

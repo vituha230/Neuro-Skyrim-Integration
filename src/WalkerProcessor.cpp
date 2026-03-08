@@ -202,6 +202,7 @@ namespace WalkerProcessor {
     bool explore_mode = false;
     float min_dist = 20000.0f;
 
+    bool explore_mode_notified = false;
 
 
     void set_crime_mode(bool state)
@@ -519,7 +520,12 @@ namespace WalkerProcessor {
                         if (explore_mode)
                         {
                             min_dist = 20000.0f;
-                            send_random_context("[You found a direction to explore, and started walking");
+                            if (!explore_mode_notified)
+                            {
+                                send_random_context("[You found a direction to explore, and started walking");
+                                explore_mode_notified = true;
+                            }
+                            
                         }
                     }
                     else
@@ -537,6 +543,13 @@ namespace WalkerProcessor {
                                 min_dist = 20000.0f;
                                 explore_mode = false;
                                 reset_walker();
+
+                                if (MiscThings::is_interior_cell())
+                                {
+                                    register_exit_dungeon();
+                                    unregister_explore_action();
+                                }
+
                                 send_random_context("You cannot find any interesting direction to explore");
                             }
 
@@ -2491,6 +2504,8 @@ namespace WalkerProcessor {
 
         explore_mode = false;
             
+        last_walk_reminded_time = 0.0f;
+
         //}
 
         //reset_by_explorer = false;
@@ -2656,6 +2671,8 @@ namespace WalkerProcessor {
 
         search_next_fight_target = false;
         search_next_target_timer = 0.0f;
+
+        explore_mode_notified = false;
 
     }
 
@@ -3233,7 +3250,12 @@ namespace WalkerProcessor {
             min_dist = 20000.0f;
             result.first = false;
             result.second = "Cannot find anything interesting to explore here...";
-            register_exit_dungeon();
+            if (MiscThings::is_interior_cell())
+            {
+                register_exit_dungeon();
+                unregister_explore_action();
+            }
+                
             return result;
         }
 

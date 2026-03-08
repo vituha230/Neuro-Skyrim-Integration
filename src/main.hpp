@@ -44,6 +44,9 @@ bool register_quest_actions();
 
 bool register_exit_dungeon();
 
+bool was_exit_dungeon_registered();
+bool unregister_explore_action();
+
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);
 void force_barter_operation();

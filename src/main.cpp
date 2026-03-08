@@ -296,11 +296,18 @@ bool unregister_look_action()
 
 
 
+bool exit_dungeon_was_registered = false;
 
+bool was_exit_dungeon_registered()
+{
+    return exit_dungeon_was_registered;
+}
 
 bool register_exit_dungeon()
 {
     neurosdk_action actions[] = { Capabilities::ExitDungeon::Action };
+
+    exit_dungeon_was_registered = true;
 
     if (m_neuroSocket->register_actions(actions, std::size(actions)))
         return true;
@@ -309,6 +316,15 @@ bool register_exit_dungeon()
 }
 
 
+bool unregister_explore_action()
+{
+    const char* action_names[] = { Capabilities::ExploreWorld::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
 
 
 
@@ -809,6 +825,8 @@ namespace Hooks {
 
                 reset_input_processor();
                 clear_input_queue();
+
+                exit_dungeon_was_registered = false;
 
                 send_random_context("[The game is loading. You are not in game yet]");
             }
