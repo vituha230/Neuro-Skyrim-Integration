@@ -99,8 +99,25 @@ namespace Observer {
 	}
 
 
+
+
+
+	std::map<RE::TESObjectREFR*, long long> player_hit_info{};
+	bool hitmap_lock = false;
+
+	void attatch_heatmap()
+	{
+		EventSink::GetSingleton()->attatch_hitmap(&player_hit_info, &hitmap_lock, *send_random_context);
+	}
+
+
+
+
 	void reset_observer()
 	{
+		if (!hitmap_lock)
+			player_hit_info.clear();
+
 		dont_check_threats_timer = 0.0f;
 		detect_interesting_time = 0.0f;
 		detect_events_time = 0.0f;
@@ -1547,7 +1564,7 @@ namespace Observer {
 	}
 
 
-
+	
 
 
 	void inventory_monitor(float dtime)
@@ -1642,9 +1659,11 @@ namespace Observer {
 
 
 
+
+
 	void player_state_monitor(float dtime)
 	{
-
+		
 		if (wait_and_send_game_start_context)
 		{
 			if (start_game_timer > 11.777f)
@@ -1682,6 +1701,7 @@ namespace Observer {
 		}
 
 
+		
 
 
 		if (last_saved_time > 300.0f && !WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1)
@@ -1820,6 +1840,9 @@ namespace Observer {
 				//auto serving_jail = player->playerFlags.servingJailTime;
 				auto jail_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("JailQuest");
 				bool serving_jail = jail_quest->IsRunning() && (jail_quest->GetCurrentStageID() == 10) && (!jail_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD)) && !escaping_jail && !MiscThings::is_intro() && !MiscThings::is_intro2() && MiscThings::escaped_helgen();
+
+				
+				//hit events
 
 				
 

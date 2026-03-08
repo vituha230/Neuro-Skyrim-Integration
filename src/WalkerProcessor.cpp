@@ -5205,7 +5205,7 @@ namespace WalkerProcessor {
                             attack_action = 0;
 
 
-                        set_universal_block(0.2f);
+                        //set_universal_block(0.2f);
                     }
                 }
                 else
@@ -5393,7 +5393,7 @@ namespace WalkerProcessor {
                             else
                                 attack_action = 0;
 
-                            set_universal_block(0.2f);
+                            //set_universal_block(0.2f);
                         }
                     }
                 }
@@ -6127,6 +6127,8 @@ namespace WalkerProcessor {
                             start_attacking = false;
                         }
                     }
+                    else
+                        bool stop_here = false;
 
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_actor = (RE::Actor*)player->AsReference();

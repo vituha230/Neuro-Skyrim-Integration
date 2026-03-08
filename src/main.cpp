@@ -3,7 +3,6 @@
 
 //crucial:
 
-//TODO: add notifications when someone attacks you
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 //TODO remove uncraftable items from crafting options (but still give info about them)
 //TODO combine close-lying little objects into one context entry
@@ -2554,7 +2553,6 @@ public:
 
 
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2604,6 +2602,10 @@ void MessageListener(SKSE::MessagingInterface::Message* message) {
         MyHook::Hook();
         SKSE::AllocTrampoline(14);
         OnUpdateHook::Install();
+
+        Observer::EventSink::GetSingleton()->Init();
+        Observer::attatch_heatmap();
+
         break;
     default:
         REX::INFO("Unknown system message of type: {}", message->type);
