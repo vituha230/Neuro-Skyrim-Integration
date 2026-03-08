@@ -520,6 +520,8 @@ bool neuro::NeuroSocket::action_register_watchdog(float dtime)
             register_allowed_actions();
             return true;
         }
+        else
+            action_watchdog_timer += dtime;
     }
     else
         action_watchdog_timer = 0.0f;
