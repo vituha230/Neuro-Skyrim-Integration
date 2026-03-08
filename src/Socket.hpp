@@ -109,9 +109,9 @@ namespace Capabilities
         constexpr char Name[] = "explore";
         constexpr char Desc[] =
             R"([WILL CANCEL CURRENT WALKING OPERATION] Walk in some direction, exploring the surroundings)";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     }
 
 
@@ -120,9 +120,9 @@ namespace Capabilities
         constexpr char Name[] = "exit_dungeon";
         constexpr char Desc[] =
             R"([WILL CANCEL CURRENT WALKING OPERATION] Walk towards the exit)";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     }
 
 
@@ -155,10 +155,10 @@ namespace Capabilities
         constexpr char Name[] = "get_objects_around";
         constexpr char Desc[] =
             R"(Get a list of objects around you)";
-        constexpr char JsonSchema[] = "{}"; //R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of object type to get. If not specified, all objects will be given. ", "type": "integer" } }, "required": [] })";
+        //constexpr char JsonSchema[] = null; //R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of object type to get. If not specified, all objects will be given. ", "type": "integer" } }, "required": [] })";
 
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
 
 
@@ -206,9 +206,9 @@ namespace Capabilities
         constexpr char Name[] = "get_current_quests";
         constexpr char Desc[] =
             R"(Get list of current quests)";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
 
 
@@ -242,9 +242,9 @@ namespace Capabilities
         constexpr char Name[] = "open_map";
         constexpr char Desc[] =
             R"(Open the map. Can be used to fast-travel or place markers. )";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
 
 
@@ -254,9 +254,9 @@ namespace Capabilities
         constexpr char Name[] = "get_inventory";
         constexpr char Desc[] =
             R"(Get contents of your inventory)";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
 
 
@@ -265,9 +265,9 @@ namespace Capabilities
         constexpr char Name[] = "get_available_spells";
         constexpr char Desc[] =
             R"(Get a list of spells you can use)";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
 
 
@@ -279,9 +279,9 @@ namespace Capabilities
         constexpr char Name[] = "call_wait_menu_to_skip_ingame_time";
         constexpr char Desc[] =
             R"(Call wait menu)";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
 
 
@@ -293,9 +293,9 @@ namespace Capabilities
         constexpr char Name[] = "get_locations_around";
         constexpr char Desc[] =
             R"(Get locations visible on compass)";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
 
 
@@ -305,9 +305,9 @@ namespace Capabilities
         constexpr char Name[] = "get_gold";
         constexpr char Desc[] =
             R"(Get amount of gold you have)";
-        constexpr char JsonSchema[] = "{}";
+        //constexpr char JsonSchema[] = null;
 
-        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
 
 } // namespace Capabilities

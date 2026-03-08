@@ -3,6 +3,14 @@
 
 //crucial:
 
+//TODO: add notifications when someone attacks you
+//TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
+//TODO remove uncraftable items from crafting options (but still give info about them)
+//TODO combine close-lying little objects into one context entry
+//TODO option to stop fight and surrender to guards
+//TODO probably fully automate after-talk get-in into the travel carriage
+//TODO spin mechanic. spin 3 times = knocked down/paralyzed and falls
+
 
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 
@@ -10,24 +18,21 @@
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO add info about current weapons in hands to both spell and inventory
 
-//TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
+
 
 //TODO inventory weight control (maybe force throw away things?)
 //TODO raycast object detection (!!! uuh maybe leave as is)
 //TODO: check all menus after force/choice merge
-//TODO: add notifications when someone attacks you
-
-//TODO remove uncraftable items from crafting options (but still give info about them)
 
 
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME container menu bugged, after taking 1st item it doesnt force and looks like the scan is broken in this case
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME if attack ralof, sometimes it holds block forever (looks like when target got too far away while we were blocking - the block isnt interrupted)
 
 
-//TODO combine close-lying little objects into one context entry
 
 
-//TODO option to stop fight and surrender to guards
+
+
 
 //TODO test all spells
 //TODO solitude prison. check other prisons too
@@ -36,8 +41,6 @@
 //TODO weather info when outside, time info
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap, normal bear trap)
 //TODO dvemer mechanisms/traps
-//TODO spin mechanic. spin 3 times = knocked down/paralyzed and falls
-//TODO probably fully automate after-talk get-in into the travel carriage
 //TODO when an item is taken - it is added into inventory. but it doesnt update any list automatically - have to call inventory to know its id. and it may overlap with world object... figure out distinction
 //TODO slaughterfish fights
 //TODO underwater + oxygen control
