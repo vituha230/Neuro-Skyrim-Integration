@@ -734,6 +734,14 @@ std::pair<bool, std::string> set_item_choice(int id)
 		return result;
 	}
 
+	if (id == -2 && is_pickpocketing())
+	{
+		result.first = false;
+		result.second = "Invalid item ID";
+		return result;
+	}
+
+
 	if (id == -2)
 	{
 		//take all

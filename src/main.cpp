@@ -6,7 +6,6 @@
 
 //TODO exit cave option when nothing interesting found anymore
 //TODO actions register watchdog (autodetect when no actions are registered for no reason)
-//TODO fix map. riverwood says "can fast travel there" even though we actually cant. make mouse move again for better precision (arrows are not enough)
 
 
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
