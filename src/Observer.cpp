@@ -700,6 +700,9 @@ namespace Observer {
 					bool nearby_line_made = false;
 					bool faraway_line_made = false;
 
+					std::string last_name = "";
+					bool has_last = false;
+
 					for (auto result_entry : result)
 					{
 						if (result_entry.info != "")
@@ -725,7 +728,45 @@ namespace Observer {
 									info_string += "\nFar away:\n";
 									faraway_line_made = true;
 								}
-							info_string += result_entry.info + "\n";
+
+
+
+							//std::string category = get_object_category(object.second);
+
+							std::string result_name = result_entry.info;//insert_object_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
+
+							auto id_end = result_name.find_first_of("]");
+
+							std::string name_no_id = result_name.substr(id_end + 1, result_name.length() - id_end);
+							std::string id_text_raw = result_name.substr(0, id_end + 1);
+							std::string id_text = result_name.substr(4, id_end - 4);
+
+							if (has_last && name_no_id == last_name)
+							{
+								auto last_id_start = info_string.rfind("[id");
+								if (info_string.substr(last_id_start + 3, 1) != "s")
+								{
+									info_string.insert(last_id_start + 3, "s");
+								}
+
+								auto last_substr = info_string.substr(last_id_start, info_string.length() - last_id_start);
+
+								auto last_id_sub_end = last_substr.find_first_of("]");
+
+								auto last_id_insert_pos = last_id_start + last_id_sub_end;
+
+								info_string.insert(last_id_insert_pos, ", " + id_text);
+							}
+							else
+								info_string += result_name + "\n";
+
+							last_name = name_no_id;
+							has_last = true;
+
+
+
+
+							//info_string += result_entry.info + "\n";
 						}
 						
 					}

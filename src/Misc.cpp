@@ -5311,6 +5311,9 @@ namespace MiscThings {
         bool nearby_line_made = false;
         bool faraway_line_made = false;
 
+        std::string last_name = "";
+        bool has_last = false;
+
         for (auto object : local_copy)
         {
             auto this_object = object.second;
@@ -5345,8 +5348,37 @@ namespace MiscThings {
                     if (player_ref->GetDistance(this_object) < 10000.0f)
                     {
                         //std::string category = get_object_category(object.second);
-                        result.second += insert_object_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
-                        result.second += +"\n";
+
+                        std::string result_name = insert_object_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
+
+                        auto id_end = result_name.find_first_of("]");
+
+                        std::string name_no_id = result_name.substr(id_end + 1, result_name.length() - id_end);
+                        std::string id_text_raw = result_name.substr(0, id_end + 1);
+                        std::string id_text = result_name.substr(4, id_end - 4);
+
+                        if (has_last && name_no_id == last_name)
+                        {
+                            auto last_id_start = result.second.rfind("[id");
+                            if (result.second.substr(last_id_start + 3, 1) != "s")
+                            {
+                                result.second.insert(last_id_start + 3, "s");
+                            }
+                                
+                            auto last_substr = result.second.substr(last_id_start, result.second.length() - last_id_start);
+
+                            auto last_id_sub_end = last_substr.find_first_of("]");
+
+                            auto last_id_insert_pos = last_id_start + last_id_sub_end;
+
+                            result.second.insert(last_id_insert_pos, ", " + id_text);
+                        }
+                        else
+                            result.second += result_name + "\n";
+
+                        last_name = name_no_id;
+                        has_last = true;
+
                     }
                 }
                 

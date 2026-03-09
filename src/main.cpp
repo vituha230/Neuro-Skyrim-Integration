@@ -3,8 +3,6 @@
 
 //crucial:
 
-//TODO polish spin
-//TODO combine close-lying little objects into one context entry
 //TODO option to stop fight and surrender to guards
 //TODO probably fully automate after-talk get-in into the travel carriage
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
