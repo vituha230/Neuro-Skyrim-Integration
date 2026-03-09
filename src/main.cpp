@@ -3,7 +3,7 @@
 
 //crucial:
 
-//TODO probably fully automate after-talk get-in into the travel carriage
+
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 //TODO weather info when outside, time info
 

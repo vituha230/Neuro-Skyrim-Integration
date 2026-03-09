@@ -70,6 +70,9 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> surrender_to_guards();
 	bool is_surrendering();
 
+	void get_into_carriage(RE::TESObjectREFR* seat);
+	bool is_getting_into_carriage();
+
 
 	std::pair<bool, std::string> make_spins(int amount, int speed);
 

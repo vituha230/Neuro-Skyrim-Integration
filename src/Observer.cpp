@@ -408,6 +408,18 @@ namespace Observer {
 						//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 						[&](RE::TESObjectREFR* a_ref) {
 
+							RE::BSString result_string = "";
+							RE::TESNPC* player_npc = RE::TESForm::LookupByID(0x7)->As<RE::TESNPC>();
+							player_npc->GetActivateText(a_ref, result_string);
+							std::string result_string_actual_string = result_string.c_str();
+							if (result_string_actual_string.find("Carriage") != std::string::npos)
+							{
+								bool stop_here = false;
+							}
+
+
+
+
 							std::string name = a_ref->GetName();
 							std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
@@ -648,6 +660,7 @@ namespace Observer {
 								//nameless things that still have to be tracked.
 								//FXspiderWebKitDoorSpecial - normal
 								//FXspiderWebKitDoorSpecialDest - destroyed
+
 
 								if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
 								{
@@ -941,6 +954,42 @@ namespace Observer {
 					scan_distance = 2000.0f;
 
 
+
+				auto carriage_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DialogueCarriageSystem");
+
+				auto object_p = MiscThings::General::Script::GetObject(carriage_quest, "CarriageSystemScript");
+
+				RE::BSFixedString prop_name = "currentDestination";
+				int current_destination = MiscThings::General::Script::GetProperty<int>(object_p, prop_name);
+
+				prop_name = "currentDriver";
+				RE::Actor* driver = MiscThings::General::Script::GetProperty<RE::Actor*>(object_p, prop_name);
+
+				if (current_destination != 0 && current_destination != -1 && driver)
+				{
+
+					auto extra = driver->extraList.GetByType(RE::ExtraDataType::kLinkedRef);
+
+					auto carriage_seat = RE::TESForm::LookupByEditorID("LinkCarriageSeat");
+
+					if (extra)
+					{
+						auto extra_linked = (RE::ExtraLinkedRef*)extra;
+						for (auto linked_ref : extra_linked->linkedRefs)
+						{
+							if (linked_ref.keyword == carriage_seat && !WalkerProcessor::is_getting_into_carriage() && !MiscThings::is_intro())
+							{
+								unregister_all_actions();
+								WalkerProcessor::get_into_carriage(linked_ref.refr);
+								return;
+							}
+						}
+						
+					}
+				}
+
+				
+
 				//if (std::size(objects_to_track) > 5000)
 				//	objects_to_track.clear();
 
@@ -1070,9 +1119,6 @@ namespace Observer {
 
 									objects_to_track.insert_or_assign(a_ref, new_state);
 								}
-
-
-
 
 								if (old_state.target != new_state.target)
 								{

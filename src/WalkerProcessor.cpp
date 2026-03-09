@@ -15,6 +15,12 @@
 namespace WalkerProcessor {
 
 
+
+    bool dont_use_bounds_for_close_enough = false;
+    bool getting_into_carriage = false;
+    float getting_into_carriage_time = 0.0f;
+
+
     //bool reset_by_explorer = false;
 
     bool runaway_mode = false;
@@ -1755,6 +1761,7 @@ namespace WalkerProcessor {
 
         if (specific_shift != RE::NiPoint3::Zero())
         {
+            dont_use_bounds_for_close_enough = true;
             target_center += specific_shift;
         }
 
@@ -1943,6 +1950,7 @@ namespace WalkerProcessor {
         
         if (specific_shift != RE::NiPoint3::Zero())
         {
+            dont_use_bounds_for_close_enough = true;
             target_center += specific_shift;
         }
         
@@ -2515,6 +2523,10 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        dont_use_bounds_for_close_enough = false;
+        getting_into_carriage = false;
+        getting_into_carriage_time = 0.0f;
+
         surrender_mode = false;
 
         do_spins = false;
@@ -2942,6 +2954,7 @@ namespace WalkerProcessor {
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
+
         if (location_mode)
         {
             if (target_ref && player)
@@ -2957,12 +2970,6 @@ namespace WalkerProcessor {
         }
 
 
-
-
-            
-
-        
-        
         if (!target_ref || !player)
             return true; //let it fully restart, something is very wrong
 
@@ -3110,6 +3117,11 @@ namespace WalkerProcessor {
                         auto bound_min = target_ref->GetBoundMin() * target_ref->GetScale();
                         auto bound_dif = bound_max - bound_min;
 
+                        if (dont_use_bounds_for_close_enough)
+                        {
+                            bound_dif = RE::NiPoint3::Zero();
+                        }
+
                         //TODO: this is very bad
                         //test if wide
 
@@ -3129,10 +3141,21 @@ namespace WalkerProcessor {
                     if (distance.z < 200.0f)
                         distance.z = 0.0f;
 
+
+                    if (getting_into_carriage)
+                    {
+                        distance.z = 0.0f;
+                        return distance.Length() < 50.0f;
+                    }
+
                     auto bound_max = target_ref->GetBoundMax() * target_ref->GetScale();
                     auto bound_min = target_ref->GetBoundMin() * target_ref->GetScale();
                     auto bound_dif = bound_max - bound_min;
 
+                    if (dont_use_bounds_for_close_enough)
+                    {
+                        bound_dif = RE::NiPoint3::Zero();
+                    }
 
                     if (quest_mode)
                     {
@@ -6118,11 +6141,38 @@ namespace WalkerProcessor {
     }
 
 
+    void get_into_carriage(RE::TESObjectREFR* seat)
+    {
+        getting_into_carriage = true;
+        walk_to_object_by_refr(seat, 1);
+    }
+
+    bool is_getting_into_carriage()
+    {
+        return getting_into_carriage;
+    }
+
+
 
 	float walker_processor_timer = 0.0f;
 
 	void processor(float dtime)
 	{
+
+        if (getting_into_carriage)
+        {
+            if (getting_into_carriage_time > 20.0f)
+            {
+                reset_walker();
+                register_allowed_actions();
+            }
+            else
+                getting_into_carriage_time = 0.0f;
+        }
+        else
+            getting_into_carriage_time = 0.0f;
+
+
         auto ui = RE::UI::GetSingleton();
 
         reminder_walk_time += dtime;
