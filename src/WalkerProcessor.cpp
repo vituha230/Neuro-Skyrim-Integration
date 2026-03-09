@@ -2514,6 +2514,7 @@ namespace WalkerProcessor {
         amount_of_spins_done = 0;
         spin_timeout = 0.0f;
 
+
         attack_spell_cast_timeout = 0.0f;
         //if (!reset_by_explorer) //it renews explore_mode anyway
         //{
@@ -5940,9 +5941,9 @@ namespace WalkerProcessor {
         std::pair<bool, std::string> result{};
 
 
+        
 
-
-        if (amount <= 0 || amount >= 100)
+        if (amount <= 0)// || amount >= 100)
         {
             result.first = false;
             result.second = "Cannot make this amount of spins";
@@ -5993,13 +5994,13 @@ namespace WalkerProcessor {
 
         result.first = true;
         result.second = "[You start spinning...]";
+
+        unregister_spin_action();
+
         return result;
 
 
     }
-
-
-
 
 
 
@@ -6087,6 +6088,7 @@ namespace WalkerProcessor {
                     spin_step_one = false;
                     send_random_context("[Spinning done]");
                     spin_timeout = 0.0f;
+                    register_allowed_actions();
                     return;
                 }
                 else
@@ -6123,6 +6125,8 @@ namespace WalkerProcessor {
                     spin_step_one = false;
                     spin_step_two = false;
                     spin_timeout = 0.0f;
+
+                    register_allowed_actions();
                 }
                 else
                 {
@@ -6152,6 +6156,7 @@ namespace WalkerProcessor {
 
                             if (caster_123 && paralysis_spell)
                             {
+
                                 auto old_delivery = paralysis_spell->GetDelivery();
                                 auto old_duration = paralysis_spell->effects[0]->effectItem.duration;
                                 auto old_cost = paralysis_spell->effects[0]->cost;
@@ -6159,6 +6164,7 @@ namespace WalkerProcessor {
                                 paralysis_spell->SetDelivery(RE::MagicSystem::Delivery::kSelf);
                                 paralysis_spell->effects[0]->effectItem.duration = 1;
                                 paralysis_spell->effects[0]->cost = 0;
+
                                 caster_123->CastSpellImmediate(paralysis_spell, false, player_ref, 1.0f, false, 1.0f, nullptr);
 
                                 paralysis_spell->SetDelivery(old_delivery);
@@ -6183,6 +6189,9 @@ namespace WalkerProcessor {
                                     //BSTEventSource<TESMagicEffectApplyEvent>
                                 //RE::BSTEventSink<RE::TESMagicEffectApplyEvent>::ProcessEvent()
                                 message += " and fall";
+                                unregister_all_actions();
+                                set_universal_block(5.0f);
+
                             }
 
                             send_random_context(message + "]");

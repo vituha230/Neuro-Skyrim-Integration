@@ -290,6 +290,15 @@ bool unregister_look_action()
 }
 
 
+bool unregister_spin_action()
+{
+    const char* action_names[] = { Capabilities::Spin::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
 
 
 bool exit_dungeon_was_registered = false;

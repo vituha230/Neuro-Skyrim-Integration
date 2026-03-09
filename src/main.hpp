@@ -46,6 +46,7 @@ bool register_exit_dungeon();
 
 bool was_exit_dungeon_registered();
 bool unregister_explore_action();
+bool unregister_spin_action();
 
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);
