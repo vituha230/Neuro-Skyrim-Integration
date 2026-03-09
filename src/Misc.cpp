@@ -2313,6 +2313,7 @@ namespace MiscThings {
                 std::string race = "";
                 std::string dead = "";
                 std::string child = "";
+                std::string mount_text = "";
 
 
                 auto actor_object = (RE::Actor*)object;
@@ -2329,8 +2330,56 @@ namespace MiscThings {
                         race = "";
                     else
                         race = ", " + race;
+
                 }
 
+                if (actor_object->IsAMount())
+                {
+                    RE::ActorPtr mounter = nullptr;
+                    bool is_mounted = actor_object->GetMountedBy(mounter);
+
+                    auto player = RE::PlayerCharacter::GetSingleton();
+                    RE::BSString result_string = "";
+
+                    RE::TESNPC* player_npc = RE::TESForm::LookupByID(0x7)->As<RE::TESNPC>();
+                    player_npc->GetActivateText(actor_object, result_string);
+
+
+                    bool is_blocked = actor_object->IsActivationBlocked();
+
+                    bool is_crime_to_mount = actor_object->IsCrimeToActivate();
+
+
+                    if (!is_mounted)
+                    {
+                        if (!is_blocked)
+                        {
+                            mount_text = "[Can mount]";
+                            if (is_crime_to_mount)
+                                mount_text += "[Is crime]";
+                        }
+                        else
+                        {
+                            mount_text = "[Cannot mount]";
+                        }
+                    }
+                    else
+                    {
+                        std::string mounter_name = "";
+
+                        if (mounter && mounter.get())
+                            mounter_name = insert_object_into_list_and_get_info(mounter.get());
+
+                        if (mounter_name != "")
+                            mounter_name = " by " + mounter_name;
+                        else
+                            mounter_name = " by someone";
+
+                        mount_text = "[Mounted" + mounter_name + "]";
+
+                    }
+
+                }
 
                 if (actor_object->IsDead())
                     dead = ", dead";
@@ -2349,6 +2398,8 @@ namespace MiscThings {
                 }
                 else
                     result = "[Creature" + race + dead + "]";
+
+                result += mount_text;
 
                 result += enemy_text;
             }
