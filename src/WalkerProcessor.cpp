@@ -213,6 +213,11 @@ namespace WalkerProcessor {
     bool explore_mode_notified = false;
 
 
+    bool surrender_mode = false;
+
+
+
+
     void set_crime_mode(bool state)
     {
         crime_mode = state;
@@ -224,6 +229,10 @@ namespace WalkerProcessor {
         return using_custom_path;
     }
 
+    bool is_surrendering()
+    {
+        return surrender_mode;
+    }
 
     bool is_exploring()
     {
@@ -2506,6 +2515,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        surrender_mode = false;
 
         do_spins = false;
         amount_of_spins = 0;
@@ -4251,12 +4261,46 @@ namespace WalkerProcessor {
 
 
 
-    void walk_to_object_by_refr(RE::TESObjectREFR* target, int interaction)
+    std::pair<bool, std::string> walk_to_object_by_refr(RE::TESObjectREFR* target, int interaction, bool surrender_to_guards_mode)
     {    
+        std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            result.first = false;
+            result.second = "You cannot walk yet";
+            return result;
+        }
+
+
         if (target)
         {
             if (have_target_to_walk)
                 reset_walker();
+
+            if (surrender_to_guards_mode)
+                surrender_mode = true;
+
+
 
             right_attack_cancel();
             left_attack_cancel();
@@ -4266,10 +4310,19 @@ namespace WalkerProcessor {
             interaction_after_walk = interaction;
 
             auto player = RE::PlayerCharacter::GetSingleton();
-            reminder_target_name = MiscThings::insert_location_into_list_and_get_info(target);
+            reminder_target_name = MiscThings::insert_object_into_list_and_get_info(target);
             reminder_start_pos = player->GetPosition();
 
+
+            result.first = true;
+            result.second = "[Started walking to " + reminder_target_name + "]";
+            return result;
         }
+
+        result.first = false;
+        result.second = "[Error]";
+        return result;
+
     }
 
 
@@ -6006,6 +6059,62 @@ namespace WalkerProcessor {
         return result;
 
 
+    }
+
+
+
+    std::pair<bool, std::string> surrender_to_guards()
+    {
+        std::pair<bool, std::string> result{};
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        auto attackers = MiscThings::get_player_attackers();
+
+        bool player_can_be_arrested = false;
+        RE::TESObjectREFR* closest_guard = nullptr;
+
+        if (std::size(attackers) != 0 && !MiscThings::have_force_only_menu_open())
+        {
+
+            std::string attacked_by = "";
+            for (auto attacker : attackers)
+            {
+                attacked_by += MiscThings::insert_object_into_list_and_get_info(attacker);
+                attacked_by += "; ";
+                auto crime_faction = attacker->GetCrimeFaction();
+                if (crime_faction)
+                {
+                    auto crime_values = crime_faction->crimeData.crimevalues;
+                    bool stop_here = false;
+                }
+
+                auto tried_to_yield = player->playerFlags.attemptedYieldInCurrentCombat;
+
+                if (!tried_to_yield && attacker->IsGuard())
+                {
+                    //didnt try to yield yet and attacker is guard. can try to yield
+                    player_can_be_arrested = true;
+                    if (!closest_guard)
+                        closest_guard = attacker;
+                }
+
+            }
+        }
+
+        if (player_can_be_arrested && closest_guard)
+        {
+            return walk_to_object_by_refr(closest_guard, 0, true);
+        }
+        else
+        {
+            result.first = false;
+            result.second = "You cannot surrender to guards anymore. ";
+            unregister_surrender_to_guards();
+            return result;
+        }
+            
+        
     }
 
 

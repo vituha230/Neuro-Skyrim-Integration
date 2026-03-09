@@ -76,6 +76,9 @@ namespace Observer {
 	int runaway_in_a_row = 0;
 
 
+	bool player_can_be_arrested = false;
+	RE::TESObjectREFR* closest_guard = nullptr;
+
 	void set_threat_action_taken()
 	{
 		threats_response_request_sent = true;
@@ -87,15 +90,24 @@ namespace Observer {
 	}
 
 
+	bool can_surrender_to_guards()
+	{
+		return closest_guard && player_can_be_arrested;
+	}
+
 
 	void reset_threats()
 	{
+		if (closest_guard && player_can_be_arrested)
+			unregister_surrender_to_guards();
+
 		detect_threats_time = 0.0f;
 		threats_response_request_sent = false;
 		threats_response_choice_valid = false;
 		threats_response_choice = -1;
 		action_taken = false;
 		pause_was_made = false;
+		closest_guard = nullptr;
 	}
 
 
@@ -166,6 +178,8 @@ namespace Observer {
 		threat_options.push_back({ 1, "Fight back" });
 		threat_options.push_back({ 2, "Run" });
 		threat_options.push_back({ 3, "Ignore" });
+		if (player_can_be_arrested && closest_guard)
+			threat_options.push_back({ 4, "Surrender to guards" });
 
 		return threat_options;
 	}
@@ -182,7 +196,7 @@ namespace Observer {
 		}
 		else
 		{
-			if (id >= 1 && id <= 3)
+			if ((id >= 1 && id <= 3) || (id == 4 && player_can_be_arrested))
 			{
 				threats_response_choice = id;
 				threats_response_choice_valid = true;
@@ -204,6 +218,8 @@ namespace Observer {
 
 	void detect_threats(float dtime)
 	{
+		auto player = RE::PlayerCharacter::GetSingleton();
+
 		if (observers_green_light)
 		{
 			if (dont_check_threats_timer > 0.0f)
@@ -212,94 +228,133 @@ namespace Observer {
 			{
 				auto attackers = MiscThings::get_player_attackers();
 
-				if (std::size(attackers) != 0 && !WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open())
+				if (std::size(attackers) != 0)
 				{
-					//wait a little then notify
-
-					if (detect_threats_time > 0.5f)
+					if (!WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open())
 					{
-						if (!threats_response_request_sent)
+						//wait a little then notify
+
+						if (detect_threats_time > 0.5f)
 						{
 
 
-							std::string attacked_by = "";
-							for (auto attacker : attackers)
+							if (!threats_response_request_sent)
 							{
-								attacked_by += MiscThings::insert_object_into_list_and_get_info(attacker);
-								attacked_by += "; ";
-							}
+								player_can_be_arrested = false;
 
 
-
-							if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response))
-							{
-								if (!pause_was_made && !MiscThings::is_game_paused())
+								std::string attacked_by = "";
+								for (auto attacker : attackers)
 								{
-									threats_response_request_sent = true;
-									pause_was_made = true; //tween menu mouse kills walker so it has disabled mouse in main.cpp
-									MiscThings::pause_game();
+									attacked_by += MiscThings::insert_object_into_list_and_get_info(attacker);
+									attacked_by += "; ";
+									auto crime_faction = attacker->GetCrimeFaction();
+									if (crime_faction)
+									{
+										auto crime_values = crime_faction->crimeData.crimevalues;
+										bool stop_here = false;
+									}
+
+									auto tried_to_yield = player->playerFlags.attemptedYieldInCurrentCombat;
+
+									if (!tried_to_yield && attacker->IsGuard())
+									{
+										//didnt try to yield yet and attacker is guard. can try to yield
+										player_can_be_arrested = true;
+										if (!closest_guard)
+											closest_guard = attacker;
+									}
+
+								}
+
+
+
+								if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response))
+								{
+									if (!pause_was_made && !MiscThings::is_game_paused())
+									{
+										threats_response_request_sent = true;
+										pause_was_made = true; //tween menu mouse kills walker so it has disabled mouse in main.cpp
+										MiscThings::pause_game();
+									}
+								}
+							}
+							else
+							{
+								if (threats_response_choice_valid)
+								{
+									if (pause_was_made)
+									{
+										if (MiscThings::is_game_paused())
+										{
+											MiscThings::unpause_game();
+										}
+										//set_universal_block(0.5f);
+										pause_was_made = false;
+										return;
+
+									}
+
+									if (!action_taken)
+									{
+										if (threats_response_choice == 1)
+										{
+											runaway_in_a_row = 0;
+											if (DialogueProcessor::is_in_dialogue(nullptr))
+												DialogueProcessor::quit_menu();
+											WalkerProcessor::walk_to_object_by_refr(attackers.at(0), 3);
+											action_taken = true;
+
+
+											//if (player_can_be_arrested && closest_guard)
+											//	register_surrender_to_guards();
+
+										}
+
+										if (threats_response_choice == 2)
+										{
+											std::string message = WalkerProcessor::run_away().second;
+
+											runaway_in_a_row++;
+											if (runaway_in_a_row >= 3)
+												message += "[You will not have much progress in the game if you keep running away from fights every time]";
+
+											send_random_context(message);
+											action_taken = true;
+										}
+
+										if (threats_response_choice == 3)
+										{
+											runaway_in_a_row = 0;
+											action_taken = true;
+										}
+
+
+										if (threats_response_choice == 4)
+										{
+											runaway_in_a_row = 0;
+											action_taken = true;
+											send_random_context("[You try to surrender to guards...]");
+											WalkerProcessor::surrender_to_guards();
+
+										}
+
+									}
+									else
+									{
+										if (threats_response_choice != 2 && threats_response_choice != 3 && threats_response_choice != 4 && !WalkerProcessor::walker_active())
+										{
+											//walker inactive, but we have threats. reset threats
+											reset_threats();
+										}
+									}
 								}
 							}
 						}
 						else
 						{
-							if (threats_response_choice_valid)
-							{
-								if (pause_was_made)
-								{
-									if (MiscThings::is_game_paused())
-									{
-										MiscThings::unpause_game();
-									}
-									//set_universal_block(0.5f);
-									pause_was_made = false;
-									return;
-
-								}
-
-								if (!action_taken)
-								{
-									if (threats_response_choice == 1)
-									{
-										runaway_in_a_row = 0;
-										if (DialogueProcessor::is_in_dialogue(nullptr))
-											DialogueProcessor::quit_menu();
-										WalkerProcessor::walk_to_object_by_refr(attackers.at(0), 3);
-										action_taken = true;
-									}
-
-									if (threats_response_choice == 2)
-									{
-										std::string message = WalkerProcessor::run_away().second;
-
-										runaway_in_a_row++;
-										if (runaway_in_a_row >= 3)
-											message += "[You will not have much progress in the game if you keep running away from fights every time]";
-
-										send_random_context(message);
-										action_taken = true;
-									}
-
-									if (threats_response_choice == 3)
-									{
-										runaway_in_a_row = 0;
-										action_taken = true;
-									}
-								}
-								else
-								{
-									if (threats_response_choice != 2 && threats_response_choice != 3 && !WalkerProcessor::walker_active())
-									{
-										//walker inactive, but we have threats. reset threats
-										reset_threats();
-									}
-								}
-							}
+							detect_threats_time += dtime;
 						}
-					}
-					else
-					{
-						detect_threats_time += dtime;
 					}
 				}
 				else

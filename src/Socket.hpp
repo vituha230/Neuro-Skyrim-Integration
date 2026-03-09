@@ -130,6 +130,17 @@ namespace Capabilities
     }
 
 
+    namespace SurrenderToGuards
+    {
+        constexpr char Name[] = "surrender_to_guards";
+        constexpr char Desc[] =
+            R"(Try to surrender to guards and pay for your crimes)";
+        //constexpr char JsonSchema[] = null;
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
+    }
+
+
     namespace ExitDungeon
     {
         constexpr char Name[] = "exit_dungeon";

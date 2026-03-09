@@ -27,7 +27,8 @@ namespace Observer {
 
 	bool are_surroundings_scanned();
 
-	
+	bool can_surrender_to_guards();
+
 
 
 	void attatch_heatmap();

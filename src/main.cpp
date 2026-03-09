@@ -3,7 +3,6 @@
 
 //crucial:
 
-//TODO option to stop fight and surrender to guards
 //TODO probably fully automate after-talk get-in into the travel carriage
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 //TODO weather info when outside, time info
@@ -237,6 +236,30 @@ bool register_get_objects_around()
 
     return false;
 }
+
+
+bool register_surrender_to_guards()
+{
+    neurosdk_action actions[] = { Capabilities::SurrenderToGuards::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
+bool unregister_surrender_to_guards()
+{
+    const char* action_names[] = { Capabilities::SurrenderToGuards::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
+
 
 
 bool register_walk_to_object()

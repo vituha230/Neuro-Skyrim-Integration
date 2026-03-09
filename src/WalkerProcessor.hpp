@@ -15,7 +15,7 @@ namespace WalkerProcessor {
 	//void reset_explore_mode();
 
 
-	void walk_to_object_by_refr(RE::TESObjectREFR* target, int action);
+	std::pair<bool, std::string> walk_to_object_by_refr(RE::TESObjectREFR* target, int action, bool surrender_to_guards_mode = false);
 
 	std::pair<bool, std::string> walk_to_object_by_index(int index, int interaction);
 	std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target);
@@ -67,6 +67,8 @@ namespace WalkerProcessor {
 
 	bool is_exploring();
 
+	std::pair<bool, std::string> surrender_to_guards();
+	bool is_surrendering();
 
 
 	std::pair<bool, std::string> make_spins(int amount, int speed);

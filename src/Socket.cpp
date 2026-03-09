@@ -20,12 +20,13 @@ bool something_is_registered = false;
 
 
 
-neurosdk_action ActionsList[] = {  
-                                    
+neurosdk_action ActionsList[] = {
+
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
                                     Capabilities::ExploreWorld::Action,
                                     Capabilities::ExitDungeon::Action,
+                                    Capabilities::SurrenderToGuards::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -58,6 +59,8 @@ neurosdk_action ActionsListNoForces[] = {
                                     Capabilities::LookAtObject::Action,
                                     Capabilities::ExploreWorld::Action,
                                     Capabilities::ExitDungeon::Action,
+                                    Capabilities::SurrenderToGuards::Action,
+
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -417,6 +420,11 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                     {
                         actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+                        if (Observer::can_surrender_to_guards())
+                        {
+                            actions_to_register[action_pos] = Capabilities::SurrenderToGuards::Action; action_pos++;
+                        }
+                            
                     }
 
                     if (MiscThings::have_any_quests())
@@ -833,6 +841,12 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
 
                             }
 
+                            if (name == Capabilities::SurrenderToGuards::Name)
+                            {
+
+                                command_result = WalkerProcessor::surrender_to_guards();
+
+                            }
 
                             if (name == Capabilities::ExitDungeon::Name)
                             {
