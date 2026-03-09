@@ -6,8 +6,7 @@
 //TODO option to stop fight and surrender to guards
 //TODO probably fully automate after-talk get-in into the travel carriage
 //TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
-
-//TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
+//TODO weather info when outside, time info
 
 
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
@@ -33,27 +32,24 @@
 //TODO solitude prison. check other prisons too
 //TODO catch animation events on all objects
 //TODO reanimating event catch + draugr wakes up from its grave
-//TODO weather info when outside, time info
-//TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap, normal bear trap)
+
+//TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dvemer mechanisms/traps
-//TODO when an item is taken - it is added into inventory. but it doesnt update any list automatically - have to call inventory to know its id. and it may overlap with world object... figure out distinction
 //TODO slaughterfish fights
 //TODO underwater + oxygen control
-
-
-
-//TODO potentially worth looking into:
-//  button events like in race menu for text. maybe can finally use perfect key up/down events?
-// it will probably require disabling actual inputs because it polls real devices which have all keys up.
 
 
 //arbitrary:
 //TODO maybe slam all barter items into one category like in alchemy
 //TODO running when path is along straight line
 //TODO put things into container/gift menu (i think for followers its give not take)
+//TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 
 
 
+//TODO potentially worth looking into:
+//  button events like in race menu for text. maybe can finally use perfect key up/down events?
+// it will probably require disabling actual inputs because it polls real devices which have all keys up.
 
 
 

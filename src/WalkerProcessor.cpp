@@ -5552,13 +5552,19 @@ namespace WalkerProcessor {
             {
                 if ((is_door(target_ref) || is_container(target_ref)) && is_targeted_door_locked())
                 {
-                    unregister_all_actions();
-                    if (is_door(target_ref))
-                        if (force_choice({ {0, "No"}, {1, "Yes"}}, get_locked_door_force_message(target_ref), force_type::closed_door_choice))
-                            confirming_closed_door_interaction = true;
-                    else
-                        if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(target_ref), force_type::closed_door_choice))
-                            confirming_closed_door_interaction = true;
+                    if (!confirming_closed_door_interaction)
+                    {
+                        unregister_all_actions();
+                        if (is_door(target_ref))
+                        {
+                            if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(target_ref), force_type::closed_door_choice))
+                                confirming_closed_door_interaction = true;
+                        }
+                        else
+                            if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(target_ref), force_type::closed_door_choice))
+                                confirming_closed_door_interaction = true;
+                    }
+
                 }
                 else
                 {
@@ -6154,7 +6160,7 @@ namespace WalkerProcessor {
                             auto caster_123 = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
                             auto paralysis_spell = RE::TESForm::LookupByID(0x5AD5F)->As<RE::SpellItem>();
 
-                            if (caster_123 && paralysis_spell)
+                            if (caster_123 && paralysis_spell && !MiscThings::is_on_horse())
                             {
 
                                 auto old_delivery = paralysis_spell->GetDelivery();
@@ -6731,8 +6737,10 @@ namespace WalkerProcessor {
                                                                 {
                                                                     unregister_all_actions();
                                                                     if (is_door(result_target))
+                                                                    {
                                                                         if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(result_target), force_type::closed_door_choice))
                                                                             confirming_closed_door_interaction = true;
+                                                                    }
                                                                     else
                                                                         if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(result_target), force_type::closed_door_choice))
                                                                             confirming_closed_door_interaction = true;
