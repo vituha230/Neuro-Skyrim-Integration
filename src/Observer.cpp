@@ -710,6 +710,8 @@ namespace Observer {
 							if (player_ref->GetDistance(result_entry.refr) < 450.0f)
 								if (!veryclose_line_made)
 								{
+									std::string last_name = "";
+									bool has_last = false;
 									info_string += "\nVery close:\n";
 									veryclose_line_made = true;
 								}
@@ -717,6 +719,8 @@ namespace Observer {
 							if (player_ref->GetDistance(result_entry.refr) >= 450.0f && player_ref->GetDistance(result_entry.refr) < 2000.0f)
 								if (!nearby_line_made)
 								{
+									std::string last_name = "";
+									bool has_last = false;
 									info_string += "\nNearby:\n";
 									nearby_line_made = true;
 								}
@@ -725,6 +729,8 @@ namespace Observer {
 							if (player_ref->GetDistance(result_entry.refr) >= 2000.0f && player_ref->GetDistance(result_entry.refr) < 10000.0f)
 								if (!faraway_line_made)
 								{
+									std::string last_name = "";
+									bool has_last = false;
 									info_string += "\nFar away:\n";
 									faraway_line_made = true;
 								}

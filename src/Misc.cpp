@@ -2649,7 +2649,10 @@ namespace MiscThings {
             {
                 if (object_entry.second == refr)
                 {
-                    result = "[id " + std::to_string(object_entry.first) + "]" + get_object_full_info(refr);
+                    std::string info = get_object_full_info(refr);
+                    if (info != "")
+                        result = "[id " + std::to_string(object_entry.first) + "]" + get_object_full_info(refr);
+
                     found = true;
                     break;
                 }
@@ -2662,7 +2665,11 @@ namespace MiscThings {
                 objects_around.insert({ new_id, refr });
                 if (!objects_around_valid)
                     objects_around_valid = true;
-                result = "[id " + std::to_string(new_id) + "] " + get_object_full_info(refr);
+
+                std::string info = get_object_full_info(refr);
+                if (info != "")
+                    result = "[id " + std::to_string(new_id) + "]" + get_object_full_info(refr);
+
             }
         }
 
@@ -5326,6 +5333,8 @@ namespace MiscThings {
                     if (player_ref->GetDistance(this_object) < 450.0f)
                         if (!veryclose_line_made)
                         {
+                            std::string last_name = "";
+                            bool has_last = false;
                             result.second += "\nVery close:\n";
                             veryclose_line_made = true;
                         }
@@ -5333,6 +5342,8 @@ namespace MiscThings {
                     if (player_ref->GetDistance(this_object) >= 450.0f && player_ref->GetDistance(this_object) < 2000.0f)
                         if (!nearby_line_made)
                         {
+                            std::string last_name = "";
+                            bool has_last = false;
                             result.second += "\nNearby:\n";
                             nearby_line_made = true;
                         }
@@ -5341,6 +5352,8 @@ namespace MiscThings {
                     if (player_ref->GetDistance(this_object) >= 2000.0f && player_ref->GetDistance(this_object) < 10000.0f)
                         if (!faraway_line_made)
                         {
+                            std::string last_name = "";
+                            bool has_last = false;
                             result.second += "\nFar away:\n";
                             faraway_line_made = true;
                         }
