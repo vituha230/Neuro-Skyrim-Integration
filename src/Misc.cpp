@@ -880,13 +880,22 @@ namespace MiscThings {
                             if (size > 0)
                             {
                                 RE::GFxValue subvar;
+                                RE::GFxValue subvar2;
                                 if (var1.GetElement(0, &subvar)) //size-1 or 0? idk the order..
                                     if (subvar.GetMember("TextFieldClip", &subvar))
                                         if (subvar.GetMember("tf1", &subvar))
-                                            if (subvar.GetMember("text", &subvar))
-                                                if (subvar.IsString())
+                                            if (subvar.GetMember("text", &subvar2))
+                                                if (subvar2.IsString())
                                                 {
-                                                    std::string result_string = subvar.GetString();
+                                                    std::string result_string = subvar2.GetString();
+
+                                                    if (result_string.find("No direct path seen") != std::string::npos)
+                                                    {
+                                                        subvar2.SetString("");
+                                                        subvar.SetMember("text", subvar2);
+                                                        return;
+                                                    }
+
                                                     if (result_string != old_topleft_notification)
                                                     {
                                                         old_topleft_notification = result_string;
