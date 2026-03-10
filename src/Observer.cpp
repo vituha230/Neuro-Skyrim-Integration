@@ -71,7 +71,7 @@ namespace Observer {
 
 	bool not_first_inventory_info = false; //do not reset 
 
-	RE::TESWeather* last_weather = nullptr;
+	std::string last_weather = "";
 
 	std::string old_time_text = "";
 
@@ -171,7 +171,7 @@ namespace Observer {
 		last_stamina_value = 0.0f;
 		last_mana_value = 0.0f;
 
-		last_weather = nullptr;
+		last_weather = "";
 		old_time_text = "";
 	}
 
@@ -2233,7 +2233,7 @@ namespace Observer {
 					{
 						auto weather = sky->currentWeather;
 
-						if (weather && weather != last_weather)
+						if (weather)
 						{
 							std::vector<std::string> weather_vector{};
 
@@ -2251,7 +2251,7 @@ namespace Observer {
 
 							std::string aurora_model = "";
 							aurora_model = weather->aurora.model;
-							if (aurora_model != "")
+							if (aurora_model != "" && (hour < 3 || hour > 19.6))
 								weather_vector.push_back("[Aurora Borealis]");
 
 							std::string result_weather = "";
@@ -2264,9 +2264,13 @@ namespace Observer {
 							if (result_weather != "")
 							{
 								result_weather = "Weather: " + result_weather;
-								send_random_context(result_weather);
+								
 							}
 
+							if (result_weather != last_weather && result_weather != "")
+							{
+								send_random_context(result_weather);
+							}
 
 
 //RE::TESWeather::WeatherDataFlag
@@ -2278,10 +2282,10 @@ namespace Observer {
 //			kPermAurora = 1 << 4,
 //			kAuroraFollowsSun = 1 << 5
 
-
+							last_weather = result_weather;
 						}
 
-						last_weather = weather;
+						
 
 					}
 
