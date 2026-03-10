@@ -4,11 +4,7 @@
 //crucial:
 
 
-//TODO fix attempts to interact with objects that are just too high/flying (for example: butterflies)
 
-
-
-//TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO add info about current weapons in hands to both spell and inventory
 
 
@@ -16,14 +12,6 @@
 //TODO inventory weight control (maybe force throw away things?)
 //TODO raycast object detection (!!! uuh maybe leave as is) CAN BE USEFUL FOR CHESTS
 //TODO: check all menus after force/choice merge
-
-
-//TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME container menu bugged, after taking 1st item it doesnt force and looks like the scan is broken in this case
-//TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME if attack ralof, sometimes it holds block forever (looks like when target got too far away while we were blocking - the block isnt interrupted)
-
-
-
-
 
 
 
@@ -50,6 +38,10 @@
 //  button events like in race menu for text. maybe can finally use perfect key up/down events?
 // it will probably require disabling actual inputs because it polls real devices which have all keys up.
 
+
+//TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
+//TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME container menu bugged, after taking 1st item it doesnt force and looks like the scan is broken in this case
+//TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME if attack ralof, sometimes it holds block forever (looks like when target got too far away while we were blocking - the block isnt interrupted)
 
 
 

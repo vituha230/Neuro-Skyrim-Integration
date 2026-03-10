@@ -2254,14 +2254,37 @@ namespace WalkerProcessor {
 
         //mouse_mouse_x(mouse_x);
 
-        if (high_precision)
+
+        if (MiscThings::is_insect(target_ref))
         {
-            if (abs(mouse_x) < 1.0f && abs(mouse_y) < 1.0f)
-                return true;
+            auto distance_insect = target_ref->GetPosition() - player->GetPosition();
+            distance_insect.z = 0.0f;
+
+            if (distance_insect.Length() < 60.0f)
+            {
+                if (abs(mouse_x) < 5.0f && abs(mouse_y) < 5.0f)
+                    return true;
+            }
+            else
+            {
+                if (abs(mulX) < 0.4 && mulY >= 0)
+                    walk_forward();
+            }
+                
+
         }
         else
-            if (abs(mouse_x) < 5.0f && abs(mouse_y) < 5.0f)
-                return true;
+        {
+            if (high_precision)
+            {
+                if (abs(mouse_x) < 1.0f && abs(mouse_y) < 1.0f)
+                    return true;
+            }
+            else
+                if (abs(mouse_x) < 5.0f && abs(mouse_y) < 5.0f)
+                    return true;
+        }
+
 
         mouse_look(mouse_x, -mouse_y);
         //mouse_mouse_x_y(mouse_x, -mouse_y);
@@ -2992,7 +3015,6 @@ namespace WalkerProcessor {
                 
         }
 
-
         if (MiscThings::is_intro2())
         {
             auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos;
@@ -3002,6 +3024,16 @@ namespace WalkerProcessor {
         }
         else
         {
+            if (MiscThings::is_insect(target_ref))
+            {
+                auto distance_insect = target_pos - player_pos;
+                distance_insect.z = 0.0f;
+
+                return distance_insect.Length() < 200.0f;
+            }
+
+
+
             if (interaction_after_walk == 2)
             {
 

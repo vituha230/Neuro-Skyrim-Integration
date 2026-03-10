@@ -9,6 +9,30 @@
 namespace MiscThings {
 
 
+    bool is_insect(RE::TESObjectREFR* object)
+    {
+        auto base_obj = object->GetBaseObject();
+        auto base_type = base_obj->GetFormType();
+
+        if (base_type == RE::FormType::Activator)
+        {
+            auto activator = (RE::TESObjectACTI*)base_obj;
+
+            std::string model = activator->GetModel();
+
+            if (model.find("Critters") != std::string::npos)
+            {
+
+                auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
+
+                if (path_extra)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
 
 
 

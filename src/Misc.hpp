@@ -82,6 +82,7 @@ namespace MiscThings {
 
     bool player_has_levelup();
 
+    bool is_insect(RE::TESObjectREFR* object);
 
 
     void notifications();
