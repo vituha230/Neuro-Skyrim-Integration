@@ -71,6 +71,9 @@ namespace Observer {
 
 	bool not_first_inventory_info = false; //do not reset 
 
+	RE::TESWeather* last_weather = nullptr;
+
+	std::string old_time_text = "";
 
 
 	int runaway_in_a_row = 0;
@@ -168,6 +171,8 @@ namespace Observer {
 		last_stamina_value = 0.0f;
 		last_mana_value = 0.0f;
 
+		last_weather = nullptr;
+		old_time_text = "";
 	}
 
 
@@ -2186,6 +2191,97 @@ namespace Observer {
 						send_random_context(message);
 
 						player_monitor_finished = true;
+
+					}
+
+
+					auto sky = RE::Sky::GetSingleton();
+
+
+					std::string time_text = "";
+					auto hour = sky->currentGameHour;
+					if (hour < 5 || hour >= 21)
+						time_text = "[Night]";
+					else
+						if (hour >= 5 && hour < 11)
+							time_text = "[Morning]";
+						else
+							if (hour >= 11 && hour < 13)
+								time_text = "[Noon]";
+							else
+								if (hour >= 13 && hour < 17)
+									time_text = "[Afternoon]";
+								else
+									time_text = "[Evening]";
+
+					//5-11 morning
+					//11-13 noon
+					//13-17 afternoon
+					//17-20 evening
+					//21-5 night
+
+
+					if (time_text != old_time_text)
+					{
+						send_random_context("Time of day: " + time_text);
+					}
+
+					old_time_text = time_text;
+					
+
+					if (!MiscThings::is_interior_cell())
+					{
+						auto weather = sky->currentWeather;
+
+						if (weather && weather != last_weather)
+						{
+							std::vector<std::string> weather_vector{};
+
+							if (weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kSnow))
+								weather_vector.push_back("[Snowing]");
+
+							if (weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kCloudy))
+								weather_vector.push_back("[Cloudy]");
+
+							if (weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kRainy))
+								weather_vector.push_back("[Raining]");
+
+							if (weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kPleasant))
+								weather_vector.push_back("[Clear]");
+
+							std::string aurora_model = "";
+							aurora_model = weather->aurora.model;
+							if (aurora_model != "")
+								weather_vector.push_back("[Aurora Borealis]");
+
+							std::string result_weather = "";
+
+							for (auto weather_entry : weather_vector)
+							{
+								result_weather += weather_entry;
+							}
+
+							if (result_weather != "")
+							{
+								result_weather = "Weather: " + result_weather;
+								send_random_context(result_weather);
+							}
+
+
+
+//RE::TESWeather::WeatherDataFlag
+//			kNone = 0,
+//			kPleasant = 1 << 0,
+//			kCloudy = 1 << 1,
+//			kRainy = 1 << 2,
+//			kSnow = 1 << 3,
+//			kPermAurora = 1 << 4,
+//			kAuroraFollowsSun = 1 << 5
+
+
+						}
+
+						last_weather = weather;
 
 					}
 
