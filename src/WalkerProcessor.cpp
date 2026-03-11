@@ -220,6 +220,8 @@ namespace WalkerProcessor {
 
 
     bool surrender_mode = false;
+    float surrender_time = 0.0f;
+
 
     bool walk_again_when_finished = false;
 
@@ -2595,6 +2597,8 @@ namespace WalkerProcessor {
         getting_into_carriage_time = 0.0f;
 
         surrender_mode = false;
+        surrender_time = 0.0f;
+
 
         do_spins = false;
         amount_of_spins = 0;
@@ -6500,6 +6504,18 @@ namespace WalkerProcessor {
                 reset_walker();
 
             }
+
+
+            if (surrender_mode)
+            {
+                if (surrender_time > 20.0f)
+                {
+                    reset_walker();
+                }
+                else
+                    surrender_time += dtime;
+            }
+
 
 
 
