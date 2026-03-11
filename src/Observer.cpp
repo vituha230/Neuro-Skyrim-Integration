@@ -95,7 +95,9 @@ namespace Observer {
 
 	bool can_surrender_to_guards()
 	{
-		return closest_guard && player_can_be_arrested;
+		auto player = RE::PlayerCharacter::GetSingleton();
+		auto escaping_jail = player->playerFlags.escaping;
+		return closest_guard && player_can_be_arrested && !escaping_jail;
 	}
 
 
@@ -261,8 +263,9 @@ namespace Observer {
 									}
 
 									auto tried_to_yield = player->playerFlags.attemptedYieldInCurrentCombat;
+									auto escaping_jail = player->playerFlags.escaping;
 
-									if (!tried_to_yield && attacker->IsGuard())
+									if (!tried_to_yield && !escaping_jail && attacker->IsGuard())
 									{
 										//didnt try to yield yet and attacker is guard. can try to yield
 										player_can_be_arrested = true;
@@ -1299,7 +1302,13 @@ namespace Observer {
 																result.push_back("[ " + name + " closed]");
 														}
 
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "SarcophagusTopOpen")
+														{
+															std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+															if (activation == 1)
+																result.push_back("[ " + name + " crumbles and reveals the passage behind it]");
 
+														}
 
 
 
@@ -2034,6 +2043,9 @@ namespace Observer {
 
 				if (escaping_jail && !jail_escaping_notified)
 				{
+					if (objects_around_valid)
+						register_escape_jail();
+
 					jail_escaping_notified = true;
 					send_random_context("[You are escaping from jail! Try to find exit and avoid guards... you also might want to try to get back your belongings (or might return to get them later)]");
 				}

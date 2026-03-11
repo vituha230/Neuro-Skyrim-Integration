@@ -83,7 +83,7 @@ namespace MiscThings {
     bool player_has_levelup();
 
     bool is_insect(RE::TESObjectREFR* object);
-
+    bool player_escaping_jail();
 
     void notifications();
     void update_old_topleft_nofification(std::string new_notif);

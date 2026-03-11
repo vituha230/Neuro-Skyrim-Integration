@@ -221,7 +221,7 @@ namespace WalkerProcessor {
 
     bool surrender_mode = false;
 
-
+    bool walk_again_when_finished = false;
 
 
     void set_crime_mode(bool state)
@@ -262,6 +262,41 @@ namespace WalkerProcessor {
     {
         return interaction_after_walk == 2;
     }
+
+
+    bool just_escaped_solitude_prison()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+
+        RE::NiPoint3 solitude_prison_exit_point = { -64012.2695, 106968.758, -8161.62207 };
+
+        return (player_pos - solitude_prison_exit_point).Length() < 250.0f;
+    }
+
+
+    bool prefer_solitude_prison_escape_route()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto parent_cell = player->GetParentCell();
+        bool is_escaping = MiscThings::player_escaping_jail();
+
+        if (is_escaping && parent_cell && parent_cell->GetFormID() == 0x56e88)
+        {
+            auto crumbling_wall = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5ABC1);
+            if (crumbling_wall)
+            {
+                auto extra_action = crumbling_wall->extraList.GetByType(RE::ExtraDataType::kAction);
+
+                if (extra_action)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+
 
 
     void cancel_charge_weapon()
@@ -2546,6 +2581,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        walk_again_when_finished = false;
+
         dont_use_bounds_for_close_enough = false;
         getting_into_carriage = false;
         getting_into_carriage_time = 0.0f;
@@ -2639,7 +2676,12 @@ namespace WalkerProcessor {
         door_is_closed_choice_valid = false;
         door_is_closed_choice = -1;
 
-        was_slowwalking = false;
+        if (was_slowwalking)
+        {
+            was_slowwalking = false;
+            unslow_walk();
+        }
+        
 
         wiggle_camera_time = 0.0f;
         locking_failed = false;
@@ -2738,12 +2780,16 @@ namespace WalkerProcessor {
 
         explore_mode_notified = false;
 
+
+
     }
 
     void walk_again()
     {
         //if (!using_custom_path)
         {
+
+            walk_again_when_finished = false;
 
             too_high_notified = false;
 
@@ -2772,6 +2818,13 @@ namespace WalkerProcessor {
 
             //search_next_fight_target = false;
             search_next_target_timer = 0.0f;
+
+            if (was_slowwalking)
+            {
+                was_slowwalking = false;
+                unslow_walk();
+            }
+
         }
         //else
         //{
@@ -3585,6 +3638,16 @@ namespace WalkerProcessor {
 
                 have_target_to_walk = true;
 
+                if (just_escaped_solitude_prison())
+                {
+                    //solitude_prison_exit
+                    unregister_all_actions();
+                    using_custom_path = true;
+                    walk_again_when_finished = true;
+                    custom_path = CustomWalkerPaths::solitude_prison_exit;
+                }
+
+
                 reminder_start_pos = player->GetPosition();
                 reminder_start_pos = player->GetPosition();
                 reminder_target_name = MiscThings::insert_object_into_list_and_get_info(object->second);
@@ -3783,6 +3846,15 @@ namespace WalkerProcessor {
                     }
                         
 
+                    if (just_escaped_solitude_prison())
+                    {
+                        //solitude_prison_exit
+                        unregister_all_actions();
+                        using_custom_path = true;
+                        walk_again_when_finished = true;
+                        custom_path = CustomWalkerPaths::solitude_prison_exit;
+                    }
+
 
                     location_mode = true;
                     target_ref = location;
@@ -3840,6 +3912,15 @@ namespace WalkerProcessor {
                 if (have_target_to_walk)
                     reset_walker();
 
+
+                if (just_escaped_solitude_prison())
+                {
+                    //solitude_prison_exit
+                    unregister_all_actions();
+                    using_custom_path = true;
+                    walk_again_when_finished = true;
+                    custom_path = CustomWalkerPaths::solitude_prison_exit;
+                }
                 
                 reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
                 reminder_start_pos = player->GetPosition();
@@ -3910,6 +3991,16 @@ namespace WalkerProcessor {
                     reset_walker();
 
                 Observer::reset_threats();
+
+
+                if (just_escaped_solitude_prison())
+                {
+                    //solitude_prison_exit
+                    unregister_all_actions();
+                    using_custom_path = true;
+                    walk_again_when_finished = true;
+                    custom_path = CustomWalkerPaths::solitude_prison_exit;
+                }
 
                 location_mode = true;
                 target_ref = location;
@@ -4157,6 +4248,16 @@ namespace WalkerProcessor {
                                                     return result;
                                                 }
 
+                                                if (just_escaped_solitude_prison())
+                                                {
+                                                    //solitude_prison_exit
+                                                    unregister_all_actions();
+                                                    using_custom_path = true;
+                                                    walk_again_when_finished = true;
+                                                    custom_path = CustomWalkerPaths::solitude_prison_exit;
+                                                }
+
+
                                                 have_target_to_walk = true;
                                                 interaction_after_walk = -1;
                                                 
@@ -4292,6 +4393,15 @@ namespace WalkerProcessor {
                                                 }
                                                     
 
+                                                if (just_escaped_solitude_prison())
+                                                {
+                                                    //solitude_prison_exit
+                                                    unregister_all_actions();
+                                                    using_custom_path = true;
+                                                    walk_again_when_finished = true;
+                                                    custom_path = CustomWalkerPaths::solitude_prison_exit;
+                                                }
+
 
                                                 right_attack_cancel();
                                                 left_attack_cancel();
@@ -4354,6 +4464,16 @@ namespace WalkerProcessor {
 
             if (surrender_to_guards_mode)
                 surrender_mode = true;
+
+
+            if (just_escaped_solitude_prison())
+            {
+                //solitude_prison_exit
+                unregister_all_actions();
+                using_custom_path = true;
+                walk_again_when_finished = true;
+                custom_path = CustomWalkerPaths::solitude_prison_exit;
+            }
 
 
 
@@ -4452,6 +4572,11 @@ namespace WalkerProcessor {
             return result;
         }
 
+        if (prefer_solitude_prison_escape_route())
+        {
+            return escape_prison();
+        }
+
         if (target)
         {
             //Observer::reset_threats();
@@ -4460,6 +4585,17 @@ namespace WalkerProcessor {
                 reset_walker();
 
             location_mode = true;
+
+
+            if (just_escaped_solitude_prison())
+            {
+                //solitude_prison_exit
+                unregister_all_actions();
+                using_custom_path = true;
+                walk_again_when_finished = true;
+                custom_path = CustomWalkerPaths::solitude_prison_exit;
+            }
+
 
             target_ref = target;
             have_target_to_walk = true;
@@ -6171,6 +6307,43 @@ namespace WalkerProcessor {
             
         
     }
+    
+
+
+    std::pair<bool, std::string> escape_prison()
+    {
+        std::pair<bool, std::string> result{};
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto parent_cell = player->GetParentCell();
+
+        bool stop_here = false;
+        //0x56e88 - solitude prison
+        //0x54592 - solitude escape ladder
+
+        RE::TESObjectREFR* escape_target = nullptr;
+
+        if (parent_cell->GetFormID() == 0x56e88)
+        {
+            escape_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x54592);
+            if (escape_target)
+            {
+                return walk_to_object_by_refr(escape_target, 1);
+            }
+        }
+
+
+
+
+
+
+
+        result.first = false;
+        result.second = "Cannot find any way to escape from here...";
+        return result;
+    }
+
+
 
 
     void get_into_carriage(RE::TESObjectREFR* seat)
@@ -6257,10 +6430,12 @@ namespace WalkerProcessor {
         }
         */
 
+        
 
         try
         {
             auto player = RE::PlayerCharacter::GetSingleton();
+            auto parent_cell = player->GetParentCell();
 
             auto control_map = RE::ControlMap::GetSingleton();
             bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
@@ -6785,6 +6960,15 @@ namespace WalkerProcessor {
                                         //if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path) || MiscThings::is_intro())
                                         if (MiscThings::is_intro() || use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)))
                                         {
+
+                                            if (walk_again_when_finished)
+                                            {
+                                                using_custom_path = false;
+                                                register_allowed_actions();
+                                                quicksave();
+                                                walk_again();
+                                            }
+                                                
 
                                             if (got_close_for_pickpocket || close_enough() || MiscThings::is_intro())
                                             {

@@ -27,6 +27,7 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::ExploreWorld::Action,
                                     Capabilities::ExitDungeon::Action,
                                     Capabilities::SurrenderToGuards::Action,
+                                    Capabilities::EscapePrison::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -60,7 +61,7 @@ neurosdk_action ActionsListNoForces[] = {
                                     Capabilities::ExploreWorld::Action,
                                     Capabilities::ExitDungeon::Action,
                                     Capabilities::SurrenderToGuards::Action,
-
+                                    Capabilities::EscapePrison::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -477,6 +478,11 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                                 
                         }
 
+                        if (MiscThings::player_escaping_jail())
+                        {
+                            actions_to_register[action_pos] = Capabilities::EscapePrison::Action; action_pos++;
+                        }
+
                     }
 
                     bool stop_here = false;
@@ -833,6 +839,12 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                         }
                         else
                         {
+
+                            if (name == Capabilities::EscapePrison::Name)
+                            {
+                                command_result = WalkerProcessor::escape_prison();
+                            }
+
 
                             if (name == Capabilities::ExploreWorld::Name)
                             {

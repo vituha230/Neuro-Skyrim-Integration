@@ -141,6 +141,18 @@ namespace Capabilities
     }
 
 
+
+    namespace EscapePrison
+    {
+        constexpr char Name[] = "search_for_prison_exit";
+        constexpr char Desc[] =
+            R"(Try to find exit from prison to escape. )";
+        //constexpr char JsonSchema[] = null;
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
+    }
+
+
     namespace ExitDungeon
     {
         constexpr char Name[] = "exit_dungeon";

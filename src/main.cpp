@@ -4,45 +4,47 @@
 //crucial:
 
 
-
-//TODO add info about current weapons in hands to both spell and inventory
-
-
-
-//TODO inventory weight control (maybe force throw away things?)
-//TODO raycast object detection (!!! uuh maybe leave as is) CAN BE USEFUL FOR CHESTS
-//TODO: check all menus after force/choice merge
-
-
-
-//TODO test all spells
 //TODO solitude prison. check other prisons too
-//TODO catch animation events on all objects
+
 //TODO reanimating event catch + draugr wakes up from its grave
+
+//TODO test 1st dungeon puzzles with llm
+
+//TODO autoload last save
 
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dvemer mechanisms/traps
 //TODO slaughterfish fights
 //TODO underwater + oxygen control
-
+//TODO inventory weight control (maybe force throw away things?)
+//TODO raycast object detection (!!! uuh maybe leave as is) CAN BE USEFUL FOR CHESTS
+//TODO test all spells
+//TODO: check all menus after force/choice merge
+//TODO catch animation events on all objects
 
 //arbitrary:
 //TODO maybe slam all barter items into one category like in alchemy
 //TODO running when path is along straight line
 //TODO put things into container/gift menu (i think for followers its give not take)
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
+//TODO hand equip info (both spells and inventory. spells in the inventory will require insert_spell_into_list_and_get_info function)
 
-
-
-//TODO potentially worth looking into:
-//  button events like in race menu for text. maybe can finally use perfect key up/down events?
-// it will probably require disabling actual inputs because it polls real devices which have all keys up.
 
 
 //TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME container menu bugged, after taking 1st item it doesnt force and looks like the scan is broken in this case
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME if attack ralof, sometimes it holds block forever (looks like when target got too far away while we were blocking - the block isnt interrupted)
 
+
+//mega arbitrary, probably will not do before someone plays the mod
+//TODO sneaking
+//TODO coop
+
+
+
+//TODO potentially worth looking into:
+//  button events like in race menu for text. maybe can finally use perfect key up/down events?
+// it will probably require disabling actual inputs because it polls real devices which have all keys up.
 
 
 
@@ -252,6 +254,17 @@ bool unregister_surrender_to_guards()
 }
 
 
+
+
+bool register_escape_jail()
+{
+    neurosdk_action actions[] = { Capabilities::EscapePrison::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
 
 
 bool register_walk_to_object()

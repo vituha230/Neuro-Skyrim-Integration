@@ -9,6 +9,13 @@
 namespace MiscThings {
 
 
+    bool player_escaping_jail()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        return player->playerFlags.escaping;
+    }
+
+
     bool is_insect(RE::TESObjectREFR* object)
     {
         auto base_obj = object->GetBaseObject();
@@ -447,11 +454,24 @@ namespace MiscThings {
                     if (door->GetOpenState(activator) == RE::BGSOpenCloseForm::OPEN_STATE::kClosing)
                         result = 3;
                 }
+
+
+                if (base_type == RE::FormType::Activator)
+                {
+                    auto acti = (RE::TESObjectACTI*)base_obj;
+                    std::string model = acti->GetModel();
+
+                    if (model.find("SldJailWallCollapse01"))
+                    {
+                        auto extra_action = activator->extraList.GetByType(RE::ExtraDataType::kAction);
+
+                        if (extra_action)
+                            result = 1;
+
+                    }
+                }
             }
         }
-
-
-
 
         return result;
     }
@@ -3505,6 +3525,7 @@ namespace MiscThings {
         }
 
         auto player = RE::PlayerCharacter::GetSingleton();
+
 
         std::string cur_weight = std::to_string((int)player->GetActorValue(RE::ActorValue::kInventoryWeight));
         std::string max_weight = std::to_string((int)player->GetActorValue(RE::ActorValue::kCarryWeight));

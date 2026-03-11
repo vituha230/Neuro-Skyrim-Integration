@@ -49,6 +49,8 @@ bool unregister_explore_action();
 bool unregister_spin_action();
 bool register_surrender_to_guards();
 bool unregister_surrender_to_guards();
+bool register_escape_jail();
+
 
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);

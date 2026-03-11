@@ -74,6 +74,9 @@ namespace WalkerProcessor {
 	bool is_getting_into_carriage();
 
 
+	std::pair<bool, std::string> escape_prison();
+
+
 	std::pair<bool, std::string> make_spins(int amount, int speed);
 
 }
