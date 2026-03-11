@@ -282,7 +282,12 @@ bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
         return false;
     }
 
-    if (!(size == 1 && (actions[0].name == Capabilities::SelectForceChoice::Name || actions[0].name == Capabilities::SelectForceChoiceMultiple::Name || actions[0].name == Capabilities::SelectForceChoiceString::Name))) //exclude forces
+    std::string action_name = actions[0].name;
+    std::string force_name_1 = Capabilities::SelectForceChoice::Name;
+    std::string force_name_2 = Capabilities::SelectForceChoiceMultiple::Name;
+    std::string force_name_3 = Capabilities::SelectForceChoiceString::Name;
+
+    if (!(size == 1 && (action_name == force_name_1 || action_name == force_name_2 || action_name == force_name_3))) //exclude forces
         something_is_registered = true;
 
     return true;

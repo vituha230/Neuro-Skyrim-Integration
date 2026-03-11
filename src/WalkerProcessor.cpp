@@ -6048,7 +6048,7 @@ namespace WalkerProcessor {
             auto player_pos = player->GetPosition();
             auto pos_dif = player_pos - last_player_pos;
 
-            if (pos_dif.Length() > 40.0f)
+            if (pos_dif.Length() > 50.0f)
             {
                 last_player_pos = player_pos;
                 time_stuck = 0.0f;
@@ -6354,6 +6354,8 @@ namespace WalkerProcessor {
                     }
                 }
 
+
+
             }
 
             if (parent_cell->GetFormID() == 0x4A376) //whiterun prison
@@ -6364,6 +6366,21 @@ namespace WalkerProcessor {
                     return walk_to_object_by_refr(escape_target, 1);
                 }
             }
+
+
+            if (parent_cell->GetFormID() == 0x961ff) //winterhold prison
+            {
+                escape_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x96248);
+                if (escape_target)
+                {
+                    return walk_to_object_by_refr(escape_target, 1);
+                }
+            }
+
+
+
+            //else
+            return run_away();
         }
 
 
