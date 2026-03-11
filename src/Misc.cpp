@@ -3145,12 +3145,17 @@ namespace MiscThings {
                             {
                                 auto slot = get_free_slot();
                                 
+                                bool left_hand = false;
 
                                 if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
                                     equip_hand = " in right hand";
 
-                                if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //right hand
+                                if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
+                                {
+                                    left_hand = true;
                                     equip_hand = " in left hand";
+                                }
+                                    
 
                                 auto weapon = (RE::TESObjectWEAP*)object;
 
@@ -3160,7 +3165,10 @@ namespace MiscThings {
                                 actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot);
 
                                 if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                {
                                     ready_weapon(); //show off new weapon
+                                }
+                                    
                             }
                             else
                                 actor_equip->EquipObject((RE::Actor*)player_ref, object);
@@ -4059,6 +4067,61 @@ namespace MiscThings {
 
 
 
+    RE::TESForm* get_hand_contents(bool right)
+    {
+        RE::TESForm* hand_contents = nullptr;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto actor_process = player->currentProcess;
+        auto equipped_list = actor_process->equippedObjects;
+
+        auto equipped_right = equipped_list[1];
+        auto equipped_left = equipped_list[0];
+
+        if (right)
+        {
+            //if (equipped_right && equipped_right->GetFormType() == RE::FormType::Spell)
+            hand_contents = equipped_right;
+        }
+        else
+        {
+            //if (equipped_left && equipped_left->GetFormType() == RE::FormType::Spell)
+            hand_contents = equipped_left;
+        }
+
+        return hand_contents;
+    }
+
+
+
+    bool is_self_healing_spell(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
+                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                {
+                    if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf)
+                    {
+                        for (auto effect : spell->effects)
+                        {
+                            if (effect->baseEffect && effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kValueModifier && effect->baseEffect->data.primaryAV == RE::ActorValue::kHealth && effect->baseEffect->data.associatedSkill == RE::ActorValue::kRestoration)
+                            {
+                                result = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+        }
+        return result;
+    }
+
 
 
 
@@ -4126,11 +4189,18 @@ namespace MiscThings {
                             auto slot = get_free_slot();
                             std::string equip_hand = "";
 
+                            bool right_hand = false;
+
                             if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
+                            {
+                                right_hand = true;
                                 equip_hand = " in right hand";
+                            }
+                                
 
                             if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
                                 equip_hand = " in left hand";
+
 
 
                             equip_manager->EquipSpell(player_actor, spell, slot);
@@ -4138,7 +4208,15 @@ namespace MiscThings {
                             if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
                             {
                                 if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                {
                                     ready_weapon(); //show off new weapon
+
+                                    if (player_hp_less_than(90.0f) && is_self_healing_spell(spell))
+                                    {
+                                        try_casting_hand(right_hand);
+                                    }
+                                }
+                                    
 
                                 result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                             }

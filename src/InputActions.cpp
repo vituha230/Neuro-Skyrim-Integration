@@ -3,6 +3,7 @@
 #include "WalkerProcessor.hpp"
 #include "InputActions.hpp"
 #include "main.hpp"
+#include "Misc.hpp"
 
 
 //extern bool was_casting_clairvoyance();
@@ -22,6 +23,17 @@ bool were_casting_something_right = false;
 bool were_casting_something_left = false;
 
 
+bool do_cast = false;
+bool right_hand_cast = false;
+bool notified_cast = false;
+
+
+bool input_wants_to_cast()
+{
+    return do_cast;
+}
+
+
 void reset_input_processor()
 {
     were_casting_something_left = false;
@@ -29,6 +41,10 @@ void reset_input_processor()
     long_cast_ult = false;
     use_ult_time = 0.0f;
     canceled_inputs = false;
+
+    do_cast = false;
+    right_hand_cast = false;
+    notified_cast = false;
 
 }
 
@@ -704,6 +720,74 @@ void quicksave()
 }
 
 
+
+
+void try_casting_hand(bool right)
+{
+    if (!do_cast)
+    {
+        do_cast = true;
+        right_hand_cast = right;
+    }
+
+}
+
+
+bool make_long_cast_spell_hand(bool right)
+{
+    auto player = RE::PlayerCharacter::GetSingleton();
+    auto player_actor = (RE::Actor*)player->AsReference();
+
+    if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+    {
+        ready_weapon();
+    }
+
+
+    bool low_mana_detected = false;
+    bool dont_check_mana = false;
+
+    dont_check_mana = !WalkerProcessor::is_concentration_spell(right) && WalkerProcessor::is_casting_walker(right);
+
+    bool low_mana_check = (!dont_check_mana && WalkerProcessor::has_spell_equipped(right) && (low_mana_detected || (MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(right))));
+
+
+    if (low_mana_check || (WalkerProcessor::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
+    {
+
+        //set_universal_block(1.0f);
+        if (right)
+            right_attack_cancel();
+        else
+            left_attack_cancel();
+
+        return true;
+    }
+    else
+    {
+        if (!notified_cast)
+        {
+            notified_cast = true;
+            std::string cast_info = "[You are casting ";
+            cast_info += WalkerProcessor::get_equipped_spell_name(right) + "]";
+            send_random_context(cast_info);
+        }
+
+
+
+        if (right)
+            right_attack_spell();
+        else
+            left_attack_spell();
+
+        return false;
+    }
+
+}
+
+
+
+
 void make_long_ult_cast()
 {
     long_cast_ult = true;
@@ -712,6 +796,18 @@ void make_long_ult_cast()
 
 void input_processor(float dtime)
 {
+    if (do_cast)
+    {
+        if (make_long_cast_spell_hand(right_hand_cast))
+        {
+            do_cast = false;
+            right_hand_cast = false;
+            notified_cast = false;
+        }
+    }
+
+
+
     if (long_cast_ult)
     {
         set_universal_block(0.5f);

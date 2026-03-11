@@ -82,6 +82,11 @@ namespace Observer {
 	bool player_can_be_arrested = false;
 	RE::TESObjectREFR* closest_guard = nullptr;
 
+
+	bool tried_to_heal = false;
+	float tried_to_heal_time = 0.0f;
+
+
 	void set_threat_action_taken()
 	{
 		threats_response_request_sent = true;
@@ -175,9 +180,14 @@ namespace Observer {
 
 		last_weather = "";
 		old_time_text = "";
+
+
+		tried_to_heal = false;
+		tried_to_heal_time = 0.0f;
+
 	}
 
-
+	
 
 	std::vector<MenuOption> get_threat_options()
 	{
@@ -2217,6 +2227,34 @@ namespace Observer {
 
 						player_monitor_finished = true;
 
+					}
+
+					
+
+					if (!tried_to_heal && MiscThings::player_hp_less_than(60.0f))
+					{
+						bool right_healing = MiscThings::is_self_healing_spell(true);
+						bool left_healing = MiscThings::is_self_healing_spell(false);
+
+						if (right_healing || left_healing)
+						{
+
+
+							if (right_healing)
+								try_casting_hand(true);
+							else
+								try_casting_hand(false);
+							
+							tried_to_heal = true;
+						}
+					}
+
+					if (tried_to_heal)
+					{
+						if (tried_to_heal_time > 15.0f)
+							tried_to_heal = false;
+						else
+							tried_to_heal_time += dtime;
 					}
 
 

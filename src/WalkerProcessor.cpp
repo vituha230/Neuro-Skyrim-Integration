@@ -1397,7 +1397,7 @@ namespace WalkerProcessor {
 
                 if (last_targeted_ref == target_ref)
                 {
-                    if (have_door_targeted_time > 0.3f)
+                    if (have_door_targeted_time > 0.15f)
                     {
                         //have_door_targeted_time = 0.0f;
                         //last_targeted_ref = nullptr;
@@ -4738,30 +4738,6 @@ namespace WalkerProcessor {
 
 
 
-    RE::TESForm* get_hand_contents(bool right)
-    {
-        RE::TESForm* hand_contents = nullptr;
-
-        auto player = RE::PlayerCharacter::GetSingleton();
-        auto actor_process = player->currentProcess;
-        auto equipped_list = actor_process->equippedObjects;
-
-        auto equipped_right = equipped_list[1];
-        auto equipped_left = equipped_list[0];
-
-        if (right)
-        {
-            //if (equipped_right && equipped_right->GetFormType() == RE::FormType::Spell)
-                hand_contents = equipped_right;
-        }
-        else
-        {
-            //if (equipped_left && equipped_left->GetFormType() == RE::FormType::Spell)
-                hand_contents = equipped_left;
-        }
-
-        return hand_contents;
-    }
 
 
     float get_spell_cost(bool right)
@@ -4772,7 +4748,7 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player->AsReference();
         if (player && player_actor)
         {
-            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
             if (spell && spell->GetFormType() == RE::FormType::Spell)
             {
@@ -4799,7 +4775,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
 
             if (spell && spell->GetFormType() == RE::FormType::Spell)
@@ -4825,7 +4801,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
             if (spell && spell->GetFormType() == RE::FormType::Spell)
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
@@ -4852,7 +4828,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
             if (spell && spell->GetFormType() == RE::FormType::Spell)
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
@@ -5027,7 +5003,7 @@ namespace WalkerProcessor {
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
-        RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+        RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
 
         if (spell && spell->GetFormType() == RE::FormType::Spell)
@@ -5050,7 +5026,7 @@ namespace WalkerProcessor {
         {
             //auto left_spell = player->selectedSpells[0];
             //auto right_spell = player->selectedSpells[1];
-            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
             if (spell && spell->GetFormType() == RE::FormType::Spell)
             {
@@ -5084,7 +5060,7 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player->AsReference();
         auto worn_ammo = player_actor->GetCurrentAmmo();
 
-        RE::TESForm* hand_contents = get_hand_contents(true); //check if we have bow in right hand
+        RE::TESForm* hand_contents = MiscThings::get_hand_contents(true); //check if we have bow in right hand
 
         bool have_bow = false;
 
@@ -5112,7 +5088,7 @@ namespace WalkerProcessor {
 
         if (player)
         {
-            RE::TESForm* hand_contents = get_hand_contents(right);
+            RE::TESForm* hand_contents = MiscThings::get_hand_contents(right);
 
             if (hand_contents)
             {
@@ -5138,7 +5114,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::TESForm* hand_contents = get_hand_contents(right);
+            RE::TESForm* hand_contents = MiscThings::get_hand_contents(right);
 
 
             if (hand_contents)
@@ -5186,7 +5162,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::TESForm* hand_contents = get_hand_contents(right);
+            RE::TESForm* hand_contents = MiscThings::get_hand_contents(right);
 
             if (hand_contents)
             {
@@ -6786,7 +6762,7 @@ namespace WalkerProcessor {
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_actor = (RE::Actor*)player->AsReference();
 
-                    if (player_actor && (player_actor->IsWeaponDrawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3)
+                    if (player_actor && (player_actor->IsWeaponDrawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3 && !input_wants_to_cast())
                     {
                         if (!tried_to_draw_weapon1 || draw_weapon_check_time1 > 2.0f)
                         {

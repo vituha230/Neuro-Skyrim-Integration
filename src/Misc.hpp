@@ -157,6 +157,10 @@ namespace MiscThings {
     int remove_item_from_inventory_list(RE::TESBoundObject* item);
 
 
+    RE::TESForm* get_hand_contents(bool right);
+    bool is_self_healing_spell(bool right);
+
+
     namespace General::Script
     {
         using InternalVM = RE::BSScript::Internal::VirtualMachine;

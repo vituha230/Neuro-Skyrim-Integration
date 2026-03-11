@@ -78,9 +78,13 @@ void mouse_cursor_move(float x, float y);
 
 bool is_casting_input(bool right);
 
+void try_casting_hand(bool right);
 
 void dialogue_cursor_down();
 void dialogue_cursor_up();
+
+
+bool input_wants_to_cast();
 
 
 void lockpick_move_x(float angle);
