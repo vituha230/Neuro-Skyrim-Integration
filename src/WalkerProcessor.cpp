@@ -223,6 +223,8 @@ namespace WalkerProcessor {
 
     bool walk_again_when_finished = false;
 
+    bool reset_after_walk = false;
+
 
     void set_crime_mode(bool state)
     {
@@ -2386,8 +2388,11 @@ namespace WalkerProcessor {
                         auto current_path_point_pos = path.at(current_path_point);
 
                         /////////////////// EXPERIMENTAL /////////////////
-                        current_path_point_pos.z = 0.0f;
-                        player_pos.z = 0.0f;
+                        if (!is_about_to_fall())
+                        {
+                            current_path_point_pos.z = 0.0f;
+                            player_pos.z = 0.0f;
+                        }
                         ///////////////////////////////////////////////////
 
                         auto distance = current_path_point_pos.GetDistance(player_pos);
@@ -2581,6 +2586,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        reset_after_walk = false;
+
         walk_again_when_finished = false;
 
         dont_use_bounds_for_close_enough = false;
@@ -6309,6 +6316,34 @@ namespace WalkerProcessor {
     }
     
 
+    void walk_whiterun_prison_grate()
+    {
+        if (have_target_to_walk)
+        {
+            Observer::reset_threats();
+            reset_walker();
+        }
+
+
+        unregister_all_actions();
+        using_custom_path = true;
+        custom_path = CustomWalkerPaths::whiterun_prison_grate;
+        path_valid = true;
+        path = CustomWalkerPaths::whiterun_prison_grate;
+
+        
+
+        target_ref = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9DC81);
+
+        reset_after_walk = true;
+        have_target_to_walk = true;
+        interaction_after_walk = -1;
+
+        right_attack_cancel();
+        left_attack_cancel();
+
+    }
+
 
     std::pair<bool, std::string> escape_prison()
     {
@@ -6322,15 +6357,39 @@ namespace WalkerProcessor {
         //0x54592 - solitude escape ladder
 
         RE::TESObjectREFR* escape_target = nullptr;
-
-        if (parent_cell->GetFormID() == 0x56e88)
+        if (parent_cell)
         {
-            escape_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x54592);
-            if (escape_target)
+            if (parent_cell->GetFormID() == 0x56e88) //solitude prison
             {
-                return walk_to_object_by_refr(escape_target, 1);
+                if (prefer_solitude_prison_escape_route())
+                {
+                    escape_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x54592);
+                    if (escape_target)
+                    {
+                        return walk_to_object_by_refr(escape_target, 1);
+                    }
+                }
+                else
+                {
+                    escape_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xBF22C);
+                    if (escape_target)
+                    {
+                        return walk_to_object_by_refr(escape_target, 1);
+                    }
+                }
+
+            }
+
+            if (parent_cell->GetFormID() == 0x4A376) //whiterun prison
+            {
+                escape_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x80FBC);
+                if (escape_target)
+                {
+                    return walk_to_object_by_refr(escape_target, 1);
+                }
             }
         }
+
 
 
 
@@ -6776,7 +6835,7 @@ namespace WalkerProcessor {
                                 if (!get_targeted_ref() || is_door(get_targeted_ref()))
                                 {
                                     if (!get_targeted_ref() || target_ref == get_targeted_ref())
-                                        walk_forward_a_little = true;
+                                        ;// walk_forward_a_little = true;
                                     else
                                     {
                                         catch_door_result = false; //proceed whatever we did before after pause
@@ -6960,6 +7019,13 @@ namespace WalkerProcessor {
                                         //if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path) || MiscThings::is_intro())
                                         if (MiscThings::is_intro() || use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)))
                                         {
+                                            if (reset_after_walk)
+                                            {
+                                                register_allowed_actions();
+                                                reset_walker();
+                                                return;
+                                            }
+                                               
 
                                             if (walk_again_when_finished)
                                             {

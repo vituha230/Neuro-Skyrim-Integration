@@ -1246,6 +1246,19 @@ namespace Observer {
 												if (activation == 3)
 													result.push_back("[ " + name + " is closing...]");
 											}
+
+
+											if (model.find("WRPrisonCellFloorGrate01Door") != std::string::npos)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Secret stone wall door", a_ref);
+
+												if (activation == 2 && MiscThings::player_escaping_jail() && player_cell && player_cell->GetFormID() == 0x4A376)
+													WalkerProcessor::walk_whiterun_prison_grate();
+												
+											}
+
+											//Architecture\WhiteRun\WRInteriors\WRDungeon\WRPrisonCellFloorGrate01Door.nif
+
 										}
 									}
 

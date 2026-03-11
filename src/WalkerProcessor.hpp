@@ -76,6 +76,7 @@ namespace WalkerProcessor {
 
 	std::pair<bool, std::string> escape_prison();
 
+	void walk_whiterun_prison_grate();
 
 	std::pair<bool, std::string> make_spins(int amount, int speed);
 
