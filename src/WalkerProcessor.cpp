@@ -6828,7 +6828,7 @@ namespace WalkerProcessor {
                                 if (!get_targeted_ref() || is_door(get_targeted_ref()))
                                 {
                                     if (!get_targeted_ref() || target_ref == get_targeted_ref())
-                                        ;// walk_forward_a_little = true;
+                                        reset_walker();//;// walk_forward_a_little = true;
                                     else
                                     {
                                         catch_door_result = false; //proceed whatever we did before after pause
