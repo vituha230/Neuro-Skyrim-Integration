@@ -363,6 +363,8 @@ namespace BookProcessor {
 					}
 					else
 					{
+						start_turning_pages = true;
+
 						if (in_book_time > 7.0f)
 						{
 							if (!book_request_sent)
@@ -373,7 +375,6 @@ namespace BookProcessor {
 							}
 							else
 							{
-								start_turning_pages = true;
 								if (book_choice_valid && !done)
 								{
 									if (book_choice == 1)

@@ -3708,10 +3708,13 @@ namespace MiscThings {
 
     bool has_digits(std::string& str)
     {
+        int num_digits = 0;
         for (char ch : str) {
             int v = ch; // ASCII Val converted
             if (ch >= 48 && ch <= 57) {
-                return true;
+                num_digits++;
+                if (num_digits > 1)
+                    return true;
             }
         }
 
