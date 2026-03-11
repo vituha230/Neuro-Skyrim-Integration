@@ -34,6 +34,7 @@ namespace DialogueProcessor {
     float dialogue_proc_time = 0.0f;
     bool in_dialogue = false;
     float pause_time = 0.0f;
+    float dialogue_selection_timeout = 0.0f;
 
 
 
@@ -131,10 +132,13 @@ namespace DialogueProcessor {
                         option.id = id;
                         option.text = dialogue->topicText.c_str();
 
-                        dialogue_options.push_back(option);
+                        if (option.text != "...")
+                        {
+                            dialogue_options.push_back(option);
+                            id++;
+                            //RE::ConsoleLog::GetSingleton()->Print(dialogue->topicText.c_str());
+                        }
 
-                        id++;
-                        //RE::ConsoleLog::GetSingleton()->Print(dialogue->topicText.c_str());
                     }
 
                     dialogue_options.push_back({ -1, "[STOP DIALOGUE]" });
@@ -264,6 +268,17 @@ namespace DialogueProcessor {
 
         if (in_dialogue && dialogue_choice_made)
         {
+            if (dialogue_selection_timeout > 10.0f)
+            {
+                old_dialogue.topicText = "";
+                dialogue_choice_made = false;
+                dialogue_choice = 0;
+                dialogue_selection_timeout = 0.0f;
+                pause_time = 0.0f;
+            }
+            else
+                dialogue_selection_timeout += dtime;
+
             if (dialogue_proc_time > 0.3f)
             {
                 int cursor_pos = get_selected_dialogue_line();
@@ -272,6 +287,8 @@ namespace DialogueProcessor {
                 {
                     std::string line = std::to_string(dialogue_choice) + "/" + std::to_string(cursor_pos);
                     RE::ConsoleLog::GetSingleton()->Print(line.c_str());
+
+
 
                     if (dialogue_choice > cursor_pos)
                     {
@@ -286,35 +303,42 @@ namespace DialogueProcessor {
                         dialogue_cursor_up();
                     }
 
+
                     if (dialogue_choice == cursor_pos)
                     {
-                        //RE::ConsoleLog::GetSingleton()->Print("confirming choice...");
+                        //if (dialogue_proc_time > 1.0f)
+                        {
+                            //RE::ConsoleLog::GetSingleton()->Print("confirming choice...");
+                            dialogue_selection_timeout = 0.0f;
 
-                        dialogue_choice_made = false;
-                        //dialogue_choice = 0; //confirmation in dialogue process message hook
-                        set_universal_block(1.0f);
-                        //old_dialogue.topicText = "";
-                        //leftclick();
+                            dialogue_choice_made = false;
+                            //dialogue_choice = 0; //confirmation in dialogue process message hook
+                            set_universal_block(1.0f);
+                            //old_dialogue.topicText = "";
+                            //leftclick();
 
 
-                        //confirm();
+                            //confirm();
 
-                        leftclick();
+                            leftclick();
 
-                        /*
-                        RE::GFxKeyEvent* my_event = new RE::GFxKeyEvent; //im not sure if its destroyed after use but i dont really care since this is supposed to be unique event in playthrough
+                            /*
+                            RE::GFxKeyEvent* my_event = new RE::GFxKeyEvent; //im not sure if its destroyed after use but i dont really care since this is supposed to be unique event in playthrough
 
-                        my_event->type = RE::GFxKeyEvent::EventType::kKeyDown;
-                        my_event->keyCode = (RE::GFxKey::Code)RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);//(RE::GFxKey::Code)in_char;//RE::GFxKey::Code::kKP_Multiply;
-                        //my_event->wCharCode = 13;
+                            my_event->type = RE::GFxKeyEvent::EventType::kKeyDown;
+                            my_event->keyCode = (RE::GFxKey::Code)RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->activate, RE::INPUT_DEVICES::kKeyboard);//(RE::GFxKey::Code)in_char;//RE::GFxKey::Code::kKP_Multiply;
+                            //my_event->wCharCode = 13;
 
-                        const auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
-                        if (uiMessageQueue) {
-                            const auto msgData = RE::UIMessageDataFactory::Create<RE::BSUIScaleformData>();
-                            msgData->scaleformEvent = my_event;
-                            uiMessageQueue->AddMessage(RE::DialogueMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kScaleformEvent, msgData);
+                            const auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
+                            if (uiMessageQueue) {
+                                const auto msgData = RE::UIMessageDataFactory::Create<RE::BSUIScaleformData>();
+                                msgData->scaleformEvent = my_event;
+                                uiMessageQueue->AddMessage(RE::DialogueMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kScaleformEvent, msgData);
+                            }
+                            */
                         }
-                        */
+                        //else
+
 
                     }
 
@@ -428,6 +452,8 @@ namespace DialogueProcessor {
             dialogue_choice_made = false;
             dialogue_choice = 0;
             pause_time = 0.0f;
+            dialogue_selection_timeout = 0.0f;
+
         }
 
 

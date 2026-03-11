@@ -1380,10 +1380,10 @@ namespace WalkerProcessor {
         }
 
 
-        auto target_ref = get_targeted_ref();
-        if (target_ref)
+        auto targeted_ref = get_targeted_ref();
+        if (targeted_ref && targeted_ref != target_ref) //not nice
         {
-            auto base_obj = target_ref->GetBaseObject();
+            auto base_obj = targeted_ref->GetBaseObject();
             if (base_obj && base_obj->GetFormType() == RE::FormType::Door && !turning_around)
             {
                 auto door_object = (RE::TESObjectDOOR*)base_obj;
@@ -1397,7 +1397,7 @@ namespace WalkerProcessor {
 
 
 
-                if (last_targeted_ref == target_ref)
+                if (last_targeted_ref == targeted_ref)
                 {
                     if (have_door_targeted_time > 0.15f)
                     {
@@ -1410,7 +1410,7 @@ namespace WalkerProcessor {
                 }
                 else
                 {
-                    last_targeted_ref = target_ref;
+                    last_targeted_ref = targeted_ref;
                     have_door_targeted_time = 0.0f;
                 }
             }
@@ -5786,14 +5786,25 @@ namespace WalkerProcessor {
                     if (!confirming_closed_door_interaction)
                     {
                         unregister_all_actions();
-                        if (is_door(target_ref))
+
+                        auto attackers = MiscThings::get_player_attackers();
+                        if (std::size(attackers) > 0)
                         {
-                            if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(target_ref), force_type::closed_door_choice))
-                                confirming_closed_door_interaction = true;
+                            confirm(); //lockpick it
+                            return true;
                         }
                         else
-                            if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(target_ref), force_type::closed_door_choice))
-                                confirming_closed_door_interaction = true;
+                        {
+                            if (is_door(target_ref))
+                            {
+                                if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(target_ref), force_type::closed_door_choice))
+                                    confirming_closed_door_interaction = true;
+                            }
+                            else
+                                if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(target_ref), force_type::closed_door_choice))
+                                    confirming_closed_door_interaction = true;
+                        }
+
                     }
 
                 }
@@ -7186,14 +7197,26 @@ namespace WalkerProcessor {
                                                                 if (!confirming_closed_door_interaction && (is_door(result_target) || is_container(result_target)) && is_targeted_door_locked())
                                                                 {
                                                                     unregister_all_actions();
-                                                                    if (is_door(result_target))
+                                                                    
                                                                     {
-                                                                        if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(result_target), force_type::closed_door_choice))
-                                                                            confirming_closed_door_interaction = true;
+                                                                        auto attackers = MiscThings::get_player_attackers();
+                                                                        if (std::size(attackers) > 0)
+                                                                        {
+                                                                            confirm(); //lockpick it
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (is_door(result_target))
+                                                                            {
+                                                                                if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(result_target), force_type::closed_door_choice))
+                                                                                    confirming_closed_door_interaction = true;
+                                                                            }
+                                                                            else
+                                                                                if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(result_target), force_type::closed_door_choice))
+                                                                                    confirming_closed_door_interaction = true;
+                                                                        }
                                                                     }
-                                                                    else
-                                                                        if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_container_force_message(result_target), force_type::closed_door_choice))
-                                                                            confirming_closed_door_interaction = true;
+
                                                                 }
                                                                 else
                                                                 {
@@ -7374,8 +7397,18 @@ namespace WalkerProcessor {
                                                                 {
                                                                     //send_random_context("The path is blocked by a locked door!");
                                                                     unregister_all_actions();
-                                                                    if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
-                                                                        door_is_closed_request_sent = true;
+                                                                    auto attackers = MiscThings::get_player_attackers();
+                                                                    if (std::size(attackers) > 0)
+                                                                    {
+                                                                        confirm(); //lockpick it
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
+                                                                            door_is_closed_request_sent = true;
+                                                                    }
+                                                                    
+
                                                                 }
                                                                 else
                                                                 {
@@ -7496,8 +7529,16 @@ namespace WalkerProcessor {
                                                     
                                                     //send_random_context("The path is blocked by a locked door!");
                                                     unregister_all_actions();
-                                                    if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
-                                                        door_is_closed_request_sent = true;
+                                                    auto attackers = MiscThings::get_player_attackers();
+                                                    if (std::size(attackers) > 0)
+                                                    {
+                                                        confirm(); //lockpick it
+                                                    }
+                                                    else
+                                                    {
+                                                        if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
+                                                            door_is_closed_request_sent = true;
+                                                    }
                                                 }
                                                 else
                                                 {

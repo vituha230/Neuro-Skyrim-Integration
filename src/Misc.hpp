@@ -160,6 +160,8 @@ namespace MiscThings {
     RE::TESForm* get_hand_contents(bool right);
     bool is_self_healing_spell(bool right);
 
+    void book_reader(float dtime);
+
 
     namespace General::Script
     {

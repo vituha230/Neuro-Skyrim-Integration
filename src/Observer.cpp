@@ -2079,8 +2079,10 @@ namespace Observer {
 					register_allowed_actions();
 					send_random_context("[Your hands are free]");
 
-					old_can_interact = can_interact;
+					
 				}
+
+
 
 				if (!old_can_look && can_look)
 				{
@@ -2111,6 +2113,8 @@ namespace Observer {
 				}
 
 				old_can_look = can_look;
+				old_can_interact = can_interact;
+
 
 				bool cur_mount = MiscThings::is_on_horse();
 

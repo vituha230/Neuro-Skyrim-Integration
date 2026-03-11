@@ -1379,16 +1379,35 @@ namespace MiscThings {
                         }
 
 
+                        if (model.find("RTMainGate01") != std::string::npos || model.find("RiftenDoor01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        
+
+
+
                         if (result == RE::NiPoint3::Zero())
                         {
                             auto player = RE::PlayerCharacter::GetSingleton();
 
                             auto player_pos = player->GetPosition();
+                            auto object_pos = object->GetPosition();
 
+                            auto pos_dif = player_pos - object_pos;
+
+                            
 
 
                             RE::NiPoint3 dbg_point = { 1.0f, 1.0f, 1.0f };
-                            return dbg_point; //surprisingly not bad
+
+                            if (pos_dif.z < 30.0f)
+                                dbg_point.z = 100.0f;
+
+                            return dbg_point;
 
                             /*
                             auto bounds_max = object->GetBoundMax(); //looks like this is better than height
@@ -2680,6 +2699,11 @@ namespace MiscThings {
                     name = "Dragon";
             }
 
+
+            if (name == "Broken Shackle") //broken riften jail escape
+                return "";
+
+
             auto base_obj = refr->GetBaseObject();
             auto base_type = base_obj->GetFormType();
 
@@ -3116,6 +3140,50 @@ namespace MiscThings {
         return result;
     }
 
+    RE::TESObjectBOOK* book_to_activate = nullptr;
+    float book_activate_time = 0.0f;
+
+    void delayed_activate_book(RE::TESObjectBOOK* book)
+    {
+        book_to_activate = book;
+        book_activate_time = 0.0f;
+    }
+
+
+    void book_reader(float dtime)
+    {
+        if (book_to_activate)
+        {
+            if (book_activate_time > 2.0f)
+            {
+                auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
+                //book_to_activate->Activate(player_ref, player_ref, 0, book_to_activate, 1);
+                auto book_ref = (RE::TESObjectREFR*)book_to_activate;
+                auto player = RE::PlayerCharacter::GetSingleton();
+                //player->Activate()
+                player->Activate(book_ref, book_ref, 0, book_to_activate, 1);
+                RE::TESNPC* player_npc = (RE::TESNPC*)RE::TESForm::LookupByID(0x7); //left hand
+
+                player_npc->Activate(book_ref, book_ref, 0, book_to_activate, 1);
+                player_npc->Activate(player_ref, book_ref, 0, book_to_activate, 1);
+                player_npc->Activate(book_ref, player_ref, 0, book_to_activate, 1);
+
+                player_ref->Activate(book_ref, book_ref, 0, book_to_activate, 1);
+                player_ref->Activate(player_ref, book_ref, 0, book_to_activate, 1);
+                player_ref->Activate(book_ref, player_ref, 0, book_to_activate, 1);
+
+                player->Activate(book_ref, book_ref, 0, book_to_activate, 1);
+                player->Activate(player_ref, book_ref, 0, book_to_activate, 1);
+                player->Activate(book_ref, player_ref, 0, book_to_activate, 1);
+
+                book_to_activate = nullptr;
+                book_activate_time = 0.0f;
+            }
+            else
+                book_activate_time += dtime;
+        }
+    }
+
 
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
     {
@@ -3232,9 +3300,58 @@ namespace MiscThings {
                         }
                         else
                         {
-                            result.first = false;
-                            result.second = "Cannot activate [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
-                            return result;
+                            if (object->IsBook())
+                            {
+                                auto book_book = object->As<RE::TESObjectBOOK>();
+
+                                auto book_book2 = (RE::TESObjectBOOK*)object;
+                                auto book_book3 = object->As<RE::TESObjectBOOK>();
+
+                                //activate_inventory_object_by_index(item_id, -2);
+                                //unregister_all_actions();
+
+                                //auto actor_equip = RE::ActorEquipManager::GetSingleton();
+                                //actor_equip->EquipObject((RE::Actor*)player_ref, object);
+
+                                if (book_book->TeachesSpell())
+                                {
+                                    book_book->Read(player_ref);
+                                }
+                                else
+                                {
+                                    //book_book->Read(player_ref);
+                                    auto book_book = object->As<RE::TESObjectBOOK>();
+                                    auto world_book_handle = player_actor->DropObject(object, nullptr, 1);
+                                    auto book_refr = world_book_handle.get().get();
+                                    book_book->Activate(book_refr, player_ref, 0, object, 1);
+                                }
+
+
+
+
+
+                                //WalkerProcessor::walk_to_object_by_refr(book_refr, 1);
+
+                                //delayed_activate_book(book_book);
+
+
+
+                                //actor_equip->EquipObject((RE::Actor*)player_ref, object);
+
+
+
+
+                                result.first = true;
+                                result.second = "[Reading [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+                                return result;
+                            }
+                            else
+                            {
+                                result.first = false;
+                                result.second = "Cannot activate [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+                                return result;
+                            }
+
                         }
                     }
 

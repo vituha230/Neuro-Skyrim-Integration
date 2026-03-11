@@ -545,7 +545,7 @@ public:
             if (const auto ui = RE::UI::GetSingleton(); ui) {
                 if (const auto menu = ui->GetMenu(RE::DialogueMenu::MENU_NAME); menu) {
                     //menu->menuFlags.set(RE::UI_MENU_FLAGS::kPausesGame); //works
-                    //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
+                    menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
 
 
                     //clear_input_queue();
@@ -1626,6 +1626,7 @@ private:
                 SleepWaitProcessor::processor(dtime);
                 BookProcessor::processor(dtime);
                 TrainingProcessor::processor(dtime);
+                MiscThings::book_reader(dtime);
                 ;
             }
                 
