@@ -2163,14 +2163,31 @@ void debug_scan(float dtime)
     {
         results.clear();
 
-
-
-
-        if (const auto ui = RE::UI::GetSingleton(); ui) {
-            //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-            if (const auto menu = ui->GetMenu<RE::LockpickingMenu>(); menu) {
+        //if (const auto ui = RE::UI::GetSingleton(); ui) {
+            //if (const auto menu = ui->GetMenu<RE::MainMenu>(); menu) {
+                //if (menu->uiMovie)
+                  //  if (menu->uiMovie->GetVariable(&var1, "_root"))
+                        ;// auto test = var1.GetType();
+           // }
+        //}
+            const auto menu_view = ui->GetMovieView("Main Menu").get();
+            if (menu_view)
+            {
+                    if (menu_view->GetVariable(&var1, "_root"))
+                ;// auto test = var1.GetType();
+            }
+            /*
+if (const auto ui = RE::UI::GetSingleton(); ui) {
+if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
+*/
+            {
+            const auto menu_view = ui->GetMovieView("Main Menu").get();
+            if (menu_view)
+            {
+                if (menu_view->GetVariable(&var1, "_root"))
                     {
                         //std::string result;
                         if (true)
@@ -2206,24 +2223,26 @@ void debug_scan(float dtime)
                             };
 
 
-                            search_var = "onPress";
+                            search_var = "color";
                             //search_var = "Body";
 
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
 
                             //_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA[46].0.sliderMax
-                           // search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
-                            
-                            search_var = "angle";
-                            //search_var = "Body";
 
-                            //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
+                            search_var = "showingCharacterList";
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
 
-
+                            search_var = "iSelectedIndex";
                             search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
@@ -2231,13 +2250,26 @@ void debug_scan(float dtime)
                             }
 
 
-                            search_var = "CurrPlatform";
+                            search_var = "NEW";
                             //search_var = "Body";
 
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
 
 
-                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
+
+                            search_var = "LOAD";
+                            //search_var = "Body";
+
+                            //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
+
+
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -2262,28 +2294,28 @@ void debug_scan(float dtime)
                             */
 
 
-                            search_var = "WORD OF POWER LEARNED";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            search_var = "CONTINUE";
+                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
 
-                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "Take", skip_problematic);
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "Gary", skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
                             
-                            /*
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "magic", skip_problematic);
+                            
+                           // search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "NEW", skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
-                            */
+
 
                             /*
                             //SEARCH EXACT NUMBER IN FORM OF STRING

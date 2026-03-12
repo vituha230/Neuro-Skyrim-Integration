@@ -162,6 +162,8 @@ namespace MiscThings {
 
     void book_reader(float dtime);
 
+    void save_loader(float dtime);
+
 
     namespace General::Script
     {

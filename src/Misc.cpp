@@ -3185,6 +3185,408 @@ namespace MiscThings {
     }
 
 
+    bool save_loader_settings_done = false;
+    bool auto_load = false;
+    bool save_loader_done = false;
+    std::string character_name = "";
+    bool main_menu_was_opened = false;
+    bool selected_character = false;
+    bool confirming_character = false;
+    bool force_new_game = false;
+
+
+
+    int get_main_menu_selected_index()
+    {
+        int result = -1;
+
+        auto ui = RE::UI::GetSingleton();
+        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+        {
+            RE::GFxValue var1;
+            //_root.MenuHolder.Menu_mc.MainList.EntriesA[6].0.text = $CONTINUE
+            const auto menu_view = ui->GetMovieView("Main Menu").get();
+            if (menu_view)
+            {
+                if (menu_view->GetVariable(&var1, "_root.MenuHolder.Menu_mc.MainListHolder.List_mc.iSelectedIndex"))
+                {
+                    if (!var1.IsNull() && var1.IsNumber())
+                        result = var1.GetNumber();
+                }
+            }
+        }
+        return result;
+    }
+
+
+    bool is_in_character_slide()
+    {
+        auto ui = RE::UI::GetSingleton();
+        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+        {
+            RE::GFxValue var1;
+            //_root.MenuHolder.Menu_mc.MainList.EntriesA[6].0.text = $CONTINUE
+            const auto menu_view = ui->GetMovieView("Main Menu").get();
+            if (menu_view)
+            {
+                menu_view->GetVariable(&var1, "_root.MenuHolder.Menu_mc.SaveLoadPanel_mc.showingCharacterList");
+                if (!var1.IsNull() && var1.IsBool())
+                    return var1.GetBool();
+
+                if (!var1.IsNull() && var1.IsNumber())
+                    return var1.GetNumber();
+
+            }
+        }
+        return false;
+    }
+
+
+    int get_main_menu_selected_save()
+    {
+        int result = -1;
+
+        auto ui = RE::UI::GetSingleton();
+        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+        {
+            RE::GFxValue var1;
+            //_root.MenuHolder.Menu_mc.MainList.EntriesA[6].0.text = $CONTINUE
+            const auto menu_view = ui->GetMovieView("Main Menu").get();
+            if (menu_view)
+            {
+                if (menu_view->GetVariable(&var1, "_root.MenuHolder.Menu_mc.SaveLoadPanel_mc.List_mc.iSelectedIndex"))
+                {
+                    if (!var1.IsNull() && var1.IsNumber())
+                        result = var1.GetNumber();
+                }
+            }
+        }
+        return result;
+    }
+
+
+    bool is_in_save_list()
+    {
+        auto ui = RE::UI::GetSingleton();
+        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+        {
+            RE::GFxValue var1;
+            //_root.MenuHolder.Menu_mc.MainList.EntriesA[6].0.text = $CONTINUE
+            const auto menu_view = ui->GetMovieView("Main Menu").get();
+            if (menu_view)
+            {
+                menu_view->GetVariable(&var1, "_root.MenuHolder.Menu_mc.SaveLoadPanel_mc.List_mc.focused");
+                if (!var1.IsNull() && var1.IsNumber())
+                    return var1.GetNumber();
+            }
+        }
+        return false;
+    }
+
+    int find_character_save_index()
+    {
+        int result = -1;
+
+        auto ui = RE::UI::GetSingleton();
+        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+        {
+            RE::GFxValue var1;
+            //_root.MenuHolder.Menu_mc.MainList.EntriesA[6].0.text = $CONTINUE
+            const auto menu_view = ui->GetMovieView("Main Menu").get();
+            if (menu_view)
+            {
+                RE::GFxValue save_list;
+                int save_list_size = 0;
+                menu_view->GetVariable(&save_list, "_root.MenuHolder.Menu_mc.SaveLoadListHolder.List_mc.EntriesA");
+                if (!save_list.IsNull() && save_list.IsArray())
+                    save_list_size = save_list.GetArraySize();
+
+                std::string base_path = "_root.MenuHolder.Menu_mc.SaveLoadListHolder.List_mc.EntriesA.";
+                for (int i = 0; i < save_list_size; i++)
+                {
+                    std::string var_path = base_path + std::to_string(i) + ".text";
+                    RE::GFxValue var_save_file_name;
+                    menu_view->GetVariable(&var_save_file_name, var_path.c_str());
+                    if (!var_save_file_name.IsNull() && var_save_file_name.IsString())
+                    {
+                        std::string save_file_name = var_save_file_name.GetString();
+
+                        if (save_file_name.find(character_name) != std::string::npos)
+                            return i;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+
+
+
+    void move_to_item(int index)
+    {
+        int selected_item = get_main_menu_selected_index();
+
+        if (selected_item > index)
+            cursor_up();
+
+        if (selected_item < index)
+            cursor_down();
+    }
+
+
+    void move_to_save(int index)
+    {
+        int selected_item = get_main_menu_selected_save();
+
+        if (selected_item > index)
+            cursor_up();
+
+        if (selected_item < index)
+            cursor_down();
+    }
+
+
+
+    void save_loader(float dtime)
+    {
+        if (!save_loader_done)
+        {
+            if (!save_loader_settings_done)
+            {
+                std::fstream fs("neuroSkyrim.ini");
+
+                if (!fs)
+                {
+                    //file doesnt exist
+                    std::ofstream o_fs("neuroSkyrim.ini");
+                    o_fs << "[Settings]\n";
+                    o_fs << "autoLoadLastSave = 0\n";
+                    o_fs << "forceNewGame = 0\n";
+                    o_fs << "character = Gary\n";
+                    o_fs.close();
+                    save_loader_settings_done = true;
+                    save_loader_done = true;
+                }
+                else
+                {
+                    //file exists
+                    std::string line = "";
+
+
+                    while (std::getline(fs, line)) {
+
+                        auto endline_pos = fs.tellg();
+                        auto startline_pos = endline_pos - static_cast<std::streampos>(line.length());
+
+                        //autoload check
+                        auto autoload = line.find("autoLoadLastSave");
+                        if (autoload != std::string::npos)
+                        {
+                            auto val = line.find_first_of("01");
+                            if (val != std::string::npos)
+                            {
+                                auto autoload_setting_char = line.at(val);
+
+                                if (autoload_setting_char == '1')
+                                {
+                                    auto_load = true;
+                                }
+                            }
+                        }
+
+                        auto save_name = line.find("character");
+                        if (save_name != std::string::npos)
+                        {
+                            auto delimeter_pos = line.find("=");
+                            if (delimeter_pos != std::string::npos)
+                            {
+                                auto character_name_pos_start = line.find_first_not_of("= ", delimeter_pos);
+
+                                if (character_name_pos_start != std::string::npos)
+                                {
+                                    auto character_name_pos_end = line.find_first_of("\n =", character_name_pos_start);
+
+                                    if (character_name_pos_end == std::string::npos)
+                                    {
+                                        character_name_pos_end = line.length();
+                                    }
+
+                                    if (character_name_pos_end >= character_name_pos_start)
+                                    {
+                                        character_name = line.substr(character_name_pos_start, character_name_pos_end - character_name_pos_start);
+                                    }
+                                }
+                            }
+                        }
+
+
+                        auto force_new_game_line = line.find("forceNewGame");
+                        if (force_new_game_line != std::string::npos)
+                        {
+                            auto val = line.find_first_of("01");
+                            if (val != std::string::npos)
+                            {
+                                auto autoload_setting_char = line.at(val);
+
+                                if (autoload_setting_char == '1')
+                                {
+                                    force_new_game = true;
+                                    fs.seekp(startline_pos + val - 2);
+                                    fs.put('0');
+                                    fs.seekp(endline_pos);
+                                }
+                            }
+                        }
+
+
+                    }
+                }
+
+                fs.close();
+
+                save_loader_settings_done = true;
+            }
+            else
+            {
+                if (auto_load)
+                {
+                    auto ui = RE::UI::GetSingleton();
+                    if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+                    {
+                        RE::GFxValue var1;
+                        const auto menu_view = ui->GetMovieView("Main Menu").get();
+                        if (menu_view)
+                        {
+                            //_root.MenuHolder.Menu_mc.MainList.Entry8.textField.text = CONTINUE        //0
+                            //_root.MenuHolder.Menu_mc.MainList.Entry9.textField.text = NEW             //1
+                            //_root.MenuHolder.Menu_mc.MainList.Entry10.textField.text = LOAD           //2
+
+                            if (force_new_game)
+                            {
+                                if (get_main_menu_selected_index() != 1)
+                                    move_to_item(1);
+                                else
+                                    confirm();
+                            }
+                            else
+                            {
+                                bool can_continue = false;
+
+                                if (menu_view->GetVariable(&var1, "_root.MenuHolder.Menu_mc.MainList.Entry8.textField.textColor"))
+                                {
+                                    int text_color = 0;
+
+
+                                    if (!var1.IsNull() && var1.IsNumber())
+                                        text_color = var1.GetNumber();
+
+                                    can_continue = text_color > 16750000;
+
+                                }
+
+                                set_universal_block(0.5f);
+
+                                if (character_name != "")
+                                {
+                                    if (get_main_menu_selected_index() != 2)
+                                        move_to_item(2);
+                                    else
+                                    {
+                                        if (!is_in_save_list())
+                                            confirm();
+                                        else
+                                        {
+                                            if (!selected_character)
+                                            {
+                                                if (!confirming_character)
+                                                {
+                                                    int save_index = find_character_save_index();
+
+                                                    if (save_index == -1)
+                                                    {
+                                                        //cant find this name
+                                                        if (is_in_save_list())
+                                                            cancel();
+                                                        else
+                                                        {
+                                                            character_name = "";
+                                                            return;
+                                                        }
+
+                                                    }
+                                                    else
+                                                    {
+                                                        if (get_main_menu_selected_save() != save_index)
+                                                            move_to_save(save_index);
+                                                        else
+                                                        {
+                                                            confirming_character = true;
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (is_in_character_slide())
+                                                        confirm();
+                                                    else
+                                                    {
+                                                        selected_character = true;
+                                                        return;
+                                                    }
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                if (get_main_menu_selected_save() != 0)
+                                                    move_to_save(0);
+                                                else
+                                                    confirm();
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (can_continue)
+                                    {
+                                        if (get_main_menu_selected_index() != 0) //continue game if character name not given or not found and can continue
+                                            move_to_item(0);
+                                        else
+                                            confirm();
+                                    }
+                                    else
+                                    {
+                                        if (get_main_menu_selected_index() != 1) //cant continue. start new game
+                                            move_to_item(1);
+                                        else
+                                            confirm();
+
+                                    }
+                                }
+                            }
+                        }
+
+
+                        main_menu_was_opened = true;
+                        //confirm();
+                    }
+
+                    if (main_menu_was_opened && !ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+                    {
+                        auto_load = false;
+                        save_loader_done = true;
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
     {
         std::pair<bool, std::string> result{};

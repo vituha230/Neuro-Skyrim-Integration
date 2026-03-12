@@ -4,13 +4,10 @@
 //crucial:
 
 
-//TODO solitude prison. check other prisons too
-
 //TODO reanimating event catch + draugr wakes up from its grave
-
 //TODO test 1st dungeon puzzles with llm
-
 //TODO autoload last save
+
 
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dvemer mechanisms/traps
@@ -22,7 +19,10 @@
 //TODO: check all menus after force/choice merge
 //TODO catch animation events on all objects
 
+
 //arbitrary:
+//TODO maybe autouse heal/mana potions when needed.
+//TODO add quicksaves after big events
 //TODO maybe slam all barter items into one category like in alchemy
 //TODO running when path is along straight line
 //TODO put things into container/gift menu (i think for followers its give not take)
@@ -841,6 +841,7 @@ namespace Hooks {
                 }
 
 
+         
                 RandomMessageBoxProcessor::reset_menu();
                 WalkerProcessor::reset_walker();
                 MiscThings::clear_object_list();
@@ -1599,6 +1600,8 @@ private:
             const auto ui = RE::UI::GetSingleton();
             if (ui && !ui->IsMenuOpen(RE::Console::MENU_NAME))
             {
+                MiscThings::save_loader(dtime);
+
                 if (do_debug_scan) debug_scan(dtime);
                 BarterProcessor::processor(dtime);
                 LockpickProcessor::processor(dtime);

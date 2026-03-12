@@ -1789,7 +1789,10 @@ namespace PerksProcessor {
 		if (quit_until_no_menus_left)
 		{
 			if (!ui->IsMenuOpen(RE::StatsMenu::MENU_NAME) && !ui->IsMenuOpen(RE::TweenMenu::MENU_NAME) && !ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME))
+			{
+				quicksave();
 				reset_perks();
+			}
 			else
 			{
 				cancel();
