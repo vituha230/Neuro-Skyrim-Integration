@@ -3479,6 +3479,23 @@ namespace MiscThings {
                 if (auto_load)
                 {
 
+                    auto inputManager = RE::BSInputDeviceManager::GetSingleton();
+                    if (inputManager) 
+                    {
+                        auto keyboard = inputManager->GetKeyboard();
+
+                            bool pressed = (keyboard->curState[1] & 0x80) != 0; //escape
+
+                            if (pressed)
+                            {
+                                auto_load = false;
+                                save_loader_done = true;
+                                return;
+                            }
+                        
+
+                    }
+
                     auto ui = RE::UI::GetSingleton();
                     if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
                     {
