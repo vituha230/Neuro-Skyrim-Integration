@@ -6,7 +6,6 @@
 
 //TODO reanimating event catch + draugr wakes up from its grave
 //TODO test 1st dungeon puzzles with llm
-//TODO autoload last save
 
 
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)

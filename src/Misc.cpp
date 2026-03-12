@@ -3193,7 +3193,7 @@ namespace MiscThings {
     bool selected_character = false;
     bool confirming_character = false;
     bool force_new_game = false;
-
+    bool cancel_character_name = false;
 
 
     int get_main_menu_selected_index()
@@ -3311,7 +3311,7 @@ namespace MiscThings {
                     {
                         std::string save_file_name = var_save_file_name.GetString();
 
-                        if (save_file_name.find(character_name) != std::string::npos)
+                        if (save_file_name == character_name + " [Modded]")
                             return i;
                     }
                 }
@@ -3354,12 +3354,12 @@ namespace MiscThings {
         {
             if (!save_loader_settings_done)
             {
-                std::fstream fs("neuroSkyrim.ini");
+                std::fstream fs("_neuroSkyrim.ini");
 
                 if (!fs)
                 {
                     //file doesnt exist
-                    std::ofstream o_fs("neuroSkyrim.ini");
+                    std::ofstream o_fs("_neuroSkyrim.ini");
                     o_fs << "[Settings]\n";
                     o_fs << "autoLoadLastSave = 0\n";
                     o_fs << "forceNewGame = 0\n";
@@ -3405,7 +3405,7 @@ namespace MiscThings {
 
                                 if (character_name_pos_start != std::string::npos)
                                 {
-                                    auto character_name_pos_end = line.find_first_of("\n =", character_name_pos_start);
+                                    auto character_name_pos_end = line.find_first_of("\n=", character_name_pos_start);
 
                                     if (character_name_pos_end == std::string::npos)
                                     {
@@ -3451,6 +3451,7 @@ namespace MiscThings {
             {
                 if (auto_load)
                 {
+
                     auto ui = RE::UI::GetSingleton();
                     if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
                     {
@@ -3487,6 +3488,12 @@ namespace MiscThings {
 
                                 set_universal_block(0.5f);
 
+                                if (cancel_character_name && !is_in_save_list())
+                                {
+                                    character_name = "";
+                                }
+
+
                                 if (character_name != "")
                                 {
                                     if (get_main_menu_selected_index() != 2)
@@ -3507,13 +3514,10 @@ namespace MiscThings {
                                                     {
                                                         //cant find this name
                                                         if (is_in_save_list())
-                                                            cancel();
-                                                        else
                                                         {
-                                                            character_name = "";
-                                                            return;
+                                                            cancel_character_name = true;
+                                                            cancel();
                                                         }
-
                                                     }
                                                     else
                                                     {
