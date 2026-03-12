@@ -3287,6 +3287,8 @@ namespace MiscThings {
     {
         int result = -1;
 
+        std::vector<std::string> character_names{};
+
         auto ui = RE::UI::GetSingleton();
         if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
         {
@@ -3310,13 +3312,38 @@ namespace MiscThings {
                     if (!var_save_file_name.IsNull() && var_save_file_name.IsString())
                     {
                         std::string save_file_name = var_save_file_name.GetString();
+                        character_names.push_back(save_file_name);
 
-                        if (save_file_name == character_name + " [Modded]")
-                            return i;
                     }
                 }
             }
         }
+
+        int i = 0; //try full overlap
+        for (auto a_name : character_names)
+        {
+            if (a_name == character_name)
+                return i;
+            i++;
+        }
+
+        i = 0; //try full overlap with modded
+        for (auto a_name : character_names)
+        {
+            if (a_name == character_name + " [Modded]")
+                return i;
+            i++;
+        }
+
+        i = 0; //try partial
+        for (auto a_name : character_names)
+        {
+            if (a_name.find(character_name) != std::string::npos)
+                return i;
+            i++;
+        }
+
+
         return -1;
     }
 
