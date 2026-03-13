@@ -1374,6 +1374,20 @@ namespace Observer {
 																result.push_back("[ " + name + " closed]");
 														}
 
+														//
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorPortcullisGate01")
+														{
+															std::string name = MiscThings::insert_object_into_list_custom_name("Small metal gate", a_ref);
+
+															if (activation == 0)
+																result.push_back("[ " + name + " opened]");
+
+															if (activation == 1)
+																result.push_back("[ " + name + " closed]");
+														}
+
+
 														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("Metal gate", a_ref);
@@ -1413,7 +1427,7 @@ namespace Observer {
 															//	result.push_back("[" + name + " 3]");
 
 															if (activation == 4)
-																result.push_back("[" + name + " didn't move]");
+																result.push_back("[" + name + " didn't move... Seems like the puzzle rings on it must be rotated in correct positions for the key to work]");
 														}
 														//
 

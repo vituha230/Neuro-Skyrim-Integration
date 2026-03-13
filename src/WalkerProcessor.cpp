@@ -1381,7 +1381,7 @@ namespace WalkerProcessor {
 
 
         auto targeted_ref = get_targeted_ref();
-        if (targeted_ref && targeted_ref != target_ref) //not nice
+        if (targeted_ref)// && (targeted_ref != target_ref || quest_mode)) //not nice
         {
             auto base_obj = targeted_ref->GetBaseObject();
             if (base_obj && base_obj->GetFormType() == RE::FormType::Door && !turning_around)
@@ -1399,7 +1399,7 @@ namespace WalkerProcessor {
 
                 if (last_targeted_ref == targeted_ref)
                 {
-                    if (have_door_targeted_time > 0.15f)
+                    if (have_door_targeted_time > 0.3f)//0.15f)
                     {
                         //have_door_targeted_time = 0.0f;
                         //last_targeted_ref = nullptr;
@@ -7525,6 +7525,7 @@ namespace WalkerProcessor {
                                                             }
                                                         }
 
+                                                        return;
                                                     }
                                                     if ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7))
                                                     {

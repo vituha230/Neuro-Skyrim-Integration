@@ -34,6 +34,9 @@ namespace MiscThings {
             if (objects_around.second.find("Lever") != std::string::npos)
                 very_interesting_objects.push_back("Lever");
 
+            if (objects_around.second.find("Chain") != std::string::npos)
+                very_interesting_objects.push_back("Chain");
+
             if (objects_around.second.find("Ancient Nordic Door") != std::string::npos)
                 very_interesting_objects.push_back("Ancient Nordic Door");
 
@@ -317,7 +320,7 @@ namespace MiscThings {
 
         if (player_ref)
         {
-            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 600.0f,
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 800.0f,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
 
@@ -397,6 +400,13 @@ namespace MiscThings {
                                 std::string name = MiscThings::insert_object_into_list_custom_name("Metal gate", a_ref);
                                 result = name;
                             }
+
+                            if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorPortcullisGate01")
+                            {
+                                std::string name = MiscThings::insert_object_into_list_custom_name("Small metal gate", a_ref);
+                                result = name;
+                            }
+
 
                         }
                     }
@@ -1481,6 +1491,12 @@ namespace MiscThings {
                         }
 
                         
+                        if (model.find("RuinsMediumDoorLoad01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { -150.0f, 0.0f, 100.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
 
 
