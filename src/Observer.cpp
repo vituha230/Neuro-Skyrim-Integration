@@ -511,7 +511,7 @@ namespace Observer {
 								}
 
 
-								if (a_ref->AsReference()->IsActor() && MiscThings::raycastable(a_ref, scan_distance))
+								if (a_ref->AsReference()->IsActor())// && MiscThings::raycastable(a_ref, scan_distance))
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
 									{
