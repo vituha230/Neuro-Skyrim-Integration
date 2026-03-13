@@ -170,7 +170,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Walk to object specified by its ID)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id" })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     }
@@ -181,7 +181,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Walk to object specified by its ID and attack it with equipped weapons or spells)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id" })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     }
@@ -193,7 +193,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Walk to object specified by its ID and pickpocket it. Works only on humanoids)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id" })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     }

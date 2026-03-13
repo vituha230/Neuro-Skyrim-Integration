@@ -5028,13 +5028,18 @@ namespace MiscThings {
                             result.first = true;
                             if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
                             {
-                                if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                if (player_actor)
                                 {
-                                    ready_weapon(); //show off new weapon
+                                    if (!player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                    {
+                                        set_universal_block(1.0f);
+                                        ready_weapon();
+                                    }
+                                        
 
                                     //if (player_hp_less_than(90.0f) && is_self_healing_spell(spell))
                                     //{
-                                        try_casting_hand(right_hand);
+                                    try_casting_hand(right_hand);
                                     //}
                                 }
                                     

@@ -468,6 +468,8 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                         actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::DropInventoryItem::Action; action_pos++;
+
 
                         if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
                         {

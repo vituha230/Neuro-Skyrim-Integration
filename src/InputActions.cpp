@@ -743,6 +743,8 @@ bool make_long_cast_spell_hand(bool right, float dtime)
     if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
     {
         ready_weapon();
+        set_universal_block(1.0f);
+        return false;
     }
 
 
@@ -755,8 +757,9 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
     bool check_time = !MiscThings::is_self_healing_spell(right);
 
+    spell_cast_time += dtime;
 
-    if (low_mana_check || (check_time && (spell_cast_time < WalkerProcessor::get_attack_time(right))) || (WalkerProcessor::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
+    if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (WalkerProcessor::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
     {
 
         //set_universal_block(1.0f);
@@ -784,11 +787,13 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         else
             left_attack_spell();
 
+        
+
         return false;
     }
 
 
-    spell_cast_time += dtime;
+    
 
 }
 

@@ -3451,7 +3451,17 @@ namespace WalkerProcessor {
                 Observer::reset_threats();
 
             if (target_ref != random_target)
-                reset_walker();
+            {
+                if (internal_call && explore_mode_notified)
+                {
+                    reset_walker();
+                    result.first = false;
+                    result.second = "[Finished exploring]";
+                    return result;
+                }
+                else
+                    reset_walker();
+            }
             else
             {
                 //min_dist = 20000.0f;
