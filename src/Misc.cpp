@@ -1318,6 +1318,12 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("PortcullisLarge01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { -200.0f, 0.0f, 120.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
                     }
 
                     if (base_obj->GetFormType() == RE::FormType::Door)
@@ -2187,9 +2193,8 @@ namespace MiscThings {
 
 
 
-
     bool objects_around_valid = false;
-    std::map<int, RE::TESObjectREFR*> objects_around{};
+    std::map<int, object_data> objects_around{};
 
 
     bool is_objects_around_valid()
@@ -2205,7 +2210,7 @@ namespace MiscThings {
         {
             for (auto list_entry : objects_around)
             {
-                if (list_entry.second == object)
+                if (list_entry.second.object == object)
                 {
                     result = true;
                     break;
@@ -2217,7 +2222,7 @@ namespace MiscThings {
 
 
 
-    std::map<int, RE::TESObjectREFR*>* get_p_objects_around()
+    std::map<int, object_data>* get_p_objects_around()
     {
         if (objects_around_valid)
         {
@@ -2781,7 +2786,7 @@ namespace MiscThings {
         {
             for (auto object_entry : objects_around)
             {
-                if (object_entry.second == refr)
+                if (object_entry.second.object == refr)
                 {
                     result = "[id " + std::to_string(object_entry.first) + "]" + get_object_stateless_info(refr);
                     break;
@@ -2802,7 +2807,7 @@ namespace MiscThings {
             bool found = false;
             for (auto object_entry : objects_around)
             {
-                if (object_entry.second == refr)
+                if (object_entry.second.object == refr)
                 {
                     result = "[id " + std::to_string(object_entry.first) + "] " + name;
                     found = true;
@@ -2814,7 +2819,7 @@ namespace MiscThings {
             {
                 int new_id = std::size(objects_around);
 
-                objects_around.insert({ new_id, refr });
+                objects_around.insert({ new_id, {refr, name} });
                 if (!objects_around_valid)
                     objects_around_valid = true;
                 result = "[id " + std::to_string(new_id) + "] " + name;
@@ -2835,11 +2840,19 @@ namespace MiscThings {
             bool found = false;
             for (auto object_entry : objects_around)
             {
-                if (object_entry.second == refr)
+                if (object_entry.second.object == refr)
                 {
-                    std::string info = get_object_full_info(refr);
-                    if (info != "")
-                        result = "[id " + std::to_string(object_entry.first) + "]" + get_object_full_info(refr);
+                    if (object_entry.second.custom_name != "")
+                    {
+                        result = "[id " + std::to_string(object_entry.first) + "]" + object_entry.second.custom_name;
+                    }
+                    else
+                    {
+                        std::string info = get_object_full_info(refr);
+                        if (info != "")
+                            result = "[id " + std::to_string(object_entry.first) + "]" + get_object_full_info(refr);
+
+                    }
 
                     found = true;
                     break;
@@ -2850,7 +2863,7 @@ namespace MiscThings {
             {
                 int new_id = std::size(objects_around);
 
-                objects_around.insert({ new_id, refr });
+                objects_around.insert({ new_id, {refr, ""} });
                 if (!objects_around_valid)
                     objects_around_valid = true;
 
@@ -5738,9 +5751,9 @@ namespace MiscThings {
     {
         auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
 
-        for (std::pair<int, RE::TESObjectREFR*> object : objects_around)
+        for (std::pair<int, object_data> object : objects_around)
         {
-            if (object.second == test_object) //it existed in our list...
+            if (object.second.object == test_object) //it existed in our list...
             {
                 bool its_valid = false;
 
@@ -6089,15 +6102,15 @@ namespace MiscThings {
         objects_around_valid = true;
         
 
-        std::vector<std::pair<int, RE::TESObjectREFR*>> local_copy{};
+        std::vector<std::pair<int, object_data>> local_copy{};
 
 
         RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 50000.0,
             [&](RE::TESObjectREFR* a_ref) {
 
-                for (std::pair<int, RE::TESObjectREFR*> object : objects_around)
+                for (std::pair<int, object_data> object : objects_around)
                 {
-                    if (object.second == a_ref)
+                    if (object.second.object == a_ref)
                     {
                         if (is_object_valid(a_ref))
                             local_copy.push_back(object);
@@ -6109,12 +6122,12 @@ namespace MiscThings {
             });
 
 
-        std::sort(local_copy.begin(), local_copy.end(), [&](std::pair<int, RE::TESObjectREFR*> left, std::pair<int, RE::TESObjectREFR*> right) {
+        std::sort(local_copy.begin(), local_copy.end(), [&](std::pair<int, object_data> left, std::pair<int, object_data> right) {
             //if (decltype(left.second) != RE::TESObjectREFR*)
 
-            if (left.second->data.objectReference && left.second->data.objectReference && 
-                right.second->data.objectReference)
-                return left.second->GetDistance(player) < right.second->GetDistance(player); //switch > to < for inversed order. this is last->closest
+            if (left.second.object->data.objectReference && left.second.object->data.objectReference &&
+                right.second.object->data.objectReference)
+                return left.second.object->GetDistance(player) < right.second.object->GetDistance(player); //switch > to < for inversed order. this is last->closest
             else
                 return false;
 
@@ -6136,7 +6149,7 @@ namespace MiscThings {
 
         for (auto object : local_copy)
         {
-            auto this_object = object.second;
+            auto this_object = object.second.object;
 
             if (this_object->data.objectReference)
             {

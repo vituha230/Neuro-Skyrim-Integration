@@ -34,6 +34,12 @@ namespace MiscThings {
 
 
 
+    struct object_data {
+        RE::TESObjectREFR* object;
+        std::string custom_name = "";
+    };
+
+
     bool is_on_horse();
 
 
@@ -41,7 +47,7 @@ namespace MiscThings {
     std::pair<bool, std::string> GetGold();
     std::pair<bool, std::string> GetObjectsAround(int type);
     bool is_objects_around_valid();
-    std::map<int, RE::TESObjectREFR*>* get_p_objects_around();
+    std::map<int, object_data>* get_p_objects_around();
     void clear_object_list();
     RE::NiPoint3 get_looking_point_shift(RE::TESObjectREFR* object, bool pickpocket_mode);
     RE::NiPoint3 rotate_vector_by_angles(RE::NiPoint3 v, RE::NiPoint3 object_angles);

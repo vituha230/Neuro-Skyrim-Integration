@@ -3535,14 +3535,14 @@ namespace WalkerProcessor {
             if (object != objects_around->end())
             {
 
-                if (!MiscThings::is_object_still_valid(object->second))
+                if (!MiscThings::is_object_still_valid(object->second.object))
                 {
                     result.first = false;
                     result.second = "This object doesnt exist anymore";
                     return result;
                 }
 
-                if ((!object->second->IsHumanoid() || (object->second->IsHumanoid() && object->second->IsDead())) && interaction == 2)
+                if ((!object->second.object->IsHumanoid() || (object->second.object->IsHumanoid() && object->second.object->IsDead())) && interaction == 2)
                 {
                     result.first = false;
                     result.second = "Cannot pickpocket this target";
@@ -3631,7 +3631,7 @@ namespace WalkerProcessor {
                 {
                     Observer::reset_threats();
 
-                    if (target_ref != object->second || interaction != interaction_after_walk)
+                    if (target_ref != object->second.object || interaction != interaction_after_walk)
                         reset_walker();
                     else
                     {
@@ -3656,7 +3656,7 @@ namespace WalkerProcessor {
                     {
                         RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount_ptr.get();
 
-                        if (mount_refr == object->second)
+                        if (mount_refr == object->second.object)
                         {
                             if (interaction == 1)
                             {
@@ -3677,7 +3677,7 @@ namespace WalkerProcessor {
                 }
 
 
-                target_ref = object->second;
+                target_ref = object->second.object;
 
                 have_target_to_walk = true;
 
@@ -3693,7 +3693,7 @@ namespace WalkerProcessor {
 
                 reminder_start_pos = player->GetPosition();
                 reminder_start_pos = player->GetPosition();
-                reminder_target_name = MiscThings::insert_object_into_list_and_get_info(object->second);
+                reminder_target_name = MiscThings::insert_object_into_list_and_get_info(object->second.object);
 
 
                 if (interaction > 0 && interaction < 4)
@@ -3771,7 +3771,7 @@ namespace WalkerProcessor {
                 if (have_target_to_walk)
                 {
                     Observer::reset_threats();
-                    if (target_ref != object->second)
+                    if (target_ref != object->second.object)
                         reset_walker();
                     else
                     {
@@ -3788,13 +3788,13 @@ namespace WalkerProcessor {
 
 
 
-                target_ref = object->second;
+                target_ref = object->second.object;
 
                 have_target_to_walk = true;
 
                 reminder_start_pos = player->GetPosition();
                 reminder_start_pos = player->GetPosition();
-                reminder_target_name = MiscThings::insert_object_into_list_and_get_info(object->second);
+                reminder_target_name = MiscThings::insert_object_into_list_and_get_info(object->second.object);
 
                 interaction_after_walk = -1;
 
@@ -4760,9 +4760,12 @@ namespace WalkerProcessor {
                 auto player_ref = player->AsReference();
                 RE::BSString result_string = "";
 
-                base_obj->GetActivateText(player_ref, result_string);
+                RE::TESNPC* player_npc = (RE::TESNPC*)RE::TESForm::LookupByID(0x7); //left hand
+                player_npc->GetActivateText(target_ref, result_string);
 
-                if (result_string != "")
+                //base_obj->GetActivateText(player_ref, result_string);
+
+                if (result_string != "" && result_string != "Search\n")
                     return true;
             }
         }
@@ -5790,7 +5793,7 @@ namespace WalkerProcessor {
 
         auto result_target = get_targeted_ref();
 
-        if ((interaction_after_walk == 1 || interaction_after_walk == 2) && !(MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || (quest_mode && !target_is_interactive())))
+        if ((interaction_after_walk == 1 || interaction_after_walk == 2) && !(MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive()))//(quest_mode && !target_is_interactive())))
             return false;
 
         switch (interaction_after_walk) {
@@ -6178,6 +6181,9 @@ namespace WalkerProcessor {
     void path_is_blocked_result(RE::TESObjectREFR* result_target)
     {
         std::string blocking_object_name = "Something";
+
+        bool potential_puzzle = false;
+
         if (result_target)
         {
             std::string result_target_name = result_target->GetDisplayFullName();
@@ -6192,7 +6198,11 @@ namespace WalkerProcessor {
         {
             std::string check_name = MiscThings::get_potential_blocking_object();
             if (check_name != "")
+            {
+                potential_puzzle = true;
                 blocking_object_name = check_name;
+            }
+                
         }
 
         if (MiscThings::is_on_horse())
@@ -6215,6 +6225,7 @@ namespace WalkerProcessor {
                 send_random_context("[" + blocking_object_name + " blocks the object. Maybe it is inaccessible at all]");
             else
                 send_random_context("[" + blocking_object_name + " blocks the object]");
+
         }
             
 
@@ -7046,7 +7057,7 @@ namespace WalkerProcessor {
                                                     std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
                                                     if (potential_block != "")
-                                                        fail_text = "[ " + potential_block + " blocks the path]";
+                                                        fail_text = "[ " + potential_block + " blocks the path. Maybe you need to interact with something to go past it, or destroy it if its destructuble]";
                                                     send_random_context(fail_text);
                                                     reset_walker();
                                                 }
@@ -7127,7 +7138,7 @@ namespace WalkerProcessor {
 
                                                         //
 
-                                                        if (MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || (quest_mode && !target_is_interactive()))
+                                                        if (MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive())//(quest_mode && !target_is_interactive()))
                                                         {
                                                             //all good
 
@@ -7506,7 +7517,7 @@ namespace WalkerProcessor {
                                                             std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                             std::string potential_block = MiscThings::get_potential_blocking_object();
                                                             if (potential_block != "")
-                                                                fail_text = "[ " + potential_block + " blocks the path]";
+                                                                fail_text = "[ " + potential_block + " blocks the path. Maybe you need to interact with something to go past it, or destroy it if its destructuble]";
                                                             send_random_context(fail_text);
                                                             remove_navmesh_cutter();
                                                             reset_walker();
@@ -7543,7 +7554,7 @@ namespace WalkerProcessor {
                                                     std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
                                                     if (potential_block != "")
-                                                        fail_text = "[ " + potential_block + " blocks the path]";
+                                                        fail_text = "[ " + potential_block + " blocks the path. Maybe you need to interact with something to go past it, or destroy it if its destructuble]";
                                                     send_random_context(fail_text);
                                                     reset_walker();
                                                 }
