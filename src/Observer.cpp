@@ -511,9 +511,9 @@ namespace Observer {
 								}
 
 
-								if (a_ref->AsReference()->IsActor() && MiscThings::raycastable(a_ref, scan_distance))
+								if (a_ref->AsReference()->IsActor())
 								{
-									if (!MiscThings::is_object_in_the_list(a_ref))
+									if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, scan_distance))
 									{
 										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 										if (info != "")
@@ -525,7 +525,7 @@ namespace Observer {
 
 								if (base_type == RE::FormType::Door)
 								{
-									if (!MiscThings::is_object_in_the_list(a_ref))
+									if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, scan_distance))
 									{
 										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 										if (info != "")
@@ -537,7 +537,7 @@ namespace Observer {
 
 								if (base_type == RE::FormType::Activator)
 								{
-									if (!MiscThings::is_object_in_the_list(a_ref))
+									if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, scan_distance))
 									{
 										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 										if (info != "" && MiscThings::is_object_valid(a_ref))
@@ -553,7 +553,7 @@ namespace Observer {
 									{
 										if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref))
+											if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, scan_distance))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
@@ -637,7 +637,7 @@ namespace Observer {
 										auto workbenchtype = furniture->workBenchData.benchType;
 										if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref))
+											if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
@@ -647,7 +647,7 @@ namespace Observer {
 										else
 										{
 											if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-												if (!MiscThings::is_object_in_the_list(a_ref))
+												if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
 												{
 													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 													if (info != "")
