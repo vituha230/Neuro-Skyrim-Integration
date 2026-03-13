@@ -239,16 +239,30 @@ namespace Capabilities
 
     //CastEquipSpell
 
-    namespace CastEquipSpell
+    namespace CastSpell
     {
-        constexpr char Name[] = "cast_or_equip_spell";
+        constexpr char Name[] = "cast_spell";
         constexpr char Desc[] =
-            R"(Cast or equip spell. Requires spell ID. )";
+            R"(Cast spell. Requires spell ID. )";
         constexpr char JsonSchema[] =
             R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the spell. Use get_available_spells to get list of spell IDs. ", "type": "integer" } }, "required": ["id"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
+
+
+    namespace EquipSpell
+    {
+        constexpr char Name[] = "equip_spell";
+        constexpr char Desc[] =
+            R"(Equip spell in hand. Requires spell ID. )";
+        constexpr char JsonSchema[] =
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the spell. Use get_available_spells to get list of spell IDs. ", "type": "integer" } }, "required": ["id"] })";//
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    } // namespace SelectChoiceOption
+
+
 
     namespace UnlockShoutLevel
     {

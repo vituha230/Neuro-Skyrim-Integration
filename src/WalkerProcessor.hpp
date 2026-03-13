@@ -84,6 +84,7 @@ namespace WalkerProcessor {
 
 	RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target);
 
+	float get_attack_time(bool right);
 
 	std::pair<bool, std::string> make_spins(int amount, int speed);
 

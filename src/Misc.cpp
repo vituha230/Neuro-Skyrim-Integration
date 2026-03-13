@@ -4945,7 +4945,8 @@ namespace MiscThings {
 
 
 
-    std::pair<bool, std::string> use_spell_by_index(int id)
+
+    std::pair<bool, std::string> cast_spell_by_index(int id)
     {
 
         //TODO: somehow get proper result of this action
@@ -5031,16 +5032,15 @@ namespace MiscThings {
                                 {
                                     ready_weapon(); //show off new weapon
 
-                                    if (player_hp_less_than(90.0f) && is_self_healing_spell(spell))
-                                    {
+                                    //if (player_hp_less_than(90.0f) && is_self_healing_spell(spell))
+                                    //{
                                         try_casting_hand(right_hand);
-                                    }
+                                    //}
                                 }
                                     
 
                                 result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                             }
-                                
                             else
                                 result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                         }
@@ -5129,6 +5129,191 @@ namespace MiscThings {
         return result;
     }
 
+
+    //decided to leave its ability to cast too in case they get confused
+    std::pair<bool, std::string> equip_spell_by_index(int id)
+    {
+
+        //TODO: somehow get proper result of this action
+        //TODO: some abilities are one time per day use but must be equipped. need different mechanic 
+
+
+
+        std::pair<bool, std::string> result{};
+
+        if (MiscThings::is_intro() || MiscThings::is_intro2())
+        {
+            result.first = false;
+            result.second = "Cannot use spells right now. ";
+            return result;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)(player->AsReference());
+
+
+
+        if (std::size(spells) <= 0)
+        {
+            auto get_spells_result = get_available_spells();
+            send_random_context("Available spells: " + get_spells_result.second);
+        }
+
+
+        if (player_actor && spells.find(id) != spells.end())
+        {
+            auto spell_entry = spells.find(id);
+
+            if (spell_entry->second.spell)
+            {
+                RE::SpellItem* spell = spell_entry->second.spell;
+
+                auto equip_slot = spell->GetEquipSlot();
+
+                auto slot_id = equip_slot->GetFormID();
+
+                auto equip_manager = RE::ActorEquipManager::GetSingleton();
+
+                if (equip_manager)
+                {
+                    if (slot_id == 0x00025BEE) //voice
+                    {
+                        equip_manager->EquipSpell(player_actor, spell, equip_slot);
+                        right_attack_cancel();
+                        left_attack_cancel();
+                        use_ult();
+                        result.first = true;
+                        if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
+                            result.second = "[Casting spell:  [id " + std::to_string(id) + "] " + spell->GetFullName() + "]";
+                        else
+                            result.second = "[Using ult: [id " + std::to_string(id) + "] " + spell->GetFullName() + "]";
+                    }
+                    else
+                    {
+                        if (slot_id == 0x00013F44) //either hand
+                        {
+                            auto slot = get_free_slot();
+                            std::string equip_hand = "";
+
+                            bool right_hand = false;
+
+                            if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
+                            {
+                                right_hand = true;
+                                equip_hand = " in right hand";
+                            }
+
+
+                            if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
+                                equip_hand = " in left hand";
+
+
+
+                            equip_manager->EquipSpell(player_actor, spell, slot);
+                            result.first = true;
+                            if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
+                            {
+                                if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                {
+                                    ready_weapon(); //show off new weapon
+
+                                    if (player_hp_less_than(90.0f) && is_self_healing_spell(spell))
+                                    {
+                                        try_casting_hand(right_hand);
+                                    }
+                                }
+
+
+                                result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                            }
+
+                            else
+                                result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                        }
+                        else
+                        {
+                            result.first = false;
+                            result.second = "Cannot use [id " + std::to_string(id) + "] " + spell->GetFullName() + "]";
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (spell_entry->second.shout)
+                {
+                    RE::TESShout* shout = spell_entry->second.shout;
+
+                    auto equip_slot = shout->GetEquipSlot();
+
+                    auto slot_id = equip_slot->GetFormID();
+
+                    auto equip_manager = RE::ActorEquipManager::GetSingleton();
+
+                    if (equip_manager)
+                    {
+                        if (slot_id == 0x00025BEE) //voice
+                        {
+                            if (player_actor->GetVoiceRecoveryTime() < 0.01)
+                            {
+                                int unlocked_words = 0;
+
+                                for (auto variation : shout->variations)
+                                {
+                                    if ((variation.word->formFlags & 65600) == 65600)
+                                        unlocked_words++;
+                                }
+                                if (unlocked_words > 0)
+                                {
+                                    equip_manager->EquipShout(player_actor, shout);
+                                    //use_ult();
+                                    right_attack_cancel();
+                                    left_attack_cancel();
+                                    make_long_ult_cast();
+                                    result.first = true;
+                                    result.second = "[Using [id " + std::to_string(id) + "] " + shout->GetFullName();
+                                }
+                                else
+                                {
+                                    result.first = false;
+                                    result.second = "You have not unlocked any words of this shout. ";
+                                }
+                            }
+                            else
+                            {
+                                result.first = false;
+                                result.second = "Cannot shout, the voice has not recovered yet. ";
+                            }
+                        }
+                        else
+                        {
+                            result.first = false;
+                            result.second = "Cannot use this shout. ";
+                        }
+                    }
+                    else
+                    {
+                        result.first = false;
+                        result.second = "You cannot use it now. ";
+                    }
+                }
+                else
+                {
+                    result.first = false;
+                    result.second = "Cannot use this spell. ";
+                }
+            }
+
+        }
+        else
+        {
+            result.first = false;
+            result.second = "Invalid spell ID. Use get_available_spells to get valid IDs. ";
+        }
+
+
+        return result;
+    }
 
 
 

@@ -39,7 +39,8 @@ neurosdk_action ActionsList[] = {
                                     
 
                                     Capabilities::GetSpells::Action,
-                                    Capabilities::CastEquipSpell::Action,
+                                    Capabilities::CastSpell::Action,
+                                    Capabilities::EquipSpell::Action,
                                     Capabilities::UnlockShoutLevel::Action, //TODO: probably calculate ourselves and force just like levelup
 
                                     Capabilities::GetInventory::Action,
@@ -75,7 +76,8 @@ neurosdk_action ActionsListNoForces[] = {
 
 
                                     Capabilities::GetSpells::Action,
-                                    Capabilities::CastEquipSpell::Action,
+                                    Capabilities::CastSpell::Action,
+                                    Capabilities::EquipSpell::Action,
                                     Capabilities::UnlockShoutLevel::Action, //TODO: probably calculate ourselves and force just like levelup
 
                                     Capabilities::GetInventory::Action,
@@ -104,7 +106,8 @@ neurosdk_action ActionsListNoForces2[] = { //these are for moments when we cant 
 
 
                                     //Capabilities::GetSpells::Action,
-                                    Capabilities::CastEquipSpell::Action,
+                                    Capabilities::CastSpell::Action,
+                                    Capabilities::EquipSpell::Action,
                                     Capabilities::Spin::Action,
                                    // Capabilities::UnlockShoutLevel::Action, //TODO: probably calculate ourselves and force just like levelup
 
@@ -450,7 +453,8 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         actions_to_register[action_pos] = Capabilities::AttackObject::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::PickpocketObject::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::CastSpell::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::EquipSpell::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::Spin::Action; action_pos++;
 
 
@@ -998,14 +1002,25 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
 
 
 
-                            if (name == Capabilities::CastEquipSpell::Name)
+                            if (name == Capabilities::CastSpell::Name)
                             {
                                 Impl::JSON::NeuroChoiceJson json{};
 
                                 if (glz::read_json(json, messageQueue[i].value.action.data))
                                     failed_to_parse_json = true;
                                 else
-                                    command_result = MiscThings::use_spell_by_index(json.id);
+                                    command_result = MiscThings::cast_spell_by_index(json.id);
+                            }
+
+
+                            if (name == Capabilities::EquipSpell::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = MiscThings::equip_spell_by_index(json.id);
                             }
 
 

@@ -26,7 +26,7 @@ bool were_casting_something_left = false;
 bool do_cast = false;
 bool right_hand_cast = false;
 bool notified_cast = false;
-
+float spell_cast_time = 0.0f;
 
 bool input_wants_to_cast()
 {
@@ -45,7 +45,7 @@ void reset_input_processor()
     do_cast = false;
     right_hand_cast = false;
     notified_cast = false;
-
+    spell_cast_time = 0.0f;
 }
 
 /*
@@ -729,12 +729,13 @@ void try_casting_hand(bool right)
     {
         do_cast = true;
         right_hand_cast = right;
+        spell_cast_time = 0.0f;
     }
 
 }
 
 
-bool make_long_cast_spell_hand(bool right)
+bool make_long_cast_spell_hand(bool right, float dtime)
 {
     auto player = RE::PlayerCharacter::GetSingleton();
     auto player_actor = (RE::Actor*)player->AsReference();
@@ -752,8 +753,10 @@ bool make_long_cast_spell_hand(bool right)
 
     bool low_mana_check = (!dont_check_mana && WalkerProcessor::has_spell_equipped(right) && (low_mana_detected || (MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(right))));
 
+    bool check_time = !MiscThings::is_self_healing_spell(right);
 
-    if (low_mana_check || (WalkerProcessor::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
+
+    if (low_mana_check || (check_time && (spell_cast_time < WalkerProcessor::get_attack_time(right))) || (WalkerProcessor::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
     {
 
         //set_universal_block(1.0f);
@@ -784,6 +787,9 @@ bool make_long_cast_spell_hand(bool right)
         return false;
     }
 
+
+    spell_cast_time += dtime;
+
 }
 
 
@@ -799,7 +805,7 @@ void input_processor(float dtime)
 {
     if (do_cast)
     {
-        if (make_long_cast_spell_hand(right_hand_cast))
+        if (make_long_cast_spell_hand(right_hand_cast, dtime))
         {
             do_cast = false;
             right_hand_cast = false;

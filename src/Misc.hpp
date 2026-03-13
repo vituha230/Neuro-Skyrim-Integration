@@ -127,7 +127,9 @@ namespace MiscThings {
 
     bool has_digits(std::string& str);
 
-    std::pair<bool, std::string> use_spell_by_index(int id);
+    std::pair<bool, std::string> cast_spell_by_index(int id);
+    std::pair<bool, std::string> equip_spell_by_index(int id);
+
 
     int get_pillar_face_name(RE::TESObjectREFR* pillar);
     std::string get_stateless_info(RE::TESObjectREFR* refr);
