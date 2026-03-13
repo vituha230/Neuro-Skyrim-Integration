@@ -131,7 +131,7 @@ namespace MiscThings {
     std::pair<bool, std::string> equip_spell_by_index(int id);
 
     int player_overencumbered_by();
-
+    bool puzzle_door_open(RE::TESObjectREFR* a_ref);
 
     int get_pillar_face_name(RE::TESObjectREFR* pillar);
     std::string get_stateless_info(RE::TESObjectREFR* refr);
@@ -152,7 +152,7 @@ namespace MiscThings {
     bool player_hp_more_than(float val_percent);
     bool player_hp_less_than(float val_percent);
 
-
+    bool is_object_valid(RE::TESObjectREFR* a_ref);
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
     bool is_new_object_valid(RE::TESObjectREFR* a_ref);
 

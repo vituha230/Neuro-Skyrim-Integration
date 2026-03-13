@@ -402,7 +402,7 @@ namespace Observer {
 	{
 		if (observers_green_light && !MiscThings::have_force_only_menu_open())
 		{
-			if (detect_interesting_time > 5.0f || (first_cycle2 && detect_interesting_time > 2.0f))
+			if (detect_interesting_time > 3.0f || (first_cycle2 && detect_interesting_time > 2.0f))
 			{
 				if (first_cycle2)
 					first_cycle2 = false;
@@ -511,7 +511,7 @@ namespace Observer {
 								}
 
 
-								if (a_ref->AsReference()->IsActor())// && MiscThings::raycastable(a_ref, scan_distance))
+								if (a_ref->AsReference()->IsActor() && MiscThings::raycastable(a_ref, scan_distance))
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
 									{
@@ -540,7 +540,7 @@ namespace Observer {
 									if (!MiscThings::is_object_in_the_list(a_ref))
 									{
 										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
-										if (info != "")
+										if (info != "" && MiscThings::is_object_valid(a_ref))
 											result.push_back({ info, a_ref });
 									}
 								}
@@ -1446,10 +1446,10 @@ namespace Observer {
 
 											std::string solved_text = "";
 
-											if (pillar_face_name != "")
-												solved_text = MiscThings::get_pillar_solved_text(a_ref);
+											//if (pillar_face_name != "")
+											//	solved_text = MiscThings::get_pillar_solved_text(a_ref);
 
-											result.push_back(pillar_name + " turned to " + pillar_face_name + solved_text);
+											result.push_back(pillar_name + " turned to" + pillar_face_name + solved_text);
 										}
 									}
 
@@ -2279,13 +2279,13 @@ namespace Observer {
 						send_info = true;
 					}
 
-					if (abs(stamina_dif) > 10.0f)
+					if (abs(stamina_dif) > 50.0f)
 					{
 						last_stamina_value = stamina;
 						//send_info = true;
 					}
 
-					if (abs(mana_dif) > 10.0f)
+					if (abs(mana_dif) > 50.0f)
 					{
 						last_mana_value = mana;
 						send_info = true;

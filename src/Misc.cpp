@@ -237,6 +237,7 @@ namespace MiscThings {
         // Perform the raycast
         if (bhkWorld->PickObject(pickData) && pickData.rayOutput.HasHit()) {
             result.didHit = true;
+            result.didHit = true;
             result.distance = maxDist * pickData.rayOutput.hitFraction;
             result.normalOut = pickData.rayOutput.normal;
 
@@ -422,7 +423,7 @@ namespace MiscThings {
 
     int get_destructible_state(RE::TESObjectREFR* web)
     {
-        int result = -1;
+        int result = 0;
 
         auto base_obj = web->GetBaseObject();
         if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
@@ -441,8 +442,6 @@ namespace MiscThings {
                     auto extra_swap = extralist->GetByType(RE::ExtraDataType::kModelSwap);
                     if (extra_swap)
                         result = 1;
-                    else
-                        result = 0;
                 }
 
             }
@@ -711,6 +710,40 @@ namespace MiscThings {
 
 
 
+    std::string get_pillar_solved_text(RE::TESObjectREFR* pillar)
+    {
+        std::string result = "[Doesn't seem to be correct]";
+
+        auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
+        bool solved = false;
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "pillarSolved";
+
+            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (solved)
+                result = "[Probably correct]";
+        }
+
+        object_p = General::Script::GetObject(pillar, "HallofStoriesDiskScript");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "ringSolved";
+
+            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (solved)
+                result = "[Probably correct]";
+        }
+
+        return result;
+    }
+
+
+
     std::string get_pillar_face_name(RE::TESObjectREFR* object, int code)
     {
         std::string result = "";
@@ -734,22 +767,26 @@ namespace MiscThings {
                     if (project_name == "RuinsPuzzlePillar01")
                     {
                         if (code == 1)
-                            result = " [front Hawk]";
+                            result = " [position Hawk]";
                         if (code == 2)
-                            result = " [front Snake]";
+                            result = " [position Snake]";
                         if (code == 3)
-                            result = " [front Whale]";
+                            result = " [position Whale]";
                     }
+
 
                     if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel02") != std::string::npos)
                     {
                         if (code == 1)
-                            result = " [front Owl]";
+                            result = " [position Owl]";
                         if (code == 2)
-                            result = " [front Bear]";
+                            result = " [position Bear]";
                         if (code == 3)
-                            result = " [front Moth]";
+                            result = " [position Moth]";
                     }
+
+                    if (result != "")
+                        result += " " + get_pillar_solved_text(object);
                 }
             }
         }
@@ -759,37 +796,6 @@ namespace MiscThings {
 
 
 
-    std::string get_pillar_solved_text(RE::TESObjectREFR* pillar)
-    {
-        std::string result = "[Doesn't seem to be correct... Maybe rotate it again until its correct?]";
-
-        auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
-        bool solved = false;
-
-        if (object_p)
-        {
-            RE::BSFixedString prop_name = "pillarSolved";
-
-            solved = General::Script::GetVariable<bool>(object_p, prop_name);
-
-            if (solved)
-                result = "[Probably correct. But there might be other pillars nearby, they should be in correct positions too]";
-        }
-
-        object_p = General::Script::GetObject(pillar, "HallofStoriesDiskScript");
-
-        if (object_p)
-        {
-            RE::BSFixedString prop_name = "ringSolved";
-
-            solved = General::Script::GetVariable<bool>(object_p, prop_name);
-
-            if (solved)
-                result = "[Probably correct. But there are 2 more rings, they must be correct too]";
-        }
-
-        return result;
-    }
 
     int get_pillar_face_name(RE::TESObjectREFR* pillar)
     {
@@ -2732,8 +2738,8 @@ namespace MiscThings {
                 }
                     
 
-                if (actor_object->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
-                    sitsleep = "[Sitting]";
+                //if (actor_object->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
+                //    sitsleep = "[Sitting]";
 
 
 
@@ -6187,6 +6193,20 @@ namespace MiscThings {
     }
 
 
+    //bool property doorOpened
+
+    bool puzzle_door_open(RE::TESObjectREFR* a_ref)
+    {
+
+        auto object_p = General::Script::GetObject(a_ref, "HallofStoriesKeyholeScript");
+        if (object_p)
+        {
+            if (object_p->currentState == "Done")
+                return true;
+        }
+
+        return false;
+    }
 
 
 
@@ -6206,6 +6226,34 @@ namespace MiscThings {
 
             std::string name = "";
             name = a_ref->GetDisplayFullName();
+
+
+            if (get_destructible_state(a_ref) != 0)
+                return false;
+
+            if (base_type == RE::FormType::Activator)
+            {
+
+                if (puzzle_door_open(a_ref))
+                    return false;
+
+                auto extra = a_ref->extraList.GetByType(RE::ExtraDataType::kLinkedRef);
+
+                if (extra)
+                {
+                    auto extra_linked = (RE::ExtraLinkedRef*)extra;
+
+                    for (auto linked_ref : extra_linked->linkedRefs)
+                    {
+                        if (linked_ref.refr)
+                        {
+                            if (puzzle_door_open(linked_ref.refr))
+                                return false;
+                        }
+                    }
+                }
+            }
+
 
             if (base_type == RE::FormType::Tree)
             {
