@@ -5131,10 +5131,14 @@ namespace WalkerProcessor {
                     for (auto effect : spell->effects)
                     {
                         auto effectSetting = effect->baseEffect;
-                        auto speed = effectSetting->data.projectileBase->data.speed;
+                        if (effectSetting && effectSetting->data.projectileBase)
+                        {
+                            auto speed = effectSetting->data.projectileBase->data.speed;
 
-                        if (speed > 0.0f)
-                            return speed;
+                            if (speed > 0.0f)
+                                return speed;
+                        }
+
                     }
 
                     return 99999.0f;
@@ -5184,10 +5188,15 @@ namespace WalkerProcessor {
                         for (auto effect : spell->effects)
                         {
                             auto effectSetting = effect->baseEffect;
-                            auto range2 = effectSetting->data.projectileBase->data.range;
 
-                            if (range2 > 0.0f)
-                                return range2;
+                            if (effectSetting && effectSetting->data.projectileBase)
+                            {
+                                auto range2 = effectSetting->data.projectileBase->data.range;
+
+                                if (range2 > 0.0f)
+                                    return range2;
+                            }
+
                         }
                     }
                     else

@@ -8,7 +8,7 @@
 
 
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
-//TODO dvemer mechanisms/traps
+//TODO dwemer mechanisms/traps
 //TODO slaughterfish fights
 //TODO underwater + oxygen control
 //TODO inventory weight control (maybe force throw away things?)
