@@ -734,21 +734,21 @@ namespace MiscThings {
                     if (project_name == "RuinsPuzzlePillar01")
                     {
                         if (code == 1)
-                            result = "[front Hawk]";
+                            result = " [front Hawk]";
                         if (code == 2)
-                            result = "[front Snake]";
+                            result = " [front Snake]";
                         if (code == 3)
-                            result = "[front Whale]";
+                            result = " [front Whale]";
                     }
 
                     if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel02") != std::string::npos)
                     {
                         if (code == 1)
-                            result = "[front Owl]";
+                            result = " [front Owl]";
                         if (code == 2)
-                            result = "[front Bear]";
+                            result = " [front Bear]";
                         if (code == 3)
-                            result = "[front Moth]";
+                            result = " [front Moth]";
                     }
                 }
             }
@@ -2521,7 +2521,7 @@ namespace MiscThings {
 
             if (base_type == RE::FormType::Activator)
             {
-                result = "[Interactive object]";
+                result = "[Interactive]";
 
                 
 
@@ -2772,7 +2772,7 @@ namespace MiscThings {
                 if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
                 {
                     if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
-                        result = "[Interactive object]";
+                        result = "[Interactive]";
                     else
                     {
                         std::string name_furniture = object->GetDisplayFullName();
@@ -2936,6 +2936,9 @@ namespace MiscThings {
             if (name == "Broken Shackle") //broken riften jail escape
                 return "";
 
+            if (name == "")
+                return "";
+
 
             auto base_obj = refr->GetBaseObject();
             auto base_type = base_obj->GetFormType();
@@ -3050,6 +3053,87 @@ namespace MiscThings {
 
         if (refr)
         {
+            auto base_obj = refr->GetBaseObject();
+            auto base_type = base_obj->GetFormType();
+
+            if (base_type == RE::FormType::Activator)
+            {
+                auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+                std::string model = static_obj->GetModel();
+
+                if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", refr);
+
+                    result = name;
+                }
+
+                if (model.find("PuzzleDoorKeyHole01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", refr);
+                    result = name;
+                }
+
+            }
+
+            if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
+            {
+                auto door = (RE::TESObjectDOOR*)base_obj;
+                std::string model = door->GetModel();
+
+                if (model.find("CaveGSecretDoor") != std::string::npos)
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Secret door] Stone wall door", refr);
+                    result = name;
+                }
+            }
+
+
+            RE::ExtraDataList* extralist = &refr->extraList;
+            auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
+            if (extra_anim)
+            {
+                auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
+                if (extra_anim_graph->animGraphMgr)
+                {
+                    if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("Large wooden bridge", refr);
+                        result = name;
+                    }
+
+                    if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("Heavy wooden gate", refr);
+                        result = name;
+                    }
+
+                    if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("Metal gate", refr);
+                        result = name;
+                    }
+
+                    if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorPortcullisGate01")
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("Small metal gate", refr);
+                        result = name;
+                    }
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
             bool found = false;
             for (auto object_entry : objects_around)
             {
@@ -4217,9 +4301,9 @@ namespace MiscThings {
 
 
                 if (is_equipped(item))
-                    actions += "[Equipped" + hand_text + "][Can unequip]";
+                    actions += "[Equipped" + hand_text + "]";// [Can unequip] ";
                 else
-                    actions += "[Can equip]" + twohanded;
+                    ;// actions += "[Can equip]" + twohanded;
 
                 actions += stats;
             }
@@ -4239,7 +4323,7 @@ namespace MiscThings {
             }
 
             if (item_form->formType == RE::FormType::Ingredient || item_form->formType == RE::FormType::AlchemyItem)
-                actions += "[Can consume]";
+                ;// actions += "[Can consume]";
 
             if (item->GetName() != gold_name)
             {
