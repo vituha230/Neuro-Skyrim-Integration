@@ -65,16 +65,19 @@ namespace MiscThings {
 
 
 
-    bool player_overencumbered()
+    int player_overencumbered_by()
     {
         auto player_actor = (RE::Actor*)(RE::PlayerCharacter::GetSingleton()->AsReference());
 
-        if (player_actor)
+        if (player_actor && player_actor->IsOverEncumbered())
         {
-            return player_actor->IsOverEncumbered();
+            int cur_weight = (int)player_actor->GetActorValue(RE::ActorValue::kInventoryWeight);
+            int max_weight = (int)player_actor->GetActorValue(RE::ActorValue::kCarryWeight);
+
+            return cur_weight - max_weight;
         }
 
-        return false;
+        return 0;
     }
 
     bool raycastable(RE::TESObjectREFR* object, float range)
@@ -4203,6 +4206,20 @@ namespace MiscThings {
                     actions += "[Can equip]" + twohanded;
 
                 actions += stats;
+            }
+            else
+            {
+                if (MiscThings::player_overencumbered_by())
+                {
+                    //if overencumbered
+                    auto weight = item_form->GetWeight();
+
+                    std::stringstream ss;
+                    ss << std::fixed << std::setprecision(1) << weight;
+                    std::string weight_text_number = ss.str();
+
+                    actions += "[Weight: " + weight_text_number + "]";
+                }
             }
 
             if (item_form->formType == RE::FormType::Ingredient || item_form->formType == RE::FormType::AlchemyItem)

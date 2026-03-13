@@ -1014,11 +1014,12 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
 
 
 
+                            int overweight = MiscThings::player_overencumbered_by();
 
-                            if (command_result.second == "" && MiscThings::player_overencumbered())
+                            if (command_result.second == "" && overweight)
                             {
                                 command_result.first = false;
-                                command_result.second = "Cannot do that while overencumbered. Drop something from the inventory first";
+                                command_result.second = "Cannot do that while overencumbered. Drop something from the inventory first. Excess weight: " + std::to_string(overweight);
                             }
                             else
                             {
