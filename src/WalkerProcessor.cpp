@@ -2477,6 +2477,33 @@ namespace WalkerProcessor {
     }
 
 
+    void cast_immidiately()
+    {
+        //auto spell_form = RE::TESForm::LookupByID(135491);
+        auto spell_form = RE::TESForm::LookupByID(0x700639b);
+
+        if (spell_form)
+        {
+            if (spell_form->IsMagicItem())
+            {
+                auto spell = (RE::MagicItem*)spell_form;
+
+                auto player = RE::PlayerCharacter::GetSingleton();
+                if (player && player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant))
+                {
+                    auto caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
+
+                    caster->SetCurrentSpell(spell);
+                    caster->state = RE::MagicCaster::State::kCasting;
+                    caster->currentSpellCost = 0.0f;
+                    caster->SpellCast(true, 1, spell);
+                }
+
+            }
+        }
+    }
+
+
     void start_casting()
     {
         //auto spell_form = RE::TESForm::LookupByID(135491);
@@ -2489,9 +2516,9 @@ namespace WalkerProcessor {
                 auto spell = (RE::MagicItem*)spell_form;
 
                 auto player = RE::PlayerCharacter::GetSingleton();
-                if (player && player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand))
+                if (player && player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant))
                 {
-                    auto caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand);
+                    auto caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
                     
                     caster->SetCurrentSpell(spell);
                     caster->state = RE::MagicCaster::State::kCasting;
@@ -2514,9 +2541,9 @@ namespace WalkerProcessor {
                 auto spell = (RE::MagicItem*)spell_form;
 
                 auto player = RE::PlayerCharacter::GetSingleton();
-                if (player && player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand))
+                if (player && player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant))
                 {
-                    auto caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand);
+                    auto caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
 
                     //caster->SpellCast(false, 1, spell);
                     caster->FinishCast();
@@ -2541,6 +2568,9 @@ namespace WalkerProcessor {
 
     bool cast_pathfinding(float dtime)
     {
+
+        //cast_immidiately();
+        //return true;
 
         bool result = false;
 
