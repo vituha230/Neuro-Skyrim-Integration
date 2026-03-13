@@ -2479,7 +2479,9 @@ namespace WalkerProcessor {
 
     void start_casting()
     {
-        auto spell_form = RE::TESForm::LookupByID(135491);
+        //auto spell_form = RE::TESForm::LookupByID(135491);
+        auto spell_form = RE::TESForm::LookupByID(0x700639b);
+
         if (spell_form)
         {
             if (spell_form->IsMagicItem())
