@@ -4,7 +4,6 @@
 //crucial:
 
 
-//TODO reanimating event catch + draugr wakes up from its grave
 //TODO test 1st dungeon puzzles with llm
 
 

@@ -2504,8 +2504,26 @@ namespace MiscThings {
                 else
                     result = "[Creature" + race + dead + "]";
 
-                result += mount_text;
 
+
+                std::string sitsleep = "";
+
+                if (actor_object->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSleeping)
+                {
+                    if (object->IsHumanoid())
+                        sitsleep = "[Sleeping]";
+                    else
+                        sitsleep = "[Dormant]";
+                }
+                    
+
+                if (actor_object->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
+                    sitsleep = "[Sitting]";
+
+
+
+                result += mount_text;
+                result += sitsleep;
                 result += enemy_text;
             }
             

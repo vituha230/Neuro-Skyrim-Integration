@@ -887,6 +887,8 @@ namespace Observer {
 		int pillar_face_code;
 		int trap_firing;
 		int destructible_state;
+		bool reanimating;
+		int wakeup;
 	};
 
 
@@ -1052,7 +1054,7 @@ namespace Observer {
 								if (actor_ref->combatController)
 									is_fleeing = actor_ref->combatController->IsFleeing();//actor_ref->currentProcess->middleHigh->unk326;
 
-								old_object_state state = { a_ref->IsDead(), is_fleeing,  new_target, (int)actor_ref->actorState1.flyState, 0, -1, -1 };
+								old_object_state state = { a_ref->IsDead(), is_fleeing,  new_target, (int)actor_ref->actorState1.flyState, 0, -1, -1, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState };
 								objects_to_track.insert({ a_ref, state });
 							}
 							else
@@ -1068,53 +1070,96 @@ namespace Observer {
 								if (actor_ref->currentProcess)
 									new_target = actor_ref->currentProcess->target;
 
-								old_object_state new_state = { a_ref->IsDead(), is_fleeing, new_target, old_state.action_flags, old_state.pillar_face_code, old_state.trap_firing , old_state.destructible_state };
+								old_object_state new_state = { a_ref->IsDead(), is_fleeing, new_target, old_state.action_flags, old_state.pillar_face_code, old_state.trap_firing , old_state.destructible_state, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState };
 
 
 								if (old_state.dead != new_state.dead)
 								{
-									bool dont_add = false;
-
-									objects_to_track.insert_or_assign(a_ref, new_state);
-
-									std::string victim_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
-									std::string message_text = "[" + victim_name + " died]";
-
-									auto target_actor = (RE::Actor*)a_ref;
-									auto killer = target_actor->myKiller;
-									if (killer)
+									if (new_state.dead)
 									{
-										if (a_ref == player_ref) //have dedicated message for that
-											dont_add = true;
+										bool dont_add = false;
 
-										auto killer_ptr = killer.get();
-										if (killer_ptr)
+										objects_to_track.insert_or_assign(a_ref, new_state);
+
+										std::string victim_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+										std::string message_text = "[" + victim_name + " died]";
+
+										auto target_actor = (RE::Actor*)a_ref;
+										auto killer = target_actor->myKiller;
+										if (killer)
 										{
-											auto killer_actor = killer_ptr.get();
+											if (a_ref == player_ref) //have dedicated message for that
+												dont_add = true;
 
-
-											if (MiscThings::is_intro2() && killer_actor == a_ref && actor_ref->race->fullName == "Dragon Race")
-												return RE::BSContainer::ForEachResult::kContinue; //alduin kills himself during helgen attack for some reason. skip it
-
-											if (killer_actor)
+											auto killer_ptr = killer.get();
+											if (killer_ptr)
 											{
-												std::string killer_name = MiscThings::insert_object_into_list_and_get_info(killer_actor);
-												if (killer_actor == player_actor)
-													killer_name = "You";
+												auto killer_actor = killer_ptr.get();
 
-												message_text = "[" + killer_name + " killed " + victim_name + "]";
 
+												if (MiscThings::is_intro2() && killer_actor == a_ref && actor_ref->race->fullName == "Dragon Race")
+													return RE::BSContainer::ForEachResult::kContinue; //alduin kills himself during helgen attack for some reason. skip it
+
+												if (killer_actor)
+												{
+													std::string killer_name = MiscThings::insert_object_into_list_and_get_info(killer_actor);
+													if (killer_actor == player_actor)
+														killer_name = "You";
+
+													message_text = "[" + killer_name + " killed " + victim_name + "]";
+
+												}
 											}
 										}
+										else
+										{
+											if (a_ref == player_ref) //have dedicated message for that
+												dont_add = true;
+										}
+
+										if (!dont_add)
+											result.push_back(message_text);
 									}
-									else
+									
+								}
+
+								if (old_state.wakeup != new_state.wakeup)
+								{
+									std::string message_text = "";
+
+									std::string waker_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+									if (new_state.wakeup == (int)RE::SIT_SLEEP_STATE::kWantToWake)
 									{
-										if (a_ref == player_ref) //have dedicated message for that
-											dont_add = true;
+										message_text = "[" + waker_name + " wakes up]";
 									}
 
-									if (!dont_add)
+									if (new_state.wakeup == (int)RE::SIT_SLEEP_STATE::kWantToSleep)
+									{
+										message_text = "[" + waker_name + " goes to sleep]";
+									}
+
+									if (message_text != "")
 										result.push_back(message_text);
+
+									objects_to_track.insert_or_assign(a_ref, new_state);
+								}
+
+
+								if (old_state.reanimating != new_state.reanimating)
+								{
+									if (new_state.reanimating)
+									{
+										std::string zombie_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+										std::string message_text = "";
+
+										message_text = "[" + zombie_name + " is reanimating!]";
+
+										result.push_back(message_text);
+									}
+
+									objects_to_track.insert_or_assign(a_ref, new_state);
 								}
 
 
@@ -1200,7 +1245,7 @@ namespace Observer {
 							{
 								if (objects_to_track.find(a_ref) == objects_to_track.end())
 								{
-									old_object_state state = { 0, 0, 0, 0, 0, -1, -1 };
+									old_object_state state = { 0, 0, 0, 0, 0, -1, -1, 0, 0 };
 									RE::ExtraDataList* extralist = &a_ref->extraList;
 									auto extra = extralist->GetByType(RE::ExtraDataType::kAction);
 									int pillar_face = MiscThings::get_pillar_face_name(a_ref);
@@ -1215,7 +1260,7 @@ namespace Observer {
 									//	action_data = static_cast<int>(*extra_action->action);
 									//}
 
-									state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state };
+									state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state, 0, 0 };
 
 									objects_to_track.insert({ a_ref, state });
 								}
@@ -1230,7 +1275,7 @@ namespace Observer {
 									int activation = MiscThings::two_state_activator_state(a_ref);
 									int destructible_state = MiscThings::get_destructible_state(a_ref);
 
-									old_object_state new_state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state };
+									old_object_state new_state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state, 0, 0 };
 
 
 									if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
