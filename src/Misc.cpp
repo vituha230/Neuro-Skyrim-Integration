@@ -64,6 +64,19 @@ namespace MiscThings {
 
 
 
+
+    bool player_overencumbered()
+    {
+        auto player_actor = (RE::Actor*)(RE::PlayerCharacter::GetSingleton()->AsReference());
+
+        if (player_actor)
+        {
+            return player_actor->IsOverEncumbered();
+        }
+
+        return false;
+    }
+
     bool raycastable(RE::TESObjectREFR* object, float range)
     {
         auto camera_pos = RE::PlayerCamera::GetSingleton()->pos;
@@ -5039,7 +5052,9 @@ namespace MiscThings {
 
                                     //if (player_hp_less_than(90.0f) && is_self_healing_spell(spell))
                                     //{
-                                    try_casting_hand(right_hand);
+                                    if (!WalkerProcessor::is_fighting()) 
+                                        try_casting_hand(right_hand);
+
                                     //}
                                 }
                                     
@@ -5600,7 +5615,7 @@ namespace MiscThings {
             bool no_base_object = true;
         }
 
-        if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
+        if (name[0] != '\0' && std::size(name) > 1 && name != player_name && name != "Sit")
         {
 
             if (MiscThings::has_digits(name))

@@ -454,7 +454,7 @@ namespace Observer {
 								bool no_base_object = true;
 							}
 
-							if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
+							if (name[0] != '\0' && std::size(name) > 1 && name != player_name && name != "Sit")
 							{
 
 								if (MiscThings::has_digits(name))
@@ -1950,7 +1950,7 @@ namespace Observer {
 		
 
 
-		if (last_saved_time > 300.0f && !WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1)
+		if (last_saved_time > 180.0f && !WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1 && MiscThings::player_hp_more_than(0.3f))
 		{
 			quicksave();
 			last_saved_time = 0.0f;

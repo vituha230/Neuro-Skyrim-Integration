@@ -130,6 +130,8 @@ namespace MiscThings {
     std::pair<bool, std::string> cast_spell_by_index(int id);
     std::pair<bool, std::string> equip_spell_by_index(int id);
 
+    bool player_overencumbered();
+
 
     int get_pillar_face_name(RE::TESObjectREFR* pillar);
     std::string get_stateless_info(RE::TESObjectREFR* refr);

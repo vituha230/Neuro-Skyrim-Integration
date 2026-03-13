@@ -861,71 +861,12 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                         else
                         {
 
-                            if (name == Capabilities::EscapePrison::Name)
-                            {
-                                command_result = WalkerProcessor::escape_prison();
-                            }
 
-
-                            if (name == Capabilities::ExploreWorld::Name)
-                            {
-
-                                command_result = WalkerProcessor::explore_world(false);
-
-                            }
 
                             if (name == Capabilities::SurrenderToGuards::Name)
                             {
-
                                 command_result = WalkerProcessor::surrender_to_guards();
-
                             }
-
-                            if (name == Capabilities::ExitDungeon::Name)
-                            {
-
-                                command_result = WalkerProcessor::exit_dungeon();
-
-                            }
-
-                            if (name == Capabilities::WalkToObject::Name)
-                            {
-                                Impl::JSON::NeuroChoiceJson json{};
-                                //Impl::JSON::NeuroChoiceJson2 json2{};
-
-                                // operator bool overload for glz::error_ctx returns true on failure!
-                                //if (glz::read_json(json2, messageQueue[i].value.action.data))
-                                //{
-                                    if (glz::read_json(json, messageQueue[i].value.action.data))
-                                        failed_to_parse_json = true;
-                                    else
-                                        command_result = WalkerProcessor::walk_to_object_by_index(json.id, 1);
-                                //}
-                                //else
-                                //    command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
-                            }
-
-                            if (name == Capabilities::AttackObject::Name)
-                            {
-                                Impl::JSON::NeuroChoiceJson json{};
-
-                                if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
-                                else
-                                    command_result = WalkerProcessor::walk_to_object_by_index(json.id, 3);
-                            }
-
-
-                            if (name == Capabilities::PickpocketObject::Name)
-                            {
-                                Impl::JSON::NeuroChoiceJson json{};
-
-                                if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
-                                else
-                                    command_result = WalkerProcessor::walk_to_object_by_index(json.id, 2);
-                            }
-
 
 
                             if (name == Capabilities::Spin::Name)
@@ -954,31 +895,6 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                             }
 
 
-                            if (name == Capabilities::FollowQuest::Name)
-                            {
-                                Impl::JSON::NeuroChoiceJson json{};
-
-                                if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
-                                else
-                                    command_result = WalkerProcessor::walk_to_quest_by_index(json.id, false);
-                            }
-
-
-
-                            if (name == Capabilities::GoToLocation::Name)
-                            {
-                                Impl::JSON::NeuroChoiceJson json{};
-
-                                if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
-                                else
-                                    command_result = WalkerProcessor::walk_to_location_by_index(json.id);
-                            }
-
-
-
-
 
                             if (name == Capabilities::GetObjectsAround::Name)
                             {
@@ -999,12 +915,33 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                                 command_result = MiscThings::GetInventory();
                             }
 
+                            if (name == Capabilities::UseInventoryItem::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = MiscThings::activate_inventory_object_by_index(json.id, 1);
+
+                            }
+
+                            if (name == Capabilities::DropInventoryItem::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = MiscThings::activate_inventory_object_by_index(json.id, 2);
+
+                            }
+
 
                             if (name == Capabilities::GetSpells::Name)
                             {
                                 command_result = MiscThings::get_available_spells();
                             }
-
 
 
                             if (name == Capabilities::CastSpell::Name)
@@ -1044,15 +981,8 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                                         unregister_actions(action_names, std::size(action_names));
                                     }
                                 }
-                                    
+
                             }
-
-
-                            if (name == Capabilities::OpenMap::Name)
-                            {
-                                command_result = MapProcessor::open_menu();
-                            }
-
 
                             if (name == Capabilities::GetCurrentQuests::Name)
                             {
@@ -1066,28 +996,6 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                             }
 
 
-                            if (name == Capabilities::UseInventoryItem::Name)
-                            {
-                                Impl::JSON::NeuroChoiceJson json{};
-
-                                if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
-                                else
-                                    command_result = MiscThings::activate_inventory_object_by_index(json.id, 1);
-
-                            }
-
-
-                            if (name == Capabilities::DropInventoryItem::Name)
-                            {
-                                Impl::JSON::NeuroChoiceJson json{};
-
-                                if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
-                                else
-                                    command_result = MiscThings::activate_inventory_object_by_index(json.id, 2);
-
-                            }
 
 
                             if (name == Capabilities::GetGold::Name)
@@ -1099,6 +1007,107 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                             if (name == Capabilities::CallWaitMenu::Name)
                             {
                                 command_result = SleepWaitProcessor::call_wait_menu();
+                            }
+
+
+
+
+
+
+
+                            if (command_result.second == "" && MiscThings::player_overencumbered())
+                            {
+                                command_result.first = false;
+                                command_result.second = "Cannot do that while overencumbered. Drop something from the inventory first";
+                            }
+                            else
+                            {
+                                if (name == Capabilities::FollowQuest::Name)
+                                {
+                                    Impl::JSON::NeuroChoiceJson json{};
+
+                                    if (glz::read_json(json, messageQueue[i].value.action.data))
+                                        failed_to_parse_json = true;
+                                    else
+                                        command_result = WalkerProcessor::walk_to_quest_by_index(json.id, false);
+                                }
+
+
+
+                                if (name == Capabilities::EscapePrison::Name)
+                                {
+                                    command_result = WalkerProcessor::escape_prison();
+                                }
+
+
+                                if (name == Capabilities::ExploreWorld::Name)
+                                {
+
+                                    command_result = WalkerProcessor::explore_world(false);
+
+                                }
+
+                                if (name == Capabilities::ExitDungeon::Name)
+                                {
+
+                                    command_result = WalkerProcessor::exit_dungeon();
+
+                                }
+
+                                if (name == Capabilities::WalkToObject::Name)
+                                {
+                                    Impl::JSON::NeuroChoiceJson json{};
+                                    //Impl::JSON::NeuroChoiceJson2 json2{};
+
+                                    // operator bool overload for glz::error_ctx returns true on failure!
+                                    //if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                    //{
+                                    if (glz::read_json(json, messageQueue[i].value.action.data))
+                                        failed_to_parse_json = true;
+                                    else
+                                        command_result = WalkerProcessor::walk_to_object_by_index(json.id, 1);
+                                    //}
+                                    //else
+                                    //    command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
+                                }
+
+                                if (name == Capabilities::AttackObject::Name)
+                                {
+                                    Impl::JSON::NeuroChoiceJson json{};
+
+                                    if (glz::read_json(json, messageQueue[i].value.action.data))
+                                        failed_to_parse_json = true;
+                                    else
+                                        command_result = WalkerProcessor::walk_to_object_by_index(json.id, 3);
+                                }
+
+
+                                if (name == Capabilities::PickpocketObject::Name)
+                                {
+                                    Impl::JSON::NeuroChoiceJson json{};
+
+                                    if (glz::read_json(json, messageQueue[i].value.action.data))
+                                        failed_to_parse_json = true;
+                                    else
+                                        command_result = WalkerProcessor::walk_to_object_by_index(json.id, 2);
+                                }
+
+
+                                if (name == Capabilities::GoToLocation::Name)
+                                {
+                                    Impl::JSON::NeuroChoiceJson json{};
+
+                                    if (glz::read_json(json, messageQueue[i].value.action.data))
+                                        failed_to_parse_json = true;
+                                    else
+                                        command_result = WalkerProcessor::walk_to_location_by_index(json.id);
+                                }
+
+
+                                if (name == Capabilities::OpenMap::Name)
+                                {
+                                    command_result = MapProcessor::open_menu();
+                                }
                             }
                         }
                     }
