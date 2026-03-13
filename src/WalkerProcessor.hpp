@@ -82,6 +82,7 @@ namespace WalkerProcessor {
 	float get_spell_cost(bool right);
 	std::string get_equipped_spell_name(bool right);
 
+	RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target);
 
 
 	std::pair<bool, std::string> make_spins(int amount, int speed);

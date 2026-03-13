@@ -71,6 +71,9 @@ namespace MiscThings {
     std::string check_very_interesting_objects();
 
 
+    bool raycastable(RE::TESObjectREFR* object, float range);
+
+
     bool is_game_paused();
 
     void pause_game();

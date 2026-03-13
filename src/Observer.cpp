@@ -511,7 +511,7 @@ namespace Observer {
 								}
 
 
-								if (a_ref->AsReference()->IsActor())
+								if (a_ref->AsReference()->IsActor() && MiscThings::raycastable(a_ref, scan_distance))
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
 									{
@@ -572,7 +572,7 @@ namespace Observer {
 
 									if (base_type == RE::FormType::Container)
 									{
-										if (!MiscThings::is_object_in_the_list(a_ref))
+										if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
 										{
 											std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											if (info != "")

@@ -1792,12 +1792,6 @@ namespace WalkerProcessor {
         
 
 
-
-
-
-
-
-
         if (specific_shift != RE::NiPoint3::Zero())
         {
             dont_use_bounds_for_close_enough = true;

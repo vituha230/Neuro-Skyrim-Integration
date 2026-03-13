@@ -10,6 +10,9 @@ namespace MiscThings {
 
 
 
+
+
+
     long long gave_interesting_notification_timestamp = 0;
 
 
@@ -57,6 +60,22 @@ namespace MiscThings {
         
 
         return "";
+    }
+
+
+
+    bool raycastable(RE::TESObjectREFR* object, float range)
+    {
+        auto camera_pos = RE::PlayerCamera::GetSingleton()->pos;
+
+        auto aim_pos = WalkerProcessor::get_estimate_aim_pos(object);
+
+        auto delta_pos = aim_pos - camera_pos;
+
+
+        auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range);
+
+        return raycast_ref == object;
     }
 
 
