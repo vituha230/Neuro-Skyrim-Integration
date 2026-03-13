@@ -602,7 +602,7 @@ namespace WalkerProcessor {
                             }
                             else
                             {
-                                min_dist = 20000.0f;
+                                //min_dist = 20000.0f;
                                 explore_mode = false;
                                 reset_walker();
 

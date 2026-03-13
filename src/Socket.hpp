@@ -168,12 +168,36 @@ namespace Capabilities
     {
         constexpr char Name[] = "walk_to_object_and_interact";
         constexpr char Desc[] =
-            R"(Walk to object specified by its ID and do action ID)";
+            R"(Walk to object specified by its ID)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object. ", "type": "integer" }, "id2": { "description": "[WILL CANCEL CURRENT WALKING OPERATION] The ID of the action to do after walk. 0 - do nothing (walk up and stare at), 1 - interact, 2 - pickpocket (works only on humanoids), 3 - attack ", "type": "integer" } }, "required": ["id1", "id2"] })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id" })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     }
+
+    namespace AttackObject
+    {
+        constexpr char Name[] = "attack";
+        constexpr char Desc[] =
+            R"(Walk to object specified by its ID and attack it with equipped weapons or spells)";
+        constexpr char JsonSchema[] =
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id" })";//
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    }
+
+
+    namespace PickpocketObject
+    {
+        constexpr char Name[] = "pickpocket";
+        constexpr char Desc[] =
+            R"(Walk to object specified by its ID and pickpocket it. Works only on humanoids)";
+        constexpr char JsonSchema[] =
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id" })";//
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    }
+
 
 
     namespace LookAtObject

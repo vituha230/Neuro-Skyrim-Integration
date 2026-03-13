@@ -24,6 +24,9 @@ neurosdk_action ActionsList[] = {
 
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
+                                    Capabilities::AttackObject::Action,
+                                    Capabilities::PickpocketObject::Action,
+
                                     Capabilities::ExploreWorld::Action,
                                     Capabilities::ExitDungeon::Action,
                                     Capabilities::SurrenderToGuards::Action,
@@ -58,6 +61,8 @@ neurosdk_action ActionsListNoForces[] = {
 
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
+                                    Capabilities::AttackObject::Action,
+                                    Capabilities::PickpocketObject::Action,
                                     Capabilities::ExploreWorld::Action,
                                     Capabilities::ExitDungeon::Action,
                                     Capabilities::SurrenderToGuards::Action,
@@ -442,6 +447,8 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                     if (!MiscThings::is_intro2()) //must be watched to refresh
                     {
+                        actions_to_register[action_pos] = Capabilities::AttackObject::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::PickpocketObject::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::CastEquipSpell::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::Spin::Action; action_pos++;
@@ -875,18 +882,39 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                             if (name == Capabilities::WalkToObject::Name)
                             {
                                 Impl::JSON::NeuroChoiceJson json{};
-                                Impl::JSON::NeuroChoiceJson2 json2{};
+                                //Impl::JSON::NeuroChoiceJson2 json2{};
 
                                 // operator bool overload for glz::error_ctx returns true on failure!
-                                if (glz::read_json(json2, messageQueue[i].value.action.data))
-                                {
+                                //if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                //{
                                     if (glz::read_json(json, messageQueue[i].value.action.data))
                                         failed_to_parse_json = true;
                                     else
-                                        command_result = WalkerProcessor::walk_to_object_by_index(json.id, 0);
-                                }
+                                        command_result = WalkerProcessor::walk_to_object_by_index(json.id, 1);
+                                //}
+                                //else
+                                //    command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
+                            }
+
+                            if (name == Capabilities::AttackObject::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
                                 else
-                                    command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
+                                    command_result = WalkerProcessor::walk_to_object_by_index(json.id, 3);
+                            }
+
+
+                            if (name == Capabilities::PickpocketObject::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = WalkerProcessor::walk_to_object_by_index(json.id, 2);
                             }
 
 
