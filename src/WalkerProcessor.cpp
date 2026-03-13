@@ -7079,7 +7079,6 @@ namespace WalkerProcessor {
                                                 {
                                                     std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
-                                                    std::string advice = "";
                                                     if (potential_block != "")
                                                     {
                                                         fail_text = "[ " + potential_block + " blocks the path. ";
@@ -7089,7 +7088,7 @@ namespace WalkerProcessor {
                                                         else
                                                             fail_text += "Maybe you need to interact with something nearby to go past it]";
                                                     }
-                                                        
+
                                                     send_random_context(fail_text);
                                                     reset_walker();
                                                 }
@@ -7549,7 +7548,15 @@ namespace WalkerProcessor {
                                                             std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                             std::string potential_block = MiscThings::get_potential_blocking_object();
                                                             if (potential_block != "")
-                                                                fail_text = "[ " + potential_block + " blocks the path. Maybe you need to interact with something to go past it, or destroy it if its destructuble]";
+                                                            {
+                                                                fail_text = "[ " + potential_block + " blocks the path. ";
+
+                                                                if (potential_block.find("estructib") != std::string::npos)
+                                                                    fail_text += "You can try attacking it to destroy it]";
+                                                                else
+                                                                    fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                            }
+
                                                             send_random_context(fail_text);
                                                             remove_navmesh_cutter();
                                                             reset_walker();
@@ -7586,7 +7593,15 @@ namespace WalkerProcessor {
                                                     std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
                                                     if (potential_block != "")
-                                                        fail_text = "[ " + potential_block + " blocks the path. Maybe you need to interact with something to go past it, or destroy it if its destructuble]";
+                                                    {
+                                                        fail_text = "[ " + potential_block + " blocks the path. ";
+
+                                                        if (potential_block.find("estructib") != std::string::npos)
+                                                            fail_text += "You can try attacking it to destroy it]";
+                                                        else
+                                                            fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                    }
+
                                                     send_random_context(fail_text);
                                                     reset_walker();
                                                 }

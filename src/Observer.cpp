@@ -2348,7 +2348,7 @@ namespace Observer {
 					//21-5 night
 
 
-					if (time_text != old_time_text)
+					if (!MiscThings::is_interior_cell() && time_text != old_time_text)
 					{
 						send_random_context("Time of day: " + time_text);
 					}
