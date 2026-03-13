@@ -9,6 +9,59 @@
 namespace MiscThings {
 
 
+
+    long long gave_interesting_notification_timestamp = 0;
+
+
+    std::string check_very_interesting_objects()
+    {
+        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+        float delta_interesting = (double)(now - gave_interesting_notification_timestamp) / 1000000000.0;
+
+        if (delta_interesting > 120.0f)
+        {
+            
+            auto objects_around = GetObjectsAround(1);
+
+            std::vector<std::string> very_interesting_objects{};
+
+            if (objects_around.second.find("Pillar") != std::string::npos)
+                very_interesting_objects.push_back("Puzzle pillar");
+
+            if (objects_around.second.find("Lever") != std::string::npos)
+                very_interesting_objects.push_back("Lever");
+
+            if (objects_around.second.find("Ancient Nordic Door") != std::string::npos)
+                very_interesting_objects.push_back("Ancient Nordic Door");
+
+            if (std::size(very_interesting_objects) > 0)
+            {
+                std::string message = "";
+                bool first = true;
+
+                for (auto interesting : very_interesting_objects)
+                {
+                    if (first)
+                        message += interesting;
+                    else
+                        message += ", " + interesting;
+
+                    first = false;
+                }
+
+                gave_interesting_notification_timestamp = now;
+
+                return "[You look around and see interesting objects: " + message + ". Maybe it's worth investigating it?";
+            }
+        }
+        
+
+        return "";
+    }
+
+
+
+
     bool player_escaping_jail()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -663,7 +716,7 @@ namespace MiscThings {
 
     std::string get_pillar_solved_text(RE::TESObjectREFR* pillar)
     {
-        std::string result = "[Doesn't seem to be correct...]";
+        std::string result = "[Doesn't seem to be correct... Maybe rotate it again until its correct?]";
 
         auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
         bool solved = false;
@@ -675,7 +728,7 @@ namespace MiscThings {
             solved = General::Script::GetVariable<bool>(object_p, prop_name);
 
             if (solved)
-                result = "[Probably correct]";
+                result = "[Probably correct. But there might be other pillars nearby, they should be in correct positions too]";
         }
 
         object_p = General::Script::GetObject(pillar, "HallofStoriesDiskScript");
@@ -687,7 +740,7 @@ namespace MiscThings {
             solved = General::Script::GetVariable<bool>(object_p, prop_name);
 
             if (solved)
-                result = "[Probably correct]";
+                result = "[Probably correct. But there are 2 more rings, they must be correct too]";
         }
 
         return result;
@@ -2416,7 +2469,113 @@ namespace MiscThings {
             
 
             if (base_type == RE::FormType::Activator)
+            {
                 result = "[Interactive object]";
+
+                
+
+                std::vector<std::string> linked_to{};
+                std::string linked_to_text = "";
+
+                auto extra = object->extraList.GetByType(RE::ExtraDataType::kLinkedRef);
+
+                if (extra)
+                {
+                    auto extra_linked = (RE::ExtraLinkedRef*)extra;
+
+                    for (auto linked_ref : extra_linked->linkedRefs)
+                    {
+                        if (linked_ref.refr)
+                        {
+                            std::string name_linked = insert_object_into_list_and_get_info(linked_ref.refr);
+                            if (name_linked != "")
+                            {
+                                linked_to.push_back(name_linked);
+                            }
+                        }
+                    }
+                }
+
+
+                 //this gave me link to shit lever and didnt give link to actual lever
+                /*
+                extra = object->extraList.GetByType(RE::ExtraDataType::kActivateRef);
+                if (extra)
+                {
+                    auto extra_linked = (RE::ExtraActivateRef*)extra;
+
+                    for (auto linked_ref : extra_linked->parents)
+                    {
+                        if (linked_ref->activateRef && linked_ref->activateRef.get() && linked_ref->activateRef.get().get())
+                        {
+                            RE::TESObjectREFR* activate_ref = linked_ref->activateRef.get().get();
+
+                            std::string temp_name = activate_ref->GetDisplayFullName();
+
+                            if (temp_name != "" || is_object_in_the_list(activate_ref))
+                            {
+                                std::string name_linked = insert_object_into_list_and_get_info(activate_ref);
+                                if (name_linked != "")
+                                {
+                                    linked_to.push_back(name_linked);
+                                }
+                            }
+                            else
+                            {
+                                //maybe its some script marker that has some lever attatched even higher
+                                auto extra2 = activate_ref->extraList.GetByType(RE::ExtraDataType::kActivateRefChildren);
+
+                                if (extra2)
+                                {
+                                    auto extra_linked2 = (RE::ExtraActivateRefChildren*)extra2;
+
+                                    for (auto linked_ref2 : extra_linked2->children)
+                                    {
+                                        if (linked_ref2->activateRef && linked_ref2->activateRef.get() && linked_ref2->activateRef.get().get())
+                                        {
+                                            RE::TESObjectREFR* activate_ref2 = linked_ref2->activateRef.get().get();
+
+                                            std::string temp_name2 = activate_ref2->GetDisplayFullName();
+
+                                            if (temp_name2 != "" || is_object_in_the_list(activate_ref2))
+                                            {
+                                                std::string name_linked2 = insert_object_into_list_and_get_info(activate_ref2);
+                                                if (name_linked2 != "")
+                                                {
+                                                    linked_to.push_back(name_linked2);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                */
+
+
+                if (std::size(linked_to) != 0)
+                {
+                    linked_to_text = "[Linked to ";
+                    bool first_linked = true;
+                    for (auto linked_to_one : linked_to)
+                    {
+                        if (first_linked)
+                            linked_to_text += linked_to_one;
+                        else
+                            linked_to_text += ", " + linked_to_one;
+
+                        first_linked = false;
+                    }
+                    linked_to_text += "]";
+                    
+                    result += linked_to_text;
+
+                }
+
+            }
+                
 
             if (object->IsActor())
             {
@@ -2802,6 +2961,9 @@ namespace MiscThings {
     {
         std::string result = "";
 
+        //name = get_object_category(refr) + " " + name;
+
+
         if (refr)
         {
             bool found = false;
@@ -2938,6 +3100,8 @@ namespace MiscThings {
         //inventory_valid = false;
         //inventory.clear();
         //items_list.clear();
+
+        gave_interesting_notification_timestamp = 0;
 
         locations_around.clear();
         locations_around_valid = false;
@@ -6156,6 +6320,11 @@ namespace MiscThings {
                 if (player_ref != this_object)
                 {
 
+                    std::string dbg_name = this_object->GetDisplayFullName();
+
+                    if (dbg_name.find("Pillar") != std::string::npos)
+                        bool stop_here = true; 
+
                     if (player_ref->GetDistance(this_object) < 450.0f)
                         if (!veryclose_line_made)
                         {
@@ -6178,6 +6347,9 @@ namespace MiscThings {
                     if (player_ref->GetDistance(this_object) >= 2000.0f && player_ref->GetDistance(this_object) < 10000.0f)
                         if (!faraway_line_made)
                         {
+                            if (type == 1)
+                                return result; //short range
+
                             std::string last_name = "";
                             bool has_last = false;
                             result.second += "\nFar away:\n";
@@ -6198,19 +6370,30 @@ namespace MiscThings {
 
                         if (has_last && name_no_id == last_name)
                         {
-                            auto last_id_start = result.second.rfind("[id");
-                            if (result.second.substr(last_id_start + 3, 1) != "s")
+                            auto last_start = result.second.rfind("\n", result.second.length() - 2);
+
+                            auto last_id_start = result.second.find("[id", last_start);
+
+                            if (last_id_start == std::string::npos || last_start == std::string::npos)
                             {
-                                result.second.insert(last_id_start + 3, "s");
+                                result.second += result_name + "\n";
                             }
-                                
-                            auto last_substr = result.second.substr(last_id_start, result.second.length() - last_id_start);
+                            else
+                            {
+                                if (result.second.substr(last_id_start + 3, 1) != "s")
+                                {
+                                    result.second.insert(last_id_start + 3, "s");
+                                }
 
-                            auto last_id_sub_end = last_substr.find_first_of("]");
+                                auto last_substr = result.second.substr(last_id_start, result.second.length() - last_id_start);
 
-                            auto last_id_insert_pos = last_id_start + last_id_sub_end;
+                                auto last_id_sub_end = last_substr.find_first_of("]");
 
-                            result.second.insert(last_id_insert_pos, ", " + id_text);
+                                auto last_id_insert_pos = last_id_start + last_id_sub_end;
+
+                                result.second.insert(last_id_insert_pos, ", " + id_text);
+                            }
+                            
                         }
                         else
                             result.second += result_name + "\n";

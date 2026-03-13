@@ -3377,10 +3377,21 @@ namespace WalkerProcessor {
 
     std::pair<bool, std::string> explore_world(bool internal_call)
     {
+        std::pair<bool, std::string> result{};
+
+        std::string interesting = MiscThings::check_very_interesting_objects();
+
+        if (interesting != "")
+        {
+            result.first = true;
+            result.second = interesting;
+            return result;
+        }
+
         float max_dist = 50000.0f;
 
 
-        std::pair<bool, std::string> result{};
+        
 
         auto cant_walk_reason = get_cant_walk_reason();
 
@@ -5291,6 +5302,7 @@ namespace WalkerProcessor {
             
 
 
+        bool actually_attacked = false;
 
         if (target_ref && player_ref)
         {
@@ -5348,6 +5360,8 @@ namespace WalkerProcessor {
                         bool casting = false;
 
                         bool skip_cast = false;
+
+                        actually_attacked = true;
 
                         if (has_spell_equipped(true))
                         {
@@ -5548,6 +5562,8 @@ namespace WalkerProcessor {
                             std::string attacking_health = "";
 
                             bool casting = false;
+
+                            actually_attacked = true;
 
                             if (has_spell_equipped(false))
                             {
@@ -5775,7 +5791,8 @@ namespace WalkerProcessor {
                 }
                 else
                 {
-                    attacking_inanimate_object_time += dtime;
+                    if (actually_attacked)
+                        attacking_inanimate_object_time += dtime;
                 }
             }
         }
@@ -5880,7 +5897,13 @@ namespace WalkerProcessor {
                                 */
                             }
                             else
-                                send_random_context("[Interacting with " + target_name + "...]");
+                            {
+                                std::string no_result = "";
+                                if (!target_is_interactive())
+                                    no_result = " Nothing happens";
+                                send_random_context("[Interacting with " + target_name + "..." + no_result + "]");
+                            }
+                                
                         }
                     }
 
@@ -7056,8 +7079,17 @@ namespace WalkerProcessor {
                                                 {
                                                     std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
                                                     std::string potential_block = MiscThings::get_potential_blocking_object();
+                                                    std::string advice = "";
                                                     if (potential_block != "")
-                                                        fail_text = "[ " + potential_block + " blocks the path. Maybe you need to interact with something to go past it, or destroy it if its destructuble]";
+                                                    {
+                                                        fail_text = "[ " + potential_block + " blocks the path. ";
+
+                                                        if (potential_block.find("estructib") != std::string::npos)
+                                                            fail_text += "You can try attacking it to destroy it]";
+                                                        else
+                                                            fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                    }
+                                                        
                                                     send_random_context(fail_text);
                                                     reset_walker();
                                                 }

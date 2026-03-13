@@ -68,6 +68,8 @@ namespace MiscThings {
     std::string insert_quest_into_list_and_get_info(std::string quest_text);
     std::string insert_object_into_list_custom_name(std::string name, RE::TESObjectREFR* refr);
 
+    std::string check_very_interesting_objects();
+
 
     bool is_game_paused();
 

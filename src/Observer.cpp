@@ -833,24 +833,39 @@ namespace Observer {
 							std::string id_text_raw = result_name.substr(0, id_end + 1);
 							std::string id_text = result_name.substr(4, id_end - 4);
 
+
 							if (has_last && name_no_id == last_name)
 							{
-								auto last_id_start = info_string.rfind("[id");
-								if (info_string.substr(last_id_start + 3, 1) != "s")
+								auto last_start = info_string.rfind("\n", info_string.length() - 2);
+
+								auto last_id_start = info_string.find("[id", last_start);
+
+								if (last_id_start == std::string::npos || last_start == std::string::npos)
 								{
-									info_string.insert(last_id_start + 3, "s");
+									info_string += result_name + "\n";
+								}
+								else
+								{
+									if (info_string.substr(last_id_start + 3, 1) != "s")
+									{
+										info_string.insert(last_id_start + 3, "s");
+									}
+
+									auto last_substr = info_string.substr(last_id_start, info_string.length() - last_id_start);
+
+									auto last_id_sub_end = last_substr.find_first_of("]");
+
+									auto last_id_insert_pos = last_id_start + last_id_sub_end;
+
+									info_string.insert(last_id_insert_pos, ", " + id_text);
 								}
 
-								auto last_substr = info_string.substr(last_id_start, info_string.length() - last_id_start);
-
-								auto last_id_sub_end = last_substr.find_first_of("]");
-
-								auto last_id_insert_pos = last_id_start + last_id_sub_end;
-
-								info_string.insert(last_id_insert_pos, ", " + id_text);
 							}
 							else
 								info_string += result_name + "\n";
+
+							last_name = name_no_id;
+							has_last = true;
 
 							last_name = name_no_id;
 							has_last = true;
