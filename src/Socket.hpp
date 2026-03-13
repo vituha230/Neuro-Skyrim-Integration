@@ -229,12 +229,25 @@ namespace Capabilities
     {
         constexpr char Name[] = "use_inventory_item";
         constexpr char Desc[] =
-            R"(Use inventory item. Requires item ID and action ID. )";
+            R"(Use inventory item. Requires item ID)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the object to use. Use get_inventory to get list of object IDs. ", "type": "integer" }, "id2": { "description": "The ID of the action to do on item. Available actions: 1 - equip/use, 2 - drop", "type": "integer" } }, "required": ["id1", "id2"] })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object to use. Use get_inventory to get list of object IDs. ", "type": "integer" } }, "required": ["id"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
+
+
+    namespace DropInventoryItem
+    {
+        constexpr char Name[] = "drop_inventory_item";
+        constexpr char Desc[] =
+            R"(Drop inventory item. Requires item ID)";
+        constexpr char JsonSchema[] =
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object to use. Use get_inventory to get list of object IDs. ", "type": "integer" }}, "required": ["id"] })";//
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    } // namespace SelectChoiceOption
+
 
 
     //CastEquipSpell

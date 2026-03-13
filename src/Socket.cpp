@@ -45,6 +45,7 @@ neurosdk_action ActionsList[] = {
 
                                     Capabilities::GetInventory::Action,
                                     Capabilities::UseInventoryItem::Action,
+                                    Capabilities::DropInventoryItem::Action,
                                     Capabilities::CallWaitMenu::Action,
                                     Capabilities::OpenMap::Action,
                                     Capabilities::GetGold::Action,
@@ -82,6 +83,7 @@ neurosdk_action ActionsListNoForces[] = {
 
                                     Capabilities::GetInventory::Action,
                                     Capabilities::UseInventoryItem::Action,
+                                    Capabilities::DropInventoryItem::Action,
                                     Capabilities::CallWaitMenu::Action,
                                     Capabilities::OpenMap::Action,
                                     Capabilities::GetGold::Action,
@@ -113,6 +115,7 @@ neurosdk_action ActionsListNoForces2[] = { //these are for moments when we cant 
 
                                     //Capabilities::GetInventory::Action,
                                     Capabilities::UseInventoryItem::Action,
+                                    Capabilities::DropInventoryItem::Action,
                                     Capabilities::CallWaitMenu::Action,
                                     Capabilities::OpenMap::Action,
                                     //Capabilities::GetGold::Action,
@@ -1063,14 +1066,27 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
 
                             if (name == Capabilities::UseInventoryItem::Name)
                             {
-                                Impl::JSON::NeuroChoiceJson2 json2{};
+                                Impl::JSON::NeuroChoiceJson json{};
 
-                                if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
                                     failed_to_parse_json = true;
                                 else
-                                    command_result = MiscThings::activate_inventory_object_by_index(json2.id1, json2.id2);
+                                    command_result = MiscThings::activate_inventory_object_by_index(json.id, 1);
 
                             }
+
+
+                            if (name == Capabilities::DropInventoryItem::Name)
+                            {
+                                Impl::JSON::NeuroChoiceJson json{};
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                    failed_to_parse_json = true;
+                                else
+                                    command_result = MiscThings::activate_inventory_object_by_index(json.id, 2);
+
+                            }
+
 
                             if (name == Capabilities::GetGold::Name)
                             {
