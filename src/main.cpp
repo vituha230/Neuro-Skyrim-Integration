@@ -3,9 +3,7 @@
 
 //crucial:
 
-//TODO test 1st dungeon puzzles with llm
-
-
+//TODO letter aliases
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dwemer mechanisms/traps
 //TODO slaughterfish fights

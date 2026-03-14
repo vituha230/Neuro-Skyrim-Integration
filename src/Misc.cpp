@@ -4333,6 +4333,12 @@ namespace MiscThings {
 
             if (item->GetName() != gold_name)
             {
+
+                std::string item_name = item->GetName();
+
+                if (item_name.find("<Alias=") != std::string::npos)
+                    bool stop_here = false;
+
                 result += get_object_category(item_form);
                 result += actions + " ";
                 result += item->GetName();

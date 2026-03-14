@@ -28,6 +28,10 @@ bool right_hand_cast = false;
 bool notified_cast = false;
 float spell_cast_time = 0.0f;
 
+
+float fishing_timer = 0.0f;
+
+
 bool input_wants_to_cast()
 {
     return do_cast;
@@ -46,6 +50,9 @@ void reset_input_processor()
     right_hand_cast = false;
     notified_cast = false;
     spell_cast_time = 0.0f;
+
+    fishing_timer = 0.0f;
+
 }
 
 /*
@@ -806,8 +813,35 @@ void make_long_ult_cast()
     use_ult_time = 0.0f;
 }
 
+
+
 void input_processor(float dtime)
 {
+
+    //ccBGSSSE001_FishingSystemQuest
+    //ccBGSSSE001_FishingSystemScript
+
+
+    auto fishing_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("ccBGSSSE001_FishingSystemQuest");
+
+    if (fishing_quest)
+    {
+        auto object_p = MiscThings::General::Script::GetObject(fishing_quest, "ccBGSSSE001_FishingSystemScript");
+
+        RE::BSFixedString prop_name = "currentSystemState";
+        int fishing_state = MiscThings::General::Script::GetVariable<int>(object_p, prop_name);
+
+        if (fishing_state == 4)
+        {
+            if (fishing_timer > 2.0f)
+                confirm();
+            else
+                fishing_timer += dtime;
+        }
+        else
+            fishing_timer = 0.0f;
+    }
+
     if (do_cast)
     {
         if (make_long_cast_spell_hand(right_hand_cast, dtime))
