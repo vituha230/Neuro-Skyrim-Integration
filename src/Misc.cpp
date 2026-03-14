@@ -11,7 +11,7 @@ namespace MiscThings {
 
 
 
-
+    bool threw_a_book_out_to_read = false;
 
     long long gave_interesting_notification_timestamp = 0;
 
@@ -1646,6 +1646,26 @@ namespace MiscThings {
     }
 
 
+
+    std::string remove_aliases(std::string displaytext)
+    {
+        if (displaytext.find("<Alias=") != std::string::npos)
+        {
+            //<Alias=RiverwoodFriend>
+            auto alias_start = displaytext.find("<Alias=");
+            auto alias_end = displaytext.find(">");
+            if (alias_start < alias_end)
+            {
+                displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
+                displaytext = remove_aliases(displaytext); //if there are more
+            }
+        }
+        return displaytext;
+    }
+
+
+
+
     std::string replace_aliases(RE::TESQuest* quest, std::string displaytext)
     {
     
@@ -1667,24 +1687,100 @@ namespace MiscThings {
 
                         if (alias_codename == alias_name)
                         {
-                            auto ref_alias = (RE::BGSRefAlias*)alias;
-                            auto the_ref = ref_alias->GetReference();
-                            std::string ref_name = the_ref->GetDisplayFullName();
-                            displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
-                            displaytext.insert(alias_start, ref_name);
+                            std::string type_name = alias->GetTypeString().c_str();
 
-                            displaytext = replace_aliases(quest, displaytext); //if there are more
+                            if (type_name == "Loc")
+                            {
+
+                                if (alias->flags.any(RE::BGSBaseAlias::FLAGS::kStoreName))
+                                {
+                                    //???
+
+                                    //auto object_p = General::Script::GetObject(quest, "TrapTriggerHinge");
+
+                                    //RE::BSScript::IForEachScriptObjectFunctor* my_functor = &my_functor_idk;
+
+
+                                    //General::Script::ForEachScript(quest, 
+                                     //   [&]();
+                                }
+
+                                auto loc_alias = (RE::BGSLocAlias*)alias;
+                                RE::TESObjectREFR* the_ref = nullptr;
+                                const auto     owner = loc_alias->owningQuest;
+                                if (owner) {
+                                    auto       handle = owner->GetAliasedRef(alias->aliasID);
+                                    const auto refPtr = handle.get();
+                                    the_ref = refPtr.get();
+                                }
+
+                                if (the_ref)
+                                {
+                                    std::string ref_name = the_ref->GetDisplayFullName();
+                                    displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
+                                    displaytext.insert(alias_start, ref_name);
+
+                                    displaytext = replace_aliases(quest, displaytext); //if there are more
+                                }
+                                else
+                                {
+                                    //just erase it idk what to do with it
+                                    displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
+                                    displaytext = replace_aliases(quest, displaytext); //if there are more
+                                }
+                            }
+
+                            if (type_name == "Ref")
+                            {
+                                auto ref_alias = (RE::BGSRefAlias*)alias;
+                                auto the_ref = ref_alias->GetReference();
+                                if (the_ref)
+                                {
+                                    std::string ref_name = the_ref->GetDisplayFullName();
+                                    displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
+                                    displaytext.insert(alias_start, ref_name);
+
+                                    displaytext = replace_aliases(quest, displaytext); //if there are more
+                                }
+                                else
+                                {
+                                    displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
+                                    displaytext = replace_aliases(quest, displaytext); //if there are more
+                                }
+                            }
+
                             break;
                         }
                     }
                 }
             }
         }
+
+        if (displaytext.find("<Alias=") != std::string::npos)
+        {
+            displaytext = remove_aliases(displaytext); //clear strays if they werent replaced
+        }
+
+
         return displaytext;
     }
 
 
 
+
+    std::string replace_aliases_all_quests(std::string displaytext)
+    {
+        if (displaytext.find("<Alias=") != std::string::npos)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto quest_targets = player->questTargets;
+
+            for (auto quest_target : quest_targets)
+                displaytext = replace_aliases(quest_target.first, displaytext); //if there are more
+        }
+
+        return displaytext;
+    }
 
 
     bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest)
@@ -3242,6 +3338,8 @@ namespace MiscThings {
         //inventory.clear();
         //items_list.clear();
 
+        threw_a_book_out_to_read = false;
+
         gave_interesting_notification_timestamp = 0;
 
         locations_around.clear();
@@ -3479,15 +3577,39 @@ namespace MiscThings {
     RE::TESObjectBOOK* book_to_activate = nullptr;
     float book_activate_time = 0.0f;
 
+
+    /*
     void delayed_activate_book(RE::TESObjectBOOK* book)
     {
         book_to_activate = book;
         book_activate_time = 0.0f;
     }
+    */
+    
+
+
+    bool has_thrown_a_book()
+    {
+        return threw_a_book_out_to_read;
+    }
 
 
     void book_reader(float dtime)
     {
+        if (threw_a_book_out_to_read)
+        {
+            if (book_activate_time > 2.0f)
+            {
+                threw_a_book_out_to_read = false;
+                book_activate_time = 0.0f;
+            }
+            else
+                book_activate_time += dtime;
+        }
+        else
+            book_activate_time = 0.0f;
+
+        /*
         if (book_to_activate)
         {
             if (book_activate_time > 2.0f)
@@ -3518,6 +3640,11 @@ namespace MiscThings {
             else
                 book_activate_time += dtime;
         }
+        else
+            book_activate_time = 0.0f;
+
+            */
+
     }
 
 
@@ -4011,6 +4138,10 @@ namespace MiscThings {
             {
                 auto item_form = (RE::TESForm*)object;
 
+                std::string object_name = object->GetName();
+
+                object_name = replace_aliases_all_quests(object_name);
+
                 switch (action_id)
                 {
                 case 1:
@@ -4021,7 +4152,7 @@ namespace MiscThings {
                         if (is_equipped(object))
                         {
                             result.first = actor_equip->UnequipObject((RE::Actor*)player_ref, object);
-                            result.second = "[Unequipped [id " + std::to_string(item_id) + "] " + object->GetName() + "]";
+                            result.second = "[Unequipped [id " + std::to_string(item_id) + "] " + object_name + "]";
 
                             if (object->IsWeapon())
                                 if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
@@ -4065,7 +4196,7 @@ namespace MiscThings {
 
 
 
-                            result.second = "[Equipped [id " + std::to_string(item_id) + "] " + object->GetName() + equip_hand + "...]";
+                            result.second = "[Equipped [id " + std::to_string(item_id) + "] " + object_name + equip_hand + "...]";
                         }
 
                         result.first = true;
@@ -4081,7 +4212,7 @@ namespace MiscThings {
                             actor_equip->EquipObject((RE::Actor*)player_ref, object);
 
                             result.first = true;
-                            result.second = "[Consuming [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+                            result.second = "[Consuming [id " + std::to_string(item_id) + "] " + object_name + "...]";
                             return result;
                         }
                         else
@@ -4110,6 +4241,7 @@ namespace MiscThings {
                                     auto world_book_handle = player_actor->DropObject(object, nullptr, 1);
                                     auto book_refr = world_book_handle.get().get();
                                     book_book->Activate(book_refr, player_ref, 0, object, 1);
+                                    threw_a_book_out_to_read = true;
                                 }
 
 
@@ -4128,13 +4260,16 @@ namespace MiscThings {
 
 
                                 result.first = true;
-                                result.second = "[Reading [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+                                result.second = "[Reading [id " + std::to_string(item_id) + "] " + object_name + "...]";
+
+                                
+
                                 return result;
                             }
                             else
                             {
                                 result.first = false;
-                                result.second = "Cannot activate [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+                                result.second = "Cannot activate [id " + std::to_string(item_id) + "] " + object_name + "...]";
                                 return result;
                             }
 
@@ -4166,14 +4301,14 @@ namespace MiscThings {
                     if (cant_drop)
                     {
                         result.first = false;
-                        result.second = "Cant drop [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+                        result.second = "Cant drop [id " + std::to_string(item_id) + "] " + object_name + "...]";
                         return result;
                     }
                     else
                     {
                         player_actor->DropObject(object, nullptr, 1);
                         result.first = true;
-                        result.second = "[Dropping [id " + std::to_string(item_id) + "] " + object->GetName() + "...]";
+                        result.second = "[Dropping [id " + std::to_string(item_id) + "] " + object_name + "...]";
                         return result;
                     }
 
@@ -4331,17 +4466,24 @@ namespace MiscThings {
             if (item_form->formType == RE::FormType::Ingredient || item_form->formType == RE::FormType::AlchemyItem)
                 ;// actions += "[Can consume]";
 
-            if (item->GetName() != gold_name)
+            std::string item_name = item->GetName();
+
+            if (item_name != gold_name)
             {
 
-                std::string item_name = item->GetName();
-
                 if (item_name.find("<Alias=") != std::string::npos)
-                    bool stop_here = false;
+                {
+                    auto player = RE::PlayerCharacter::GetSingleton();
+                    auto quest_targets = player->questTargets;
+
+                    for (auto quest_target : quest_targets)
+                        item_name = replace_aliases(quest_target.first, item_name); //if there are more
+                }
+                    
 
                 result += get_object_category(item_form);
                 result += actions + " ";
-                result += item->GetName();
+                result += item_name;
                 //result += "\n"; //TODO: replace with comma later
 
                 //item_data database_data{};

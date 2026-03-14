@@ -814,6 +814,7 @@ void make_long_ult_cast()
 }
 
 
+float fishing_reaction_time = 0.5f;
 
 void input_processor(float dtime)
 {
@@ -839,7 +840,11 @@ void input_processor(float dtime)
                 fishing_timer += dtime;
         }
         else
+        {
+            fishing_reaction_time = ((float)std::rand() / RAND_MAX)*2.0f + 0.5f;
             fishing_timer = 0.0f;
+        }
+            
     }
 
     if (do_cast)

@@ -180,6 +180,11 @@ namespace MiscThings {
     void save_loader(float dtime);
 
 
+    std::string replace_aliases_all_quests(std::string displaytext);
+
+    bool has_thrown_a_book();
+
+
     namespace General::Script
     {
         using InternalVM = RE::BSScript::Internal::VirtualMachine;
@@ -194,6 +199,17 @@ namespace MiscThings {
             auto policy = vm->GetObjectHandlePolicy();
             return policy->GetHandleForObject(a_form->GetFormType(), a_form);
         }
+
+        inline void ForEachScript(RE::TESForm* a_form, RE::BSScript::IForEachScriptObjectFunctor* a_functor)
+        {
+            auto vm = InternalVM::GetSingleton();
+            auto handle = GetHandle(a_form);
+
+            vm->ForEachBoundObject(handle, a_functor);
+
+            return;
+        }
+
 
         inline ObjectPtr GetObject(RE::TESForm* a_form, const char* a_class, bool a_create = false)
         {

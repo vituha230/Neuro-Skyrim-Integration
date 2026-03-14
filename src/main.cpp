@@ -1624,7 +1624,7 @@ private:
                 SleepWaitProcessor::processor(dtime);
                 BookProcessor::processor(dtime);
                 TrainingProcessor::processor(dtime);
-                MiscThings::book_reader(dtime);
+                
                 ;
             }
                 
@@ -2415,6 +2415,7 @@ class MyHook {
         {
             WalkerProcessor::processor(dtime);
             DialogueProcessor::processor(dtime);
+            MiscThings::book_reader(dtime);
         }
 
         

@@ -28,7 +28,7 @@ namespace BookProcessor {
 	float try_taking_again_time = 0.0f;
 	float in_book_time = 0.0f;
 	bool book_text_sent = false;
-
+	std::string last_book_type = "book";
 
 	bool quit_menu()
 	{
@@ -67,6 +67,8 @@ namespace BookProcessor {
 			{
 				RE::BSString the_string = menu->GetDescription();
 				result = the_string;
+
+				result = MiscThings::replace_aliases_all_quests(result);
 			}
 
 		return result;
@@ -129,26 +131,37 @@ namespace BookProcessor {
 				auto name = menu->GetTargetForm();
 
 				if (name)
+				{
 					result = name->GetFullName();
+
+					result = MiscThings::replace_aliases_all_quests(result);
+				}
+					
 			}
 
 		return result;
 	}
 
 
+	std::string book_type()
+	{
+		if (is_note())
+		{
+			return "note";
+		}
+		else
+			return "book";
+	}
 
 	std::string get_force_message()
 	{
-		std::string book_or_note = "book";
-		if (is_note())
-		{
-			book_or_note = "note";
-		}
+		std::string book_or_note = book_type();
+
 		
 		std::string raw_descr = get_book_text();
 		MiscThings::clean_controls_from_string(&raw_descr);
 
-		std::string result = "You are reading a " + book_or_note + ": " + get_book_name() + ". " + fix_book_description(raw_descr);
+		std::string result = "You are reading a " + book_or_note + ": " + get_book_name() + "...\n[" + fix_book_description(raw_descr) + "]";
 
 
 		return result;
@@ -197,24 +210,27 @@ namespace BookProcessor {
 	{
 		std::vector<MenuOption> options{};
 
-
-		std::string bonus = get_take_steal_text();
-
-
-		std::string book_or_note = "book";
-		if (is_note())
+		if (MiscThings::has_thrown_a_book())
 		{
-			book_or_note = "note";
+			options.push_back({ 1, "Stop reading" }); //fake take
+		}
+		else
+		{
+			std::string bonus = get_take_steal_text();
+
+			std::string book_or_note = "book";
+			if (is_note())
+			{
+				book_or_note = "note";
+			}
+
+
+			if (bonus != "")
+				options.push_back({ 1, "Stop reading and " + bonus + " the " + book_or_note });
+
+			options.push_back({ -1, "Stop reading" });
 		}
 
-
-		if (bonus != "")
-			options.push_back({ 1, "Stop reading and " + bonus + " the " + book_or_note});
-
-
-
-
-		options.push_back({ -1, "Stop reading" });
 
 		return options;
 	}
@@ -279,6 +295,8 @@ namespace BookProcessor {
 
 		in_book_time = 0.0f;
 		book_text_sent = false;
+
+		last_book_type = "book";
 	}
 
 
@@ -309,7 +327,7 @@ namespace BookProcessor {
 					
 					std::vector<MenuOption> quit_option = { {-1, "Stop reading" } };
 
-					if (force_choice(quit_option, "[Failed to take the book]", force_type::book))
+					if (force_choice(quit_option, "[Failed to take the " + book_type() + "]", force_type::book))
 					{
 						sent_quit_force = true;
 					}
@@ -379,13 +397,18 @@ namespace BookProcessor {
 								{
 									if (book_choice == 1)
 									{
-										send_random_context("[Trying to take the book...]");
+										
+										if (!MiscThings::has_thrown_a_book())
+											send_random_context("[Trying to take the " + book_type() + "...]");
+										else
+											send_random_context("[Closing the " + book_type() + "...]");
 
 										take_steal_book();
 
 										set_universal_block(1.5f);
 
 										catch_result = true;
+										last_book_type = book_type();
 										done = true;
 										//reset_menu();
 									}
@@ -400,7 +423,8 @@ namespace BookProcessor {
 			else
 			{
 				if (done)
-					send_random_context("[Took the book]");
+					if (!MiscThings::has_thrown_a_book())
+						send_random_context("[Took the " + last_book_type + "]");
 
 				reset_menu();
 			}
