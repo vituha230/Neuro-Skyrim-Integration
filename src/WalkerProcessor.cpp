@@ -228,6 +228,13 @@ namespace WalkerProcessor {
     bool reset_after_walk = false;
 
 
+    bool backup_pickup = false;
+    int backup_pickup_attempts = 0;
+    RE::TESObjectREFR* backup_pickup_object = nullptr;
+    float backup_pickup_time = 0.0f;
+
+
+
     void set_crime_mode(bool state)
     {
         crime_mode = state;
@@ -5899,6 +5906,27 @@ namespace WalkerProcessor {
                                     }
                                 }
                                 */
+
+                                
+
+                                if (!backup_pickup)
+                                {
+                                    if (backup_pickup_attempts <= 3)
+                                    {
+                                        backup_pickup_attempts++;
+                                        backup_pickup = true;
+                                        backup_pickup_object = target_ref;
+                                    }
+                                    else
+                                    {
+                                        backup_pickup_attempts = 0;
+                                        backup_pickup = false;
+                                        backup_pickup_object = nullptr;
+                                        backup_pickup_time = 0.0f;
+                                    }
+                                }
+
+                                
                             }
                             else
                             {
@@ -6505,10 +6533,47 @@ namespace WalkerProcessor {
 
 
 
+    void reset_backup_pickup()
+    {
+        backup_pickup_attempts = 0;
+        backup_pickup = false;
+        backup_pickup_object = nullptr;
+        backup_pickup_time = 0.0f;
+    }
+
 	float walker_processor_timer = 0.0f;
 
 	void processor(float dtime)
 	{
+        if (backup_pickup)
+        {
+            if (get_cant_walk_reason() != "")
+            {
+                reset_backup_pickup();
+            }
+            else
+            {
+                if (MiscThings::is_object_still_valid(backup_pickup_object))
+                {
+                    //object hasnt been picked up. try again
+                    if (backup_pickup_time > 0.5f)
+                    {
+                        backup_pickup = false;
+                        walk_to_object_by_refr(backup_pickup_object, 1);
+                        backup_pickup_time = 0.0f;
+                    }
+                    else
+                        backup_pickup_time += dtime;
+                }
+                else
+                {
+                    //all good
+                    reset_backup_pickup();
+                }
+            }
+            
+        }
+
 
         if (getting_into_carriage)
         {

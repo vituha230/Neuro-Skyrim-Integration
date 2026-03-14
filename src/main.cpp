@@ -839,6 +839,8 @@ namespace Hooks {
          
                 RandomMessageBoxProcessor::reset_menu();
                 WalkerProcessor::reset_walker();
+                WalkerProcessor::reset_backup_pickup();
+
                 MiscThings::clear_object_list();
                 Observer::reset_threats();
                 Observer::reset_observer();

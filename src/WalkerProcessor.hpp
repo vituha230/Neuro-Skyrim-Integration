@@ -88,4 +88,8 @@ namespace WalkerProcessor {
 
 	std::pair<bool, std::string> make_spins(int amount, int speed);
 
+
+
+	void reset_backup_pickup();
+
 }
