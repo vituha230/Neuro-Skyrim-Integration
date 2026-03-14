@@ -31,7 +31,7 @@ namespace Observer {
 
 
 
-	void attatch_heatmap();
+	void attatch_hitmap();
 
 	class EventSink :
 		public REX::TSingleton<EventSink>,
@@ -40,9 +40,9 @@ namespace Observer {
 	private:
 		bool* hitmap_lock = nullptr;
 		std::map<RE::TESObjectREFR*, long long>* player_hit_info = nullptr;
-		void (*send_random_context)(std::string context);
+		void (*send_random_context)(std::string context, bool silent);
 	public:
-		void attatch_hitmap(std::map<RE::TESObjectREFR*, long long>* map, bool* lock, void (*context_sender)(std::string context))
+		void attatch_hitmap(std::map<RE::TESObjectREFR*, long long>* map, bool* lock, void (*context_sender)(std::string context, bool silent))
 		{
 			player_hit_info = map;
 			hitmap_lock = lock;
@@ -106,7 +106,7 @@ namespace Observer {
 									{
 										if (agressor_name != "")
 										{
-											send_random_context(agressor_name + " hits you" + weapon_name + "!");
+											send_random_context(agressor_name + " hits you" + weapon_name + "!", true);
 											hit_event->second = now_time;
 										}
 									}
@@ -114,7 +114,7 @@ namespace Observer {
 								else
 								{
 									player_hit_info->insert({ agressor_ref, now_time });
-									send_random_context(agressor_name + " hits you" + weapon_name + "!");
+									send_random_context(agressor_name + " hits you" + weapon_name + "!", true);
 								}
 							}
 

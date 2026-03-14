@@ -482,7 +482,7 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text)
 }
 
 
-void send_random_context(std::string context)
+void send_random_context(std::string context, bool silent)
 {
     if (context == "" || context == "[]")
         return;
@@ -491,7 +491,7 @@ void send_random_context(std::string context)
         return;
 
     if (m_neuroSocket)
-        m_neuroSocket->SendContext(context.c_str(), true);
+        m_neuroSocket->SendContext(context.c_str(), silent);
 }
 
 
@@ -2637,7 +2637,7 @@ void MessageListener(SKSE::MessagingInterface::Message* message) {
         OnUpdateHook::Install();
 
         Observer::EventSink::GetSingleton()->Init();
-        Observer::attatch_heatmap();
+        Observer::attatch_hitmap();
 
         break;
     default:

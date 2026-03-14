@@ -131,7 +131,7 @@ namespace Observer {
 	std::map<RE::TESObjectREFR*, long long> player_hit_info{};
 	bool hitmap_lock = false;
 
-	void attatch_heatmap()
+	void attatch_hitmap()
 	{
 		EventSink::GetSingleton()->attatch_hitmap(&player_hit_info, &hitmap_lock, *send_random_context);
 	}

@@ -19,7 +19,7 @@ void set_universal_block(float time);
 
 void set_allowed_events(int amount);
 
-void send_random_context(std::string context);
+void send_random_context(std::string context, bool silent = true);
 
 //debug scan
 std::string visit_all_members(bool do_dump, std::ofstream& fs, const RE::GFxValue& in, std::string* search_var, int depth);
