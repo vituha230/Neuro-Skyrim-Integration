@@ -796,7 +796,7 @@ namespace MapProcessor {
 			if (catch_result_timer > 5.0f)
 			{
 				set_universal_block(1.0f);
-				send_random_context("[Cannot travel there]");
+				send_random_context("[Cannot travel there]", false);
 				reset_menu();
 			}
 			//catch message why we cannot fast travel
@@ -804,9 +804,9 @@ namespace MapProcessor {
 			if (catch_result != "")
 			{
 				if (catch_result == "Autosaving...")
-					send_random_context("[Successfully travelled]");
+					send_random_context("[Successfully travelled]", false);
 				else
-					send_random_context("[" + catch_result + "]");
+					send_random_context("[" + catch_result + "]", false);
 
 				set_universal_block(1.0f);
 				reset_menu();
@@ -913,7 +913,7 @@ namespace MapProcessor {
 
 						if (click_location_timeout > 5.0f)
 						{
-							send_random_context("Cannot travel there right now");
+							send_random_context("Cannot travel there right now", false);
 							reset_menu();
 						}
 
@@ -1024,7 +1024,7 @@ namespace MapProcessor {
 
 						if (click_location_timeout > 5.0f)
 						{
-							send_random_context("Cannot travel there right now");
+							send_random_context("Cannot travel there right now", false);
 							reset_menu();
 						}
 					}
@@ -1040,7 +1040,7 @@ namespace MapProcessor {
 
 				if (cursor_move_timeout > 20.0f)
 				{
-					send_random_context("Cannot travel there right now");
+					send_random_context("Cannot travel there right now", false);
 					reset_menu();
 				}
 			}

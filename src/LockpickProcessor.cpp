@@ -370,11 +370,11 @@ namespace LockpickProcessor {
 					{
 						if (detect_pick_broke()) //this check acts funny so do it in 2 places
 						{
-							send_random_context("[The lockpick broke]");
+							send_random_context("[The lockpick broke]", false);
 							reset_lockpicking();
 							if (get_picks_amount_int() == 0)
 							{
-								send_random_context("[Out of lockpicks. Exiting lockpicking menu]");
+								send_random_context("[Out of lockpicks. Exiting lockpicking menu]", false);
 								no_lockpicks = true;
 							}
 							set_universal_block(1.5f);
@@ -387,7 +387,7 @@ namespace LockpickProcessor {
 							{
 								if (detect_pick_broke()) //this check acts funny so do it in 2 places
 								{
-									send_random_context("[The lockpick broke]");
+									send_random_context("[The lockpick broke]", false);
 									reset_lockpicking();
 									set_universal_block(1.5f);
 								}
@@ -405,7 +405,7 @@ namespace LockpickProcessor {
 										{
 											do_lock_moving = false;
 											cancel_forward_lockpick();
-											send_random_context("[Successfully picked the lock]");
+											send_random_context("[Successfully picked the lock]", false);
 											reset_lockpicking();
 										}
 
@@ -429,7 +429,7 @@ namespace LockpickProcessor {
 													how_good_text = "You almost got it";
 
 
-											send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(how_good) + "% (has to reach 100% to open). Try different pick angle. (from 0 to 180). " + how_good_text + "]").c_str());
+											send_random_context(("[Attempt failed. The lock only rotated by " + std::to_string(how_good) + "% (has to reach 100% to open). Try different pick angle. (from 0 to 180). " + how_good_text + "]").c_str(), false);
 											reset_lockpicking(); //MAYBE GIVE DIFFERENT PROMPT ON RETRY?
 											set_universal_block(1.5f);
 										}

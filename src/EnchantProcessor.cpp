@@ -932,7 +932,7 @@ void processor(float dtime)
 									if (message != "Are you sure you want to destroy this item and learn its effects?" && message != "Enchant item?") //this is done automatically
 									{
 										std::string var_string = var1.GetString();
-										send_random_context("[" + var_string + "]");
+										send_random_context("[" + var_string + "]", false);
 									}
 								}
 
@@ -956,7 +956,7 @@ void processor(float dtime)
 						std::string result = get_result_message();
 						if (result != "")
 						{
-							send_random_context("[" + result + "]");
+							send_random_context("[" + result + "]", false);
 							reset_enchant();
 						}
 						if (result_timeout > 2.0f)
@@ -1031,7 +1031,7 @@ void processor(float dtime)
 																			if (message != "Are you sure you want to destroy this item and learn its effects?" && message != "Enchant item?") //this is done automatically
 																			{
 																				std::string var_string = var1.GetString();
-																				send_random_context("[" + var_string + "]");
+																				send_random_context("[" + var_string + "]", false);
 																			}
 																		}
 
@@ -1184,7 +1184,7 @@ void processor(float dtime)
 																							if (message != "Are you sure you want to destroy this item and learn its effects?" && message != "Enchant item?") //this is done automatically
 																							{
 																								std::string var_string = var1.GetString();
-																								send_random_context("[" + var_string + "]");
+																								send_random_context("[" + var_string + "]", false);
 																							}
 																						}
 
@@ -1202,7 +1202,7 @@ void processor(float dtime)
 																					std::string result = get_result_message();
 																					if (result != "")
 																					{
-																						send_random_context("[" + result + "]");
+																						send_random_context("[" + result + "]", false);
 																						reset_enchant();
 																					}
 																					else

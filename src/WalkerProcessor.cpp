@@ -591,7 +591,7 @@ namespace WalkerProcessor {
                             min_dist = 20000.0f;
                             if (!explore_mode_notified)
                             {
-                                send_random_context("[You found a direction to explore, and started walking");
+                                send_random_context("[You found a direction to explore, and started walking", false);
                                 explore_mode_notified = true;
                             }
                             
@@ -619,7 +619,7 @@ namespace WalkerProcessor {
                                     unregister_explore_action();
                                 }
 
-                                send_random_context("You cannot find any interesting direction to explore");
+                                send_random_context("You cannot find any interesting direction to explore", false);
                             }
 
                             return;
@@ -633,7 +633,7 @@ namespace WalkerProcessor {
                                     if (!too_high_notified)
                                     {
                                         too_high_notified = true;
-                                        send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
+                                        send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
                                     }
                                 }
                             }
@@ -1256,7 +1256,7 @@ namespace WalkerProcessor {
                     reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
                     reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
 
-                    send_random_context(reminder_message);
+                    //send_random_context(reminder_message);
                 }
                 else
                     last_walk_reminded_time += dtime_maybe_bad;
@@ -3626,7 +3626,7 @@ namespace WalkerProcessor {
 
                     result.first = false;
                     if (MiscThings::is_intro())
-                        send_random_context("Your hands are bound. Wait for the game to progress before interacting. Looking at the target instead");
+                        send_random_context("Your hands are bound. Wait for the game to progress before interacting. Looking at the target instead", false);
                     else
                     {
                         std::string message = "Your hands are bound. You cannot interact now. ";
@@ -3640,7 +3640,7 @@ namespace WalkerProcessor {
                         message += bonus;
                         message += ". Looking at the target instead";
 
-                        send_random_context(message);
+                        send_random_context(message, false);
                     }
                         
                     //return result;
@@ -5891,7 +5891,7 @@ namespace WalkerProcessor {
                             auto base_obj = target_ref->GetBaseObject();
                             if (base_obj->IsInventoryObject())
                             {
-                                send_random_context("[Picking up " + target_name + "...]");
+                                send_random_context("[Picking up " + target_name + "...]", false);
                                 /* //TODO it ruins the list a little, observer starts spamming. figure it out later
                                 if (MiscThings::is_objects_around_valid())
                                 {
@@ -5933,7 +5933,7 @@ namespace WalkerProcessor {
                                 std::string no_result = "";
                                 if (!target_is_interactive())
                                     no_result = " Nothing happens";
-                                send_random_context("[Interacting with " + target_name + "..." + no_result + "]");
+                                send_random_context("[Interacting with " + target_name + "..." + no_result + "]", false);
                             }
                                 
                         }
@@ -6274,14 +6274,14 @@ namespace WalkerProcessor {
                 RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount_ptr.get();
                 mount_name = MiscThings::insert_object_into_list_and_get_info(mount_refr);
             }
-            send_random_context("Cannot do this while on mount: " + mount_name);
+            send_random_context("Cannot do this while on mount: " + mount_name, false);
         }
         else
         {
             if (blocking_object_name == "Something")
-                send_random_context("[" + blocking_object_name + " blocks the object. Maybe it is inaccessible at all]");
+                send_random_context("[" + blocking_object_name + " blocks the object. Maybe it is inaccessible at all]", false);
             else
-                send_random_context("[" + blocking_object_name + " blocks the object]");
+                send_random_context("[" + blocking_object_name + " blocks the object]", false);
 
         }
             
@@ -6621,7 +6621,7 @@ namespace WalkerProcessor {
             if (!low_mana_notified)
             {
                 low_mana_notified = true;
-                send_random_context("[You dont have enough mana to cast the spell!]");
+                send_random_context("[You dont have enough mana to cast the spell!]", false);
             }
             else
             {
@@ -6683,7 +6683,7 @@ namespace WalkerProcessor {
                     do_spins = false;
                     amount_of_spins = 0;
                     spin_step_one = false;
-                    send_random_context("[Spinning done]");
+                    send_random_context("[Spinning done]", false);
                     spin_timeout = 0.0f;
                     register_allowed_actions();
                     return;
@@ -6716,7 +6716,7 @@ namespace WalkerProcessor {
 
                 if (amount_of_spins <= 0)
                 {
-                    send_random_context("[Spinning done]");
+                    send_random_context("[Spinning done]", false);
                     do_spins = false;
                     amount_of_spins = 0;
                     spin_step_one = false;
@@ -6733,7 +6733,7 @@ namespace WalkerProcessor {
                         amount_of_spins_done++;
                         spin_step_one = false;
                         spin_step_two = false;
-                        send_random_context("[Did " + std::to_string(amount_of_spins_done) + " spins]");
+                        send_random_context("[Did " + std::to_string(amount_of_spins_done) + " spins]", false);
 
 
                         if (amount_of_spins_done > 4)
@@ -6791,7 +6791,7 @@ namespace WalkerProcessor {
 
                             }
 
-                            send_random_context(message + "]");
+                            send_random_context(message + "]", false);
                         }
                     }
 
@@ -6824,7 +6824,7 @@ namespace WalkerProcessor {
                         chill_with_context = true;
 
                         walk_to_object_by_refr(new_target, 3);
-                        send_random_context("[You started fighting next target: " + new_target_name + "]");
+                        send_random_context("[You started fighting next target: " + new_target_name + "]", false);
                     }
                     else
                     {
@@ -6845,7 +6845,7 @@ namespace WalkerProcessor {
                             if (advice != "")
                                 advice = "You can " + advice;
 
-                            send_random_context("[Fight ended. Choose next action to do. " + advice + "]");
+                            send_random_context("[Fight ended. Choose next action to do. " + advice + "]", false);
                         }
                         else
                             search_next_target_timer += dtime;
@@ -7040,7 +7040,7 @@ namespace WalkerProcessor {
                                                                                 MiscThings::update_old_topleft_nofification(result_string);
 
                                                                             register_allowed_actions();
-                                                                            send_random_context("[" + result_string + "]");
+                                                                            send_random_context("[" + result_string + "]", false);
                                                                             reset_walker();
                                                                         }
                                                                     }
@@ -7050,7 +7050,7 @@ namespace WalkerProcessor {
                         }
                         else
                         {
-                            send_random_context("[Interaction with object failed]");
+                            send_random_context("[Interaction with object failed]", false);
                             reset_walker();
                             register_allowed_actions();
                         }
@@ -7160,7 +7160,7 @@ namespace WalkerProcessor {
                                                             fail_text += "Maybe you need to interact with something nearby to go past it]";
                                                     }
 
-                                                    send_random_context(fail_text);
+                                                    send_random_context(fail_text, false);
                                                     reset_walker();
                                                 }
                                             }
@@ -7255,7 +7255,7 @@ namespace WalkerProcessor {
                                                                 {
                                                                     //std::string target_name = target_ref->GetDisplayFullName();
                                                                     if (!chill_with_context && !looking_mode)
-                                                                        send_random_context(get_success_message());
+                                                                        send_random_context(get_success_message(), false);
                                                                 }
 
                                                             }
@@ -7414,7 +7414,7 @@ namespace WalkerProcessor {
                                                                                         right_attack_cancel();
                                                                                         left_attack_cancel();
                                                                                         walk_to_object_by_refr(new_target, 3);
-                                                                                        send_random_context("[You started fighting next target: " + new_target_name + "]");
+                                                                                        send_random_context("[You started fighting next target: " + new_target_name + "]", false);
                                                                                     }
                                                                                     else
                                                                                     {
@@ -7464,7 +7464,7 @@ namespace WalkerProcessor {
                                                                                                 right_attack_cancel();
                                                                                                 left_attack_cancel();
                                                                                                 walk_to_object_by_refr(new_target, 3);
-                                                                                                send_random_context("[You started fighting next target: " + new_target_name + "]");
+                                                                                                send_random_context("[You started fighting next target: " + new_target_name + "]", false);
                                                                                             }
                                                                                             else
                                                                                             {
@@ -7511,7 +7511,7 @@ namespace WalkerProcessor {
                                                     if (!too_high_notified)
                                                     {
                                                         too_high_notified = true;
-                                                        send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ");
+                                                        send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
                                                     }
                                                     lock_camera_onto_target(target_ref, dtime);
                                                     return;
@@ -7629,7 +7629,7 @@ namespace WalkerProcessor {
                                                                     fail_text += "Maybe you need to interact with something nearby to go past it]";
                                                             }
 
-                                                            send_random_context(fail_text);
+                                                            send_random_context(fail_text, false);
                                                             remove_navmesh_cutter();
                                                             reset_walker();
                                                         }
@@ -7674,7 +7674,7 @@ namespace WalkerProcessor {
                                                             fail_text += "Maybe you need to interact with something nearby to go past it]";
                                                     }
 
-                                                    send_random_context(fail_text);
+                                                    send_random_context(fail_text, false);
                                                     reset_walker();
                                                 }
 

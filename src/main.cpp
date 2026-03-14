@@ -528,7 +528,7 @@ public:
         
         if (a_message.type == RE::UI_MESSAGE_TYPE::kHide)
         {
-            send_random_context("[The dialogue ended]");
+            send_random_context("[The dialogue ended]", false);
             register_allowed_actions();
         }
             
@@ -922,7 +922,7 @@ namespace Hooks {
 
 
 
-                        send_random_context("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]");
+                        send_random_context("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]", false);
                     }
                 }
             }

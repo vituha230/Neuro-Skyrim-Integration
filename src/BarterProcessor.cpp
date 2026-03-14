@@ -1587,7 +1587,7 @@ namespace BarterProcessor {
 
         if (have_not_enough_gold_message())
         {
-            send_random_context("[Not enough gold!]");
+            send_random_context("[Not enough gold!]", false);
             old_item_choice_text = "";
             return true; //not enough gold
         }

@@ -784,7 +784,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
             notified_cast = true;
             std::string cast_info = "[You are casting ";
             cast_info += WalkerProcessor::get_equipped_spell_name(right) + "]";
-            send_random_context(cast_info);
+            send_random_context(cast_info, false);
         }
 
 

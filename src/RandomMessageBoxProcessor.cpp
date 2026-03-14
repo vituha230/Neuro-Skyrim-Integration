@@ -198,7 +198,7 @@ namespace RandomMessageBoxProcessor {
 
 						if (std::size(option_test) == 1)
 						{
-							send_random_context("[" + text + "]");
+							send_random_context("[" + text + "]", false);
 							set_message_box_choice(option_test.at(0).id);
 							message_box_request_sent = true;
 						}

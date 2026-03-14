@@ -2023,7 +2023,7 @@ namespace PerksProcessor {
 						if (get_available_perk_points_number() < 1)
 						{
 							quit_until_no_menus_left = true;
-							send_random_context("You dont have any perk points left to spend. Quitting skill menu");
+							send_random_context("You dont have any perk points left to spend. Quitting skill menu", false);
 							return;
 						}
 
@@ -2184,7 +2184,7 @@ namespace PerksProcessor {
 															}
 															else
 															{
-																send_random_context(get_unavailable_perk_description());
+																send_random_context(get_unavailable_perk_description(), false);
 																set_universal_block(3.0f);
 																reset_perks();
 															}

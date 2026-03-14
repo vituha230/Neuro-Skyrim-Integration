@@ -1274,7 +1274,7 @@ void processor(float dtime)
 						std::string result = get_result_message();
 						if (result != "")
 						{
-							send_random_context("[" + result + "]");
+							send_random_context("[" + result + "]", false);
 							if (no_category)
 								reset_smithing();
 							else
@@ -1394,7 +1394,7 @@ void processor(float dtime)
 																	//no message box appeared, craft successful
 																	std::string result = get_result_message();
 																	if (result != "")
-																		send_random_context("[" + result + "]");
+																		send_random_context("[" + result + "]", false);
 
 																	if (no_category)
 																		reset_smithing();
@@ -1434,7 +1434,7 @@ void processor(float dtime)
 																		std::string result = get_result_message();
 																		if (result != "")
 																		{
-																			send_random_context("[" + result + "]");
+																			send_random_context("[" + result + "]", false);
 																			if (no_category)
 																				reset_smithing();
 																			else

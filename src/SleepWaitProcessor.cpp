@@ -321,9 +321,9 @@ namespace SleepWaitProcessor {
 			{
 				if (done)
 					if (was_sleeping)
-						send_random_context("[You woke up]");
+						send_random_context("[You woke up]", false);
 					else
-						send_random_context("[Waiting is over]");
+						send_random_context("[Waiting is over]", false);
 
 				reset_menu();
 			}

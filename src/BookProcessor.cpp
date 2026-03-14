@@ -377,7 +377,7 @@ namespace BookProcessor {
 					if (!book_text_sent)
 					{
 						book_text_sent = true;
-						send_random_context(get_force_message());
+						send_random_context(get_force_message(), false);
 					}
 					else
 					{
@@ -401,7 +401,7 @@ namespace BookProcessor {
 										if (!MiscThings::has_thrown_a_book())
 											send_random_context("[Trying to take the " + book_type() + "...]");
 										else
-											send_random_context("[Closing the " + book_type() + "...]");
+											send_random_context("[Closing the " + book_type() + "...]", false);
 
 										take_steal_book();
 
@@ -424,7 +424,7 @@ namespace BookProcessor {
 			{
 				if (done)
 					if (!MiscThings::has_thrown_a_book())
-						send_random_context("[Took the " + last_book_type + "]");
+						send_random_context("[Took the " + last_book_type + "]", false);
 
 				reset_menu();
 			}

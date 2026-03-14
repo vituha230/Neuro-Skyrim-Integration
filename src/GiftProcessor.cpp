@@ -827,7 +827,7 @@ void processor(float dtime)
 					update_items_list();
 					if (std::size(items_list) == 0)
 					{
-						send_random_context("[Took all gifts]");
+						send_random_context("[Took all gifts]", false);
 						quit_menu();
 					}
 						
@@ -895,7 +895,7 @@ void processor(float dtime)
 									set_universal_block(1.0f);
 									std::string result = get_result_message();
 									if (result != "")
-										send_random_context("[" + result + "]");
+										send_random_context("[" + result + "]", false);
 								}
 								else
 								{

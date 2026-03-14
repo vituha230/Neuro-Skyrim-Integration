@@ -1236,7 +1236,7 @@ namespace RaceProcessor {
 											{
 												if (last_pause_time > 1.0f)
 												{
-													send_random_context("[Character creation is done!]");
+													send_random_context("[Character creation is done!]", false);
 
 													name_defined = true;
 													//menu->ChangeName(typed_string.c_str()); //this jus closes menu (and probably sets the name) but it wasnt typed

@@ -795,7 +795,7 @@ std::pair<bool, std::string> set_item_choice(int id)
 
 bool quit_menu()
 {
-	send_random_context("[Container closed]");
+	send_random_context("[Container closed]", false);
 	RE::UIMessageQueue::GetSingleton()->AddMessage(RE::ContainerMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 	return true;
 }
@@ -856,9 +856,9 @@ void processor(float dtime)
 	if (catch_pickpocket_result)
 	{
 		if (in_container)
-			send_random_context("[Successfully stole an item]");
+			send_random_context("[Successfully stole an item]", false);
 		else
-			send_random_context("[You have been caught]");
+			send_random_context("[You have been caught]", false);
 
 		catch_pickpocket_result = false;
 
@@ -945,7 +945,7 @@ void processor(float dtime)
 									set_universal_block(1.0f);
 									std::string result = get_result_message();
 									if (result != "")
-										send_random_context("[" + result + "]");
+										send_random_context("[" + result + "]", false);
 								}
 								else
 								{

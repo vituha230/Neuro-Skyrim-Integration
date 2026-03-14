@@ -1753,7 +1753,7 @@ namespace Observer {
 						message += result_entry + "\n";
 					}
 
-					send_random_context(message);
+					send_random_context(message, false);
 
 				}
 
@@ -1957,7 +1957,7 @@ namespace Observer {
 			if (start_game_timer > 11.777f)
 			{
 				//game start context
-				send_random_context("You awake on a carriage going down a mountain to Helgen. You were unfortunate enough to stumble across an imperial raid on rebels while crossing the border and were arrested with other Stormcloaks, a horse thief, and Ulfric Stormcloak himself. Everyone assumes correctly that they are being led to their execution.");
+				send_random_context("You awake on a carriage going down a mountain to Helgen. You were unfortunate enough to stumble across an imperial raid on rebels while crossing the border and were arrested with other Stormcloaks, a horse thief, and Ulfric Stormcloak himself. Everyone assumes correctly that they are being led to their execution.", false);
 				wait_and_send_game_start_context = false;
 				register_allowed_actions();
 
@@ -2041,58 +2041,58 @@ namespace Observer {
 							if (unbound_quest_stage == 54)
 							{
 								//unregister_all_actions();
-								send_random_context("[You are getting out of the carriage with the others...]");
+								send_random_context("[You are getting out of the carriage with the others...]", false);
 							}
 								
 
 							if (unbound_quest_stage == 70)
 							{
-								send_random_context("[You got out of the carriage]");
+								send_random_context("[You got out of the carriage]", false);
 							}
 								
 
 							if (unbound_quest_stage == 80)
-								send_random_context("[You walk after captain towards the block, other prisoners are already there...]");
+								send_random_context("[You walk after captain towards the block, other prisoners are already there...]", false);
 
 							if (unbound_quest_stage == 82)
-								send_random_context("[A loud roar is heard in the distance]");
+								send_random_context("[A loud roar is heard in the distance]", false);
 
 							if (unbound_quest_stage == 85)
-								send_random_context("[Stormcloak soldier is forced to put his head on the block...]");
+								send_random_context("[Stormcloak soldier is forced to put his head on the block...]", false);
 
 							if (unbound_quest_stage == 90)
-								send_random_context("[Stormcloak soldier has been beheaded by Headsman]");
+								send_random_context("[Stormcloak soldier has been beheaded by Headsman]", false);
 
 							if (unbound_quest_stage == 95)
 							{
 								//unregister_all_actions();
-								send_random_context("[You walk towards the block...]");
+								send_random_context("[You walk towards the block...]", false);
 							}
 								
 
 							if (unbound_quest_stage == 97)
-								send_random_context("[You are pushed down on the beheading block]");
+								send_random_context("[You are pushed down on the beheading block]", false);
 
 							if (unbound_quest_stage == 100)
-								send_random_context("[You lie down on the block. Ready to be executed...]");
+								send_random_context("[You lie down on the block. Ready to be executed...]", false);
 
 							if (unbound_quest_stage == 120)
-								send_random_context("[Headsman puts his axe in the air above you...]");
+								send_random_context("[Headsman puts his axe in the air above you...]", false);
 
 							if (unbound_quest_stage == 130)
-								send_random_context("[The ground shakes, Headsman loses balance and falls on the ground, you are unharmed]");
+								send_random_context("[The ground shakes, Headsman loses balance and falls on the ground, you are unharmed]", false);
 
 							if (unbound_quest_stage == 140)
-								send_random_context("[The dragon shouts. Firestorm begins. Meteorites fall from the sky, buildings are getting destroyed. You try to get up...]");
+								send_random_context("[The dragon shouts. Firestorm begins. Meteorites fall from the sky, buildings are getting destroyed. You try to get up...]", false);
 
 							if (unbound_quest_stage == 150)
-								send_random_context("[You stood up]");
+								send_random_context("[You stood up]", false);
 
 							if (unbound_quest_stage == 160)
 							{
 								unregister_look_action();
 								register_allowed_actions();
-								send_random_context("[YOU CAN WALK NOW]");
+								send_random_context("[YOU CAN WALK NOW]", false);
 							}
 								
 
@@ -2163,7 +2163,7 @@ namespace Observer {
 				if (serving_jail && !jail_serving_notified)
 				{
 					jail_serving_notified = true;
-					send_random_context("[You are in jail. You can try to find a bed to sleep through your jail time, or try to escape (investigate surroundings)]");
+					send_random_context("[You are in jail. You can try to find a bed to sleep through your jail time, or try to escape (investigate surroundings)]", false);
 				}
 
 				if (escaping_jail && !jail_escaping_notified)
@@ -2172,14 +2172,14 @@ namespace Observer {
 						register_escape_jail();
 
 					jail_escaping_notified = true;
-					send_random_context("[You are escaping from jail! Try to find exit and avoid guards... you also might want to try to get back your belongings (or might return to get them later)]");
+					send_random_context("[You are escaping from jail! Try to find exit and avoid guards... you also might want to try to get back your belongings (or might return to get them later)]", false);
 				}
 
 
 				if (!old_can_interact && can_interact)
 				{
 					register_allowed_actions();
-					send_random_context("[Your hands are free]");
+					send_random_context("[Your hands are free]", false);
 
 					
 				}
@@ -2194,7 +2194,7 @@ namespace Observer {
 						int unbound_quest_stage = threshold_quest->GetCurrentStageID();
 						if (unbound_quest_stage == 80)
 						{
-							send_random_context("[You stop near the execution site with the others. ]");
+							send_random_context("[You stop near the execution site with the others. ]", false);
 						}
 					}
 					register_allowed_actions();
@@ -2236,7 +2236,7 @@ namespace Observer {
 							mount_name = MiscThings::insert_object_into_list_and_get_info(mount_refr);
 						}
 
-						send_random_context("[You got onto " + mount_name + "]");
+						send_random_context("[You got onto " + mount_name + "]", false);
 					}
 					else
 					{
@@ -2248,7 +2248,7 @@ namespace Observer {
 						}
 						mount = nullptr;
 
-						send_random_context("[You got off " + mount_name + "]");
+						send_random_context("[You got off " + mount_name + "]", false);
 					}
 						
 				}
@@ -2288,7 +2288,7 @@ namespace Observer {
 						set_active_force(-1);
 
 						player_dead_sent = true;
-						send_random_context("[YOU DIED. The game will resume from last save soon]");
+						send_random_context("[YOU DIED. The game will resume from last save soon]", false);
 						MiscThings::set_time_of_death(std::chrono::steady_clock::now().time_since_epoch().count());
 					}
 
@@ -2329,7 +2329,13 @@ namespace Observer {
 
 						std::string message = "[Your state: Health " + health_text + ", Stamina: " + stamina_text + ", Magicka: " + mana_text + "]";
 
-						send_random_context(message);
+						float mana_percent = ((float)mana) / ((float)max_mana);
+
+						bool silent = true;
+						if (MiscThings::player_hp_less_than(40.0f) || mana_percent < 10.0f)
+							silent = false;
+
+						send_random_context(message, silent);
 
 						player_monitor_finished = true;
 
@@ -2404,6 +2410,7 @@ namespace Observer {
 
 						if (weather)
 						{
+							bool silent = true;
 							std::vector<std::string> weather_vector{};
 
 							if (weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kSnow))
@@ -2421,7 +2428,11 @@ namespace Observer {
 							std::string aurora_model = "";
 							aurora_model = weather->aurora.model;
 							if (aurora_model != "" && (hour < 3 || hour > 19.6))
+							{
 								weather_vector.push_back("[Aurora Borealis]");
+								silent = false;
+							}
+								
 
 							std::string result_weather = "";
 
@@ -2438,7 +2449,7 @@ namespace Observer {
 
 							if (result_weather != last_weather && result_weather != "")
 							{
-								send_random_context(result_weather);
+								send_random_context(result_weather, silent);
 							}
 
 

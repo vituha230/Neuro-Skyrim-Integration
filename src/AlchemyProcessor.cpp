@@ -524,7 +524,7 @@ void processor(float dtime)
 							menu->uiMovie->Invoke("_root.Menu.BottomBarInfo.Buttons.3.onPress", nullptr, nullptr, 0);
 							std::string result = get_alchemy_result_message();
 							if (result != "")
-								send_random_context("[" + result + "]");
+								send_random_context("[" + result + "]", false);
 
 							ask_for_more--;
 
@@ -547,7 +547,7 @@ void processor(float dtime)
 								if (!var1.IsNull() && var1.IsString())
 								{
 									std::string var_string = var1.GetString();
-									send_random_context("[" + var_string + "]");
+									send_random_context("[" + var_string + "]", false);
 								}
 									
 
@@ -651,7 +651,7 @@ void processor(float dtime)
 													//no message box appeared, craft successful
 													std::string result = get_alchemy_result_message();
 													if (result != "")
-														send_random_context("[" + result + "]");
+														send_random_context("[" + result + "]", false);
 
 													int make_more = how_many_more_can_make();
 

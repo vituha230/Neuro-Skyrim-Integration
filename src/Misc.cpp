@@ -916,7 +916,7 @@ namespace MiscThings {
                                         register_unlock_shout_action();
                                 }
 
-                                send_random_context("[" + var_string + "]");
+                                send_random_context("[" + var_string + "]", false);
                             }
                         }
 
@@ -962,7 +962,7 @@ namespace MiscThings {
                                     else
                                         var_string = "New subquest: " + insert_quest_into_list_and_get_info(var_string);
 
-                                    send_random_context("[" + var_string + "]");
+                                    send_random_context("[" + var_string + "]", false);
                                 }
 
 
@@ -1064,7 +1064,7 @@ namespace MiscThings {
                                                                 }
                                                                     
 
-                                                            send_random_context("[" + result_string + "]");
+                                                            send_random_context("[" + result_string + "]", false);
                                                         }
                                                     }
                                                 }
