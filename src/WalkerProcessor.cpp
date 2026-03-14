@@ -6100,31 +6100,33 @@ namespace WalkerProcessor {
                 switch (interaction_after_walk)
                 {
                 case 1:
+                {
+                    if (target_ref->IsInventoryObject())
+                        result = "Picked up " + MiscThings::insert_object_into_list_and_get_info(target_ref);
+                    else
+                        result += " and interacted";// with this object";
+
+                    result = ""; //have another notification in interact_with_object
+
+                    if (MiscThings::is_intro2() && target_ref->IsActor())
                     {
-                        if (target_ref->IsInventoryObject())
-                            result = "Picked up " + MiscThings::insert_object_into_list_and_get_info(target_ref);
-                        else
-                            result += " and interacted with this object";
-
-                        if (MiscThings::is_intro2() && target_ref->IsActor())
-                        {
-                            result = "You walked up to " + target_name + " and started following them";
-                        }
-
-                        break;
+                        result = "You walked up to " + target_name + " and started following them";
                     }
+
+                    break;
+                }
 
                 case 2:
-                    {
-                        result += " and tried to pickpocket";
-                        break;
-                    }
+                {
+                    result += " and tried to pickpocket";
+                    break;
+                }
 
                 case 3:
-                    {
-                        result += " and started attacking";
-                        break;
-                    }
+                {
+                    result += " and started attacking";
+                    break;
+                }
 
                 default:
                 {
@@ -6137,15 +6139,15 @@ namespace WalkerProcessor {
                 }
                 }
 
-                
+
 
             }
         }
-        
-        
 
-            
-        return "[" + result + "]";
+        if (result != "")
+            result = "[" + result + "]";
+
+        return result;
     }
 
 
@@ -6553,23 +6555,23 @@ namespace WalkerProcessor {
             }
             else
             {
-                if (MiscThings::is_object_still_valid(backup_pickup_object))
+                if (backup_pickup_time > 0.5f)
                 {
-                    //object hasnt been picked up. try again
-                    if (backup_pickup_time > 0.5f)
+                    if (MiscThings::is_object_still_valid(backup_pickup_object))
                     {
                         backup_pickup = false;
                         walk_to_object_by_refr(backup_pickup_object, 1);
                         backup_pickup_time = 0.0f;
                     }
                     else
-                        backup_pickup_time += dtime;
+                    {
+                        //all good
+                        reset_backup_pickup();
+                    }
                 }
                 else
-                {
-                    //all good
-                    reset_backup_pickup();
-                }
+                    backup_pickup_time += dtime;
+
             }
             
         }
@@ -7803,3 +7805,4 @@ namespace WalkerProcessor {
 
 
 
+//why is it so long

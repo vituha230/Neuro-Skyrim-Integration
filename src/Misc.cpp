@@ -2736,7 +2736,7 @@ namespace MiscThings {
                 std::string dead = "";
                 std::string child = "";
                 std::string mount_text = "";
-
+                
 
                 auto actor_object = (RE::Actor*)object;
                 if (actor_object->race)
@@ -2832,7 +2832,25 @@ namespace MiscThings {
                     else
                         sitsleep = "[Dormant]";
                 }
-                    
+
+                std::string driver_text = "";
+
+                auto extra = actor_object->extraList.GetByType(RE::ExtraDataType::kAliasInstanceArray);
+                if (extra)
+                {
+                    auto extra_alias_array = (RE::ExtraAliasInstanceArray*)extra;
+
+                    for (auto extra_alias : extra_alias_array->aliases)
+                    {
+                        if (extra_alias->alias)
+                        {
+                            std::string alias_name = extra_alias->alias->aliasName.c_str();
+
+                            if (alias_name.find("Driver") != std::string::npos)
+                                driver_text = "[Carriage driver]";
+                        }
+                    }
+                }
 
                 //if (actor_object->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
                 //    sitsleep = "[Sitting]";
@@ -2842,6 +2860,7 @@ namespace MiscThings {
                 result += mount_text;
                 result += sitsleep;
                 result += enemy_text;
+                result += driver_text;
             }
             
 

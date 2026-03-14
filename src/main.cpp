@@ -3,17 +3,16 @@
 
 //crucial:
 
-//TODO letter aliases
+
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dwemer mechanisms/traps
 //TODO slaughterfish fights
 //TODO underwater + oxygen control
 //TODO inventory weight control (maybe force throw away things?)
-//TODO raycast object detection (!!! uuh maybe leave as is) CAN BE USEFUL FOR CHESTS
 //TODO test all spells
 //TODO: check all menus after force/choice merge
 //TODO catch animation events on all objects
-
+//TODO letter aliases for locations (foreachscript scanner)
 
 //arbitrary:
 //TODO maybe autouse heal/mana potions when needed.
@@ -485,6 +484,9 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text)
 
 void send_random_context(std::string context)
 {
+    if (context == "" || context == "[]")
+        return;
+
     if (context.find("No direct path seen") != std::string::npos)
         return;
 
