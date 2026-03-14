@@ -15,6 +15,8 @@ namespace PerksProcessor {
 
 
 
+	std::vector<int> banned_skill_trees{};
+
 	bool in_perks = false;
 	bool select_tree_request_sent = false;
 	int tree_choice = 0;
@@ -41,7 +43,7 @@ namespace PerksProcessor {
 
 	bool quit_until_no_menus_left = true;
 
-
+	bool force_all_options = false;
 
 	std::vector<std::map<int, RE::BGSSkillPerkTreeNode*>> perk_all_nodes_list{};
 
@@ -791,6 +793,83 @@ namespace PerksProcessor {
 		return result;
 	}
 
+	std::string get_unavailable_perk_info_by_id(int id) //no description
+	{
+		std::string result = "";// get_perk_description();
+
+		RE::GFxValue var1;
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (ui)// && result != "")
+			if (const auto menu = ui->GetMenu<RE::StatsMenu>(); menu)
+			{
+				int current_perk = 0;
+
+				if (perk_nodes_list_valid)
+				{
+					if (menu && menu->unk1C8)
+					{
+						int cur_id = id;// menu->unk1C8->unk48 & 255;
+
+						auto perk_node = perk_nodes_list.find(cur_id);
+
+						if (perk_node != perk_nodes_list.end() && perk_node->second && perk_node->second->perk)
+						{
+							std::string perk_name = perk_node->second->perk->GetFullName();
+							result = perk_name + ": ";
+
+							int availability = is_perk_available(cur_id);
+
+							if (availability == 1)
+								result += " Available. This message wasnt supposed to be sent.";
+							else
+							{
+								bool got_reason = false;
+
+								//result += "Unavailable. Reasons: ";
+
+								if (availability == -2)
+								{
+									got_reason = true;
+									result += "Already learned this perk. ";
+								}
+								else
+								{
+									if (availability == -1)
+									{
+										std::vector<std::string> other_reasons{};
+										get_reasons_unavailable(other_reasons, perk_node->second->perk);
+
+										for (std::string reason : other_reasons)
+											result += reason;
+
+										if (std::size(other_reasons) != 0)
+											got_reason = true;
+
+									}
+								}
+
+
+								if (!got_reason)
+									result += "Unknown reason. ";
+
+							}
+						}
+
+					}
+				}
+			}
+
+
+		return result;
+	}
+
+
+
+
+
+
+
 
 	std::string get_perk_name2(int tree_id, int perk_id)
 	{
@@ -1028,12 +1107,12 @@ namespace PerksProcessor {
 		}
 
 		result.push_back({ -1, "[QUIT PERK MENU]" });
-
+		result.push_back({ -2, "[GO BACK TO SKILL TREE SELECTION]" });
 
 		return result;
 	}
 
-
+	
 	std::string get_all_perk_options_string()
 	{
 		std::string result = "";
@@ -1044,26 +1123,30 @@ namespace PerksProcessor {
 
 		if (menu && perk_nodes_list_valid)
 		{
-			int i = 0;
 			for (auto node : perk_nodes_list)
 			{
 				if (node.second && node.second->perk)
 				{
-					MenuOption option{};
-					option.id = node.first;
-					option.text = node.second->perk->GetFullName();
-
-					options.push_back(option);
+					if (is_perk_available(node.first) != 1)
+					{
+						std::string info = get_unavailable_perk_info_by_id(node.first);
+						if (info != "")
+							result += info + "\n";
+					}
 				}
 			}
 
-			result = get_all_perk_options_string();
-
 		}
+
+		if (result != "")
+			result = "\nUnavailable perks: " + result;
+
+		if (get_available_perk_points_number() < 1)
+			result += "\nYou have no perk points to spend. ";
 
 		return result;
 	}
-
+	
 
 
 	std::vector<MenuOption> get_available_perk_options()
@@ -1124,9 +1207,32 @@ namespace PerksProcessor {
 				}
 			}
 		}
+
+		if (std::size(result) < 1)
+			banned_skill_trees.push_back(get_selected_tree());
+
+		result.push_back({ -1, "[QUIT SKILL MENU]" });
+		result.push_back({ -2, "[GO BACK TO SKILL TREE SELECTION]" });
+		//result.push_back({ -3, "[SHOW UNAVAILABLE PERKS IN THIS SKILL TREE]" });
+
+
 		return result;
 	}
 
+
+	
+
+
+	bool is_tree_banned(int id)
+	{
+		for (auto tree : banned_skill_trees)
+		{
+			if (tree == id)
+				return true;
+		}
+
+		return false;
+	}
 
 	std::vector<MenuOption> get_tree_options()
 	{
@@ -1138,6 +1244,9 @@ namespace PerksProcessor {
 		if (menu)
 			for (int i = 0; i < menu->kTotalTrees; i++) //this isnt right but will work for now
 			{
+				if (is_tree_banned(i))
+					continue;
+
 				MenuOption tree_result;
 
 				tree_result.id = i;
@@ -1158,6 +1267,8 @@ namespace PerksProcessor {
 				}
 
 			}
+
+		result.push_back({ -1, "[QUIT SKILL MENU]" });
 
 		return result;
 	}
@@ -1234,11 +1345,20 @@ namespace PerksProcessor {
 		}
 
 
-
-		if (perk_id == -2)
+		if (perk_id == -2) //back to skill tree selection
 		{
-			if (force_choice(get_all_perk_options(), "You are in perk menu, " + get_tree_name(tree_choice) + " perk tree. You have " + get_available_perk_points_text() + " perk points. Choose perk to investigate. ", force_type::perk_perk))
+			reset_perks();
+			result.first = true;
+			result.second = "[Processing...]";
+			return result;
+		}
+
+		/**/
+		if (false && perk_id == -3) //show all perks
+		{
+			if (in_perks && menu)
 			{
+				force_all_options = true;
 				result.first = true;
 				result.second = "[Processing...]";
 			}
@@ -1254,6 +1374,8 @@ namespace PerksProcessor {
 			if (in_perks && menu) //TODO: return not bool but informative message on what was the error if there was one
 			{
 				if (tree_choice_valid)
+				{
+					bool found = false;
 					for (auto node : perk_nodes_list)
 					{
 						if (node.second && node.second->index == perk_id)
@@ -1262,9 +1384,18 @@ namespace PerksProcessor {
 							perk_choice_valid = true;
 							result.first = true;
 							result.second = "[Processing...]";
+							found = true;
 							break;
 						}
 					}
+
+					if (!found)
+					{
+						result.first = false;
+						result.second = "Invalid skill ID";
+					}
+				}
+
 				else
 				{
 					result.first = true;
@@ -1734,6 +1865,7 @@ namespace PerksProcessor {
 		cur_path.clear();
 		quit_until_no_menus_left = false;
 
+		force_all_options = false; 
 
 		return true;
 	}
@@ -1778,7 +1910,8 @@ namespace PerksProcessor {
 		in_perks = ui->IsMenuOpen(RE::StatsMenu::MENU_NAME) && !ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME); //separate statsmenu and lvlupmenu
 		auto menu = ui->GetMenu<RE::StatsMenu>();
 
-
+		if (!in_perks)
+			banned_skill_trees.clear();
 
 		if (!perk_all_nodes_list_valid)
 		{
@@ -1887,7 +2020,14 @@ namespace PerksProcessor {
 					if (!select_tree_request_sent)
 					{
 						
-						if (force_choice(get_tree_options(), "You are in perk learning menu. You have " + get_available_perk_points_text() + " perk points. Choose skill tree. ", force_type::perk_tree))
+						if (get_available_perk_points_number() < 1)
+						{
+							quit_until_no_menus_left = true;
+							send_random_context("You dont have any perk points left to spend. Quitting skill menu");
+							return;
+						}
+
+						if (force_choice(get_tree_options(), "You are in perk learning menu. " + get_available_perk_points_text() + ". Choose skill tree. ", force_type::perk_tree))
 							select_tree_request_sent = true;
 					}
 					else
@@ -1949,11 +2089,22 @@ namespace PerksProcessor {
 											{
 												
 												//force_perks_select_perk(get_available_perk_options(), get_tree_name(tree_choice));
-												if (force_choice(get_available_perk_options(), "You are in perk menu, " + get_tree_name(tree_choice) + " perk tree. You have " + get_available_perk_points_text() + " perk points. Choose perk to learn. ", force_type::perk_perk))
+												if (force_choice(get_available_perk_options(), "You are in perk menu, " + get_tree_name(tree_choice) + " perk tree. " + get_available_perk_points_text() + ". Choose perk to learn. " + get_all_perk_options_string(), force_type::perk_perk))
 													select_perk_request_sent = true;
 											}
 											else
 											{
+
+												/*
+												if (force_all_options)
+												{
+													force_all_options = false;
+													
+													if (!force_choice(get_all_perk_options(), "You are in perk menu, " + get_tree_name(tree_choice) + " perk tree. " + get_available_perk_points_text() + ". Choose perk to investigate. ", force_type::perk_perk))
+														reset_perks();
+												}
+												*/
+
 												if (perk_choice_valid)
 												{
 													if (menu->unk1C8)

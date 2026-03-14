@@ -702,8 +702,8 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
 
                         case force_type::perk_perk:
                         {
-                            if (json.id == -2) //it sends another force right away, dont want to reset it
-                                dont_reset_force = true;
+                            //if (json.id == -2) //BAD it sends another force right away, dont want to reset it
+                             //   dont_reset_force = true;
                             command_result = PerksProcessor::choose_perk(json.id); break;
                         }
 
@@ -821,7 +821,7 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
                     }
                 }
 
-                if (command_result.first && !dont_reset_force) //if got positive result above - force has been cleared
+                if (command_result.first)// && !dont_reset_force) //if got positive result above - force has been cleared
                 {
                     
                     const char* action_names[] = { action_to_unregister.name };

@@ -12,6 +12,7 @@ namespace PerksProcessor {
 	bool quit_perk_menu();
 	//std::string get_all_perk_options();
 	std::pair<bool, std::string> choose_perk_confirm(int choice);
+	bool reset_perks();
 
 
 }
