@@ -644,7 +644,9 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
     else
         time_no_menus = 0.0f;
     
-    float time_threshold = afk_threshold * 5.0f + 10.0f;
+    //float time_threshold = afk_threshold * 5.0f + 10.0f;
+
+    float time_threshold = 5.0f;
 
     if (time_no_commands > time_threshold && time_walker_inactive > time_threshold && time_no_menus > time_threshold)
     {

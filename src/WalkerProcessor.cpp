@@ -5423,6 +5423,7 @@ namespace WalkerProcessor {
 
                         actually_attacked = true;
 
+                        bool no_weapon = false;
                         bool silent = true;
 
                         if (has_spell_equipped(true))
@@ -5474,7 +5475,7 @@ namespace WalkerProcessor {
 
                             if (!has_something_equipped(true))
                             {
-                                silent = false;
+                                no_weapon = true;
                                 attacking_weapon = "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
                                 if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
                                     cursor_up();
@@ -5483,7 +5484,7 @@ namespace WalkerProcessor {
                             {
                                 if (has_ranged_weapon_equipped(true) && no_ammo())
                                 {
-                                    silent = false;
+                                    no_weapon = true;
                                     attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
                                 }
                                 else
@@ -5525,10 +5526,18 @@ namespace WalkerProcessor {
                                 else
                                 {
                                     if (last_attacking_target != target_name)
+                                    {
+                                        if (no_weapon)
+                                            silent = false;
                                         attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
+                                    }
                                     else
                                         if (last_attacking_weapon != attacking_weapon)
+                                        {
+                                            if (no_weapon)
+                                                silent = false;
                                             attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
+                                        }
                                         else
                                             if (last_attacking_health != attacking_health)
                                                 attacking_info = attacking_health;
@@ -5630,6 +5639,8 @@ namespace WalkerProcessor {
                             bool casting = false;
 
                             actually_attacked = true;
+
+                            bool no_weapon = false;
                             bool silent = true;
 
                             if (has_spell_equipped(false))
@@ -5687,7 +5698,7 @@ namespace WalkerProcessor {
                                 {
                                     if (has_ranged_weapon_equipped(true) && no_ammo())
                                     {
-                                        silent = false;
+                                        no_weapon = true;
                                         attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
                                     }
                                     else
@@ -5727,10 +5738,18 @@ namespace WalkerProcessor {
                                     else
                                     {
                                         if (last_attacking_target != target_name)
+                                        {
+                                            if (no_weapon)
+                                                silent = false;
                                             attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
+                                        }
                                         else
                                             if (last_attacking_weapon != attacking_weapon)
+                                            {
+                                                if (no_weapon)
+                                                    silent = false;
                                                 attacking_info = start_attacking_info + target_name + " with your " + attacking_weapon + attacking_health;
+                                            }
                                             else
                                                 if (last_attacking_health != attacking_health)
                                                     attacking_info = attacking_health;
@@ -7178,13 +7197,23 @@ namespace WalkerProcessor {
 
                                 if (!use_last_point_of_last_path && (current_path_point == -1))
                                 {
-                                    if (std::size(path) <= 0)
+                                    if (std::size(path) > 0)
                                     {
-                                        path_valid = false;
-                                        return;
+                                        current_path_point = 0;
+                                        last_point_posZ = path.at(current_path_point).z;
                                     }
-                                    current_path_point = 0;
-                                    last_point_posZ = path.at(current_path_point).z;
+                                    else
+                                    {
+                                        if ((int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
+                                        {
+                                            wiggle_body_then_walk_again = true;
+
+                                            walk_retries++;
+                                            //walk_again();
+
+                                            return;
+                                        }
+                                    }
                                 }
 
                                 //if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
@@ -7242,27 +7271,39 @@ namespace WalkerProcessor {
 
                                     if (!use_last_point_of_last_path && (current_path_point < (int)std::size(path)))
                                     {
-                                        if (current_path_point < 0)
-                                            bool catch_this = false;
+                                        if (current_path_point >= 0 && std::size(path) > 0)
+                                        {
+                                            last_point_posZ = path.at(current_path_point).z;
+                                            current_path_point++;
+                                            correct_marker_pos();
+                                        }
+                                        else
+                                        {
+                                            if ((int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
+                                            {
+                                                wiggle_body_then_walk_again = true;
 
-                                        last_point_posZ = path.at(current_path_point).z;
-                                        current_path_point++;
-                                        correct_marker_pos();
+                                                walk_retries++;
+                                                //walk_again();
+
+                                                return;
+                                            }
+                                        }
                                     }
 
                                     if (!using_custom_path && !use_last_point_of_last_path && ((int)std::size(path) > 5) && (current_path_point == std::size(path) - 1) && !close_enough()) //prelast point. need to rebuild next path segment before we reach the end.
                                     {
-                                        if (std::size(path) <= 0)
-                                            bool catch_this = false;
-
-                                        use_last_point_of_last_path = true;
-                                        last_point_of_last_path = path.at((int)std::size(path) - 1);
-                                        path.clear();
-                                        current_path_point = -1;
-                                        path_valid = false;
-                                        correct_marker_pos();
-                                        //cast_pathfinding(dtime); //rebuild path
-                                        make_clairvoyance_cast = true;
+                                        if (std::size(path) > 0)
+                                        {
+                                            use_last_point_of_last_path = true;
+                                            last_point_of_last_path = path.at((int)std::size(path) - 1);
+                                            path.clear();
+                                            current_path_point = -1;
+                                            path_valid = false;
+                                            correct_marker_pos();
+                                            //cast_pathfinding(dtime); //rebuild path
+                                            make_clairvoyance_cast = true;
+                                        }
                                         
                                     }
                                     else
