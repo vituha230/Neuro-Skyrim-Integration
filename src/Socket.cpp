@@ -21,7 +21,7 @@ bool something_is_registered = false;
 
 
 neurosdk_action ActionsList[] = {
-
+                                    Capabilities::WalkToObjectDoNothing::Action,
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
                                     Capabilities::AttackObject::Action,
@@ -61,6 +61,7 @@ neurosdk_action ActionsList[] = {
 
 neurosdk_action ActionsListNoForces[] = {
 
+                                    Capabilities::WalkToObjectDoNothing::Action,
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
                                     Capabilities::AttackObject::Action,
@@ -435,7 +436,15 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                     if (MiscThings::is_objects_around_valid())
                     {
-                        actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
+                        if (MiscThings::is_intro2())
+                        {
+                            actions_to_register[action_pos] = Capabilities::WalkToObjectDoNothing::Action; action_pos++;
+                        }
+                        else
+                        {
+                            actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
+                        }
+                        
                         actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
                         if (Observer::can_surrender_to_guards())
                         {
@@ -453,6 +462,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                     if (!MiscThings::is_intro2()) //must be watched to refresh
                     {
+                        
                         actions_to_register[action_pos] = Capabilities::AttackObject::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::PickpocketObject::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
@@ -552,7 +562,7 @@ float action_watchdog_timer = 0.0f;
 
 bool neuro::NeuroSocket::action_register_watchdog(float dtime)
 {
-    if (had_connection && ever_registered && !something_is_registered && (get_active_force() == -1) && !MiscThings::have_force_only_menu_open())
+    if (had_connection && ever_registered && !something_is_registered && (get_active_force() == -1) && !MiscThings::have_force_only_menu_open() && !MiscThings::is_intro())
     {
         if (action_watchdog_timer > 20.0f)
         {
@@ -629,7 +639,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
     float time_walker_inactive = WalkerProcessor::get_walker_inactive_time();
     bool have_any_menus_open = MiscThings::have_force_only_menu_open();
 
-    if (!have_any_menus_open)
+    if (!have_any_menus_open && something_is_registered)
         time_no_menus += dtime;
     else
         time_no_menus = 0.0f;
@@ -1104,19 +1114,22 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                 if (name == Capabilities::WalkToObject::Name)
                                 {
                                     Impl::JSON::NeuroChoiceJson json{};
-                                    //Impl::JSON::NeuroChoiceJson2 json2{};
-
-                                    // operator bool overload for glz::error_ctx returns true on failure!
-                                    //if (glz::read_json(json2, messageQueue[i].value.action.data))
-                                    //{
                                     if (glz::read_json(json, messageQueue[i].value.action.data))
                                         failed_to_parse_json = true;
                                     else
                                         command_result = WalkerProcessor::walk_to_object_by_index(json.id, 1);
-                                    //}
-                                    //else
-                                    //    command_result = WalkerProcessor::walk_to_object_by_index(json2.id1, json2.id2);
                                 }
+
+
+                                if (name == Capabilities::WalkToObjectDoNothing::Name)
+                                {
+                                    Impl::JSON::NeuroChoiceJson json{};
+                                    if (glz::read_json(json, messageQueue[i].value.action.data))
+                                        failed_to_parse_json = true;
+                                    else
+                                        command_result = WalkerProcessor::walk_to_object_by_index(json.id, 0);
+                                }
+
 
                                 if (name == Capabilities::AttackObject::Name)
                                 {

@@ -163,12 +163,23 @@ namespace Capabilities
         constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     }
 
+    namespace WalkToObjectDoNothing
+    {
+        constexpr char Name[] = "walk_to_object";
+        constexpr char Desc[] =
+            R"(Walk to object specified by its ID)";
+        constexpr char JsonSchema[] =
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id"] })";//
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    }
+
 
     namespace WalkToObject
     {
         constexpr char Name[] = "walk_to_object_and_interact";
         constexpr char Desc[] =
-            R"(Walk to object specified by its ID)";
+            R"(Walk to object specified by its ID and interact with it)";
         constexpr char JsonSchema[] =
             R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id"] })";//
 

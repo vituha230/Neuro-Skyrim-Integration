@@ -2150,7 +2150,10 @@ namespace Observer {
 				{
 					if (!MiscThings::is_intro())
 					{
-						register_walk_to_object();
+						if (!MiscThings::is_intro2())
+							register_walk_to_object();
+						else
+							register_walk_to_object_do_nothing();
 						register_get_objects_around();
 					}
 					else

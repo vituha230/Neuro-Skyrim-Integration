@@ -82,7 +82,7 @@ bool API_CONTROL_LOCKPICK = false;
 bool API_CONTROL_CRAFTING = false;
 
 
-bool do_debug_scan = true;
+bool do_debug_scan = false;
 
 
 /////////////////////////////////////////////////////////
@@ -264,6 +264,17 @@ bool register_escape_jail()
 bool register_walk_to_object()
 {
     neurosdk_action actions[] = { Capabilities::WalkToObject::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
+bool register_walk_to_object_do_nothing()
+{
+    neurosdk_action actions[] = { Capabilities::WalkToObjectDoNothing::Action };
 
     if (m_neuroSocket->register_actions(actions, std::size(actions)))
         return true;

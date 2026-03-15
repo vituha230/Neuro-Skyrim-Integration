@@ -51,6 +51,7 @@ bool register_surrender_to_guards();
 bool unregister_surrender_to_guards();
 bool register_escape_jail();
 
+bool register_walk_to_object_do_nothing();
 
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);

@@ -1269,12 +1269,19 @@ namespace WalkerProcessor {
                     reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
                     reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
 
+
+
                     bool silent = !runaway_mode;
+
+                    silent = false; //experimental
 
                     send_random_context(reminder_message, silent);
                 }
                 else
                     last_walk_reminded_time += dtime_maybe_bad;
+
+
+                reset_inactive_timer();
 
                 walk_forward();
 
@@ -3581,9 +3588,16 @@ namespace WalkerProcessor {
 
                 if ((!object->second.object->IsHumanoid() || (object->second.object->IsHumanoid() && object->second.object->IsDead())) && interaction == 2)
                 {
-                    result.first = false;
-                    result.second = "Cannot pickpocket this target";
-                    return result;
+                    if (object->second.object->IsInventoryObject())
+                    {
+                        interaction = 1; //they probably want to steal it. allow this
+                    }
+                    else
+                    {
+                        result.first = false;
+                        result.second = "Cannot pickpocket this target";
+                        return result;
+                    }
                 }
 
 
@@ -3663,6 +3677,26 @@ namespace WalkerProcessor {
 
                 }
                 
+                if (interaction == 3 && is_fighting() && target_ref->IsActor() && !target_ref->IsDead() && (!object->second.object->IsActor() || object->second.object->IsDead()))
+                {
+                    //already fighting and current target isnt dead, but new target is dead or isnt an actor
+
+                    std::string reason = "";
+                    if (object->second.object->IsActor() && object->second.object->IsDead())
+                    {
+                        reason = ". New target is already dead!";
+                    }
+
+                    if (!object->second.object->IsActor())
+                    {
+                        reason = ". This object isnt a threat";
+                    }
+
+                    result.first = false;
+                    result.second = "You are in the middle of a fight" + reason;
+                    return result;
+                }
+
 
                 if (have_target_to_walk)
                 {
@@ -4289,14 +4323,6 @@ namespace WalkerProcessor {
                                                
                                                 auto helgen_tower_marker = RE::TESObjectREFR::LookupByID(0xe24c3);
 
-                                                if (quests_target_ref == helgen_tower_marker)
-                                                {
-                                                    unregister_all_actions();
-                                                    using_custom_path = true;
-                                                    custom_path = CustomWalkerPaths::helgen_tower_path;
-                                                    //path_valid = true;
-                                                }
-
                                                 if (have_target_to_walk)
                                                 {
                                                     Observer::reset_threats();
@@ -4309,6 +4335,14 @@ namespace WalkerProcessor {
                                                         result.second = "You are already following this quest!";
                                                         return result;
                                                     }
+                                                }
+
+                                                if (quests_target_ref == helgen_tower_marker)
+                                                {
+                                                    unregister_all_actions();
+                                                    using_custom_path = true;
+                                                    custom_path = CustomWalkerPaths::helgen_tower_path;
+                                                    //path_valid = true;
                                                 }
 
                                                 quest_mode = true;
@@ -6907,7 +6941,10 @@ namespace WalkerProcessor {
 
                 if (have_target_to_walk)
                 {
-                    walker_inactive_time = 0.0f;
+                    if (interaction_after_walk > 1 && interaction_after_walk <= 3)
+                        walker_inactive_time = 0.0f;
+                    else
+                        walker_inactive_time += dtime;
 
                     if (MiscThings::is_intro())
                     {
@@ -7141,6 +7178,11 @@ namespace WalkerProcessor {
 
                                 if (!use_last_point_of_last_path && (current_path_point == -1))
                                 {
+                                    if (std::size(path) <= 0)
+                                    {
+                                        path_valid = false;
+                                        return;
+                                    }
                                     current_path_point = 0;
                                     last_point_posZ = path.at(current_path_point).z;
                                 }
@@ -7200,6 +7242,9 @@ namespace WalkerProcessor {
 
                                     if (!use_last_point_of_last_path && (current_path_point < (int)std::size(path)))
                                     {
+                                        if (current_path_point < 0)
+                                            bool catch_this = false;
+
                                         last_point_posZ = path.at(current_path_point).z;
                                         current_path_point++;
                                         correct_marker_pos();
@@ -7207,6 +7252,9 @@ namespace WalkerProcessor {
 
                                     if (!using_custom_path && !use_last_point_of_last_path && ((int)std::size(path) > 5) && (current_path_point == std::size(path) - 1) && !close_enough()) //prelast point. need to rebuild next path segment before we reach the end.
                                     {
+                                        if (std::size(path) <= 0)
+                                            bool catch_this = false;
+
                                         use_last_point_of_last_path = true;
                                         last_point_of_last_path = path.at((int)std::size(path) - 1);
                                         path.clear();
@@ -7557,7 +7605,7 @@ namespace WalkerProcessor {
                                                 {
                                                     //maybe its a location switch door?
 
-                                                    if (walk_timeout < 2.0f) //test if its a door for 2 sec, "cant walk there" and reset if no doors in sight
+                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.0f) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
                                                     {
                                                         if (!test_about_to_be_blocked_by_door(dtime))
                                                         {
@@ -7623,8 +7671,11 @@ namespace WalkerProcessor {
 
                                                         return;
                                                     }
+
+
                                                     if ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7))
                                                     {
+                                                        had_successful_walk = false;
                                                         if ((interaction_after_walk == 2) && ((int)std::size(path) < 3) && !had_successful_walk)
                                                             walk_retries++;
 
