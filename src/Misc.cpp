@@ -5185,6 +5185,8 @@ namespace MiscThings {
         if (ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
             result = true;
 
+        result |= is_fishing();
+
         return result;
     }
 
@@ -6845,8 +6847,7 @@ namespace MiscThings {
         std::sort(local_copy.begin(), local_copy.end(), [&](std::pair<int, object_data> left, std::pair<int, object_data> right) {
             //if (decltype(left.second) != RE::TESObjectREFR*)
 
-            if (left.second.object->data.objectReference && left.second.object->data.objectReference &&
-                right.second.object->data.objectReference)
+            if (left.second.object->data.objectReference && right.second.object->data.objectReference)
                 return left.second.object->GetDistance(player) < right.second.object->GetDistance(player); //switch > to < for inversed order. this is last->closest
             else
                 return false;

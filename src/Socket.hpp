@@ -525,7 +525,7 @@ namespace neuro {
 
 
 
-        bool Tick(); //const neurosdk_message_action_t& aClosure)
+        bool Tick(float dtime); //const neurosdk_message_action_t& aClosure)
 
 
 

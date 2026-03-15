@@ -814,6 +814,29 @@ void make_long_ult_cast()
 }
 
 
+
+bool is_fishing()
+{
+    auto fishing_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("ccBGSSSE001_FishingSystemQuest");
+
+    if (fishing_quest)
+    {
+        auto object_p = MiscThings::General::Script::GetObject(fishing_quest, "ccBGSSSE001_FishingSystemScript");
+
+        RE::BSFixedString prop_name = "currentSystemState";
+        int fishing_state = MiscThings::General::Script::GetVariable<int>(object_p, prop_name);
+
+        if (fishing_state != 0)
+        {
+            return true;
+        }
+
+    }
+
+    return false;
+}
+
+
 float fishing_reaction_time = 0.5f;
 
 void input_processor(float dtime)

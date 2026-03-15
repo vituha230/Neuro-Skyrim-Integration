@@ -20,6 +20,8 @@ namespace WalkerProcessor {
     bool getting_into_carriage = false;
     float getting_into_carriage_time = 0.0f;
 
+    float walker_inactive_time = 0.0f;
+
 
     //bool reset_by_explorer = false;
 
@@ -233,6 +235,17 @@ namespace WalkerProcessor {
     RE::TESObjectREFR* backup_pickup_object = nullptr;
     float backup_pickup_time = 0.0f;
 
+
+
+    float get_walker_inactive_time()
+    {
+        return walker_inactive_time;
+    }
+
+    void reset_inactive_timer()
+    {
+        walker_inactive_time = 0.0f;
+    }
 
 
     void set_crime_mode(bool state)
@@ -1230,7 +1243,7 @@ namespace WalkerProcessor {
                 //right_attack_cancel();
                 //left_attack_cancel();
 
-                if (last_walk_reminded_time > 5.0f)
+                if (last_walk_reminded_time > 60.0f)
                 {
                     last_walk_reminded_time = 0.0f;
 
@@ -1256,7 +1269,9 @@ namespace WalkerProcessor {
                     reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
                     reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
 
-                    //send_random_context(reminder_message);
+                    bool silent = !runaway_mode;
+
+                    send_random_context(reminder_message, silent);
                 }
                 else
                     last_walk_reminded_time += dtime_maybe_bad;
@@ -5374,6 +5389,8 @@ namespace WalkerProcessor {
 
                         actually_attacked = true;
 
+                        bool silent = true;
+
                         if (has_spell_equipped(true))
                         {
                             if (attack_action_time > 0.7f);
@@ -5423,6 +5440,7 @@ namespace WalkerProcessor {
 
                             if (!has_something_equipped(true))
                             {
+                                silent = false;
                                 attacking_weapon = "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
                                 if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
                                     cursor_up();
@@ -5430,7 +5448,10 @@ namespace WalkerProcessor {
                             else
                             {
                                 if (has_ranged_weapon_equipped(true) && no_ammo())
+                                {
+                                    silent = false;
                                     attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                }
                                 else
                                     attacking_weapon = get_equipped_weapon_name(true) + ". ";
 
@@ -5488,7 +5509,7 @@ namespace WalkerProcessor {
 
 
                             if (attacking_info != "")
-                                send_random_context(attacking_info + "]");
+                                send_random_context(attacking_info + "]", silent);
                         }
 
 
@@ -5575,6 +5596,7 @@ namespace WalkerProcessor {
                             bool casting = false;
 
                             actually_attacked = true;
+                            bool silent = true;
 
                             if (has_spell_equipped(false))
                             {
@@ -5630,7 +5652,10 @@ namespace WalkerProcessor {
                                 else
                                 {
                                     if (has_ranged_weapon_equipped(true) && no_ammo())
+                                    {
+                                        silent = false;
                                         attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                    }
                                     else
                                         attacking_weapon = get_equipped_weapon_name(false) + ". ";
 
@@ -5685,7 +5710,7 @@ namespace WalkerProcessor {
                                 last_attacking_health = attacking_health;
 
                                 if (attacking_info != "")
-                                    send_random_context(attacking_info + "]");
+                                    send_random_context(attacking_info + "]", silent);
                             }
 
                             attack_action_time += dtime;
@@ -6537,6 +6562,9 @@ namespace WalkerProcessor {
 
     void reset_backup_pickup()
     {
+        //this is called after load of save
+        walker_inactive_time = 0.0f;
+
         backup_pickup_attempts = 0;
         backup_pickup = false;
         backup_pickup_object = nullptr;
@@ -6621,7 +6649,7 @@ namespace WalkerProcessor {
             if (!low_mana_notified)
             {
                 low_mana_notified = true;
-                send_random_context("[You dont have enough mana to cast the spell!]", false);
+                send_random_context("[You dont have enough mana to cast the spell! You can try to replenish mana with potions or equip some other weapon instead of spells]", false);
             }
             else
             {
@@ -6879,6 +6907,7 @@ namespace WalkerProcessor {
 
                 if (have_target_to_walk)
                 {
+                    walker_inactive_time = 0.0f;
 
                     if (MiscThings::is_intro())
                     {
@@ -7757,7 +7786,12 @@ namespace WalkerProcessor {
                     }
                 }
                 else
+                {
+                    //no target_to_walk
+                    walker_inactive_time += dtime;
                     reset_walker();
+                }
+                    
 
             }
 

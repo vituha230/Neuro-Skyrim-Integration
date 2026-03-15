@@ -92,4 +92,7 @@ namespace WalkerProcessor {
 
 	void reset_backup_pickup();
 
+	float get_walker_inactive_time();
+	void reset_inactive_timer();
+
 }

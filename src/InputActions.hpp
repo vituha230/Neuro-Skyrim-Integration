@@ -86,5 +86,6 @@ void dialogue_cursor_up();
 
 bool input_wants_to_cast();
 
+bool is_fishing();
 
 void lockpick_move_x(float angle);

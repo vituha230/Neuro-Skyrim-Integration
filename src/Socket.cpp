@@ -607,7 +607,14 @@ void neuro::NeuroSocket::LogNeuro(neurosdk_severity_e aSeverity, char* aMsg, voi
 
 
 
-bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
+
+float time_no_commands = 0.0f;
+float time_no_menus = 0.0f;
+
+
+int afk_threshold = 0;
+
+bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aClosure)
 {
     if (!IsAlive())
     {
@@ -615,6 +622,42 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
         ever_registered = false;
         had_connection = false;
         return false;
+    }
+
+
+    time_no_commands += dtime;
+    float time_walker_inactive = WalkerProcessor::get_walker_inactive_time();
+    bool have_any_menus_open = MiscThings::have_force_only_menu_open();
+
+    if (!have_any_menus_open)
+        time_no_menus += dtime;
+    else
+        time_no_menus = 0.0f;
+    
+    float time_threshold = afk_threshold * 5.0f + 10.0f;
+
+    if (time_no_commands > time_threshold && time_walker_inactive > time_threshold && time_no_menus > time_threshold)
+    {
+        afk_threshold++;
+
+        time_no_menus = 0.0f;
+        time_no_commands = 0.0f;
+        WalkerProcessor::reset_inactive_timer();
+
+        std::string advice = "";
+        if (MiscThings::is_objects_around_valid())
+            advice = "walk somewhere, interact with something";
+
+        if (MiscThings::have_any_quests())
+            if (advice != "")
+                advice += ", follow some quest";
+            else
+                advice = "follow some quest";
+
+        if (advice != "")
+            advice = "You can " + advice;
+
+        send_random_context("[Choose next action to do]", false);// . " + advice + "]", false);
     }
 
     neurosdk_message_t* messageQueue{};
@@ -627,6 +670,9 @@ bool neuro::NeuroSocket::Tick() //const neurosdk_message_action_t& aClosure)
 
     for (auto i = 0; i < messageCount; i++)
     {
+        time_no_commands = 0.0f;
+        afk_threshold = 0.0f;
+
         if (messageQueue[i].kind == NeuroSDK_MessageKind_Action)
         {
             neurosdk_message_t action_result;

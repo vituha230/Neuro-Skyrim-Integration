@@ -803,11 +803,15 @@ namespace Observer {
 
 				std::sort(sortable_copy.begin(), sortable_copy.end(), [&](std::pair<RE::TESObjectREFR*, std::string> left, std::pair<RE::TESObjectREFR*, std::string> right) {
 					//return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
-					RE::NiPoint3 pos_left = left.first->GetPosition();
-					RE::NiPoint3 pos_right = right.first->GetPosition();
+					if (left.first->data.objectReference && right.first->data.objectReference)
+					{
+						RE::NiPoint3 pos_left = left.first->GetPosition();
+						RE::NiPoint3 pos_right = right.first->GetPosition();
 
-					return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
-
+						return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
+					}
+					else
+						return false;
 					});
 
 				std::string info_string = "";
@@ -822,87 +826,94 @@ namespace Observer {
 
 				for (auto result_entry : sortable_copy)
 				{
-					if (result_entry.second != "")
+					if (result_entry.first)
 					{
-						if (player_ref->GetDistance(result_entry.first) < 450.0f)
-							if (!veryclose_line_made)
-							{
-								std::string last_name = "";
-								bool has_last = false;
-								info_string += "\nVery close:\n";
-								veryclose_line_made = true;
-							}
+						auto this_object = result_entry.first->data.objectReference;
+						auto distance = player_ref->GetDistance(result_entry.first);
 
-						if (player_ref->GetDistance(result_entry.first) >= 450.0f && player_ref->GetDistance(result_entry.first) < 2000.0f)
-							if (!nearby_line_made)
-							{
-								std::string last_name = "";
-								bool has_last = false;
-								info_string += "\nNearby:\n";
-								nearby_line_made = true;
-							}
-
-
-						if (player_ref->GetDistance(result_entry.first) >= 2000.0f && player_ref->GetDistance(result_entry.first) < 10000.0f)
-							if (!faraway_line_made)
-							{
-								std::string last_name = "";
-								bool has_last = false;
-								info_string += "\nFar away:\n";
-								faraway_line_made = true;
-							}
-
-
-
-						//std::string category = get_object_category(object.second);
-
-						std::string result_name = result_entry.second;//insert_object_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
-
-						auto id_end = result_name.find_first_of("]");
-
-						if (result_name != "" && id_end != std::string::npos)
+						if (this_object && result_entry.second != "")
 						{
-							std::string name_no_id = result_name.substr(id_end + 1, result_name.length() - id_end);
-							std::string id_text_raw = result_name.substr(0, id_end + 1);
-							std::string id_text = result_name.substr(4, id_end - 4);
-
-
-							if (has_last && name_no_id == last_name)
-							{
-								auto last_start = info_string.rfind("\n", info_string.length() - 2);
-
-								auto last_id_start = info_string.find("[id", last_start);
-
-								if (last_id_start == std::string::npos || last_start == std::string::npos)
+							if (distance < 450.0f)
+								if (!veryclose_line_made)
 								{
-									info_string += result_name + "\n";
+									std::string last_name = "";
+									bool has_last = false;
+									info_string += "\nVery close:\n";
+									veryclose_line_made = true;
 								}
-								else
+
+							if (distance >= 450.0f && distance < 2000.0f)
+								if (!nearby_line_made)
 								{
-									if (info_string.substr(last_id_start + 3, 1) != "s")
+									std::string last_name = "";
+									bool has_last = false;
+									info_string += "\nNearby:\n";
+									nearby_line_made = true;
+								}
+
+
+							if (distance >= 2000.0f && distance < 10000.0f)
+								if (!faraway_line_made)
+								{
+									std::string last_name = "";
+									bool has_last = false;
+									info_string += "\nFar away:\n";
+									faraway_line_made = true;
+								}
+
+
+
+							//std::string category = get_object_category(object.second);
+
+							std::string result_name = result_entry.second;//insert_object_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
+
+							auto id_end = result_name.find_first_of("]");
+
+							if (result_name != "" && id_end != std::string::npos)
+							{
+								std::string name_no_id = result_name.substr(id_end + 1, result_name.length() - id_end);
+								std::string id_text_raw = result_name.substr(0, id_end + 1);
+								std::string id_text = result_name.substr(4, id_end - 4);
+
+
+								if (has_last && name_no_id == last_name)
+								{
+									auto last_start = info_string.rfind("\n", info_string.length() - 2);
+
+									auto last_id_start = info_string.find("[id", last_start);
+
+									if (last_id_start == std::string::npos || last_start == std::string::npos)
 									{
-										info_string.insert(last_id_start + 3, "s");
+										info_string += result_name + "\n";
+									}
+									else
+									{
+										if (info_string.substr(last_id_start + 3, 1) != "s")
+										{
+											info_string.insert(last_id_start + 3, "s");
+										}
+
+										auto last_substr = info_string.substr(last_id_start, info_string.length() - last_id_start);
+
+										auto last_id_sub_end = last_substr.find_first_of("]");
+
+										auto last_id_insert_pos = last_id_start + last_id_sub_end;
+
+										info_string.insert(last_id_insert_pos, ", " + id_text);
 									}
 
-									auto last_substr = info_string.substr(last_id_start, info_string.length() - last_id_start);
-
-									auto last_id_sub_end = last_substr.find_first_of("]");
-
-									auto last_id_insert_pos = last_id_start + last_id_sub_end;
-
-									info_string.insert(last_id_insert_pos, ", " + id_text);
 								}
+								else
+									info_string += result_name + "\n";
 
+								last_name = name_no_id;
+								has_last = true;
 							}
-							else
-								info_string += result_name + "\n";
 
-							last_name = name_no_id;
-							has_last = true;
+
 						}
-
-
 					}
+					
 
 				}
 

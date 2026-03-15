@@ -377,7 +377,7 @@ void tick_socket(float dtime)
                 connected = true;
         }
         else
-            if (!m_neuroSocket->Tick())
+            if (!m_neuroSocket->Tick(dtime))
             {
                 connected = false;
                 reconnect = true;
