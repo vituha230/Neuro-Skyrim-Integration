@@ -1920,7 +1920,6 @@ namespace MiscThings {
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -1956,6 +1955,8 @@ namespace MiscThings {
     std::string insert_quest_into_list_and_get_info(std::string quest_text)
     {
         std::string result = "";// quest_text;
+
+        std::string original_name = quest_text;
 
         quest_text = lowercase_string(quest_text);
 
@@ -2143,7 +2144,7 @@ namespace MiscThings {
         }
 
         if (result == "")
-            result = quest_text;
+            result = original_name;
 
 
         return result;
@@ -2403,6 +2404,18 @@ namespace MiscThings {
     std::map<int, object_data> objects_around{};
 
 
+    void nullify_object_by_id(int id)
+    {
+        auto object_p = objects_around.find(id);
+
+        if (object_p != objects_around.end())
+        {
+            object_p->second = { nullptr, "" };
+        }
+    }
+
+
+
     bool is_objects_around_valid()
     {
         return objects_around_valid;
@@ -2425,7 +2438,6 @@ namespace MiscThings {
         }
         return result;
     }
-
 
 
     std::map<int, object_data>* get_p_objects_around()
@@ -5442,6 +5454,83 @@ namespace MiscThings {
     }
 
 
+    bool player_has_spell(RE::SpellItem* spell)
+    {
+        
+        if (std::size(spells) <= 0)
+        {
+            auto get_spells_result = get_available_spells();
+        }
+
+        for (auto spell_from_list : spells)
+        {
+            if (spell_from_list.second.spell == spell)
+            {
+                return true;
+                break;
+            }
+
+            if (spell_from_list.second.shout == (RE::TESShout*)spell)
+            {
+                return true;
+                break;
+            }
+        }
+
+        return false;
+    }
+
+
+    std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell)
+    {
+
+        std::pair<bool, std::string> result{};
+
+        if (MiscThings::is_intro() || MiscThings::is_intro2())
+        {
+            result.first = false;
+            result.second = "Cannot use spells right now. ";
+            return result;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)(player->AsReference());
+
+
+
+        if (std::size(spells) <= 0)
+        {
+            auto get_spells_result = get_available_spells();
+            //send_random_context("Available spells: " + get_spells_result.second);
+        }
+
+        int id = -1;
+        for (auto spell_from_list : spells)
+        {
+            if (spell_from_list.second.spell == spell)
+            {
+                id = spell_from_list.first;
+                break;
+            }
+
+            if (spell_from_list.second.shout == (RE::TESShout*)spell)
+            {
+                id = spell_from_list.first;
+                break;
+            }
+        }
+
+        if (id != -1)
+            return cast_spell_by_index(id);
+        else
+            return { false, "You dont have this spell" };
+    }
+
+
+
+
+
+
     //decided to leave its ability to cast too in case they get confused
     std::pair<bool, std::string> equip_spell_by_index(int id)
     {
@@ -6467,6 +6556,54 @@ namespace MiscThings {
 
         return true;
     }
+
+
+
+
+
+
+    std::string fix_book_description(std::string description)
+    {
+        bool something_found = false;
+
+        if (auto pos = description.find("[pagebreak]"); pos != std::string::npos)
+        {
+            description.erase(pos, 11);
+            description.insert(pos, " ");
+            something_found = true;
+        }
+
+        if (auto pos = description.find("<"); pos != std::string::npos)
+        {
+            std::string letter_to_replace = "";
+            auto pos_letter = description.find("_letter.png");
+
+            if (pos_letter != std::string::npos)
+                letter_to_replace = " " + description.substr(pos_letter - 1, 1);
+
+            auto pos2 = description.find(">");
+            description.erase(pos, pos2 - pos + 1);
+
+            if (pos_letter <= pos2 && pos_letter >= pos)
+                description.insert(pos, letter_to_replace);
+            something_found = true;
+        }
+
+        /*
+        if (auto pos = description.find("<"); pos != std::string::npos)
+        {
+            auto pos2 = description.find(">");
+            description.erase(pos, pos2 - pos + 1);
+            something_found = true;
+        }
+        */
+
+        if (something_found)
+            return fix_book_description(description);
+        else
+            return description;
+    }
+
 
 
     bool is_object_still_valid(RE::TESObjectREFR* test_object)

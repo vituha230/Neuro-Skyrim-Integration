@@ -646,7 +646,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
     
     //float time_threshold = afk_threshold * 5.0f + 10.0f;
 
-    float time_threshold = 5.0f;
+    float time_threshold = 7.77f;
 
     if (time_no_commands > time_threshold && time_walker_inactive > time_threshold && time_no_menus > time_threshold)
     {
@@ -818,6 +818,9 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
                         case force_type::training_choice:
                             command_result = TrainingProcessor::set_training_choice(json.id); break;
+
+                        case force_type::timed_quest_puzzle:
+                            command_result = Observer::set_quest_puzzle_choice(json.id); break;
 
                         default:
                         {
@@ -1188,6 +1191,9 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
             }
             else
             {
+                command_result.second = MiscThings::fix_book_description(command_result.second); //clear all <> parts
+
+
                 action_result.value.action_result.success = command_result.first;
                 action_result.value.action_result.message = command_result.second.c_str();
 

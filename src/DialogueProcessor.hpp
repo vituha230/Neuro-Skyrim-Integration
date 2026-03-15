@@ -42,7 +42,8 @@
         book,
         alchemy_ingredients,
         character_name,
-        training_choice
+        training_choice,
+        timed_quest_puzzle,
     };
 
     int get_active_force();

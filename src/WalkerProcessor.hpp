@@ -95,4 +95,6 @@ namespace WalkerProcessor {
 	float get_walker_inactive_time();
 	void reset_inactive_timer();
 
+	std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout = false);
+
 }

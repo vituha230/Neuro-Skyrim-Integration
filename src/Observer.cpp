@@ -91,6 +91,268 @@ namespace Observer {
 	std::map<RE::TESObjectREFR*, std::string> interesting_buffer{};
 
 
+	int active_puzzle = -1;
+	bool puzzle_pause_was_made = false;
+	bool puzzle_request_was_sent = false;
+	bool puzzle_choice_valid = false;
+	int puzzle_choice = -1;
+	RE::TESObjectREFR* puzzle_target = nullptr;
+
+
+	float object_cleanup_timer = 0.0f;
+
+
+	void reset_quest_puzzles()
+	{
+		active_puzzle = -1;
+		puzzle_pause_was_made = false;
+		puzzle_request_was_sent = false;
+		puzzle_choice_valid = false;
+		puzzle_choice = -1;
+		puzzle_target = nullptr;
+	}
+
+
+	std::pair<bool, std::string> set_quest_puzzle_choice(int id)
+	{
+		std::pair<bool, std::string> result{};
+
+		if (!puzzle_request_was_sent)
+		{
+			reset_quest_puzzles();
+			result.first = true;
+			result.second = "[Error]";
+		}
+		else
+		{
+			switch (active_puzzle)
+			{
+			case 1:
+			case 2:
+			{
+				if (id >= 1 && id <= 5)
+				{
+					puzzle_choice = id;
+					puzzle_choice_valid = true;
+					result.first = true;
+					result.second = "[Processing...]";
+				}
+				else
+				{
+					result.first = false;
+					result.second = "Invalid choice ID";
+				}
+
+				break;
+			}
+			default:
+			{
+				reset_quest_puzzles();
+				result.first = true;
+				result.second = "[Error]";
+				break;
+			}
+			}
+
+		}
+
+
+		return result;
+	}
+
+
+	void set_quest_puzzle_type(int type)
+	{
+		active_puzzle = type;
+	}
+
+
+
+	void timed_quest_puzzles_processor(float dtime)
+	{
+		if (active_puzzle != -1)
+		{
+			switch (active_puzzle)
+			{
+			case 1:
+			{
+				//greybeards ghostshouting
+				
+				if (!puzzle_request_was_sent)
+				{
+					std::vector<MenuOption> options{};
+					options.push_back({ 1, "Stare at the ghost" });
+					options.push_back({ 2, "Attack the ghost with currently equipped weapons" });
+					options.push_back({ 3, "Use Unrelenting Force shout at the ghost" });
+					options.push_back({ 4, "Do nothing" });
+					options.push_back({ 5, "Do some spins" });
+
+					if (force_choice(options, "The greybeards want you to demonstrate that you are able to use the power of the voice. They summoned a ghost as a dummy target for you. What will you do?", force_type::timed_quest_puzzle))
+					{
+						if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+						{
+							puzzle_request_was_sent = true;
+							puzzle_pause_was_made = true;
+							MiscThings::pause_game();
+						}
+					}
+				}
+				else
+				{
+					if (puzzle_choice_valid)
+					{
+						if (puzzle_pause_was_made)
+						{
+							if (MiscThings::is_game_paused())
+							{
+								MiscThings::unpause_game();
+							}
+							//set_universal_block(0.5f);
+							puzzle_pause_was_made = false;
+							return;
+
+						}
+
+						switch (puzzle_choice)
+						{
+						case 1:
+						{
+							WalkerProcessor::walk_to_object_by_refr(puzzle_target, 0);
+							reset_quest_puzzles();
+							break;
+						}
+						case 2:
+						{
+							WalkerProcessor::walk_to_object_by_refr(puzzle_target, 3);
+							reset_quest_puzzles();
+							break;
+						}
+						case 3:
+						{
+							auto shout_form = (RE::TESShout*)RE::TESForm::LookupByID(0x13e07);
+							WalkerProcessor::shout_at_target(puzzle_target, shout_form);
+							reset_quest_puzzles();
+							break;
+						}
+						case 4:
+						{
+							reset_quest_puzzles();
+							break;
+						}
+						case 5:
+						{
+							int amount_of_spins = (float)std::rand() / RAND_MAX * 6 + 1;
+							int speed = (float)std::rand() / RAND_MAX * 11 - 5.5f;
+							if (speed == 0)
+								speed = 5;
+
+							WalkerProcessor::make_spins(amount_of_spins, speed);
+							reset_quest_puzzles();
+							break;
+						}
+						}
+					}
+				}
+				
+
+				break;
+			}
+
+			case 2:
+			{
+				if (!puzzle_request_was_sent)
+				{
+					std::vector<MenuOption> options{};
+					options.push_back({ 1, "Stare at the gate" });
+					options.push_back({ 2, "Use Whirlwind Sprint shout to fly through the gate" });
+					options.push_back({ 3, "Do nothing" });
+					options.push_back({ 4, "Jump" });
+					options.push_back({ 5, "Attack the gate" });
+
+					if (force_choice(options, "The greybeards want you to demonstrate that you are able to use the power of the voice once again. In this trial you have to use a shout to quickly fly through a gate, before it closes. What will you do?", force_type::timed_quest_puzzle))
+					{
+						if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+						{
+							puzzle_request_was_sent = true;
+							puzzle_pause_was_made = true;
+							MiscThings::pause_game();
+						}
+					}
+				}
+				else
+				{
+					if (puzzle_choice_valid)
+					{
+						if (puzzle_pause_was_made)
+						{
+							if (MiscThings::is_game_paused())
+							{
+								MiscThings::unpause_game();
+							}
+							//set_universal_block(0.5f);
+							puzzle_pause_was_made = false;
+							return;
+
+						}
+
+						switch (puzzle_choice)
+						{
+						case 1:
+						{
+							RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FAFB);
+							WalkerProcessor::walk_to_object_by_refr(gate, 0);
+							reset_quest_puzzles();
+							break;
+						}
+						case 2:
+						{
+							RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FAFB);
+							auto shout_form = (RE::TESShout*)RE::TESForm::LookupByID(0x2f7ba);
+							WalkerProcessor::shout_at_target(gate, shout_form, true);
+							reset_quest_puzzles();
+							break;
+						}
+						case 3:
+						{
+							reset_quest_puzzles();
+							break;
+						}
+						case 4:
+						{
+							jump();
+							reset_quest_puzzles();
+							break;
+						}
+						case 5:
+						{
+							RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FAFB);
+							WalkerProcessor::walk_to_object_by_refr(gate, 3);
+							reset_quest_puzzles();
+							break;
+						}
+						}
+					}
+				}
+
+
+				break;
+			}
+
+
+
+			default:
+				reset_quest_puzzles();
+			}
+		}
+		else
+		{
+			reset_quest_puzzles();
+		}
+	}
+
+
+
+
 	void set_threat_action_taken()
 	{
 		threats_response_request_sent = true;
@@ -191,6 +453,8 @@ namespace Observer {
 
 		detect_interesting_spit_results_time = 0.0f;
 		interesting_buffer.clear();
+
+		object_cleanup_timer = 0.0f;
 	}
 
 	
@@ -407,6 +671,34 @@ namespace Observer {
 
 	
 
+	void cleanup_invalid_objects(float dtime)
+	{
+		if (object_cleanup_timer > 0.5f)
+		{
+			object_cleanup_timer = 0.0f;
+			if (MiscThings::is_objects_around_valid())
+			{
+				auto object_list = MiscThings::get_p_objects_around();
+
+				for (auto object : *object_list)
+				{
+					if (object.second.object)
+					{
+						if (!MiscThings::is_object_still_valid(object.second.object))
+						{
+							MiscThings::nullify_object_by_id(object.first);
+						}
+					}
+				}
+			}
+		}
+		else
+			object_cleanup_timer += dtime;
+
+	}
+
+
+
 	void detect_interesting_objects(float dtime)
 	{
 		if (observers_green_light && !MiscThings::have_force_only_menu_open())
@@ -522,7 +814,7 @@ namespace Observer {
 
 								if (a_ref->AsReference()->IsActor())
 								{
-									if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, scan_distance))
+									if (!MiscThings::is_object_in_the_list(a_ref) && (a_ref->GetDistance(player_ref) < 150.0f || MiscThings::raycastable(a_ref, scan_distance)))
 									{
 										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 										if (info != "")
@@ -688,6 +980,50 @@ namespace Observer {
 								//FXspiderWebKitDoorSpecial - normal
 								//FXspiderWebKitDoorSpecialDest - destroyed
 
+
+								if (a_ref->IsActor())
+								{
+									//may be ghost targets of greybeards
+
+									if (!MiscThings::is_object_in_the_list(a_ref))
+										if (a_ref->GetDistance(player_ref) < 200.0f || MiscThings::raycastable(a_ref, 5000.0f))
+										{
+											auto actor = (RE::Actor*)a_ref;
+											auto npc = (RE::TESNPC*)a_ref->data.objectReference;
+
+											auto model3d = actor->GetCurrent3D();
+
+											
+											//no name = ghost (i guess)
+											// 
+											//if (actor->IsGhost())
+											{
+												std::string info = MiscThings::insert_object_into_list_custom_name(" Ghost", a_ref);
+												if (info != "")
+												{
+													//give it immidiately
+													send_random_context("You see: " + info, false);
+
+
+													auto ghost_shouting_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ105");
+
+													if (ghost_shouting_quest)
+													{
+														int quest_stage = ghost_shouting_quest->GetCurrentStageID();
+
+														if (quest_stage == 85)
+														{
+															active_puzzle = 1;
+															puzzle_target = a_ref;
+														}
+													}
+
+												}
+													//interesting_buffer.insert_or_assign(a_ref, info);
+											}
+										}
+
+								}
 
 								if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
 								{
@@ -1244,7 +1580,15 @@ namespace Observer {
 										//interacted with something?
 										objects_to_track.insert_or_assign(a_ref, new_state);
 
-										auto p_target = RE::TESObjectREFR::LookupByHandle(old_state.target);
+										bool new_target = false;
+
+										auto p_target = RE::TESObjectREFR::LookupByHandle(new_state.target);
+										if (!p_target)
+										{
+											p_target = RE::TESObjectREFR::LookupByHandle(old_state.target);
+										}
+										else
+											new_target = true;
 
 										if (p_target)
 										{
@@ -1261,13 +1605,40 @@ namespace Observer {
 														return RE::BSContainer::ForEachResult::kContinue; //alduin kills himself during helgen attack for some reason. skip it
 
 													if (actor_ref->race->fullName == "Dragon Race" && target_refr->IsActor())
-														interaction_name = " killed ";
+														interaction_name = " killed "; //when dragon interacts with actor it means he eats them or something like that
 
 													auto target_name = MiscThings::insert_object_into_list_and_get_info(target_refr);
 													std::string actor_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 
 													if (target_name != "" && actor_name != "")
 													{
+														auto target_base_obj = target_refr->GetBaseObject();
+														auto target_base_type = target_base_obj->GetFormType();
+
+														if (target_base_type == RE::FormType::Furniture)
+														{
+															auto furniture_obj = (RE::TESFurniture*)target_base_obj;
+
+															if (furniture_obj->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSit))
+															{
+																//chair
+																if (new_target) //THIS IS WRONG WAY OF DOING IT. only stood up makes sense
+																	return RE::BSContainer::ForEachResult::kContinue; //interaction_name = " sat on ";
+																else
+																	interaction_name = " stood up from ";
+															}
+															else
+															{
+																if (new_target)
+																	return RE::BSContainer::ForEachResult::kContinue;
+															}
+														}
+														else
+														{
+															if (new_target)
+																return RE::BSContainer::ForEachResult::kContinue;
+														}
+
 														std::string message = "[" + actor_name + interaction_name + target_name;
 														if (!a_ref->IsDead())
 															result.push_back(message);

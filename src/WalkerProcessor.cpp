@@ -236,6 +236,13 @@ namespace WalkerProcessor {
     float backup_pickup_time = 0.0f;
 
 
+    bool shout_mode = false;
+    RE::TESShout* shout_to_use = nullptr;
+    bool gate_shout = false;
+
+    
+
+
 
     float get_walker_inactive_time()
     {
@@ -286,6 +293,27 @@ namespace WalkerProcessor {
     {
         return interaction_after_walk == 2;
     }
+
+
+    bool gate_shout_condition()
+    {
+        RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FAFB);
+
+        if (gate)
+        {
+            auto base_type = gate->GetBaseObject()->GetFormType();
+
+            if (base_type == RE::FormType::Door)
+            {
+                auto gate_door = (RE::TESObjectDOOR*)gate;
+                return gate_door->GetOpenState(gate) == RE::BGSOpenCloseForm::OPEN_STATE::kOpen;
+            }
+        }
+
+        return true;//true because dont want it to block forever if it goes wrong
+    }
+
+
 
 
     bool just_escaped_solitude_prison()
@@ -1266,8 +1294,22 @@ namespace WalkerProcessor {
                     else
                         reminder_message += reminder_target_name + ". ";
 
+
+                    std::string big_distance = "";
+
+                    float distance = player->GetDistance(target_ref);
+                   
+                    if (distance > 50000.0f)
+                    {
+                        int distance_int = (int)(distance/100.0f);
+                        big_distance = "Distance to target: " + std::to_string(distance_int) + " m. ";
+                    }
+                        
+
+
                     reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
                     reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
+                    reminder_message += big_distance;
 
 
 
@@ -1369,26 +1411,30 @@ namespace WalkerProcessor {
             return crosshair_data->target.get().get(); //wtf is this
         }
 
-        auto base_obj = target_ref->GetBaseObject();
-        if (player_ref && base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
+        if (target_ref)
         {
-            auto base_type = base_obj->GetFormType();
-
-            if (base_type == RE::FormType::Activator)
+            auto base_obj = target_ref->GetBaseObject();
+            if (player_ref && base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
             {
-                auto static_obj = (RE::TESObjectACTI*)base_obj;
+                auto base_type = base_obj->GetFormType();
 
-                std::string model = static_obj->GetModel();
-
-                if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+                if (base_type == RE::FormType::Activator)
                 {
-                    if (target_ref->GetDistance(player_ref) < 200.0f)
-                    {
-                        return target_ref;
-                    }
-                }
+                    auto static_obj = (RE::TESObjectACTI*)base_obj;
 
+                    std::string model = static_obj->GetModel();
+
+                    if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+                    {
+                        if (target_ref->GetDistance(player_ref) < 200.0f)
+                        {
+                            return target_ref;
+                        }
+                    }
+
+                }
             }
+        
         }
 
 
@@ -2848,6 +2894,14 @@ namespace WalkerProcessor {
 
 
 
+        shout_mode = false;
+        shout_to_use = nullptr;
+
+        if (gate_shout)
+            register_allowed_actions();
+
+        gate_shout = false;
+
     }
 
     void walk_again()
@@ -3192,8 +3246,10 @@ namespace WalkerProcessor {
                     }
                         
 
-                    if (has_ranged_weapon_equipped(get_current_active_hand()))
+                    if (has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)
                     {
+                        if (gate_shout)
+                            return true;
 
                         long long now = std::chrono::steady_clock::now().time_since_epoch().count();
 
@@ -3221,6 +3277,10 @@ namespace WalkerProcessor {
                         auto delta_pos = aim_pos - camera_pos;
 
                         float range = get_weapon_range(get_current_active_hand());
+
+                        if (shout_mode)
+                            range = 700.0f;
+
                         if (start_attacking)
                             range = range * 1.25;
 
@@ -3981,8 +4041,13 @@ namespace WalkerProcessor {
                     right_attack_cancel();
                     left_attack_cancel();
 
+                    std::string big_distance = "";
+                    float distance = player->GetDistance(target_ref);
+                    if (distance > 50000.0f)
+                        big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
+
                     result.first = true;
-                    result.second = "[Started walking to location: " + reminder_target_name + "...]";
+                    result.second = "[Started walking to location: " + reminder_target_name + "..." + big_distance + "]";
                     return result;
                 }
 
@@ -4390,8 +4455,15 @@ namespace WalkerProcessor {
                                                 right_attack_cancel();
                                                 left_attack_cancel();
 
+
+                                                std::string big_distance = "";
+                                                float distance = player->GetDistance(target_ref);
+                                                if (distance > 50000.0f)
+                                                    big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
+
+
                                                 result.first = true;
-                                                result.second = "[Started following quest: " + reminder_target_name + "...]";
+                                                result.second = "[Started following quest: " + reminder_target_name + "..." + big_distance + "]";
                                                 return result;
                                             }
 
@@ -4517,6 +4589,12 @@ namespace WalkerProcessor {
                                                 }
 
 
+                                                if (quests_target_ref == RE::TESObjectREFR::LookupByID(0x3FAFB)) //greybeard gate
+                                                {
+                                                    Observer::set_quest_puzzle_type(2);
+                                                    reset_walker();
+                                                }
+
                                                 right_attack_cancel();
                                                 left_attack_cancel();
 
@@ -4574,7 +4652,16 @@ namespace WalkerProcessor {
         if (target)
         {
             if (have_target_to_walk)
+            {
+                bool shout_mode_remember = shout_mode;
+                bool gate_shout_remember = gate_shout;
                 reset_walker();
+                shout_mode = shout_mode_remember;
+                gate_shout = gate_shout_remember;
+                if (gate_shout)
+                    unregister_all_actions();
+            }
+                
 
             if (surrender_to_guards_mode)
                 surrender_mode = true;
@@ -5344,6 +5431,28 @@ namespace WalkerProcessor {
 
     bool attack_target(float dtime)
     {
+        if (shout_mode)
+        {
+            if (shout_to_use)
+            {
+                if (lock_camera_onto_target(target_ref, 0.016))
+                {
+                    if (!gate_shout || (gate_shout && gate_shout_condition()))
+                    {
+                        send_random_context("You are using the shout...");
+                        MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                return true;
+            }
+                
+
+            return false;
+        }
 
         lock_camera_onto_target(target_ref, dtime);
 
@@ -6439,6 +6548,10 @@ namespace WalkerProcessor {
 
 
 
+
+
+
+
     std::pair<bool, std::string> surrender_to_guards()
     {
         std::pair<bool, std::string> result{};
@@ -6489,9 +6602,34 @@ namespace WalkerProcessor {
             unregister_surrender_to_guards();
             return result;
         }
-            
-        
     }
+
+
+
+    std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout)
+    {
+        std::pair<bool, std::string> result{};
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        bool have_this_shout = MiscThings::player_has_spell((RE::SpellItem*)shout);
+
+        if (have_this_shout)
+        {
+            gate_shout = is_gate_shout;
+            shout_mode = true;
+            shout_to_use = shout;
+            return walk_to_object_by_refr(target, 3);
+        }
+        else
+        {
+            result.first = false;
+            result.second = "You dont have this shout unlocked ";
+            return result;
+        }
+    }
+
+
     
 
     void walk_whiterun_prison_grate()
@@ -6628,6 +6766,20 @@ namespace WalkerProcessor {
 
 	void processor(float dtime)
 	{
+
+
+
+        if (target_ref && !target_ref->data.objectReference)
+            reset_walker();
+
+        RE::ObjectRefHandle my_handle;
+        if (target_ref)
+            my_handle = target_ref->GetHandle();
+
+        if (!my_handle || !my_handle.get() || !my_handle.get().get())
+            reset_walker();
+
+
         if (backup_pickup)
         {
             if (get_cant_walk_reason() != "")
@@ -7350,7 +7502,7 @@ namespace WalkerProcessor {
                                                     {
                                                         auto result_target = get_targeted_ref();
 
-                                                        if (!result_target && interaction_after_walk == 3 && has_ranged_weapon_equipped(true))
+                                                        if (!result_target && ((interaction_after_walk == 3 && has_ranged_weapon_equipped(true)) || shout_mode))
                                                         {
                                                             result_target = target_ref;
                                                         }

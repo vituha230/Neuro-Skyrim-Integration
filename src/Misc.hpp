@@ -63,6 +63,10 @@ namespace MiscThings {
 
     std::vector<RE::Actor*> get_player_attackers();
 
+
+    std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell);
+    bool player_has_spell(RE::SpellItem* spell);
+
     //int insert_ref_into_obj_list(RE::TESObjectREFR* refr);
     std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr);
     std::string insert_quest_into_list_and_get_info(std::string quest_text);
@@ -121,6 +125,7 @@ namespace MiscThings {
     bool is_locations_around_valid();
     std::map<int, RE::TESObjectREFR*>* get_p_locations_around();
 
+    void nullify_object_by_id(int id);
 
     std::pair<bool, std::string> get_available_spells();
 
@@ -183,6 +188,9 @@ namespace MiscThings {
     std::string replace_aliases_all_quests(std::string displaytext);
 
     bool has_thrown_a_book();
+
+
+    std::string fix_book_description(std::string description);
 
 
     namespace General::Script

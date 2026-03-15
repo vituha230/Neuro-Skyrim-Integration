@@ -131,7 +131,7 @@ namespace MapProcessor {
 
 									pre_result.insert({ id, option });
 
-									//markers_to_remember.insert({ id, a_refrOut.get() });
+									markers_to_remember.insert({ id, a_refrOut.get() });
 								}
 							}
 						}
@@ -140,6 +140,32 @@ namespace MapProcessor {
 
 				id++;
 			}
+
+
+			/*
+			auto player_quests_result = MiscThings::get_current_quests(); //update list
+
+			auto player_quests = MiscThings::get_p_quest_list();
+
+
+			if (player_quests)
+			{
+				for (MiscThings::quest quest : *player_quests)
+				{
+					quest.
+				}
+
+
+				for (std::pair<int, RE::TESObjectREFR*> marker_to_remember : markers_to_remember)
+				{
+
+				}
+			}
+			*/
+
+
+
+
 
 
 			for (auto option_raw : pre_result)

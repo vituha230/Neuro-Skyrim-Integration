@@ -585,8 +585,7 @@ namespace BarterProcessor {
         if (ui)
             if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu)
                 if (menu->uiMovie)
-                    if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.InventoryLists_mc.CategoriesListHolder.List_mc.iSelectedIndex"))//"_root.Menu_mc.InventoryLists_mc._CategoriesList.iSelectedIndex"))
-                        //send_random_context(std::to_string(var1.GetNumber()).c_str());
+                    if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.InventoryLists_mc.CategoriesListHolder.List_mc.iSelectedIndex"))
                         return var1.GetNumber();
 
         return -1;

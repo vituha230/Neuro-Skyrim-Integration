@@ -12,6 +12,10 @@ namespace BookProcessor {
 
 	std::pair<bool, std::string> set_book_choice(int choice);
 
+
+	
+
+
 }
 
 

@@ -4,6 +4,15 @@
 //crucial:
 
 
+
+//TODO check walk estimate distance (might be broken)
+//TODO fix raycasting (collides with trigger zones, fired from actor's eyes doesnt see behind (might be a good thing?))
+
+
+//TODO fasttravel advice
+//TODO walk estimate distance
+//TODO map closest quest
+
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dwemer mechanisms/traps
 //TODO slaughterfish fights
@@ -858,6 +867,8 @@ namespace Hooks {
                 Observer::reset_threats();
                 Observer::reset_observer();
                 Observer::clear_objects_to_track();
+                Observer::reset_quest_puzzles();
+
                 MapProcessor::reset_menu2();
                 SleepWaitProcessor::saveload_reset();
                 ContainerProcessor::reset_pickpocketing();
@@ -1625,12 +1636,15 @@ private:
                 GiftProcessor::processor(dtime);
                 RandomMessageBoxProcessor::processor(dtime);
 
+
                 Observer::detect_threats(dtime); //uses pause. must be here
                 Observer::detect_interesting_objects(dtime);
                 Observer::detect_events(dtime);
                 Observer::inventory_monitor(dtime);
                 Observer::player_state_monitor(dtime);
                 Observer::detect_locations(dtime);
+                Observer::timed_quest_puzzles_processor(dtime);
+                Observer::cleanup_invalid_objects(dtime);
 
                 RaceProcessor::processor(dtime);
 
@@ -2344,6 +2358,11 @@ class MyHook {
                                 if (refrs.find(a_ref) == refrs.end())
                                 {
                                     the_arrow = (RE::ArrowProjectile*)a_ref;
+
+                                    RE::CFilter cFilter_info{};
+
+                                    //the_arrow->GetCollisionFilterInfo(cFilter_info);
+
                                     bool catched_an_arrow = true;
                                     start_pos = the_arrow->GetPosition().z;
 
@@ -2649,6 +2668,9 @@ void MessageListener(SKSE::MessagingInterface::Message* message) {
 
         Observer::EventSink::GetSingleton()->Init();
         Observer::attatch_hitmap();
+
+        //auto task_interface = SKSE::GetTaskInterface();
+        //task_interface.
 
         break;
     default:

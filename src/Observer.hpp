@@ -29,9 +29,17 @@ namespace Observer {
 
 	bool can_surrender_to_guards();
 
+	void timed_quest_puzzles_processor(float dtime);
+	void reset_quest_puzzles();
+	void set_quest_puzzle_type(int type);
 
+	std::pair<bool, std::string> set_quest_puzzle_choice(int id);
+
+	void cleanup_invalid_objects(float dtime);
 
 	void attatch_hitmap();
+
+	
 
 	class EventSink :
 		public REX::TSingleton<EventSink>,

@@ -75,48 +75,6 @@ namespace BookProcessor {
 	}
 
 
-	std::string fix_book_description(std::string description)
-	{
-		bool something_found = false;
-
-		if (auto pos = description.find("[pagebreak]"); pos != std::string::npos)
-		{
-			description.erase(pos, 11);
-			description.insert(pos, " ");
-			something_found = true;
-		}
-
-		if (auto pos = description.find("<"); pos != std::string::npos)
-		{
-			std::string letter_to_replace = "";
-			auto pos_letter = description.find("_letter.png");
-
-			if (pos_letter != std::string::npos)
-				letter_to_replace = " " + description.substr(pos_letter - 1, 1);
-
-			auto pos2 = description.find(">");
-			description.erase(pos, pos2 - pos + 1);
-
-			if (pos_letter <= pos2 && pos_letter >= pos)
-				description.insert(pos, letter_to_replace);
-			something_found = true;
-		}
-
-		/*
-		if (auto pos = description.find("<"); pos != std::string::npos)
-		{
-			auto pos2 = description.find(">");
-			description.erase(pos, pos2 - pos + 1);
-			something_found = true;
-		}
-		*/
-
-		if (something_found)
-			return fix_book_description(description);
-		else
-			return description;
-	}
-
 
 
 	std::string get_book_name()
@@ -161,7 +119,7 @@ namespace BookProcessor {
 		std::string raw_descr = get_book_text();
 		MiscThings::clean_controls_from_string(&raw_descr);
 
-		std::string result = "You are reading a " + book_or_note + ": " + get_book_name() + "...\n[" + fix_book_description(raw_descr) + "]";
+		std::string result = "You are reading a " + book_or_note + ": " + get_book_name() + "...\n[" + MiscThings::fix_book_description(raw_descr) + "]";
 
 
 		return result;
