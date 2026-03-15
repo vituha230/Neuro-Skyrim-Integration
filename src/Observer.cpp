@@ -1269,7 +1269,8 @@ namespace Observer {
 													if (target_name != "" && actor_name != "")
 													{
 														std::string message = "[" + actor_name + interaction_name + target_name;
-														result.push_back(message);
+														if (!a_ref->IsDead())
+															result.push_back(message);
 													}
 
 												}
@@ -2343,7 +2344,7 @@ namespace Observer {
 
 						std::string message = "[Your state: Health " + health_text + ", Stamina: " + stamina_text + ", Magicka: " + mana_text + "]";
 
-						float mana_percent = ((float)mana) / ((float)max_mana);
+						float mana_percent = ((float)mana) / ((float)max_mana) * 100.0f;
 
 						bool silent = true;
 						if (MiscThings::player_hp_less_than(40.0f) || mana_percent < 10.0f)

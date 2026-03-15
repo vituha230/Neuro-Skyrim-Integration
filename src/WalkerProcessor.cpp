@@ -1243,7 +1243,7 @@ namespace WalkerProcessor {
                 //right_attack_cancel();
                 //left_attack_cancel();
 
-                if (last_walk_reminded_time > 60.0f)
+                if (last_walk_reminded_time > 40.0f || (runaway_mode && last_walk_reminded_time > 17.0f))
                 {
                     last_walk_reminded_time = 0.0f;
 
@@ -3446,8 +3446,8 @@ namespace WalkerProcessor {
 
         if (explore_mode && !internal_call)
         {
-            result.first = false;
-            result.second = "You are already exploring";
+            result.first = true;
+            result.second = "You keep exploring...";
             return result;
         }
 
@@ -3706,8 +3706,8 @@ namespace WalkerProcessor {
                         reset_walker();
                     else
                     {
-                        result.first = false;
-                        result.second = "You are already walking to this object!";
+                        result.first = true;
+                        result.second = "You keep walking...";
                         return result;
                     }
                 }
@@ -3846,8 +3846,8 @@ namespace WalkerProcessor {
                         reset_walker();
                     else
                     {
-                        result.first = false;
-                        result.second = "You are already looking at this object!";
+                        result.first = true;
+                        result.second = "You keep looking...";
                         return result;
                     }
                 }
@@ -3949,8 +3949,8 @@ namespace WalkerProcessor {
                     {
                         if (target_ref == location)
                         {
-                            result.first = false;
-                            result.second = "You are already walking to that location. ";
+                            result.first = true;
+                            result.second = "You keep walking...";
                             return result;
                         }
 
@@ -4331,8 +4331,8 @@ namespace WalkerProcessor {
                                                         reset_walker();
                                                     else
                                                     {
-                                                        result.first = false;
-                                                        result.second = "You are already following this quest!";
+                                                        result.first = true;
+                                                        result.second = "You keep following quest...";
                                                         return result;
                                                     }
                                                 }

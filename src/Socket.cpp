@@ -190,7 +190,7 @@ bool neuro::NeuroSocket::SendForcedAction(StringView aActionName, StringView aQu
                            .value = {.actions_force = {.state = aState.Data(),
                                                        .query = aQuery.Data(),
                                                        .priority = aPriority.Data(),
-                                                       .ephemeral_context = false,
+                                                       .ephemeral_context = true,//.ephemeral_context = false,
                                                        .action_names = tempActionNames,
                                                        .action_names_len = 1}} };
 
