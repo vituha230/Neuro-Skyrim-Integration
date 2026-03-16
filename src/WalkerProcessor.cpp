@@ -239,10 +239,21 @@ namespace WalkerProcessor {
     bool shout_mode = false;
     RE::TESShout* shout_to_use = nullptr;
     bool gate_shout = false;
+    bool ustengrev_get_ready_mode = false;
+    bool ustengrev_shout_mode = false;
+    float ustengrev_gates_closed_time = 0.0f;
+    bool ustengrev_finish_line_mode = false;
+    bool ustengrev_run_only_mode = false;
+    bool ustengrev_wrong_order_mode = false;
+    bool ustengrev_cliff_mode = false;
 
-    
+    float anti_slowwalk_timer = 0.0f;
 
 
+    bool processing_ustengrev()
+    {
+        return ustengrev_get_ready_mode || ustengrev_shout_mode || ustengrev_finish_line_mode || ustengrev_run_only_mode || ustengrev_wrong_order_mode || ustengrev_cliff_mode;
+    }
 
     float get_walker_inactive_time()
     {
@@ -298,17 +309,109 @@ namespace WalkerProcessor {
     bool gate_shout_condition()
     {
         RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FAFB);
+        RE::TESObjectREFR* trigger = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FB02);
 
-        if (gate)
+        if (gate && trigger)
         {
+
             auto base_type = gate->GetBaseObject()->GetFormType();
 
             if (base_type == RE::FormType::Door)
             {
                 auto gate_door = (RE::TESObjectDOOR*)gate;
-                return gate_door->GetOpenState(gate) == RE::BGSOpenCloseForm::OPEN_STATE::kOpen;
+                return !trigger->IsDisabled() && gate_door->GetOpenState(gate) == RE::BGSOpenCloseForm::OPEN_STATE::kOpen;
             }
         }
+
+        return true;//true because dont want it to block forever if it goes wrong
+    }
+
+
+    
+
+
+    bool ustengrev_run_condition(float dtime)
+    {
+        RE::TESObjectREFR* gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2656b);
+        RE::TESObjectREFR* gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3b2e5);
+        RE::TESObjectREFR* gate3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3b2e7);
+
+        if (gate1 && gate2 && gate3)
+        {
+            //auto base_type1 = gate1->GetBaseObject()->GetFormType();
+            //auto base_type2 = gate2->GetBaseObject()->GetFormType();
+            //auto base_type3 = gate3->GetBaseObject()->GetFormType();
+
+
+
+            //if (base_type1 == RE::FormType::Door && base_type2 == RE::FormType::Door && base_type3 == RE::FormType::Door)
+            //{
+
+            auto extra1 = (RE::ExtraLastFinishedSequence*)gate1->extraList.GetByType(RE::ExtraDataType::kLastFinishedSequence);
+            auto extra2 = (RE::ExtraLastFinishedSequence*)gate2->extraList.GetByType(RE::ExtraDataType::kLastFinishedSequence);
+            auto extra3 = (RE::ExtraLastFinishedSequence*)gate3->extraList.GetByType(RE::ExtraDataType::kLastFinishedSequence);
+
+            auto extra12 = (RE::ExtraAction*)gate1->extraList.GetByType(RE::ExtraDataType::kAction);
+            auto extra22 = (RE::ExtraAction*)gate2->extraList.GetByType(RE::ExtraDataType::kAction);
+            auto extra32 = (RE::ExtraAction*)gate3->extraList.GetByType(RE::ExtraDataType::kAction);
+
+            if (extra1 && extra2 && extra3)
+            {
+                //auto gate1_door = (RE::TESObjectDOOR*)gate1;
+                //auto gate2_door = (RE::TESObjectDOOR*)gate2;
+                //auto gate3_door = (RE::TESObjectDOOR*)gate3;
+
+                //std::string sequence1 = extra1->lastSequenceName.c_str();
+                //std::string sequence2 = extra2->lastSequenceName.c_str();
+                //std::string sequence3 = extra3->lastSequenceName.c_str();
+
+                //bool gate1_closed = sequence1 == "Open";
+                //bool gate2_closed = sequence2 == "Open";
+                //bool gate3_closed = sequence3 == "Open";
+
+                //gate1_closed &= extra12->action.any(RE::OBJECT_ACTION::kOpen);
+                //gate2_closed &= extra22->action.any(RE::OBJECT_ACTION::kOpen);
+                //gate3_closed &= extra32->action.any(RE::OBJECT_ACTION::kOpen);
+
+                bool gate1_closed = MiscThings::two_state_activator_state(gate1) == 1;
+                bool gate2_closed = MiscThings::two_state_activator_state(gate1) == 1;
+                bool gate3_closed = MiscThings::two_state_activator_state(gate1) == 1;
+
+                if (gate1_closed && gate2_closed && gate3_closed)
+                    ustengrev_gates_closed_time += dtime;
+                else
+                    ustengrev_gates_closed_time = 0.0f;
+
+
+                if (ustengrev_gates_closed_time > 4.0f)
+                    return true;
+                else
+                    return false;
+
+
+            }
+            else
+                return false;
+
+
+            //}
+            /*
+            if (base_type1 == RE::FormType::Door && base_type2 == RE::FormType::Door && base_type3 == RE::FormType::Door)
+            {
+                auto gate1_door = (RE::TESObjectDOOR*)gate1;
+                auto gate2_door = (RE::TESObjectDOOR*)gate2;
+                auto gate3_door = (RE::TESObjectDOOR*)gate3;
+
+                bool gate1_closed = gate1_door->GetOpenState(gate1) == RE::BGSOpenCloseForm::OPEN_STATE::kOpen;
+                bool gate2_closed = gate1_door->GetOpenState(gate2) == RE::BGSOpenCloseForm::OPEN_STATE::kOpen;
+                bool gate3_closed = gate1_door->GetOpenState(gate3) == RE::BGSOpenCloseForm::OPEN_STATE::kOpen;
+
+                return gate1_closed && gate2_closed && gate3_closed;
+
+            }
+            */
+        }
+
 
         return true;//true because dont want it to block forever if it goes wrong
     }
@@ -417,11 +520,29 @@ namespace WalkerProcessor {
     }
 
 
+    void myMoveTo_Impl(RE::TESObjectREFR* object, const RE::ObjectRefHandle& a_targetHandle, RE::TESObjectCELL* a_targetCell, RE::TESWorldSpace* a_selfWorldSpace, const RE::NiPoint3& a_position, const RE::NiPoint3& a_rotation)
+    {
+        using func_t = decltype(&myMoveTo_Impl);
+        static REL::Relocation<func_t> func{ RELOCATION_ID(56227, 56626) };
+        return func(object, a_targetHandle, a_targetCell, a_selfWorldSpace, a_position, a_rotation);
+    }
+
+    void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos)
+    {
+        assert(a_target);
+
+        auto handle = a_target->GetHandle();
+
+        myMoveTo_Impl(a_target, handle, a_target->GetParentCell(), a_target->GetWorldspace(), new_pos, a_target->data.angle);
+    }
 
 
 
     void correct_marker_pos()
     {
+
+        return;
+
         auto marker = RE::TESObjectREFR::LookupByID(0x7001834);
 
 
@@ -440,11 +561,16 @@ namespace WalkerProcessor {
                 {
                     pickpocket_shift = MiscThings::get_looking_point_shift(target_ref, true);
                 }
-
+                
                 if (using_custom_path)
-                    marker_ref->SetPosition(custom_path.at(0));
+                    SetPosition_moveto(marker_ref, custom_path.at(0));
                 else
-                    marker_ref->SetPosition(marker_ref->GetPosition() + shift + pickpocket_shift);
+                    SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
+
+                //if (using_custom_path)
+                //    marker_ref->SetPosition(custom_path.at(0));
+                //else
+                //    marker_ref->SetPosition(marker_ref->GetPosition() + shift + pickpocket_shift);
             }
         }
 
@@ -550,7 +676,24 @@ namespace WalkerProcessor {
                         {
                             marker_ref->MoveTo(target_ref);
 
-                            correct_marker_pos();
+
+                            auto shift = MiscThings::get_looking_point_shift(target_ref, false);
+                            auto pickpocket_shift = RE::NiPoint3::Zero();
+
+                            if (interaction_after_walk == 2 && target_ref && target_ref->IsHumanoid())
+                            {
+                                pickpocket_shift = MiscThings::get_looking_point_shift(target_ref, true);
+                            }
+
+                            if (using_custom_path)
+                                SetPosition_moveto(marker_ref, custom_path.at(0));
+                            else
+                                SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
+
+
+
+
+                            //correct_marker_pos();
                         }
                         else
                             ;//idk do nothing? its probably already on target anyway
@@ -1226,11 +1369,31 @@ namespace WalkerProcessor {
                         
                 }
                 else
+                {
+
                     if (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking)
                     {
                         was_slowwalking = false;
                         unslow_walk();
                     }
+                    else
+                    {
+                        if (!player->IsRunning() && !player->IsSneaking() && !was_slowwalking && !turning_around)
+                        {
+                            //test if we are slowwalking for some reason
+                            anti_slowwalk_timer += dtime_maybe_bad;
+
+                            if (anti_slowwalk_timer > 3.0f)
+                            {
+                                unslow_walk();
+                                anti_slowwalk_timer = 0.0f;
+                            }
+                        }
+                        else
+                            anti_slowwalk_timer = 0.0f;
+                    }
+                }
+
                         
 
                 if (needs_jump() && !player->IsSneaking())
@@ -1396,6 +1559,56 @@ namespace WalkerProcessor {
 
 
 
+    bool have_doors_nearby()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_ref = player->AsReference();
+
+        bool result = false;
+
+        if (player_ref)
+        {
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 500.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    std::string name = a_ref->GetName();
+                    std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
+
+                    if (!MiscThings::is_object_valid(a_ref))
+                        return RE::BSContainer::ForEachResult::kContinue;
+
+                    auto base_obj = a_ref->GetBaseObject();
+                    RE::FormType base_type{};
+
+                    if (base_obj)
+                    {
+                        base_type = base_obj->GetFormType();
+                        bool debug_type = true;
+                    }
+                    else
+                    {
+                        bool no_base_object = true;
+                    }
+
+                    if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
+                    {
+                        if (MiscThings::raycastable(a_ref, 500.0f))
+                        {
+                            result = true;
+                            return RE::BSContainer::ForEachResult::kStop;
+                        }
+
+                    }
+
+
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+        }
+
+        return result;
+    }
     
 
 
@@ -2468,8 +2681,15 @@ namespace WalkerProcessor {
 
                         auto distance = current_path_point_pos.GetDistance(player_pos);
 
+
                         if (using_custom_path)
                         {
+                            if (ustengrev_cliff_mode && current_path_point == ((int)std::size(path) - 1))
+                            {
+                                ustengrev_cliff_mode = false;
+                                send_random_context("You walk off the cliff's edge...");
+                            }
+
                             current_path_point_pos.z = 0.0f;
                             player_pos.z = 0.0f;
                             distance = current_path_point_pos.GetDistance(player_pos);
@@ -2745,7 +2965,7 @@ namespace WalkerProcessor {
 
         custom_path_appended = false; 
 
-        if (using_custom_path)
+        if (using_custom_path)// && !ustengrev_get_ready_mode && !ustengrev_shout_mode)
         {
             register_allowed_actions();
             quicksave();
@@ -2902,6 +3122,16 @@ namespace WalkerProcessor {
 
         gate_shout = false;
 
+        ustengrev_get_ready_mode = false;
+        ustengrev_shout_mode = false;
+        ustengrev_gates_closed_time = 0.0f;
+        ustengrev_finish_line_mode = false;
+        ustengrev_cliff_mode = false;
+        ustengrev_run_only_mode = false;
+        ustengrev_wrong_order_mode = false;
+
+
+        anti_slowwalk_timer = 0.0f;
     }
 
     void walk_again()
@@ -2919,8 +3149,15 @@ namespace WalkerProcessor {
             is_casting_clairvoyance = false;
             start_casting_time = 0.0f;
             walk_timeout = 0.0f;
-            attacking_done = true;
-            start_attacking = false;
+
+            if (start_attacking)
+            {
+                attacking_done = true;
+                start_attacking = false;
+            }
+
+            anti_slowwalk_timer = 0.0f;
+
             time_blind_walk = 0.0f;
 
             last_target_pos = RE::NiPoint3::Zero();
@@ -3246,7 +3483,7 @@ namespace WalkerProcessor {
                     }
                         
 
-                    if (has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)
+                    //if (has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)
                     {
                         if (gate_shout)
                             return true;
@@ -3279,7 +3516,7 @@ namespace WalkerProcessor {
                         float range = get_weapon_range(get_current_active_hand());
 
                         if (shout_mode)
-                            range = 700.0f;
+                            range = 1200.0f;
 
                         if (start_attacking)
                             range = range * 1.25;
@@ -3287,8 +3524,8 @@ namespace WalkerProcessor {
 
                         auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range);
 
-                        if (target_ref->IsActor() && target_ref->IsDead())
-                            return true;
+                        //if (target_ref->IsActor() && target_ref->IsDead())
+                        //    return true;
 
                         auto raycast_test = raycast_ref == target_ref;
                         bool target_visible = false;
@@ -3316,12 +3553,17 @@ namespace WalkerProcessor {
                         }
                             //successful_raycast_time = 0.0f;
 
+                        distance = camera_pos - aim_pos;
+
+
                         if ((target_visible && distance.Length() < range) || distance.Length() < 200.0f)
                             return true;
 
                         bool stop_here = false;
                     }
-                    else
+                    //else
+
+                    if (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)) //melee only
                     {
 
                         auto bound_max = target_ref->GetBoundMax() * target_ref->GetScale();
@@ -3344,6 +3586,7 @@ namespace WalkerProcessor {
                         else
                             if (distance.Length() < 150.0f * (1 + MiscThings::is_on_horse() * 3.0f))
                                 return true;
+
                     }
 
                 }
@@ -4559,6 +4802,8 @@ namespace WalkerProcessor {
                                             auto quests_target_ref = quest_ref_handle.get().get();
                                             if (target_ref != quests_target_ref)
                                             {
+                                                path_valid = false;
+
                                                 if (quests_target_ref == RE::TESForm::LookupByEditorID("dunCGObjectiveInn01REF") || quests_target_ref == RE::TESObjectREFR::LookupByID(0x000E24C3))
                                                 {
                                                     unregister_all_actions();
@@ -4598,6 +4843,7 @@ namespace WalkerProcessor {
                                                 right_attack_cancel();
                                                 left_attack_cancel();
 
+                                                
                                                 target_ref = quests_target_ref; //i think something is excessive here
                                                 result = true;
                                             }
@@ -5405,6 +5651,10 @@ namespace WalkerProcessor {
                         if (!no_ammo())
                             return 5000.0f;
                     }
+                    else
+                    {
+                        return 120.0f;
+                    }
                 }
             }
         }
@@ -5976,7 +6226,7 @@ namespace WalkerProcessor {
                     else
                         attacking_inanimate_object_time += dtime;
 
-                    if (attacking_inanimate_object_time > 10.0f)
+                    if (attacking_inanimate_object_time > 5.0f)
                     {
                         right_attack_cancel();
                         left_attack_cancel();
@@ -6422,7 +6672,7 @@ namespace WalkerProcessor {
 
 
 
-    void path_is_blocked_result(RE::TESObjectREFR* result_target)
+    void path_is_blocked_result(RE::TESObjectREFR* result_target, bool last_try = false)
     {
         std::string blocking_object_name = "Something";
 
@@ -6445,6 +6695,15 @@ namespace WalkerProcessor {
             {
                 potential_puzzle = true;
                 blocking_object_name = check_name;
+            }
+            else
+            {
+                if (!last_try)
+                {
+                    //nothing found. run a raycast ignoring scan
+                    Observer::detect_interesting_objects(0.016, true);
+                    return path_is_blocked_result(result_target, true);
+                }
             }
                 
         }
@@ -6547,6 +6806,278 @@ namespace WalkerProcessor {
     }
 
 
+
+    bool ustengrev_off_the_cliff()
+    {
+        std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            return false;
+        }
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            return false;
+        }
+
+
+        RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70b4f); //dragon wall
+
+        if (target)
+        {
+            if (have_target_to_walk)
+            {
+                reset_walker();
+            }
+
+            quicksave();
+
+            unregister_all_actions();
+
+            send_random_context("You walk towards the cliff...", false);
+
+            using_custom_path = true;
+            walk_again_when_finished = true;
+            custom_path = CustomWalkerPaths::ustengrev_off_the_cliff;
+
+            ustengrev_cliff_mode = true;
+
+            right_attack_cancel();
+            left_attack_cancel();
+
+            target_ref = target;
+            have_target_to_walk = true;
+            interaction_after_walk = 0;
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+            reminder_target_name = "Cliff";
+            reminder_start_pos = player->GetPosition();
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+
+
+    bool ustengrev_puzzle_get_ready(int mode)
+    {
+        std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            return false;
+        }
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            return false;
+        }
+
+
+        RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x36bf0);
+
+        if (target)
+        {
+            if (have_target_to_walk)
+            {
+                reset_walker();
+            }
+
+
+
+            unregister_all_actions();
+
+            send_random_context("You get into position...", false);
+
+            using_custom_path = true;
+            walk_again_when_finished = true;
+            custom_path = CustomWalkerPaths::ustengrev_start_point;
+
+            if (mode == 0)
+                ustengrev_get_ready_mode = true;
+
+            if (mode == 1)
+                ustengrev_run_only_mode = true;
+
+            if (mode == 2)
+                ustengrev_wrong_order_mode = true;
+
+            right_attack_cancel();
+            left_attack_cancel();
+
+            target_ref = target;
+            have_target_to_walk = true;
+            interaction_after_walk = 0;
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+            reminder_target_name = "";
+            reminder_start_pos = player->GetPosition();
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /*
+    bool ustengrev_finish_line()
+    {
+        std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            return false;
+        }
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            return false;
+        }
+
+
+
+        unregister_all_actions();
+        //using_custom_path = true;
+        //walk_again_when_finished = true;
+        //custom_path = CustomWalkerPaths::ustengrev_finish_line;
+
+
+        RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xeb20c); //some random trigger zone after gates
+
+        if (target)
+        {
+            if (have_target_to_walk)
+            {
+                using_custom_path = false; //prevent quicksave
+                reset_walker();
+            }
+
+            ustengrev_get_ready_mode = true;
+
+            right_attack_cancel();
+            left_attack_cancel();
+
+            target_ref = target;
+            have_target_to_walk = true;
+            interaction_after_walk = 0;
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+            reminder_target_name = "";
+            reminder_start_pos = player->GetPosition();
+
+            return true;
+        }
+
+        return false;
+    }
+    */
+
+
+    bool ustengrev_puzzle_run_and_shout()
+    {
+        std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            return false;
+        }
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            return false;
+        }
+
+
+
+
+
+        RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x36bf0);
+
+        if (target)
+        {
+            if (have_target_to_walk)
+            {
+                using_custom_path = false; //prevent quicksave
+                reset_walker();
+            }
+
+            unregister_all_actions();
+            using_custom_path = true;
+            walk_again_when_finished = true;
+            custom_path = CustomWalkerPaths::ustengrev_shout_point;
+            ustengrev_shout_mode = true;
+
+
+            right_attack_cancel();
+            left_attack_cancel();
+
+            target_ref = target;
+            have_target_to_walk = true;
+            interaction_after_walk = 0;
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+            reminder_target_name = "";
+            reminder_start_pos = player->GetPosition();
+
+            return true;
+        }
+
+        return false;
+    }
 
 
 
@@ -6762,22 +7293,22 @@ namespace WalkerProcessor {
         backup_pickup_time = 0.0f;
     }
 
+
+
+
+
+
 	float walker_processor_timer = 0.0f;
+
+
+
 
 	void processor(float dtime)
 	{
 
 
 
-        if (target_ref && !target_ref->data.objectReference)
-            reset_walker();
 
-        RE::ObjectRefHandle my_handle;
-        if (target_ref)
-            my_handle = target_ref->GetHandle();
-
-        if (!my_handle || !my_handle.get() || !my_handle.get().get())
-            reset_walker();
 
 
         if (backup_pickup)
@@ -6887,6 +7418,10 @@ namespace WalkerProcessor {
             bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
             bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
             bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+
+            
+
 
             //if (player_actor && !player_actor->movementController->controlsDriven)
             if (!can_walk && !can_look)
@@ -7087,6 +7622,40 @@ namespace WalkerProcessor {
                     return;
                 }
                 
+
+                if (ustengrev_finish_line_mode)
+                {
+                    if (walk_fixed_time(true, 7.77f, dtime))
+                    {
+                        auto player_pos = player->GetPosition();
+                        if (player_pos.x > 600.0f)
+                        {
+                            send_random_context("You passed the gate challenge");
+                            quicksave();
+                        }
+                        else
+                        {
+                            send_random_context("You didnt make it through the gates...");
+                        }
+
+                        reset_walker();
+                    }
+                    return;
+                }
+
+
+
+                if (target_ref && !target_ref->data.objectReference)
+                    reset_walker();
+
+                RE::ObjectRefHandle my_handle;
+                if (target_ref)
+                    my_handle = target_ref->GetHandle();
+
+                if (!my_handle || !my_handle.get() || !my_handle.get().get())
+                    reset_walker();
+
+
 
 
                 if (make_clairvoyance_cast)
@@ -7411,6 +7980,10 @@ namespace WalkerProcessor {
                                                         else
                                                             fail_text += "Maybe you need to interact with something nearby to go past it]";
                                                     }
+                                                    else
+                                                    {
+                                                        Observer::detect_interesting_objects(0.016, true);
+                                                    }
 
                                                     send_random_context(fail_text, false);
                                                     reset_walker();
@@ -7443,6 +8016,14 @@ namespace WalkerProcessor {
                                         }
                                     }
 
+
+                                    if (quest_mode && last_quest && last_quest_objective && detect_quest_target_changed_and_walk())
+                                    {
+                                        had_successful_walk = false;
+                                        return;
+                                    }
+
+
                                     if (!using_custom_path && !use_last_point_of_last_path && ((int)std::size(path) > 5) && (current_path_point == std::size(path) - 1) && !close_enough()) //prelast point. need to rebuild next path segment before we reach the end.
                                     {
                                         if (std::size(path) > 0)
@@ -7473,10 +8054,85 @@ namespace WalkerProcessor {
 
                                             if (walk_again_when_finished)
                                             {
-                                                using_custom_path = false;
-                                                register_allowed_actions();
-                                                quicksave();
-                                                walk_again();
+
+
+
+                                                if (ustengrev_run_only_mode)
+                                                {
+                                                    if (lock_camera_onto_target(target_ref, dtime))
+                                                    {
+                                                        if (ustengrev_run_condition(dtime))
+                                                        {
+                                                            send_random_context("You running towards the gates through keystones...");
+                                                            using_custom_path = false; //prevent quicksave
+                                                            reset_walker();
+                                                            ustengrev_finish_line_mode = true;
+                                                            
+                                                        }
+                                                    }
+
+                                                    return;
+                                                }
+
+                                                if (ustengrev_wrong_order_mode)
+                                                {
+                                                    if (lock_camera_onto_target(target_ref, dtime))
+                                                    {
+                                                        if (ustengrev_run_condition(dtime))
+                                                        {
+                                                            send_random_context("You using shout and try to run through gates afterwards...");
+                                                            auto shout_form = (RE::TESShout*)RE::TESForm::LookupByID(0x2f7ba);
+                                                            MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_form, true);
+                                                            using_custom_path = false; //prevent quicksave
+                                                            //ustengrev_finish_line();
+                                                            reset_walker();
+                                                            ustengrev_finish_line_mode = true;
+                                                            return;
+
+                                                        }
+                                                    }
+
+                                                    return;
+                                                }
+
+
+                                                if (ustengrev_get_ready_mode)
+                                                {
+                                                    if (lock_camera_onto_target(target_ref, dtime))
+                                                    {
+                                                        if (ustengrev_run_condition(dtime))
+                                                        {
+                                                            ustengrev_puzzle_run_and_shout();
+                                                            return;
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (ustengrev_shout_mode)
+                                                    {
+                                                        walk_forward();
+                                                        //if (lock_camera_onto_target(target_ref, dtime))
+                                                        {
+                                                            //walk_forward();
+                                                            auto shout_form = (RE::TESShout*)RE::TESForm::LookupByID(0x2f7ba);
+                                                            send_random_context("You are using the shout...");
+                                                            MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_form, true);
+                                                            using_custom_path = false; //prevent quicksave
+                                                            //ustengrev_finish_line();
+                                                            reset_walker();
+                                                            ustengrev_finish_line_mode = true;
+                                                            return;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        using_custom_path = false;
+                                                        register_allowed_actions();
+                                                        quicksave();
+                                                        walk_again();
+                                                    }
+                                                }
                                             }
                                                 
 
@@ -7569,24 +8225,57 @@ namespace WalkerProcessor {
 
                                                             }
                                                             else
-                                                                if (!locking_failed)
+                                                            {
+                                                                if (ustengrev_get_ready_mode)
                                                                 {
-                                                                    if (location_mode)// || MiscThings::is_intro())
-                                                                        reset_walker();
-                                                                    else
+                                                                    if (lock_camera_onto_target(target_ref, dtime))
                                                                     {
-                                                                        if (target_ref->IsActor() && !close_enough())
-                                                                            walk_again(); //follow it if its actor;
-                                                                        else
+                                                                        if (ustengrev_run_condition(dtime))
                                                                         {
-                                                                            lock_camera_onto_target(target_ref, dtime); //keep camera locked in until the walker is reset externally if no action specified
-                                                                            if (quest_mode && result_target)
-                                                                                interaction_after_walk = 1; //interact if there is something and it was quest
-                                                                            if (explore_mode)
-                                                                                explore_mode = false; //so we can explore again
+                                                                            ustengrev_puzzle_run_and_shout();
+                                                                            return;
                                                                         }
-                                                                    }   
+                                                                    }
                                                                 }
+                                                                else
+                                                                {
+                                                                    if (ustengrev_shout_mode)
+                                                                    {
+                                                                        walk_forward();
+                                                                        //if (lock_camera_onto_target(target_ref, dtime))
+                                                                        {
+                                                                            auto shout_form = (RE::TESShout*)RE::TESForm::LookupByID(0x2f7ba);
+                                                                            send_random_context("You are using the shout...");
+                                                                            MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_form, true);
+                                                                            //ustengrev_finish_line();
+                                                                            reset_walker();
+                                                                            ustengrev_finish_line_mode = true;
+                                                                            return;
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                        if (!locking_failed)
+                                                                        {
+                                                                            if (location_mode)// || MiscThings::is_intro())
+                                                                                reset_walker();
+                                                                            else
+                                                                            {
+                                                                                if (target_ref->IsActor() && !close_enough())
+                                                                                    walk_again(); //follow it if its actor;
+                                                                                else
+                                                                                {
+                                                                                    lock_camera_onto_target(target_ref, dtime); //keep camera locked in until the walker is reset externally if no action specified
+                                                                                    if (quest_mode && result_target)
+                                                                                        interaction_after_walk = 1; //interact if there is something and it was quest
+                                                                                    if (explore_mode)
+                                                                                        explore_mode = false; //so we can explore again
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                }
+                                                                    
+                                                            }
+
                                                                     
                                                         }
                                                         else
@@ -7798,7 +8487,7 @@ namespace WalkerProcessor {
                                                 {
                                                     //maybe its a location switch door?
 
-                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.0f) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
+                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.0f && have_doors_nearby()) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
                                                     {
                                                         if (!test_about_to_be_blocked_by_door(dtime))
                                                         {
@@ -7901,6 +8590,10 @@ namespace WalkerProcessor {
                                                                 else
                                                                     fail_text += "Maybe you need to interact with something nearby to go past it]";
                                                             }
+                                                            else
+                                                            {
+                                                                Observer::detect_interesting_objects(0.016, true);
+                                                            }
 
                                                             send_random_context(fail_text, false);
                                                             remove_navmesh_cutter();
@@ -7945,6 +8638,10 @@ namespace WalkerProcessor {
                                                             fail_text += "You can try attacking it to destroy it]";
                                                         else
                                                             fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                    }
+                                                    else
+                                                    {
+                                                        Observer::detect_interesting_objects(0.016, true);
                                                     }
 
                                                     send_random_context(fail_text, false);

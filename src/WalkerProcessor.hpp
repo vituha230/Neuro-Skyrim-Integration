@@ -88,6 +88,9 @@ namespace WalkerProcessor {
 
 	std::pair<bool, std::string> make_spins(int amount, int speed);
 
+	bool ustengrev_puzzle_get_ready(int mode);
+	bool processing_ustengrev();
+	bool ustengrev_off_the_cliff();
 
 
 	void reset_backup_pickup();

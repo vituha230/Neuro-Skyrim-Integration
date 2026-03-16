@@ -145,6 +145,25 @@ namespace Observer {
 
 				break;
 			}
+
+			case 3:
+			{
+				if (id >= 1 && id <= 4)
+				{
+					puzzle_choice = id;
+					puzzle_choice_valid = true;
+					result.first = true;
+					result.second = "[Processing...]";
+				}
+				else
+				{
+					result.first = false;
+					result.second = "Invalid choice ID";
+				}
+
+				break;
+			}
+
 			default:
 			{
 				reset_quest_puzzles();
@@ -167,9 +186,36 @@ namespace Observer {
 	}
 
 
+	float not_processing_ustengrev_time = 0.0f;
+	float pause_puzzle_scan_time = 0.0f;
 
 	void timed_quest_puzzles_processor(float dtime)
 	{
+
+		if (pause_puzzle_scan_time <= 0.0f)
+		{
+			auto finish_trigger = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x52477);
+
+			if (active_puzzle == -1 && finish_trigger && !finish_trigger->IsDisabled() && MiscThings::player_inside_of_ustengrev_gate_puzzle())
+			{
+				if (!WalkerProcessor::processing_ustengrev())
+					not_processing_ustengrev_time += dtime;
+				else
+					not_processing_ustengrev_time = 0.0f;
+
+				if (not_processing_ustengrev_time > 3.0f)
+					active_puzzle = 3;
+			}
+			else
+				not_processing_ustengrev_time = 0.0f;
+		}
+		else
+			pause_puzzle_scan_time -= dtime;
+
+
+
+
+
 		if (active_puzzle != -1)
 		{
 			switch (active_puzzle)
@@ -250,6 +296,13 @@ namespace Observer {
 							reset_quest_puzzles();
 							break;
 						}
+
+						default:
+						{
+							reset_quest_puzzles();
+							break;
+						}
+
 						}
 					}
 				}
@@ -327,6 +380,100 @@ namespace Observer {
 						{
 							RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FAFB);
 							WalkerProcessor::walk_to_object_by_refr(gate, 3);
+							reset_quest_puzzles();
+							break;
+						}
+
+						default:
+						{
+							reset_quest_puzzles();
+							break;
+						}
+
+						}
+					}
+				}
+
+
+				break;
+			}
+
+
+
+			case 3:
+			{
+				if (!puzzle_request_was_sent)
+				{
+					std::vector<MenuOption> options{};
+					//options.push_back({ 1, "Run around a keystone" });
+					options.push_back({ 1, "Use Whirlwind Sprint shout to fly near the keystones first, and then run through gates" });
+					options.push_back({ 2, "Jump off the nearest cliff" });
+					options.push_back({ 3, "Run through the keystones to open the gates first, then quickly use Whirlwind Sprint shout to fly through the gates" });
+					options.push_back({ 4, "Run through the keystones and then continue running through the gates without using a shout" });
+
+
+					if (force_choice(options, "The path is blocked by some kind of gate puzzle. There are 3 keystones and 3 gates. When you run past a keystone, it opens 1 gate. But in short period of time the gate closes again. Looks you will need to use the Whirlwind shout because gates close too fast. What will you do?", force_type::timed_quest_puzzle))
+					{
+						if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+						{
+							puzzle_request_was_sent = true;
+							puzzle_pause_was_made = true;
+							MiscThings::pause_game();
+						}
+					}
+				}
+				else
+				{
+					if (puzzle_choice_valid)
+					{
+						if (puzzle_pause_was_made)
+						{
+							if (MiscThings::is_game_paused())
+							{
+								MiscThings::unpause_game();
+							}
+							//set_universal_block(0.5f);
+							puzzle_pause_was_made = false;
+							return;
+
+						}
+
+						pause_puzzle_scan_time = 5.0f;
+
+						switch (puzzle_choice)
+						{
+						//case 1:
+						//{
+						//	reset_quest_puzzles();
+						//	break;
+						//}
+						case 1:
+						{
+							WalkerProcessor::ustengrev_puzzle_get_ready(2);
+							reset_quest_puzzles();
+							break;
+						}
+						case 2:
+						{
+							WalkerProcessor::ustengrev_off_the_cliff();
+							reset_quest_puzzles();
+							break;
+						}
+						case 3:
+						{
+							WalkerProcessor::ustengrev_puzzle_get_ready(0);
+							reset_quest_puzzles();
+							break;
+						}
+						case 4:
+						{
+							WalkerProcessor::ustengrev_puzzle_get_ready(1);
+							reset_quest_puzzles();
+							break;
+						}
+
+						default:
+						{
 							reset_quest_puzzles();
 							break;
 						}
@@ -699,11 +846,11 @@ namespace Observer {
 
 
 
-	void detect_interesting_objects(float dtime)
+	void detect_interesting_objects(float dtime, bool ignore_raycast)
 	{
 		if (observers_green_light && !MiscThings::have_force_only_menu_open())
 		{
-			if (detect_interesting_time > 0.5f || (first_cycle2 && detect_interesting_time > 2.0f))
+			if (ignore_raycast || detect_interesting_time > 0.5f || (first_cycle2 && detect_interesting_time > 2.0f))
 			{
 				if (first_cycle2)
 					first_cycle2 = false;
@@ -754,6 +901,12 @@ namespace Observer {
 							{
 								bool no_base_object = true;
 							}
+
+
+							if (!MiscThings::is_object_valid(a_ref))
+								return RE::BSContainer::ForEachResult::kContinue;
+
+
 
 							if (name[0] != '\0' && std::size(name) > 1 && name != player_name && name != "Sit")
 							{
@@ -826,7 +979,7 @@ namespace Observer {
 
 								if (base_type == RE::FormType::Door)
 								{
-									if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, scan_distance))
+									if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
 									{
 										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 										if (info != "")
@@ -838,7 +991,7 @@ namespace Observer {
 
 								if (base_type == RE::FormType::Activator)
 								{
-									if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, scan_distance))
+									if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
 									{
 										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 										if (info != "" && MiscThings::is_object_valid(a_ref))
@@ -854,7 +1007,7 @@ namespace Observer {
 									{
 										if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, scan_distance))
+											if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
@@ -877,7 +1030,18 @@ namespace Observer {
 										{
 											std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											if (info != "")
-												interesting_buffer.insert_or_assign(a_ref, info);
+											{
+												if (info.find("Large") != std::string::npos)
+												{
+													if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
+														WalkerProcessor::reset_walker(); 
+
+													send_random_context("You see: " + info, false); //large chests are not silent and immidiate 
+												}
+												else
+													interesting_buffer.insert_or_assign(a_ref, info);
+											}
+												
 										}
 									}
 
@@ -938,7 +1102,7 @@ namespace Observer {
 										auto workbenchtype = furniture->workBenchData.benchType;
 										if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
+											if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
@@ -1771,6 +1935,17 @@ namespace Observer {
 																result.push_back("[ " + name + " closed]");
 
 															if (activation == 1)
+																result.push_back("[ " + name + " opened]");
+														}
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorSecRmSmDoorSm01")
+														{
+															std::string name = MiscThings::insert_object_into_list_custom_name("Secret cave wall door", a_ref);
+
+															if (activation == 1)
+																result.push_back("[ " + name + " closed]");
+
+															if (activation == 0)
 																result.push_back("[ " + name + " opened]");
 														}
 

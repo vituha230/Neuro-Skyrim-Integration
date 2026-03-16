@@ -13,7 +13,7 @@ namespace Observer {
 
 	void set_threat_action_taken();
 
-	void detect_interesting_objects(float dtime);
+	void detect_interesting_objects(float dtime, bool ignore_raycast = false);
 
 	void inventory_monitor(float dtime);
 

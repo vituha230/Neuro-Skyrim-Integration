@@ -40,6 +40,7 @@ namespace MiscThings {
             if (objects_around.second.find("Ancient Nordic Door") != std::string::npos)
                 very_interesting_objects.push_back("Ancient Nordic Door");
 
+
             if (std::size(very_interesting_objects) > 0)
             {
                 std::string message = "";
@@ -179,6 +180,57 @@ namespace MiscThings {
     }
 
 
+    float triangle_area(RE::NiPoint2 a, RE::NiPoint2 b, RE::NiPoint2 c)
+    {
+        return 0.5f * abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
+    }
+
+    float is_inside_of_rectangle(RE::NiPoint2 p, RE::NiPoint2 a, RE::NiPoint2 b, RE::NiPoint2 c, RE::NiPoint2 d)
+    {
+        float rectangle_area = triangle_area(a, b, c) + triangle_area(a, d, c);
+
+        float point_area = triangle_area(p, a, b) + triangle_area(p, b, c) + triangle_area(p, c, d) + triangle_area(p, d, a);
+
+        return rectangle_area >= point_area*0.99f;
+    }
+
+
+
+
+    bool player_inside_of_ustengrev_gate_puzzle()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+
+        auto player_parent_cell = player->GetParentCell();
+        RE::TESObjectREFR* done_trigger = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x52477);
+        if (player_parent_cell && player_parent_cell->formID == 0x152aa && !done_trigger->IsDisabled())
+        {
+            RE::NiPoint2 a = { -2108.78174, -743.853455 };//, -1103.65869
+            RE::NiPoint2 b = { -604.535400, -212.883499 };// , -1095.44202
+            RE::NiPoint2 c = { -303.614716, -1026.13635 };// , -1113.10095
+            RE::NiPoint2 d = { -1777.06445, -1566.35852 };// , -1104.09680
+
+            float z = -1100.0f;
+
+            if (abs(player_pos.z - z) < 150.0f)
+            {
+                RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                if (is_inside_of_rectangle(p, a, b, c, d))
+                {
+                    //player inside of ustengrev gate puzzle zone
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+
+
 
     struct RayCastResult {
         float distance = -1.0f;
@@ -200,6 +252,10 @@ namespace MiscThings {
             : distance(d), layer(l), normalOut(n), didHit(h), hitObjectRef(r) {
         }
     };
+
+
+    uint32_t my_filter1 = 0b10010000000000011110;
+    uint32_t my_filter2 = 0b10010000000000001110;
 
 
     RayCastResult RayCast(RE::NiPoint3 rayStart, RE::NiPoint3 rayDir, float maxDist,
@@ -224,13 +280,14 @@ namespace MiscThings {
 
         // Set ray start and end points (scaled to Havok world)
         pickData.rayInput.from = rayStart * havokWorldScale;
+        rayDir.Unitize();
         pickData.rayInput.to = (rayStart + rayDir * maxDist) * havokWorldScale;
 
         RE::CFilter cFilter_info{};
 
         actor->GetCollisionFilterInfo(cFilter_info);
 
-        pickData.rayInput.filterInfo = cFilter_info;
+        pickData.rayInput.filterInfo = (RE::CFilter)my_filter2;// cFilter_info;
 
         // static_cast<RE::CFilter>(cFilter.filter | static_cast<uint32_t>(layerMask));
 
@@ -321,12 +378,16 @@ namespace MiscThings {
 
         if (player_ref)
         {
-            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 800.0f,
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 1400.0f,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
 
                     std::string name = a_ref->GetName();
                     std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
+
+                    if (!MiscThings::is_object_valid(a_ref))
+                        return RE::BSContainer::ForEachResult::kContinue;
 
                     auto base_obj = a_ref->GetBaseObject();
                     RE::FormType base_type{};
@@ -409,6 +470,14 @@ namespace MiscThings {
                             }
 
 
+                            if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorSecRmSmDoorSm01")
+                            {
+                                std::string name = MiscThings::insert_object_into_list_custom_name("Secret cave wall door", a_ref);
+                                result = name;
+                            }
+                            //NorSecRmSmDoorSm01
+
+
                         }
                     }
 
@@ -472,6 +541,38 @@ namespace MiscThings {
                 result = 1;
 
         }
+
+        object_p = General::Script::GetObject(activator, "dunUstenPuzGateSCRIPT");
+        
+            if (object_p)
+            {
+                RE::BSFixedString prop_name = "::isOpen_var";
+
+                if (General::Script::GetVariable<bool>(object_p, prop_name))
+                    result = 0;
+                else
+                    result = 1;
+
+            }
+        
+            object_p = General::Script::GetObject(activator, "NorPortcullisSCRIPT");
+
+            if (object_p)
+            {
+                //RE::BSFixedString prop_name = "isClosing";
+
+                //bool is_closing = General::Script::GetProperty<bool>(object_p, prop_name);
+
+                RE::BSFixedString prop_name = "isOpen";
+
+                if (General::Script::GetVariable<bool>(object_p, prop_name))
+                    result = 0;
+                else
+                    result = 1;
+
+            }
+
+
 
         object_p = General::Script::GetObject(activator, "HallofStoriesKeyholeScript");
         if (object_p)
@@ -1422,12 +1523,44 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("NorLever01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 1.0f, 1.0f, 1.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+                        if (model.find("WindCallerTomb01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 120.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
                         if (model.find("PortcullisLarge01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { -200.0f, 0.0f, 120.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+
+                        if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 140.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+                        if (model.find("NorSecRmSmDoorSm01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { -100.0f, 0.0f, 120.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
                     }
 
                     if (base_obj->GetFormType() == RE::FormType::Door)
@@ -5263,7 +5396,7 @@ namespace MiscThings {
 
 
 
-    std::pair<bool, std::string> cast_spell_by_index(int id)
+    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast)
     {
 
         //TODO: somehow get proper result of this action
@@ -5407,7 +5540,11 @@ namespace MiscThings {
                                     //use_ult();
                                     right_attack_cancel();
                                     left_attack_cancel();
-                                    make_long_ult_cast();
+                                    if (!fast)
+                                        make_long_ult_cast();
+                                    else
+                                        use_ult();
+
                                     result.first = true;
                                     result.second = "[Using [id " + std::to_string(id) + "] " + shout->GetFullName();
                                 }
@@ -5481,7 +5618,7 @@ namespace MiscThings {
     }
 
 
-    std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell)
+    std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell, bool fast)
     {
 
         std::pair<bool, std::string> result{};
@@ -5521,7 +5658,7 @@ namespace MiscThings {
         }
 
         if (id != -1)
-            return cast_spell_by_index(id);
+            return cast_spell_by_index(id, fast);
         else
             return { false, "You dont have this spell" };
     }
@@ -5532,7 +5669,7 @@ namespace MiscThings {
 
 
     //decided to leave its ability to cast too in case they get confused
-    std::pair<bool, std::string> equip_spell_by_index(int id)
+    std::pair<bool, std::string> equip_spell_by_index(int id, bool fast)
     {
 
         //TODO: somehow get proper result of this action
@@ -5670,7 +5807,11 @@ namespace MiscThings {
                                     //use_ult();
                                     right_attack_cancel();
                                     left_attack_cancel();
-                                    make_long_ult_cast();
+                                    if (!fast)
+                                        make_long_ult_cast();
+                                    else
+                                        use_ult();
+
                                     result.first = true;
                                     result.second = "[Using [id " + std::to_string(id) + "] " + shout->GetFullName();
                                 }

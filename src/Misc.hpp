@@ -40,6 +40,9 @@ namespace MiscThings {
     };
 
 
+    bool player_inside_of_ustengrev_gate_puzzle();
+
+
     bool is_on_horse();
 
 
@@ -64,7 +67,7 @@ namespace MiscThings {
     std::vector<RE::Actor*> get_player_attackers();
 
 
-    std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell);
+    std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell, bool fast = false);
     bool player_has_spell(RE::SpellItem* spell);
 
     //int insert_ref_into_obj_list(RE::TESObjectREFR* refr);
@@ -132,8 +135,8 @@ namespace MiscThings {
 
     bool has_digits(std::string& str);
 
-    std::pair<bool, std::string> cast_spell_by_index(int id);
-    std::pair<bool, std::string> equip_spell_by_index(int id);
+    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast = false);
+    std::pair<bool, std::string> equip_spell_by_index(int id, bool fast = false);
 
     int player_overencumbered_by();
     bool puzzle_door_open(RE::TESObjectREFR* a_ref);
