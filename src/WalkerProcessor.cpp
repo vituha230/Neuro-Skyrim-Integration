@@ -1448,7 +1448,7 @@ namespace WalkerProcessor {
                 //right_attack_cancel();
                 //left_attack_cancel();
 
-                if (last_walk_reminded_time > 40.0f || (runaway_mode && last_walk_reminded_time > 17.0f))
+                if (last_walk_reminded_time > 40.0f || ((explore_mode || runaway_mode) && last_walk_reminded_time > 15.0f))
                 {
                     last_walk_reminded_time = 0.0f;
 
@@ -1750,7 +1750,7 @@ namespace WalkerProcessor {
         auto targeted_ref = MiscThings::GetRaycastRef(camera_pos, camera_dir.GetVectorY(), 300.0f);
         if (targeted_ref)// && (targeted_ref != target_ref || quest_mode)) //not nice
         {
-            std::string blocking_name = MiscThings::get_blocking_object_name(targeted_ref);
+            std::string blocking_name = MiscThings::get_blocking_object_name2(targeted_ref);
 
             if (blocking_name != "" && !turning_around)
             {
@@ -2935,10 +2935,11 @@ namespace WalkerProcessor {
 
         bool result = false;
 
-        if (is_casting_walker(false))
-            left_attack_cancel();
+        //if (is_casting_walker(false))
+        //    left_attack_cancel();
 
-        if ((!is_casting_walker(false) && !is_casting_input(false)) || is_casting_clairvoyance)
+        //if ((!is_casting_walker(false) && !is_casting_input(false)) || is_casting_clairvoyance)
+        //if ((!is_casting_walker(false) && !is_casting_input(false)) || is_casting_clairvoyance)
         {
             if (!is_casting_clairvoyance)
             {
@@ -6481,7 +6482,7 @@ namespace WalkerProcessor {
                                     {
                                         std::string lever_advice = MiscThings::lever_interaction_advice(target_ref);
 
-                                        send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", false);
+                                        send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
                                     }
 
 
@@ -8378,7 +8379,7 @@ namespace WalkerProcessor {
                                                                     if ((quest_mode && backup_interaction_made) || interact_with_target(dtime))
                                                                     {
                                                                         //if it was a door, walk forward a little after its opened
-                                                                        if (is_door(result_target) || is_container(result_target))
+                                                                        if (interaction_after_walk == 1 && (is_door(result_target) || is_container(result_target)))
                                                                             catch_door_result = true; //this will reset after its done
                                                                         else
                                                                         {

@@ -1551,6 +1551,8 @@ namespace Observer {
 				//if (std::size(objects_to_track) > 5000)
 				//	objects_to_track.clear();
 
+				bool silent = false;
+
 				RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, scan_distance,
 					//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 					[&](RE::TESObjectREFR* a_ref) {
@@ -2034,6 +2036,7 @@ namespace Observer {
 												last_periodic_info = now;
 												std::string name = MiscThings::insert_object_into_list_custom_name("Trap swinging blade", a_ref);
 												result.push_back("[ " + name + " swinged!]");
+												silent = true;
 											}
 										}
 									}
@@ -2052,6 +2055,8 @@ namespace Observer {
 											std::string name = MiscThings::insert_object_into_list_custom_name("Pressure plate", a_ref);
 
 											std::string activator_name = get_trap_activator_name(a_ref);
+
+											silent = true;
 
 											if (activator_name == "")
 											{
@@ -2232,6 +2237,8 @@ namespace Observer {
 
 									if (old_state.action_flags != new_state.action_flags)
 									{
+										silent = true;
+
 										std::string in_the_distance = "";
 
 										if (player_ref->GetDistance(a_ref) > 15000.0f)
@@ -2295,7 +2302,7 @@ namespace Observer {
 						message += result_entry + "\n";
 					}
 
-					send_random_context(message, false);
+					send_random_context(message, silent);
 
 				}
 

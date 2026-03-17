@@ -434,8 +434,8 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                 if (!MiscThings::is_intro()) //must be watched to refresh
                 {
 
-                    if (MiscThings::is_objects_around_valid())
-                    {
+                    //if (MiscThings::is_objects_around_valid())
+                    //{
                         if (MiscThings::is_intro2())
                         {
                             actions_to_register[action_pos] = Capabilities::WalkToObjectDoNothing::Action; action_pos++;
@@ -451,7 +451,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                             actions_to_register[action_pos] = Capabilities::SurrenderToGuards::Action; action_pos++;
                         }
                             
-                    }
+                    //}
 
                     if (MiscThings::have_any_quests())
                     {

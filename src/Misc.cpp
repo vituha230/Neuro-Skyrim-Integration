@@ -125,11 +125,27 @@ namespace MiscThings {
         auto camera_pos = camera->pos;
 
 
+        auto camera_dir = camera->cameraRoot.get()->world.rotate;
+        auto camera_lookat = camera_dir.GetVectorY();
 
         auto aim_pos = WalkerProcessor::get_estimate_aim_pos(object);
 
         auto delta_pos = aim_pos - camera_pos;
 
+
+        auto delta_pos_noZ = delta_pos;
+        auto camera_lookat_noZ = camera_lookat;
+        delta_pos_noZ.z = 0.0f;
+        camera_lookat_noZ.z = 0.0f;
+        delta_pos_noZ.Unitize();
+        camera_lookat_noZ.Unitize();
+
+        if (only_forward)
+        {
+            float mulY = camera_lookat_noZ * delta_pos_noZ;
+            if (mulY < -0.1)
+                return false;
+        }
 
         auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range);
 
@@ -137,8 +153,7 @@ namespace MiscThings {
 
         if (!only_forward && raycast_ref == player_ref)
         {
-            auto camera_dir = camera->cameraRoot.get()->world.rotate;
-            auto camera_lookat = camera_dir.GetVectorY();
+
             raycast_ref = MiscThings::GetRaycastRef(camera_pos - camera_lookat*15.0f, delta_pos, range);
         }
             
@@ -452,6 +467,50 @@ namespace MiscThings {
             return true;
 
         return false;
+    }
+
+    std::string get_blocking_object_name2(RE::TESObjectREFR* a_ref)
+    {
+        std::string result = "";
+
+        result = get_blocking_object_name(a_ref);
+
+        if (result == "")
+        {
+            auto base_obj = a_ref->GetBaseObject();
+            RE::FormType base_type{};
+
+
+
+            if (base_obj)
+            {
+                base_type = base_obj->GetFormType();
+                bool debug_type = true;
+            }
+            else
+            {
+                bool no_base_object = true;
+            }
+
+            if (base_type == RE::FormType::Activator)
+            {
+                auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+                std::string model = static_obj->GetModel();
+
+                if (model.find("PuzzleDoorBase01") != std::string::npos)
+                {
+                    result = "[Puzzle door] Ancient Nordic Door";
+                }
+
+                if (model.find("Wheel02") != std::string::npos)
+                {
+                    result = "[Puzzle door] Ancient Nordic Door";
+                }
+            }
+        }
+
+        return result;
     }
 
 
@@ -7400,6 +7459,9 @@ namespace MiscThings {
 
         }
 
+
+        if (result.second == "")
+            result.second = "You see nothing interesting nearby... maybe follow some quest or explore?";
 
         result.first = true;
 

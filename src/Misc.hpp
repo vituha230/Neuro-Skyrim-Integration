@@ -81,6 +81,8 @@ namespace MiscThings {
 
     bool raycastable(RE::TESObjectREFR* object, float range, bool only_forward = true);
 
+    std::string get_blocking_object_name2(RE::TESObjectREFR* a_ref);
+
 
     bool is_game_paused();
 
