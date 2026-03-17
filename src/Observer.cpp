@@ -1018,7 +1018,10 @@ namespace Observer {
 									{
 										if (!MiscThings::is_object_in_the_list(a_ref))
 										{
-											if (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance))
+											if (a_ref == RE::TESObjectREFR::LookupByID(0xC3B29))
+												scan_distance = 130.0f;
+
+											if (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance, false))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "" && MiscThings::is_object_valid(a_ref))
@@ -1767,6 +1770,13 @@ namespace Observer {
 												{
 													std::string interaction_name = " interacted with ";
 
+													auto target_base_obj = target_refr->GetBaseObject();
+													auto target_base_type = target_base_obj->GetFormType();
+
+													if (target_base_type == RE::FormType::Furniture)
+													{
+														return RE::BSContainer::ForEachResult::kContinue;
+
 													if (target_refr == a_ref)
 														return RE::BSContainer::ForEachResult::kContinue; //alduin kills himself during helgen attack for some reason. skip it
 
@@ -1778,13 +1788,6 @@ namespace Observer {
 
 													if (target_name != "" && actor_name != "")
 													{
-														auto target_base_obj = target_refr->GetBaseObject();
-														auto target_base_type = target_base_obj->GetFormType();
-
-														if (target_base_type == RE::FormType::Furniture)
-														{
-															return RE::BSContainer::ForEachResult::kContinue;
-
 															auto furniture_obj = (RE::TESFurniture*)target_base_obj;
 
 															if (furniture_obj->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSit))
@@ -1833,9 +1836,9 @@ namespace Observer {
 							auto base_object = a_ref->GetBaseObject();
 							auto base_type = base_object->GetFormType();
 
-
+							
 							auto test_refr = RE::TESObjectREFR::LookupByID(0x945b8);
-
+							
 							if (a_ref == test_refr)
 								bool break_here = false;
 

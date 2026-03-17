@@ -4,6 +4,7 @@
 //crucial:
 
 
+
 //TODO fasttravel advice
 //TODO map closest quest
 

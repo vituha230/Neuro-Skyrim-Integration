@@ -5976,7 +5976,7 @@ namespace WalkerProcessor {
                             if (!has_something_equipped(true))
                             {
                                 no_weapon = true;
-                                attacking_weapon = "bare fists. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
                                 if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
                                     cursor_up();
                             }
@@ -6196,16 +6196,27 @@ namespace WalkerProcessor {
                                 }
                                 else
                                 {
-                                    if (has_ranged_weapon_equipped(true) && no_ammo())
+                                    if (!has_something_equipped(false))
                                     {
                                         no_weapon = true;
-                                        attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                        attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                        if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
+                                            cursor_up();
                                     }
                                     else
-                                        attacking_weapon = get_equipped_weapon_name(false) + ". ";
+                                    {
+                                        if (has_ranged_weapon_equipped(true) && no_ammo())
+                                        {
+                                            no_weapon = true;
+                                            attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                        }
+                                        else
+                                            attacking_weapon = get_equipped_weapon_name(false) + ". ";
 
-                                    if (is_melee_weapon(false) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
-                                        cursor_up();
+                                        if (is_melee_weapon(false) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
+                                            cursor_up();
+                                    }
+
                                 }
                             }
 
@@ -8761,8 +8772,13 @@ namespace WalkerProcessor {
                                                                 else
                                                                     fail_text += "Maybe you need to interact with something nearby to go past it]";
 
+                                                                
                                                                 send_random_context(fail_text, false);
-                                                                reset_walker();
+
+                                                                if (blocking_name.find("Ancient Nordic Door") != std::string::npos)
+                                                                    walk_backward_a_little = true;
+                                                                else
+                                                                    reset_walker();
                                                                 return;
                                                             }
 
@@ -8931,7 +8947,12 @@ namespace WalkerProcessor {
                                                         fail_text += "Maybe you need to interact with something nearby to go past it]";
 
                                                     send_random_context(fail_text, false);
-                                                    reset_walker();
+
+                                                    if (blocking_name.find("Ancient Nordic Door") != std::string::npos)
+                                                        walk_backward_a_little = true;
+                                                    else
+                                                        reset_walker();
+
                                                     return;
                                                 }
 

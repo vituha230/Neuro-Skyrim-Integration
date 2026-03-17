@@ -1693,7 +1693,7 @@ namespace MiscThings {
 
                         if (model.find("NorPullChain01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
-                            RE::NiPoint3 base_shift_vector = { 0.0f, 10.0f, -30.0f };
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 10.0f, -10.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
@@ -3048,6 +3048,29 @@ namespace MiscThings {
                     }
                 }
 
+                extra = object->extraList.GetByType(RE::ExtraDataType::kActivateRefChildren);
+
+                if (extra)
+                {
+                    auto extra_linked = (RE::ExtraActivateRefChildren*)extra;
+
+                    for (auto linked_ref : extra_linked->children)
+                    {
+                        if (linked_ref->activateRef && linked_ref->activateRef.get() && linked_ref->activateRef.get().get())
+                        {
+                            if (std::size(linked_to) == 0)
+                            {
+                                std::string name_linked = insert_object_into_list_and_get_info(linked_ref->activateRef.get().get());
+                                if (name_linked != "")
+                                {
+                                    linked_to.push_back(name_linked);
+                                }
+                            }
+
+                        }
+                    }
+                }
+
 
                  //this gave me link to shit lever and didnt give link to actual lever
                 /*
@@ -3203,7 +3226,7 @@ namespace MiscThings {
                 }
 
                 if (actor_object->IsDead())
-                    dead = ", dead";
+                    dead = "[DEAD]";
                 
                 if (actor_object->IsChild())
                     child = ", Child";
@@ -3215,10 +3238,10 @@ namespace MiscThings {
 
                 if (object->IsHumanoid())
                 {
-                    result = "[Person" + race + dead + child + "]";
+                    result = dead + "[Person" + race + child + "]";
                 }
                 else
-                    result = "[Creature" + race + dead + "]";
+                    result = dead + "[Creature" + race + "]";
 
 
 
