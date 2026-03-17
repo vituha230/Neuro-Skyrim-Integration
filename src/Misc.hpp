@@ -192,6 +192,7 @@ namespace MiscThings {
 
     bool has_thrown_a_book();
 
+    RE::TESObjectREFR* get_word_of_power(RE::TESObjectREFR* trigger_zone);
 
     std::string fix_book_description(std::string description);
 

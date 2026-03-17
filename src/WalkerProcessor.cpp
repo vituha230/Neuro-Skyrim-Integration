@@ -249,6 +249,8 @@ namespace WalkerProcessor {
 
     float anti_slowwalk_timer = 0.0f;
 
+    bool dont_tell_result = false;
+
 
     bool processing_ustengrev()
     {
@@ -3132,6 +3134,8 @@ namespace WalkerProcessor {
 
 
         anti_slowwalk_timer = 0.0f;
+        dont_tell_result = false;
+
     }
 
     void walk_again()
@@ -4051,7 +4055,19 @@ namespace WalkerProcessor {
                 }
 
 
-                target_ref = object->second.object;
+
+                auto word_of_power = MiscThings::get_word_of_power(object->second.object);
+
+                if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
+                {
+                    dont_tell_result = true;
+                    target_ref = word_of_power;
+                }
+                else
+                    target_ref = object->second.object;
+
+
+                
 
                 have_target_to_walk = true;
 
@@ -6368,9 +6384,13 @@ namespace WalkerProcessor {
                             else
                             {
                                 std::string no_result = "";
-                                if (!target_is_interactive())
-                                    no_result = " Nothing happens";
-                                send_random_context("[Interacting with " + target_name + "..." + no_result + "]", false);
+                                if (!dont_tell_result)
+                                {
+                                    if (!target_is_interactive())
+                                        no_result = " Nothing happens";
+                                    send_random_context("[Interacting with " + target_name + "..." + no_result + "]", false);
+                                }
+
                             }
                                 
                         }

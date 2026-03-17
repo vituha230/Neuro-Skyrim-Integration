@@ -4,10 +4,8 @@
 //crucial:
 
 
-
-//TODO check walk estimate distance (might be broken)
-//TODO fix raycasting (collides with trigger zones, fired from actor's eyes doesnt see behind (might be a good thing?))
-
+//TODO fix estimate distance (it is broken)
+//TODO raycast-detect blocking gates/other stuff so it doesnt try to unstuckwalk before notify that its blocked
 
 //TODO fasttravel advice
 //TODO walk estimate distance

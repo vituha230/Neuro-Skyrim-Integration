@@ -101,6 +101,44 @@ namespace MiscThings {
 
 
 
+
+    RE::TESObjectREFR* get_word_of_power(RE::TESObjectREFR* trigger_zone_ref)
+    {
+        auto object_p = General::Script::GetObject(trigger_zone_ref, "WordWallTriggerScript");
+        //auto object_p = General::Script::GetObject(trigger_zone_ref, "WordWallTrigger02Script");
+        
+        if (!object_p)
+            return nullptr;
+        else
+        {
+
+            RE::BSFixedString prop_name = "::wordLearned_var";
+
+            bool word_learned = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (!word_learned)
+            {
+                RE::BSFixedString prop_name2 = "lookTarget";
+                auto lookat_marker1 = General::Script::GetProperty<RE::TESObjectREFR*>(object_p, prop_name2);
+
+
+                return lookat_marker1;
+            }
+            
+
+            return (RE::TESObjectREFR*)(-1); //means its actually a wall but its inactiva
+        }
+
+        
+    }
+
+
+
+
+
+
+
+
     bool player_escaping_jail()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -6632,6 +6670,17 @@ namespace MiscThings {
 
             if (base_type == RE::FormType::Activator)
             {
+
+
+                auto word_of_power = MiscThings::get_word_of_power(a_ref);
+
+                if (word_of_power == (RE::TESObjectREFR*)(-1))
+                {
+                    return false;
+                }
+
+
+
 
                 if (puzzle_door_open(a_ref))
                     return false;

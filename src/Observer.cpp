@@ -870,24 +870,9 @@ namespace Observer {
 
 				if (!player->IsDead())
 				{
-					RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, scan_distance,
+					RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 4000.0f,
 						//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 						[&](RE::TESObjectREFR* a_ref) {
-
-							RE::BSString result_string = "";
-							RE::TESNPC* player_npc = RE::TESForm::LookupByID(0x7)->As<RE::TESNPC>();
-							player_npc->GetActivateText(a_ref, result_string);
-							std::string result_string_actual_string = result_string.c_str();
-							if (result_string_actual_string.find("Carriage") != std::string::npos)
-							{
-								bool stop_here = false;
-							}
-
-
-
-
-							std::string name = a_ref->GetName();
-							std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
 							auto base_obj = a_ref->GetBaseObject();
 							RE::FormType base_type{};
@@ -902,375 +887,374 @@ namespace Observer {
 								bool no_base_object = true;
 							}
 
-
-							if (!MiscThings::is_object_valid(a_ref))
-								return RE::BSContainer::ForEachResult::kContinue;
-
-
-
-							if (name[0] != '\0' && std::size(name) > 1 && name != player_name && name != "Sit")
+							if (base_type == RE::FormType::Activator)
 							{
-
-								if (MiscThings::has_digits(name))
-									return RE::BSContainer::ForEachResult::kContinue;
-
-								if (a_ref->AsReference()->modelState == 0)
-									return RE::BSContainer::ForEachResult::kContinue; //skip objects without world model
-
-
-								if (base_type == RE::FormType::Activator)
+								if (!MiscThings::is_object_in_the_list(a_ref))
 								{
-									auto test = (RE::TESObjectACTI*)base_obj;
-									std::string model = test->GetModel();
-									if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
-										return RE::BSContainer::ForEachResult::kContinue;
+									auto word_of_power = MiscThings::get_word_of_power(a_ref);
 
-									//little flags
-									if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
-										return RE::BSContainer::ForEachResult::kContinue;
-								}
-
-
-
-								if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
-									return RE::BSContainer::ForEachResult::kContinue;
-
-								if (name.find("Do Not Delete") != std::string::npos)
-									return RE::BSContainer::ForEachResult::kContinue;
-
-								if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
-									return RE::BSContainer::ForEachResult::kContinue;
-
-								if (name.find("default") != std::string::npos)
-									return RE::BSContainer::ForEachResult::kContinue;
-
-
-
-								if (auto extra = a_ref->extraList.GetByType(RE::ExtraDataType::kItemDropper); extra)
-								{
-									auto extra_dropper = (RE::ExtraItemDropper*)extra;
-
-									if (extra_dropper && extra_dropper->dropper && extra_dropper->dropper.get())
+									if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
 									{
-										auto dropper = extra_dropper->dropper.get().get();
-
-										if (dropper)
-										{
-											if (dropper->IsActor())
-											{
-												return RE::BSContainer::ForEachResult::kContinue; //exclude dropped items, they have weird position.
-											}
-										}
-									}
-								}
-
-
-								if (a_ref->AsReference()->IsActor())
-								{
-									if (!MiscThings::is_object_in_the_list(a_ref) && (a_ref->GetDistance(player_ref) < 150.0f || MiscThings::raycastable(a_ref, scan_distance)))
-									{
-										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
-										if (info != "")
-											interesting_buffer.insert_or_assign(a_ref, info);
-									}
-
-								}
-
-
-								if (base_type == RE::FormType::Door)
-								{
-									if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
-									{
-										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+										std::string info = MiscThings::insert_object_into_list_custom_name("Word of Power, calling for you", a_ref);
 										if (info != "")
 											interesting_buffer.insert_or_assign(a_ref, info);
 									}
 								}
 
+							}
+							
+							auto distance = player_ref->GetDistance(a_ref);
 
 
-								if (base_type == RE::FormType::Activator)
+
+
+							if (distance <= scan_distance)
+							{
+								RE::BSString result_string = "";
+								RE::TESNPC* player_npc = RE::TESForm::LookupByID(0x7)->As<RE::TESNPC>();
+								player_npc->GetActivateText(a_ref, result_string);
+								std::string result_string_actual_string = result_string.c_str();
+								if (result_string_actual_string.find("Carriage") != std::string::npos)
 								{
-									if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
-									{
-										std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
-										if (info != "" && MiscThings::is_object_valid(a_ref))
-											interesting_buffer.insert_or_assign(a_ref, info);
-									}
+									bool stop_here = false;
 								}
 
-								if (base_type == RE::FormType::Furniture) //pullchains/levers
+
+
+
+								std::string name = a_ref->GetName();
+								std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
+
+
+
+								if (!MiscThings::is_object_valid(a_ref))
+									return RE::BSContainer::ForEachResult::kContinue;
+
+
+
+								if (name[0] != '\0' && std::size(name) > 1 && name != player_name && name != "Sit")
 								{
-									auto furniture = (RE::TESFurniture*)base_obj;
-									auto workbenchtype = furniture->workBenchData.benchType;
-									if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
+
+									if (MiscThings::has_digits(name))
+										return RE::BSContainer::ForEachResult::kContinue;
+
+									if (a_ref->AsReference()->modelState == 0)
+										return RE::BSContainer::ForEachResult::kContinue; //skip objects without world model
+
+
+									if (base_type == RE::FormType::Activator)
 									{
-										if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
+										auto test = (RE::TESObjectACTI*)base_obj;
+										std::string model = test->GetModel();
+										if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+											return RE::BSContainer::ForEachResult::kContinue;
+
+										//little flags
+										if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+											return RE::BSContainer::ForEachResult::kContinue;
+									}
+
+
+
+									if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
+										return RE::BSContainer::ForEachResult::kContinue;
+
+									if (name.find("Do Not Delete") != std::string::npos)
+										return RE::BSContainer::ForEachResult::kContinue;
+
+									if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
+										return RE::BSContainer::ForEachResult::kContinue;
+
+									if (name.find("default") != std::string::npos)
+										return RE::BSContainer::ForEachResult::kContinue;
+
+
+
+									if (auto extra = a_ref->extraList.GetByType(RE::ExtraDataType::kItemDropper); extra)
+									{
+										auto extra_dropper = (RE::ExtraItemDropper*)extra;
+
+										if (extra_dropper && extra_dropper->dropper && extra_dropper->dropper.get())
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
+											auto dropper = extra_dropper->dropper.get().get();
+
+											if (dropper)
 											{
-												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
-												if (info != "")
-													interesting_buffer.insert_or_assign(a_ref, info);
+												if (dropper->IsActor())
+												{
+													return RE::BSContainer::ForEachResult::kContinue; //exclude dropped items, they have weird position.
+												}
 											}
 										}
 									}
-								}
 
 
-
-
-								if (a_ref->GetDistance(player_ref) < 1000.0f)
-								{
-									//and now with smaller range
-
-									if (base_type == RE::FormType::Container)
+									if (a_ref->AsReference()->IsActor())
 									{
-										if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
+										if (!MiscThings::is_object_in_the_list(a_ref) && (a_ref->GetDistance(player_ref) < 150.0f || MiscThings::raycastable(a_ref, scan_distance)))
 										{
 											std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											if (info != "")
-											{
-												if (info.find("Large") != std::string::npos)
-												{
-													if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
-														WalkerProcessor::reset_walker(); 
+												interesting_buffer.insert_or_assign(a_ref, info);
+										}
 
-													send_random_context("You see: " + info, false); //large chests are not silent and immidiate 
-												}
-												else
-													interesting_buffer.insert_or_assign(a_ref, info);
-											}
-												
+									}
+
+
+									if (base_type == RE::FormType::Door)
+									{
+										if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
+										{
+											std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+											if (info != "")
+												interesting_buffer.insert_or_assign(a_ref, info);
 										}
 									}
 
-									if (base_obj)
+
+
+									if (base_type == RE::FormType::Activator)
 									{
-										bool is_harvestable = false;
-
-										if (base_type == RE::FormType::Tree)
+										if (!MiscThings::is_object_in_the_list(a_ref))
 										{
-											auto tree_form = (RE::TESObjectTREE*)base_obj;
-
-											auto test_flags = a_ref->AsReference()->GetFormFlags();
-
-											bool already_harvested = false;
-
-											if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-												already_harvested = true;
-
-											if (test_flags & 2048) //this is potentially only one we need here
-												already_harvested = true;
-
-
-
-
-											if (tree_form->produceItem && !already_harvested)
-												is_harvestable = true;
-										}
-
-										if (base_type == RE::FormType::Flora)
-										{
-											auto tree_form = (RE::TESFlora*)base_obj;
-
-											auto test_flags = a_ref->AsReference()->GetFormFlags();
-											bool already_harvested = false;
-											if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-												already_harvested = true;
-
-											if (tree_form->produceItem && !already_harvested)
-												is_harvestable = true;
-										}
-
-
-										if (is_harvestable)
-										{
-											if (!MiscThings::is_object_in_the_list(a_ref))
+											if (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
-												if (info != "")
+												if (info != "" && MiscThings::is_object_valid(a_ref))
 													interesting_buffer.insert_or_assign(a_ref, info);
 											}
 										}
 									}
 
-									if (base_type == RE::FormType::Furniture) //workbenches and beds
+									if (base_type == RE::FormType::Furniture) //pullchains/levers
 									{
-										bool this_isnt_a_furniture = false;
 										auto furniture = (RE::TESFurniture*)base_obj;
 										auto workbenchtype = furniture->workBenchData.benchType;
-										if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
+										if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
+											if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
 											{
-												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
-												if (info != "")
-													interesting_buffer.insert_or_assign(a_ref, info);
-											}
-										}
-										else
-										{
-											if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-												if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
+												if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
 												{
 													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 													if (info != "")
 														interesting_buffer.insert_or_assign(a_ref, info);
 												}
+											}
 										}
 									}
 
-									if (a_ref->GetDistance(player_ref) < 500.0f)
+
+
+
+									if (a_ref->GetDistance(player_ref) < 1000.0f)
 									{
-										if (base_obj->IsInventoryObject())
+										//and now with smaller range
+
+										if (base_type == RE::FormType::Container)
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref))
+											if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
-													interesting_buffer.insert_or_assign(a_ref, info);
-											}
-										}
-									}
-
-
-								}
-
-							}
-							else
-							{
-								//nameless things that still have to be tracked.
-								//FXspiderWebKitDoorSpecial - normal
-								//FXspiderWebKitDoorSpecialDest - destroyed
-
-
-								if (a_ref->IsActor())
-								{
-									//may be ghost targets of greybeards
-
-									if (!MiscThings::is_object_in_the_list(a_ref))
-										if (a_ref->GetDistance(player_ref) < 200.0f || MiscThings::raycastable(a_ref, 5000.0f))
-										{
-											auto actor = (RE::Actor*)a_ref;
-											auto npc = (RE::TESNPC*)a_ref->data.objectReference;
-
-											auto model3d = actor->GetCurrent3D();
-
-											
-											//no name = ghost (i guess)
-											// 
-											//if (actor->IsGhost())
-											{
-												std::string info = MiscThings::insert_object_into_list_custom_name(" Ghost", a_ref);
-												if (info != "")
 												{
-													//give it immidiately
-													send_random_context("You see: " + info, false);
-
-
-													auto ghost_shouting_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ105");
-
-													if (ghost_shouting_quest)
+													if (info.find("Large") != std::string::npos)
 													{
-														int quest_stage = ghost_shouting_quest->GetCurrentStageID();
+														if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
+															WalkerProcessor::reset_walker();
 
-														if (quest_stage == 85)
-														{
-															active_puzzle = 1;
-															puzzle_target = a_ref;
-														}
+														send_random_context("You see: " + info, false); //large chests are not silent and immidiate 
 													}
-
+													else
+														interesting_buffer.insert_or_assign(a_ref, info);
 												}
-													//interesting_buffer.insert_or_assign(a_ref, info);
+
 											}
 										}
 
-								}
-
-								if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
-								{
-									base_type = base_obj->GetFormType();
-
-									if (base_type == RE::FormType::Activator)
-									{
-										auto static_obj = (RE::TESObjectACTI*)base_obj;
-
-										std::string model = static_obj->GetModel();
-
-										if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+										if (base_obj)
 										{
-											if (a_ref->GetDistance(player_ref) < 300.0f)
+											bool is_harvestable = false;
+
+											if (base_type == RE::FormType::Tree)
+											{
+												auto tree_form = (RE::TESObjectTREE*)base_obj;
+
+												auto test_flags = a_ref->AsReference()->GetFormFlags();
+
+												bool already_harvested = false;
+
+												if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+													already_harvested = true;
+
+												if (test_flags & 2048) //this is potentially only one we need here
+													already_harvested = true;
+
+
+
+
+												if (tree_form->produceItem && !already_harvested)
+													is_harvestable = true;
+											}
+
+											if (base_type == RE::FormType::Flora)
+											{
+												auto tree_form = (RE::TESFlora*)base_obj;
+
+												auto test_flags = a_ref->AsReference()->GetFormFlags();
+												bool already_harvested = false;
+												if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+													already_harvested = true;
+
+												if (tree_form->produceItem && !already_harvested)
+													is_harvestable = true;
+											}
+
+
+											if (is_harvestable)
 											{
 												if (!MiscThings::is_object_in_the_list(a_ref))
 												{
-													std::string info = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref);
+													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 													if (info != "")
 														interesting_buffer.insert_or_assign(a_ref, info);
 												}
 											}
 										}
 
-									}
-
-									/*
-									if (base_type == RE::FormType::Furniture)
-									{
-										auto static_obj = (RE::TESFurniture*)base_obj;
-
-										std::string model = static_obj->GetModel();
-
-										if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+										if (base_type == RE::FormType::Furniture) //workbenches and beds
 										{
-											if (a_ref->GetDistance(player_ref) < 500.0f)
+											bool this_isnt_a_furniture = false;
+											auto furniture = (RE::TESFurniture*)base_obj;
+											auto workbenchtype = furniture->workBenchData.benchType;
+											if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
 											{
-												if (!MiscThings::is_object_in_the_list(a_ref))
-													result.push_back({ MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref), a_ref });
+												if (!MiscThings::is_object_in_the_list(a_ref) && (ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
+												{
+													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+													if (info != "")
+														interesting_buffer.insert_or_assign(a_ref, info);
+												}
+											}
+											else
+											{
+												if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
+													if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
+													{
+														std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+														if (info != "")
+															interesting_buffer.insert_or_assign(a_ref, info);
+													}
 											}
 										}
-									}
-									*/
-									auto test_base = 0xec3de;
 
-									auto web_refr = RE::TESObjectREFR::LookupByID(0x45f3c);
-									//auto web_refr2 = RE::TESObjectREFR::LookupByID(0xec3de);
-
-									if (web_refr)
-									{
-
-										RE::TESObjectREFR* refr1 = (RE::TESObjectREFR*)web_refr;
-										/*
-										auto object_p = MiscThings::General::Script::GetObject(refr1, "PressurePlate");
-
-										if (object_p)
+										if (a_ref->GetDistance(player_ref) < 500.0f)
 										{
-
-											RE::BSFixedString prop_name = "::isOpen_var";
-
-											//if (General::Script::GetVariable<bool>(object_p, prop_name))
-											//	result = 0;
-											//else
-											//	result = 1;
-
+											if (base_obj->IsInventoryObject())
+											{
+												if (!MiscThings::is_object_in_the_list(a_ref))
+												{
+													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+													if (info != "")
+														interesting_buffer.insert_or_assign(a_ref, info);
+												}
+											}
 										}
-										*/
 
 
-										auto base_obj1 = refr1->GetBaseObject();
-										auto base_type1 = base_obj1->GetFormType();
-
-										//auto activator = (RE::TESObjectACTI*)base_obj1;
-										//auto model = activator->GetModel();
-
-
-										bool here1 = false;
 									}
-
 
 								}
+								else
+								{
+									//nameless things that still have to be tracked.
+									//FXspiderWebKitDoorSpecial - normal
+									//FXspiderWebKitDoorSpecialDest - destroyed
 
+
+									if (a_ref->IsActor())
+									{
+										//may be ghost targets of greybeards
+
+										if (!MiscThings::is_object_in_the_list(a_ref))
+											if (a_ref->GetDistance(player_ref) < 200.0f || MiscThings::raycastable(a_ref, 5000.0f))
+											{
+												auto actor = (RE::Actor*)a_ref;
+												auto npc = (RE::TESNPC*)a_ref->data.objectReference;
+
+												auto model3d = actor->GetCurrent3D();
+
+
+												//no name = ghost (i guess)
+												// 
+												//if (actor->IsGhost())
+												{
+													std::string info = MiscThings::insert_object_into_list_custom_name(" Ghost", a_ref);
+													if (info != "")
+													{
+														//give it immidiately
+														send_random_context("You see: " + info, false);
+
+
+														auto ghost_shouting_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ105");
+
+														if (ghost_shouting_quest)
+														{
+															int quest_stage = ghost_shouting_quest->GetCurrentStageID();
+
+															if (quest_stage == 85)
+															{
+																active_puzzle = 1;
+																puzzle_target = a_ref;
+															}
+														}
+
+													}
+													//interesting_buffer.insert_or_assign(a_ref, info);
+												}
+											}
+
+									}
+
+									if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
+									{
+										base_type = base_obj->GetFormType();
+
+										if (base_type == RE::FormType::Activator)
+										{
+											auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+											std::string model = static_obj->GetModel();
+
+											if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+											{
+												if (a_ref->GetDistance(player_ref) < 300.0f)
+												{
+													if (!MiscThings::is_object_in_the_list(a_ref))
+													{
+														std::string info = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref);
+														if (info != "")
+															interesting_buffer.insert_or_assign(a_ref, info);
+													}
+												}
+											}
+
+										}
+
+
+
+
+									}
+
+								}
 							}
+
+							
+
+
+
+							
 
 							return RE::BSContainer::ForEachResult::kContinue;
 						});
@@ -2689,7 +2673,14 @@ namespace Observer {
 				
 				//hit events
 
-				
+
+
+				//auto test_wall_of_power = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70b4a);
+
+				//auto base_obj_test = test_wall_of_power->GetBaseObject();
+				//auto base_type = base_obj_test->GetFormType();
+
+				//WordWallTriggerScript
 
 				bool objects_around_valid = MiscThings::is_objects_around_valid();
 
