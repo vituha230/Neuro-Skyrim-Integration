@@ -1064,10 +1064,17 @@ namespace Observer {
 												{
 													if (info.find("Large") != std::string::npos)
 													{
-														if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
-															WalkerProcessor::reset_walker();
+														//if (a_ref->data.objectReference)
+														//{
+														//	RE::TESContainer* container = (RE::TESContainer*)((RE::TESObjectCONT*)(a_ref->data.objectReference));
+														//	if (container->numContainerObjects > 0)
+														//	{
+																if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
+																	WalkerProcessor::reset_walker();
 
-														send_random_context("You see: " + info, false); //large chests are not silent and immidiate 
+																send_random_context("You see: " + info, false); //large chests are not silent and immidiate 
+														//	}
+														//}
 													}
 													else
 														interesting_buffer.insert_or_assign(a_ref, info);

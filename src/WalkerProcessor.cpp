@@ -12,6 +12,8 @@
 #include "CustomWalkerPaths.hpp"
 #include "Observer.hpp"
 
+
+
 namespace WalkerProcessor {
 
     float active_attacking_time = 0.0f;
@@ -224,7 +226,7 @@ namespace WalkerProcessor {
     bool was_already_dead = false;
 
     bool explore_mode = false;
-    float min_dist = 20000.0f;
+    float min_dist = 3000.0f;
 
     bool explore_mode_notified = false;
 
@@ -267,6 +269,15 @@ namespace WalkerProcessor {
     bool fuckup_pillar_confirm_choice_valid = false;
     int fuckup_pillar_confirm_choice = 0;
 
+
+
+    void reset_explore_mode_start_range()
+    {
+        if (MiscThings::is_interior_cell())
+            min_dist = 3000.0f;
+        else
+            min_dist = 20000.0f;
+    }
 
     bool processing_ustengrev()
     {
@@ -790,7 +801,7 @@ namespace WalkerProcessor {
                         had_any_path_found_this_run = true;
                         if (explore_mode)
                         {
-                            min_dist = 20000.0f;
+                            reset_explore_mode_start_range();
                             if (!explore_mode_notified)
                             {
                                 send_random_context("[You found a direction to explore, and started walking", false);
@@ -1009,6 +1020,16 @@ namespace WalkerProcessor {
                     else
                         direction_vector.z -= 0.08f;
 
+
+                    /*
+                    if (direction_vector.z < -0.4)
+                        direction_vector.z = -0.4;
+
+                    if (direction_vector.z > 0.4)
+                        direction_vector.z = 0.4;
+                    */
+
+
                     //direction_vector = next_point_pos - current_path_point_pos;
                 }
 
@@ -1043,6 +1064,15 @@ namespace WalkerProcessor {
                             direction_vector.z -= 0.2f;
                         else
                             direction_vector.z -= 0.08f;
+
+                        /*
+                        if (direction_vector.z < -0.4)
+                            direction_vector.z = -0.4;
+
+                        if (direction_vector.z > 0.4)
+                            direction_vector.z = 0.4;
+                        */
+
 
                         result = direction_vector;
                     }
@@ -3024,7 +3054,7 @@ namespace WalkerProcessor {
         //if (!reset_by_explorer) //it renews explore_mode anyway
         //{
         if (!explore_mode)
-            min_dist = 20000.0f;
+            reset_explore_mode_start_range();
 
         explore_mode = false;
             
@@ -3831,7 +3861,7 @@ namespace WalkerProcessor {
 
         if (cant_walk_reason != "")
         {
-            min_dist = 20000.0f;
+            reset_explore_mode_start_range();
             result.first = false;
             result.second = cant_walk_reason;
             return result;
@@ -3848,7 +3878,7 @@ namespace WalkerProcessor {
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
         {
-            min_dist = 20000.0f;
+            reset_explore_mode_start_range();
             result.first = false;
             result.second = "You cannot walk yet";
             return result;
@@ -3872,7 +3902,7 @@ namespace WalkerProcessor {
             
         if (!random_target)
         {
-            min_dist = 20000.0f;
+            reset_explore_mode_start_range();
             result.first = false;
             result.second = "Cannot find anything interesting to explore here...";
             if (MiscThings::is_interior_cell())

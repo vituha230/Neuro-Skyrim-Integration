@@ -3497,7 +3497,10 @@ namespace MiscThings {
                 }
             }
 
-
+            if (base_type == RE::FormType::Container && name == "Draugr")
+            {
+                name = "Draugr mummy";
+            }
 
             std::string category = get_object_category(refr);
             int pillar_face_code = get_pillar_face_name(refr);
