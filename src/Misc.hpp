@@ -64,8 +64,9 @@ namespace MiscThings {
 
     std::vector<quest>* get_p_quest_list();
 
-    std::vector<RE::Actor*> get_player_attackers();
+    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false);
 
+    bool is_pillar_solved(RE::TESObjectREFR* pillar);
 
     std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell, bool fast = false);
     bool player_has_spell(RE::SpellItem* spell);
@@ -78,7 +79,7 @@ namespace MiscThings {
     std::string check_very_interesting_objects();
 
 
-    bool raycastable(RE::TESObjectREFR* object, float range);
+    bool raycastable(RE::TESObjectREFR* object, float range, bool only_forward = true);
 
 
     bool is_game_paused();
@@ -152,8 +153,9 @@ namespace MiscThings {
     int trap_firing(RE::TESObjectREFR* trap);
     int two_state_activator_state(RE::TESObjectREFR* activator);
     int get_destructible_state(RE::TESObjectREFR* web);
-    std::string get_potential_blocking_object();
+    std::string get_potential_blocking_object(float range = 1400.0f);
 
+    std::string lever_interaction_advice(RE::TESObjectREFR* lever);
 
     std::pair<bool, std::string> unlock_shout_level(int shout_id);
 
@@ -195,6 +197,8 @@ namespace MiscThings {
     RE::TESObjectREFR* get_word_of_power(RE::TESObjectREFR* trigger_zone);
 
     std::string fix_book_description(std::string description);
+
+    std::string get_blocking_object_name(RE::TESObjectREFR* a_ref);
 
 
     namespace General::Script

@@ -44,6 +44,7 @@
         character_name,
         training_choice,
         timed_quest_puzzle,
+        confirm_pillar
     };
 
     int get_active_force();

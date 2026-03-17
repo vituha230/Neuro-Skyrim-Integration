@@ -16,6 +16,40 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
+
+
+    std::string lever_interaction_advice(RE::TESObjectREFR* lever)
+    {
+        auto object_p = General::Script::GetObject(lever, "defaultPillarPuzzleLever");
+
+        if (!object_p)
+            return "";
+        else
+        {
+
+            RE::BSFixedString prop_name = "numPillarsSolved";
+            int pillars_solved = General::Script::GetProperty<int>(object_p, prop_name);
+
+            RE::BSFixedString prop_name2 = "pillarCount";
+            int pillars_need = General::Script::GetProperty<int>(object_p, prop_name2);
+
+            std::string advice = "Check surroundings to see if there is something linked to the lever that needs to be fixed";
+
+            std::string pillar_check = check_very_interesting_objects();
+            if (pillar_check.find("Pillar"))
+                advice = "There are puzzle pillars nearby, interact with them until they are all in correct positions so lever opens the path";
+
+
+            if (pillars_solved < pillars_need)
+                return " Something is incorrect. The lever activated a trap instead of opening the door. " + advice;
+            else
+                return " Looks like the lever opened something...";
+        }
+    }
+
+
+
+
     std::string check_very_interesting_objects()
     {
         auto now = std::chrono::steady_clock::now().time_since_epoch().count();
@@ -84,9 +118,13 @@ namespace MiscThings {
         return 0;
     }
 
-    bool raycastable(RE::TESObjectREFR* object, float range)
+    bool raycastable(RE::TESObjectREFR* object, float range, bool only_forward)
     {
-        auto camera_pos = RE::PlayerCamera::GetSingleton()->pos;
+        auto camera = RE::PlayerCamera::GetSingleton();
+
+        auto camera_pos = camera->pos;
+
+
 
         auto aim_pos = WalkerProcessor::get_estimate_aim_pos(object);
 
@@ -94,6 +132,16 @@ namespace MiscThings {
 
 
         auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range);
+
+        auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
+
+        if (!only_forward && raycast_ref == player_ref)
+        {
+            auto camera_dir = camera->cameraRoot.get()->world.rotate;
+            auto camera_lookat = camera_dir.GetVectorY();
+            raycast_ref = MiscThings::GetRaycastRef(camera_pos - camera_lookat*15.0f, delta_pos, range);
+        }
+            
 
         return raycast_ref == object;
     }
@@ -407,7 +455,113 @@ namespace MiscThings {
     }
 
 
-    std::string get_potential_blocking_object()
+
+
+    std::string get_blocking_object_name(RE::TESObjectREFR* a_ref)
+    {
+        std::string result = "";
+
+        std::string name = a_ref->GetName();
+        std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
+        auto base_obj = a_ref->GetBaseObject();
+        RE::FormType base_type{};
+
+        if (base_obj)
+        {
+            base_type = base_obj->GetFormType();
+            bool debug_type = true;
+        }
+        else
+        {
+            bool no_base_object = true;
+        }
+
+        if (base_type == RE::FormType::Activator)
+        {
+            auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+            std::string model = static_obj->GetModel();
+
+            if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref);
+
+                result = name;
+            }
+
+            if (model.find("PuzzleDoorKeyHole01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
+                result = name;
+            }
+
+        }
+
+        if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
+        {
+            auto door = (RE::TESObjectDOOR*)base_obj;
+            std::string model = door->GetModel();
+
+            if (model.find("CaveGSecretDoor") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("[Secret door] Stone wall door", a_ref);
+                result = name;
+            }
+        }
+
+
+
+
+        RE::ExtraDataList* extralist = &a_ref->extraList;
+        auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
+        if (extra_anim)
+        {
+            auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
+            if (extra_anim_graph->animGraphMgr)
+            {
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Large wooden bridge", a_ref);
+                    result = name;
+                }
+
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Heavy wooden gate", a_ref);
+                    result = name;
+                }
+
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Metal gate", a_ref);
+                    result = name;
+                }
+
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorPortcullisGate01")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Small metal gate", a_ref);
+                    result = name;
+                }
+
+
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorSecRmSmDoorSm01")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Secret cave wall door", a_ref);
+                    result = name;
+                }
+                //NorSecRmSmDoorSm01
+
+
+            }
+        }
+
+        return result;
+    }
+
+
+
+    std::string get_potential_blocking_object(float range)
     {
         std::string result = "";
 
@@ -416,108 +570,18 @@ namespace MiscThings {
 
         if (player_ref)
         {
-            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 1400.0f,
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, range,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
-
-                    std::string name = a_ref->GetName();
-                    std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
-
 
                     if (!MiscThings::is_object_valid(a_ref))
                         return RE::BSContainer::ForEachResult::kContinue;
 
-                    auto base_obj = a_ref->GetBaseObject();
-                    RE::FormType base_type{};
 
-                    if (base_obj)
-                    {
-                        base_type = base_obj->GetFormType();
-                        bool debug_type = true;
-                    }
-                    else
-                    {
-                        bool no_base_object = true;
-                    }
+                    result = get_blocking_object_name(a_ref);
 
-                    if (base_type == RE::FormType::Activator)
-                    {
-                        auto static_obj = (RE::TESObjectACTI*)base_obj;
-
-                        std::string model = static_obj->GetModel();
-
-                        if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
-                        {
-                            std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", a_ref);
-
-                            result = name;
-                        }
-
-                        if (model.find("PuzzleDoorKeyHole01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
-                        {
-                            std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
-                            result = name;
-                        }
-
-                    }
-
-                    if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
-                    {
-                        auto door = (RE::TESObjectDOOR*)base_obj;
-                        std::string model = door->GetModel();
-
-                        if (model.find("CaveGSecretDoor") != std::string::npos)
-                        {
-                            std::string name = MiscThings::insert_object_into_list_custom_name("[Secret door] Stone wall door", a_ref);
-                            result = name;
-                        }
-                    }
-
-
-
-
-                    RE::ExtraDataList* extralist = &a_ref->extraList;
-                    auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
-                    if (extra_anim)
-                    {
-                        auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
-                        if (extra_anim_graph->animGraphMgr)
-                        {
-                            if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
-                            {
-                                std::string name = MiscThings::insert_object_into_list_custom_name("Large wooden bridge", a_ref);
-                                result = name;
-                            }
-
-                            if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
-                            {
-                                std::string name = MiscThings::insert_object_into_list_custom_name("Heavy wooden gate", a_ref);
-                                result = name;
-                            }
-
-                            if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
-                            {
-                                std::string name = MiscThings::insert_object_into_list_custom_name("Metal gate", a_ref);
-                                result = name;
-                            }
-
-                            if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorPortcullisGate01")
-                            {
-                                std::string name = MiscThings::insert_object_into_list_custom_name("Small metal gate", a_ref);
-                                result = name;
-                            }
-
-
-                            if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorSecRmSmDoorSm01")
-                            {
-                                std::string name = MiscThings::insert_object_into_list_custom_name("Secret cave wall door", a_ref);
-                                result = name;
-                            }
-                            //NorSecRmSmDoorSm01
-
-
-                        }
-                    }
+                    if (result != "")
+                        return RE::BSContainer::ForEachResult::kStop;
 
                     return RE::BSContainer::ForEachResult::kContinue;
                 });
@@ -848,10 +912,10 @@ namespace MiscThings {
     }
 
 
-
-    std::string get_pillar_solved_text(RE::TESObjectREFR* pillar)
+    bool is_pillar_solved(RE::TESObjectREFR* pillar)
     {
-        std::string result = "[Doesn't seem to be correct]";
+
+        bool result = false;
 
         auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
         bool solved = false;
@@ -863,7 +927,7 @@ namespace MiscThings {
             solved = General::Script::GetVariable<bool>(object_p, prop_name);
 
             if (solved)
-                result = "[Probably correct]";
+                return true;
         }
 
         object_p = General::Script::GetObject(pillar, "HallofStoriesDiskScript");
@@ -875,7 +939,42 @@ namespace MiscThings {
             solved = General::Script::GetVariable<bool>(object_p, prop_name);
 
             if (solved)
-                result = "[Probably correct]";
+                return true;
+        }
+
+        return result;
+
+    }
+
+
+
+    std::string get_pillar_solved_text(RE::TESObjectREFR* pillar)
+    {
+        std::string result = "[Is in incorrect position]";
+
+        auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
+        bool solved = false;
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "pillarSolved";
+
+            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (solved)
+                result = "[Is in correct position]";
+        }
+
+        object_p = General::Script::GetObject(pillar, "HallofStoriesDiskScript");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "ringSolved";
+
+            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (solved)
+                result = "[Is in correct position]";
         }
 
         return result;
@@ -1675,6 +1774,12 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("Ruins_LargeDoor01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 180.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
 
                         if (result == RE::NiPoint3::Zero())
@@ -6111,7 +6216,7 @@ namespace MiscThings {
     }
 
 
-    std::vector<RE::Actor*> get_player_attackers()
+    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only)
     {
         std::vector<RE::Actor*> result{};
 
@@ -6131,7 +6236,7 @@ namespace MiscThings {
 
                 if (a_ref->IsActor())
                 {
-                    if (is_enemy_to_actor(a_ref))
+                    if (is_enemy_to_actor(a_ref) && (!raycastable_only || raycastable(a_ref, 9000.0f, false)))
                         result.push_back((RE::Actor*)a_ref);
                 }
 

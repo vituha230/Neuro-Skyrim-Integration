@@ -660,7 +660,7 @@ namespace Observer {
 				dont_check_threats_timer -= dtime;
 			else
 			{
-				auto attackers = MiscThings::get_player_attackers();
+				auto attackers = MiscThings::get_player_attackers(true);
 
 				if (std::size(attackers) != 0)
 				{
@@ -1173,7 +1173,7 @@ namespace Observer {
 									//FXspiderWebKitDoorSpecialDest - destroyed
 
 
-									if (a_ref->IsActor())
+									if (a_ref->IsActor() && a_ref != player_ref)
 									{
 										//may be ghost targets of greybeards
 

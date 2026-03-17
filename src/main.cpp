@@ -4,11 +4,7 @@
 //crucial:
 
 
-//TODO fix estimate distance (it is broken)
-//TODO raycast-detect blocking gates/other stuff so it doesnt try to unstuckwalk before notify that its blocked
-
 //TODO fasttravel advice
-//TODO walk estimate distance
 //TODO map closest quest
 
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)

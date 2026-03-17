@@ -59,6 +59,10 @@ namespace WalkerProcessor {
     float have_door_targeted_time = 0.0f;
     RE::TESObjectREFR* last_targeted_ref = nullptr;
 
+    RE::TESObjectREFR* last_blocking_targeted_ref = nullptr;
+    float have_blocking_targeted_time = 0.0f;
+
+
     bool turning_around = false;
 
     bool walk_forward_a_little = false;
@@ -250,6 +254,14 @@ namespace WalkerProcessor {
     float anti_slowwalk_timer = 0.0f;
 
     bool dont_tell_result = false;
+
+
+
+
+    bool trying_to_fuckup_correct_pillar = false;
+    bool fuckup_pillar_confirm_request_sent = false;
+    bool fuckup_pillar_confirm_choice_valid = false;
+    int fuckup_pillar_confirm_choice = 0;
 
 
     bool processing_ustengrev()
@@ -1474,7 +1486,7 @@ namespace WalkerProcessor {
 
                     reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
                     reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
-                    reminder_message += big_distance;
+                    //reminder_message += big_distance;
 
 
 
@@ -1715,6 +1727,64 @@ namespace WalkerProcessor {
         return result;
 
     }
+
+
+
+
+
+    std::string test_about_to_be_blocked_by_blocking(float dtime)
+    {
+        std::string result = "";
+
+       // if (ignore_closed_doors_time > 0)
+       // {
+       //     ignore_closed_doors_time -= dtime;
+       //     return result;
+       // }
+
+
+        auto camera = RE::PlayerCamera::GetSingleton();
+        auto camera_dir = camera->cameraRoot.get()->world.rotate;
+        auto camera_pos = camera->pos;
+
+        auto targeted_ref = MiscThings::GetRaycastRef(camera_pos, camera_dir.GetVectorY(), 300.0f);
+        if (targeted_ref)// && (targeted_ref != target_ref || quest_mode)) //not nice
+        {
+            std::string blocking_name = MiscThings::get_blocking_object_name(targeted_ref);
+
+            if (blocking_name != "" && !turning_around)
+            {
+                
+                if (last_blocking_targeted_ref == targeted_ref)
+                {
+                    if (have_blocking_targeted_time > 0.5f)//0.15f)
+                    {
+                        //have_door_targeted_time = 0.0f;
+                        //last_targeted_ref = nullptr;
+                        result = blocking_name;
+                    }
+                    else
+                        have_blocking_targeted_time += dtime;
+                }
+                else
+                {
+                    last_blocking_targeted_ref = targeted_ref;
+                    have_blocking_targeted_time = 0.0f;
+                }
+            }
+            else
+            {
+                last_blocking_targeted_ref = nullptr;
+                have_blocking_targeted_time = 0.0f;
+            }
+        }
+
+
+        return result;
+
+    }
+
+
 
 
     std::pair<bool, std::string> set_closed_door_choice(int choice)
@@ -3010,6 +3080,11 @@ namespace WalkerProcessor {
         door_is_closed_choice_valid = false;
         door_is_closed_choice = -1;
 
+
+        last_blocking_targeted_ref = nullptr;
+        have_blocking_targeted_time = 0.0f;
+
+
         if (was_slowwalking)
         {
             was_slowwalking = false;
@@ -3135,6 +3210,13 @@ namespace WalkerProcessor {
 
         anti_slowwalk_timer = 0.0f;
         dont_tell_result = false;
+
+
+
+        trying_to_fuckup_correct_pillar = false;
+        fuckup_pillar_confirm_request_sent = false;
+        fuckup_pillar_confirm_choice_valid = false;
+        fuckup_pillar_confirm_choice = 0;
 
     }
 
@@ -4067,6 +4149,8 @@ namespace WalkerProcessor {
                     target_ref = object->second.object;
 
 
+
+                
                 
 
                 have_target_to_walk = true;
@@ -4095,6 +4179,10 @@ namespace WalkerProcessor {
                 }
                 else
                     interaction_after_walk = -1;
+
+
+                if (interaction_after_walk == 1 && MiscThings::is_pillar_solved(target_ref))
+                    trying_to_fuckup_correct_pillar = true;
 
                 result.first = true;
                 if (!MiscThings::is_intro())
@@ -6387,8 +6475,16 @@ namespace WalkerProcessor {
                                 if (!dont_tell_result)
                                 {
                                     if (!target_is_interactive())
-                                        no_result = " Nothing happens";
-                                    send_random_context("[Interacting with " + target_name + "..." + no_result + "]", false);
+                                        no_result = " Nothing happens...";
+
+                                    if (MiscThings::get_pillar_face_name(target_ref, 1) == "") // for pillars there is separate message outside of interaction
+                                    {
+                                        std::string lever_advice = MiscThings::lever_interaction_advice(target_ref);
+
+                                        send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", false);
+                                    }
+
+
                                 }
 
                             }
@@ -6610,6 +6706,12 @@ namespace WalkerProcessor {
 
     RE::NiPoint3 last_player_pos{};
    
+
+
+    bool almost_stuck()
+    {
+        return time_stuck > 1.0f;
+    }
 
     bool detect_stuck(float dtime)
     {
@@ -7317,6 +7419,39 @@ namespace WalkerProcessor {
 
 
 
+    std::pair<bool, std::string> set_ruin_pillar_choice(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!fuckup_pillar_confirm_request_sent)
+        {
+            result.first = true;
+            result.second = "[Error]";
+        }
+        else
+        {
+            if (id == 0 || id == 1)
+            {
+                fuckup_pillar_confirm_choice_valid = true;
+                fuckup_pillar_confirm_choice = id;
+                result.first = true;
+                result.second = "[Processing...]";
+            }
+            else
+            {
+                result.first = false;
+                result.second = "[Invalid choice ID]";
+            }
+        }
+        return result;
+    }
+
+
+
+
+
+
+
 
 	float walker_processor_timer = 0.0f;
 
@@ -7724,9 +7859,40 @@ namespace WalkerProcessor {
                     }
 
 
+                    if (trying_to_fuckup_correct_pillar)
+                    {
+                        if (!fuckup_pillar_confirm_request_sent)
+                        {
+                            std::vector<MenuOption> options{};
+                            options.push_back({ 0, "No" });
+                            options.push_back({ 1, "Yes" });
 
+                            if (force_choice(options, "It is already in correct position. Are you sure you want to touch it?", force_type::confirm_pillar))
+                            {
+                                fuckup_pillar_confirm_request_sent = true;
+                            }
+                        }
+                        else
+                        {
+                            if (fuckup_pillar_confirm_choice_valid)
+                            {
+                                if (fuckup_pillar_confirm_choice)
+                                {
+                                    trying_to_fuckup_correct_pillar = false;
+                                    fuckup_pillar_confirm_request_sent = false;
+                                    fuckup_pillar_confirm_choice_valid = false;
+                                    fuckup_pillar_confirm_choice = 0;
+                                }
+                                else
+                                {
+                                    reset_walker();
+                                }
+                            }
+                        }
+
+                        return;
+                    }
                     
-
 
                     backup_input_cancel = false;
 
@@ -8507,10 +8673,31 @@ namespace WalkerProcessor {
                                                 {
                                                     //maybe its a location switch door?
 
-                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.0f && have_doors_nearby()) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
+                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.1f && (have_doors_nearby() || MiscThings::get_potential_blocking_object(400.0f) != "")) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
                                                     {
                                                         if (!test_about_to_be_blocked_by_door(dtime))
                                                         {
+
+                                                            std::string blocking_name = test_about_to_be_blocked_by_blocking(dtime);
+                                                            if (blocking_name != "")
+                                                                bool stop_here = false;
+
+                                                            if (blocking_name != "")
+                                                            {
+                                                                //blocking object_detected
+                                                                std::string fail_text = "[ " + blocking_name + " blocks the path. ";
+
+                                                                if (blocking_name.find("estructib") != std::string::npos)
+                                                                    fail_text += "You can try attacking it to destroy it]";
+                                                                else
+                                                                    fail_text += "Maybe you need to interact with something nearby to go past it]";
+
+                                                                send_random_context(fail_text, false);
+                                                                reset_walker();
+                                                                return;
+                                                            }
+
+
                                                             //walk_to_point();
                                                             walk_timeout += dtime;
                                                         }
@@ -8634,6 +8821,23 @@ namespace WalkerProcessor {
                                         {
                                             if (!detect_stuck(dtime))
                                             {
+                                                std::string blocking_name = test_about_to_be_blocked_by_blocking(dtime);
+
+                                                if (blocking_name != "" && almost_stuck())
+                                                {
+                                                    //blocking object_detected
+                                                    std::string fail_text = "[ " + blocking_name + " blocks the path. ";
+
+                                                    if (blocking_name.find("estructib") != std::string::npos)
+                                                        fail_text += "You can try attacking it to destroy it]";
+                                                    else
+                                                        fail_text += "Maybe you need to interact with something nearby to go past it]";
+
+                                                    send_random_context(fail_text, false);
+                                                    reset_walker();
+                                                    return;
+                                                }
+
                                                 walk_to_point(dtime);
                                                 //cast_pathfinding(dtime); //rebuild path
                                             }
@@ -8669,6 +8873,7 @@ namespace WalkerProcessor {
                                                 }
 
                                             }
+
 
                                             //walk_to_point();
                                             walk_timeout += dtime;

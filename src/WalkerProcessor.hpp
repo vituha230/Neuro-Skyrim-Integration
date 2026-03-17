@@ -93,6 +93,9 @@ namespace WalkerProcessor {
 	bool ustengrev_off_the_cliff();
 
 
+
+	std::pair<bool, std::string> set_ruin_pillar_choice(int id);
+
 	void reset_backup_pickup();
 
 	float get_walker_inactive_time();
