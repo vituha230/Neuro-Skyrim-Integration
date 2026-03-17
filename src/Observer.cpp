@@ -1658,7 +1658,11 @@ namespace Observer {
 										}
 
 										if (!dont_add)
+										{
+											silent = true;
 											result.push_back(message_text);
+										}
+											
 									}
 									
 								}
@@ -1680,7 +1684,11 @@ namespace Observer {
 									}
 
 									if (message_text != "")
+									{
+										silent = true;
 										result.push_back(message_text);
+									}
+										
 
 									objects_to_track.insert_or_assign(a_ref, new_state);
 								}
@@ -1696,7 +1704,11 @@ namespace Observer {
 
 										message_text = "[" + zombie_name + " is reanimating!]";
 
-										result.push_back(message_text);
+										if (zombie_name != "")
+										{
+											silent = true;
+											result.push_back(message_text);
+										}
 									}
 
 									objects_to_track.insert_or_assign(a_ref, new_state);
@@ -1717,7 +1729,11 @@ namespace Observer {
 											message_text = "[" + victim_name + " stopped fleeing]";
 
 										if (victim_name != "")
+										{
+											silent = true;
 											result.push_back(message_text);
+										}
+											
 									}
 
 									objects_to_track.insert_or_assign(a_ref, new_state);
@@ -1767,6 +1783,8 @@ namespace Observer {
 
 														if (target_base_type == RE::FormType::Furniture)
 														{
+															return RE::BSContainer::ForEachResult::kContinue;
+
 															auto furniture_obj = (RE::TESFurniture*)target_base_obj;
 
 															if (furniture_obj->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSit))
@@ -1791,7 +1809,11 @@ namespace Observer {
 
 														std::string message = "[" + actor_name + interaction_name + target_name;
 														if (!a_ref->IsDead())
+														{
+															silent = true;
 															result.push_back(message);
+														}
+															
 													}
 
 												}

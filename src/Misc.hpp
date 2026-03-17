@@ -83,6 +83,7 @@ namespace MiscThings {
 
     std::string get_blocking_object_name2(RE::TESObjectREFR* a_ref);
 
+    bool quest_is_hidden(RE::TESQuest* quest);
 
     bool is_game_paused();
 

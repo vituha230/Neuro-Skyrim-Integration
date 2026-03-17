@@ -14,7 +14,11 @@
 
 namespace WalkerProcessor {
 
+    float active_attacking_time = 0.0f;
+    float backup_interaction_time = 0.0f;
 
+
+    float dead_point_time = 0.0f;
 
     bool dont_use_bounds_for_close_enough = false;
     bool getting_into_carriage = false;
@@ -2115,7 +2119,12 @@ namespace WalkerProcessor {
 
                         auto player_temp_pos = player->GetPosition();
 
+                        if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
+                            lookat_location.z -= 30.0f;
+
                         target_center = lookat_location;
+
+
                         height = 0.0f;
                         specific_shift = RE::NiPoint3::Zero();
 
@@ -2282,6 +2291,9 @@ namespace WalkerProcessor {
 
                             auto player_temp_pos = player->GetPosition();
 
+                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
+                                lookat_location.z -= 30.0f;
+
                             target_center = lookat_location;
                             height = 0.0f;
                             specific_shift = RE::NiPoint3::Zero();
@@ -2297,6 +2309,9 @@ namespace WalkerProcessor {
                             auto lookat_location = head_pos;
 
                             auto player_temp_pos = player->GetPosition();
+
+                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
+                                lookat_location.z -= 30.0f;
 
                             target_center = lookat_location;
                             height = 0.0f;
@@ -2982,6 +2997,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        backup_interaction_time = 0.0f;
+        active_attacking_time = 0.0f;
+
         reset_after_walk = false;
 
         walk_again_when_finished = false;
@@ -3219,12 +3237,15 @@ namespace WalkerProcessor {
         fuckup_pillar_confirm_choice_valid = false;
         fuckup_pillar_confirm_choice = 0;
 
+        dead_point_time = 0.0f;
     }
 
     void walk_again()
     {
         //if (!using_custom_path)
         {
+
+            backup_interaction_time = 0.0f;
 
             walk_again_when_finished = false;
 
@@ -4560,6 +4581,10 @@ namespace WalkerProcessor {
     }
     
 
+
+
+
+
     std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target)
     {
 
@@ -4614,23 +4639,27 @@ namespace WalkerProcessor {
 
             for (auto quest_entry : *quest_list)
             {
-                if (quest_entry.id == index)
+                if (!MiscThings::quest_is_hidden(quest_entry.quest))
                 {
-                    auto the_quest = quest_entry.quest;
-
-                    for (auto objective : the_quest->objectives)
+                    if (quest_entry.id == index)
                     {
-                        if (quest_entry.objective == objective)
-                        {
-                            if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
-                            {
-                                quest_found = true;
-                                break;
-                            }
-                        }
+                        auto the_quest = quest_entry.quest;
 
+                        for (auto objective : the_quest->objectives)
+                        {
+                            if (quest_entry.objective == objective)
+                            {
+                                if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+                                {
+                                    quest_found = true;
+                                    break;
+                                }
+                            }
+
+                        }
                     }
                 }
+
                 actual_id++;
             }
 
@@ -4655,11 +4684,15 @@ namespace WalkerProcessor {
 
             for (auto quest_entry : *quest_list)
             {
-                if (quest_entry.id == index)
+                if (!MiscThings::quest_is_hidden(quest_entry.quest))
                 {
-                    quest_found = true;
-                    break;
+                    if (quest_entry.id == index)
+                    {
+                        quest_found = true;
+                        break;
+                    }
                 }
+
                 actual_id++;
             }
 
@@ -4719,6 +4752,9 @@ namespace WalkerProcessor {
                                         conditions_met = true;//met ?
                                     }
 
+
+
+
                                     if (conditions_met)
                                     {
                                         RE::ObjectRefHandle quest_ref_handle{};
@@ -4740,7 +4776,7 @@ namespace WalkerProcessor {
                                                 {
                                                     Observer::reset_threats();
 
-                                                    if (target_ref != quests_target_ref)
+                                                    if (target_ref != quests_target_ref || backup_interaction_made)
                                                         reset_walker();
                                                     else
                                                     {
@@ -6312,6 +6348,29 @@ namespace WalkerProcessor {
 
 
                     result = true;
+                }
+                else
+                {
+                    active_attacking_time += dtime;
+
+                    if (active_attacking_time > 20.0f)
+                    {
+                        active_attacking_time = 0.0f;
+
+                        auto target_actor = (RE::Actor*)target_ref;
+
+                        if (target_actor->currentProcess)
+                        {
+                            if (target_actor->currentProcess->cachedValues && target_actor->currentProcess->cachedValues->flags && target_actor->currentProcess->cachedValues->flags.any(RE::CachedValues::Flags::kActorIsGhost))
+                            {
+                                send_random_context("Attacking doesnt work...", false);
+                                reset_walker();
+                                return true;
+                            }
+                        }
+
+                        send_random_context("You keep attacking...", false);
+                    }
                 }
                     
             }
@@ -8229,8 +8288,9 @@ namespace WalkerProcessor {
                                     else
                                     {
                                         //if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path) || MiscThings::is_intro())
-                                        if (MiscThings::is_intro() || use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)))
+                                        if (MiscThings::is_intro() || use_last_point_of_last_path || (std::size(path) == 0) || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)))
                                         {
+                                            dead_point_time = 0.0f;
                                             if (reset_after_walk)
                                             {
                                                 register_allowed_actions();
@@ -8368,7 +8428,7 @@ namespace WalkerProcessor {
                                                                 {
                                                                     //std::string target_name = target_ref->GetDisplayFullName();
                                                                     if (!chill_with_context && !looking_mode)
-                                                                        send_random_context(get_success_message(), false);
+                                                                        send_random_context(get_success_message(), true);
                                                                 }
 
                                                             }
@@ -8394,7 +8454,15 @@ namespace WalkerProcessor {
                                                                                 if (!quest_mode)
                                                                                     reset_walker();
                                                                                 else
+                                                                                {
                                                                                     backup_interaction_made = true;//dont reset in quest mode. the target might be moving and interaction might have done nothing.
+
+                                                                                    backup_interaction_time += dtime;
+
+                                                                                    if (backup_interaction_time > 5.0f)
+                                                                                        reset_walker();
+                                                                                }
+                                                                                    
                                                                             }
                                                                                 
 
@@ -8812,10 +8880,38 @@ namespace WalkerProcessor {
                                             }
 
                                         }
+                                        else
+                                        {
+                                            if (dead_point_time > 10.0f)
+                                            {
+                                                std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
+                                                std::string potential_block = MiscThings::get_potential_blocking_object();
+                                                if (potential_block != "")
+                                                {
+                                                    fail_text = "[ " + potential_block + " blocks the path. ";
+
+                                                    if (potential_block.find("estructib") != std::string::npos)
+                                                        fail_text += "You can try attacking it to destroy it]";
+                                                    else
+                                                        fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                }
+                                                else
+                                                {
+                                                    Observer::detect_interesting_objects(0.016, true);
+                                                }
+
+                                                send_random_context(fail_text, false);
+                                                reset_walker();
+                                            }
+                                            else
+                                                dead_point_time += dtime;
+
+                                        }
                                     }
                                 }
                                 else
                                 {
+                                    dead_point_time = 0.0f;
                                     if (true)//walk_timeout < 30.0f) //TODO: maybe remove later. idk if 30 seconds is good or bad
                                     {
                                         if (!test_about_to_be_blocked_by_door(dtime))

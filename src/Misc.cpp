@@ -18,6 +18,27 @@ namespace MiscThings {
 
 
 
+
+
+
+    bool quest_is_hidden(RE::TESQuest* quest)
+    {
+        auto barrow_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ103");
+        auto golden_claw_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS13");
+
+        auto claw_stage = golden_claw_quest->GetCurrentStageID();
+
+        if (claw_stage == 35 && quest == barrow_quest)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+
     std::string lever_interaction_advice(RE::TESObjectREFR* lever)
     {
         auto object_p = General::Script::GetObject(lever, "defaultPillarPuzzleLever");
@@ -2168,14 +2189,17 @@ namespace MiscThings {
 
         int id = 1;
         bool got_any_quests = false;
+        
+        std::vector<quest> sortable_quests{};
+
+
 
         for (auto quest_target : quest_targets)
         {
-            if (quest_target.first != my_quest)
+            if (quest_target.first != my_quest && !MiscThings::quest_is_hidden(quest_target.first))
             {
             
                 RE::TESQuest* the_quest = quest_target.first;
-
 
 
                 for (auto objective : the_quest->objectives)
@@ -2241,13 +2265,8 @@ namespace MiscThings {
                                             this_quest.description = "";
                                             this_quest.category = 0;
 
-                                            quests.push_back(this_quest);
+                                            sortable_quests.push_back(this_quest);
 
-                                            if (target_name != "")
-                                                target_name = " (" + target_name + ")";
-
-                                            result_text += "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
-                                            result_text += "\n";
                                             id++;
                                             got_any_quests = true;
                                         }
@@ -2259,6 +2278,39 @@ namespace MiscThings {
                 }
             }
         }
+
+        //sort
+
+        std::sort(sortable_quests.begin(), sortable_quests.end(), [&](quest left, quest right) {
+            //return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
+            char priority_left = left.quest->data.priority;
+            char priority_right = right.quest->data.priority;
+
+            return priority_left > priority_right;
+            });
+
+        //update ids
+        for (int i = 1; i <= std::size(sortable_quests); i++)
+        {
+            sortable_quests.at(i-1).id = i;
+
+
+            quests.push_back(sortable_quests.at(i - 1));
+
+            auto target_name = sortable_quests.at(i - 1).target_name;
+
+            if (target_name != "")
+                target_name = " (" + target_name + ")";
+
+            result_text += "[id " + std::to_string(sortable_quests.at(i - 1).id) + "] " + sortable_quests.at(i - 1).name + ": " + sortable_quests.at(i - 1).displaytext + target_name;
+            result_text += "\n";
+
+        }
+
+
+
+
+
 
         if (!got_any_quests)
         {
@@ -6567,6 +6619,8 @@ namespace MiscThings {
 
                 if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
                 {
+                    if (base_type == RE::FormType::Door)
+                        return RE::BSContainer::ForEachResult::kContinue;
 
                     if (MiscThings::has_digits(name))
                         return RE::BSContainer::ForEachResult::kContinue;
@@ -7392,19 +7446,32 @@ namespace MiscThings {
                         }
 
 
-                    if (player_ref->GetDistance(this_object) >= 2000.0f && player_ref->GetDistance(this_object) < 10000.0f)
-                        if (!faraway_line_made)
-                        {
-                            if (type == 1)
-                                return result; //short range
+                    bool no_faraways = false;
+                    if (is_interior_cell())
+                    {
+                        no_faraways = true;
+                    }
 
-                            std::string last_name = "";
-                            bool has_last = false;
-                            result.second += "\nFar away:\n";
-                            faraway_line_made = true;
-                        }
+                    if (!no_faraways)
+                    {
+                        if (player_ref->GetDistance(this_object) >= 2000.0f && player_ref->GetDistance(this_object) < 10000.0f)
+                            if (!faraway_line_made)
+                            {
+                                if (type == 1)
+                                    return result; //short range
 
-                    if (player_ref->GetDistance(this_object) < 10000.0f)
+                                std::string last_name = "";
+                                bool has_last = false;
+                                result.second += "\nFar away:\n";
+                                faraway_line_made = true;
+                            }
+                    }
+
+                    float max_range = 10000.0f;
+                    if (no_faraways)
+                        max_range = 2000.0f;
+
+                    if (player_ref->GetDistance(this_object) < max_range)
                     {
                         //std::string category = get_object_category(object.second);
 
