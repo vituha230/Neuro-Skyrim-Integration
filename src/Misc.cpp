@@ -4714,7 +4714,55 @@ namespace MiscThings {
                             {
                                 if (object->IsSoulGem())
                                 {
-                                    bool stop_here = false;
+                                    auto soulgem = (RE::TESSoulGem*)object;
+
+                                    if (soulgem->currentSoul)
+                                    {
+                                        //auto actor_equip = RE::ActorEquipManager::GetSingleton();
+                                        //bool test123 = actor_equip->UnequipObject((RE::Actor*)player_ref, object);
+
+                                        auto right_hand = get_hand_contents(true);
+                                        auto left_hand = get_hand_contents(true);
+
+                                        if (right_hand && right_hand->IsWeapon())
+                                        {
+                                            auto weapon = (RE::TESObjectWEAP*)right_hand;
+
+                                            auto object_ptr = inventory.find((RE::TESBoundObject*)right_hand);
+
+                                            if (object_ptr != inventory.end())
+                                            {
+                                                auto p_entry_data = &object_ptr->second.second;
+                                                
+                                                if (p_entry_data)
+                                                {
+                                                    auto entry_data = p_entry_data->get();
+
+                                                    auto charge = entry_data->GetEnchantmentCharge();
+
+                                                    if (charge.has_value() && charge < 100.0)
+                                                    {
+                                                        auto soul = soulgem->currentSoul;
+                                                        bool stop_here = false;
+                                                    }
+
+                                                }
+                                            }
+
+                                            
+                                        }
+
+                                        result.first = true;
+                                        result.second = "[Using [id " + std::to_string(item_id) + "] " + object_name + "...]";
+                                        return result;
+                                    }
+                                    else
+                                    {
+                                        result.first = false;
+                                        result.second = "[id " + std::to_string(item_id) + "] " + object_name + " contains no soul. Cannot use it]";
+                                        return result;
+                                    }
+                                    
                                 }
 
 

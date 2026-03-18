@@ -95,6 +95,7 @@ namespace WalkerProcessor {
 
 
 	std::pair<bool, std::string> set_ruin_pillar_choice(int id);
+	std::pair<bool, std::string> set_change_quest_course_choice(int id);
 
 	void reset_backup_pickup();
 

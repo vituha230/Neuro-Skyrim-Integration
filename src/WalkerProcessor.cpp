@@ -270,6 +270,12 @@ namespace WalkerProcessor {
     int fuckup_pillar_confirm_choice = 0;
 
 
+    bool trying_to_change_quest_course = false;
+    bool change_quest_course_request_sent = false;
+    bool change_quest_course_choice_valid = false;
+    int change_quest_course_choice = 0;
+
+
 
     void reset_explore_mode_start_range()
     {
@@ -3267,6 +3273,12 @@ namespace WalkerProcessor {
         fuckup_pillar_confirm_choice_valid = false;
         fuckup_pillar_confirm_choice = 0;
 
+        trying_to_change_quest_course = false;
+        change_quest_course_request_sent = false;
+        change_quest_course_choice_valid = false;
+        change_quest_course_choice = 0;
+
+
         dead_point_time = 0.0f;
     }
 
@@ -3968,6 +3980,9 @@ namespace WalkerProcessor {
 
 
 
+    int attacked_already_dead_in_a_row = 0;
+
+
     std::pair<bool, std::string> walk_to_object_by_index(int index, int interaction)
     {
 
@@ -4231,6 +4246,19 @@ namespace WalkerProcessor {
                 }
                 else
                     interaction_after_walk = -1;
+                
+
+                if (was_already_dead)
+                    attacked_already_dead_in_a_row++;
+                else
+                    if (interaction_after_walk == 3 && target_ref->IsActor())
+                        attacked_already_dead_in_a_row = 0;
+
+                if (attacked_already_dead_in_a_row > 3)
+                {
+                    send_random_context("It might be pointless attacking those who are already dead. Dead bodies are marked with [DEAD] tag");
+                }
+                    
 
 
                 if (interaction_after_walk == 1 && MiscThings::is_pillar_solved(target_ref))
@@ -4615,6 +4643,63 @@ namespace WalkerProcessor {
 
 
 
+    RE::TESQuest* last_quest_chosen = nullptr;
+    RE::TESQuest* new_quest_chosen = nullptr;
+    std::string last_quest_chosen_name = "";
+    std::string new_quest_chosen_name = "";
+
+
+
+
+    int get_quest_id_by_refr(RE::TESQuest* quest)
+    {
+        int result = -1;
+
+        if (!MiscThings::is_quest_list_valid())
+        {
+            auto get_quest_result = MiscThings::get_current_quests();
+
+            if (!MiscThings::is_quest_list_valid())
+            {
+                return -1;
+            }
+
+        }
+        else
+        {
+            //refresh quests in case the list changed 
+            auto quest_list = MiscThings::get_p_quest_list();
+
+            for (auto quest_entry : *quest_list)
+            {
+                if (!MiscThings::quest_is_hidden(quest_entry.quest))
+                {
+                    if (quest_entry.quest == quest)
+                    {
+                        auto the_quest = quest;
+
+                        for (auto objective : the_quest->objectives)
+                        {
+                            if (quest_entry.objective == objective)
+                            {
+                                if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+                                {
+                                    result = quest_entry.id;
+                                    break;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return result;
+    }
+
+
     std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target)
     {
 
@@ -4802,6 +4887,52 @@ namespace WalkerProcessor {
                                                
                                                 auto helgen_tower_marker = RE::TESObjectREFR::LookupByID(0xe24c3);
 
+
+
+                                                bool quest_is_questionable = false;
+
+                                                if (last_quest_chosen && quest.quest != last_quest_chosen)
+                                                {
+                                                    //check if last quest is still there and ask for confirmation to digress from it
+                                                    if (!MiscThings::quest_is_hidden(last_quest_chosen))
+                                                    {
+                                                        bool quest_is_still_there = false;
+                                                        for (auto quest_entry : *quest_list)
+                                                        {
+                                                            if (quest_entry.quest == last_quest_chosen)
+                                                            {
+                                                                quest_is_still_there = true;
+                                                                break;
+                                                            }
+                                                        }
+
+                                                        if (quest_is_still_there)
+                                                        {
+                                                            quest_is_questionable = true;
+                                                            new_quest_chosen = quest.quest;
+                                                            new_quest_chosen_name = quest.name + ": " + quest.displaytext;
+
+                                                            trying_to_change_quest_course = true;
+                                                        }
+                                                    }
+
+                                                }
+
+                                                if (!quest_is_questionable)
+                                                {
+                                                    last_quest_chosen = quest.quest;
+                                                    last_quest_chosen_name = quest.name + ": " + quest.displaytext;
+                                                }
+                                                else
+                                                {
+                                                    //dont accept right away
+                                                    result.first = true;
+                                                    result.second = "[Processing...]";
+                                                    return result;
+                                                }
+
+
+
                                                 if (have_target_to_walk)
                                                 {
                                                     Observer::reset_threats();
@@ -4866,6 +4997,9 @@ namespace WalkerProcessor {
                                                 last_quest = quest.quest;
                                                 last_quest_objective = objective;
 
+
+                                                
+
                                                 right_attack_cancel();
                                                 left_attack_cancel();
 
@@ -4877,7 +5011,7 @@ namespace WalkerProcessor {
 
 
                                                 result.first = true;
-                                                result.second = "[Started following quest: " + reminder_target_name + "..." + big_distance + "]";
+                                                result.second = "[Started following quest: " + reminder_target_name + "...";// +big_distance + "]";
                                                 return result;
                                             }
 
@@ -7548,6 +7682,32 @@ namespace WalkerProcessor {
     }
 
 
+    std::pair<bool, std::string> set_change_quest_course_choice(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!change_quest_course_request_sent)
+        {
+            result.first = true;
+            result.second = "[Error]";
+        }
+        else
+        {
+            if (id == 0 || id == 1)
+            {
+                change_quest_course_choice_valid = true;
+                change_quest_course_choice = id;
+                result.first = true;
+                result.second = "[Processing...]";
+            }
+            else
+            {
+                result.first = false;
+                result.second = "[Invalid choice ID]";
+            }
+        }
+        return result;
+    }
 
 
 
@@ -7933,6 +8093,52 @@ namespace WalkerProcessor {
                     }
                     return;
                 }
+
+
+
+                if (trying_to_change_quest_course)
+                {
+                    if (!change_quest_course_request_sent)
+                    {
+                        std::vector<MenuOption> options{};
+                        options.push_back({ 0, "No" });
+                        options.push_back({ 1, "Yes" });
+
+                        unregister_all_actions();
+
+                        if (force_choice(options, "Previously you were following another quest: " + last_quest_chosen_name + ". Are you sure you want to change course and follow new quest: " + new_quest_chosen_name + "?", force_type::confirm_change_quest_course))
+                        {
+                            change_quest_course_request_sent = true;
+                        }
+                    }
+                    else
+                    {
+                        if (change_quest_course_choice_valid)
+                        {
+                            register_allowed_actions();
+                            if (change_quest_course_choice)
+                            {
+                                last_quest_chosen = new_quest_chosen; //so walk_to_quest function doesnt panic
+                                auto for_context = walk_to_quest_by_index(get_quest_id_by_refr(new_quest_chosen), false);
+
+                                send_random_context(for_context.second);
+
+                            }
+                            else
+                            {
+                                //continue doing whatever we were doing
+                                trying_to_change_quest_course = false;
+                                change_quest_course_choice_valid = false;
+                                change_quest_course_choice = -1;
+                                change_quest_course_request_sent = false;
+                            }
+                        }
+                    }
+
+                    if (!is_fighting())
+                        return; 
+                }
+
 
 
                 if (have_target_to_walk)

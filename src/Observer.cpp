@@ -1065,7 +1065,7 @@ namespace Observer {
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
 												{
-													if (info.find("Large") != std::string::npos)
+													if (info.find("Large Treasure") != std::string::npos)
 													{
 														//if (a_ref->data.objectReference)
 														//{
