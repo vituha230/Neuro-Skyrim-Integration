@@ -1323,7 +1323,7 @@ namespace Observer {
 
 				for (auto result_entry : sortable_copy)
 				{
-					if (result_entry.first)
+					if (result_entry.first && result_entry.first->data.objectReference)
 					{
 						auto this_object = result_entry.first->data.objectReference;
 						auto distance = player_ref->GetDistance(result_entry.first);

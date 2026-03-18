@@ -4712,6 +4712,12 @@ namespace MiscThings {
                             }
                             else
                             {
+                                if (object->IsSoulGem())
+                                {
+                                    bool stop_here = false;
+                                }
+
+
                                 result.first = false;
                                 result.second = "Cannot activate [id " + std::to_string(item_id) + "] " + object_name + "...]";
                                 return result;
