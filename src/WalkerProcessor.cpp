@@ -17,6 +17,8 @@ namespace WalkerProcessor {
     float active_attacking_time = 0.0f;
     float backup_interaction_time = 0.0f;
 
+    RE::NiPoint3 last_paths_best_guess = RE::NiPoint3::Zero();
+
 
     float dead_point_time = 0.0f;
 
@@ -1100,19 +1102,32 @@ namespace WalkerProcessor {
         bool result = false;
         try {
 
+            auto player_pos = RE::PlayerCharacter::GetSingleton()->GetPosition();
+
             if (path_valid && !use_last_point_of_last_path)
             {
                 float max_diff = 0.0f;
+
+                int max_i = -1;
 
                 for (int i = current_path_point; i < (std::min((int)std::size(path), current_path_point + 2)); i++)
                 {
                     float diff = last_point_posZ - path.at(i).z;
                     if (diff > max_diff)
+                    {
+                        max_i = i;
                         max_diff = diff;
+                    }
+                        
                 }
 
                 if (max_diff > 100.0f)
-                    result = true;
+                {
+                    if (max_i >= 0)
+                        if (player_pos.z > path.at(max_i).z) //path_point_reached zeroes .z sometimes and it can lead to weird situations where current path point if 10m higher than player
+                            result = true;
+                }
+                    
 
             }
         }
@@ -2784,8 +2799,11 @@ namespace WalkerProcessor {
                 else
                     result = distance < 80.0f * (1 + MiscThings::is_on_horse() * 4.0f); //100
 
-                if (distance > 200.0f * (1 + MiscThings::is_on_horse() * 2.0f))
-                    result = true; //faulty pathfinding
+                if (last_point_of_last_path.z - player_pos.z > 200.0f)
+                    result = true; //we either fell or pathfinding glitched
+
+                //if (distance > 200.0f * (1 + MiscThings::is_on_horse() * 2.0f))
+                    
             }
             else
             {
@@ -2794,6 +2812,9 @@ namespace WalkerProcessor {
                     if (current_path_point < (int)std::size(path))
                     {
                         auto current_path_point_pos = path.at(current_path_point);
+
+                        if (current_path_point_pos.z - player_pos.z > 200.0f)
+                            result = true; //we either fell or pathfinding glitched. point is too high
 
                         /////////////////// EXPERIMENTAL /////////////////
                         if (!is_about_to_fall())
@@ -3034,6 +3055,10 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        last_paths_best_guess = RE::NiPoint3::Zero();
+
+
         backup_interaction_time = 0.0f;
         active_attacking_time = 0.0f;
 
@@ -9110,11 +9135,27 @@ namespace WalkerProcessor {
                                                     }
 
 
+                                                    
+
+
                                                     if ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7))
                                                     {
                                                         had_successful_walk = false;
                                                         if ((interaction_after_walk == 2) && ((int)std::size(path) < 3) && !had_successful_walk)
                                                             walk_retries++;
+                                                        else
+                                                        {
+                                                            if (std::size(path) > 0)
+                                                            {
+                                                                auto current_paths_best_guess = path.at(std::size(path) - 1);
+                                                                if ((last_paths_best_guess != RE::NiPoint3::Zero()) && last_paths_best_guess.GetDistance(current_paths_best_guess) > 150.0f)
+                                                                    walk_retries = 0;
+
+                                                                last_paths_best_guess = current_paths_best_guess;
+                                                            }
+                                                            
+                                                        }
+                                                            
 
                                                         walk_again();
                                                     }

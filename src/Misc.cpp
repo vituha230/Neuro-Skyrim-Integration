@@ -492,6 +492,8 @@ namespace MiscThings {
 
     std::string get_blocking_object_name2(RE::TESObjectREFR* a_ref)
     {
+       // return "";
+
         std::string result = "";
 
         result = get_blocking_object_name(a_ref);
@@ -539,6 +541,7 @@ namespace MiscThings {
 
     std::string get_blocking_object_name(RE::TESObjectREFR* a_ref)
     {
+       // return "";
         std::string result = "";
 
         std::string name = a_ref->GetName();
