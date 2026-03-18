@@ -1,7 +1,5 @@
 
 
-//TODO: all new opened menus reset_walking
-
 
 
 #include "InputActions.hpp"
@@ -8092,6 +8090,11 @@ namespace WalkerProcessor {
                             register_allowed_actions();
                             if (change_quest_course_choice)
                             {
+                                trying_to_change_quest_course = false;
+                                change_quest_course_choice_valid = false;
+                                change_quest_course_choice = -1;
+                                change_quest_course_request_sent = false;
+
                                 last_quest_chosen = new_quest_chosen; //so walk_to_quest function doesnt panic
                                 auto for_context = walk_to_quest_by_index(get_quest_id_by_refr(new_quest_chosen), false);
 
