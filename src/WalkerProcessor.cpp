@@ -3742,7 +3742,7 @@ namespace WalkerProcessor {
                 }
                 else
                 {
-                    if (distance.z < 200.0f)
+                    if (abs(distance.z) < 200.0f)
                         distance.z = 0.0f;
 
 
@@ -8064,11 +8064,11 @@ namespace WalkerProcessor {
                 if (target_ref && !target_ref->data.objectReference)
                     reset_walker();
 
-                RE::ObjectRefHandle my_handle;
+                RE::ObjectRefHandle my_handle{};
                 if (target_ref)
                     my_handle = target_ref->GetHandle();
 
-                if (!my_handle || !my_handle.get() || !my_handle.get().get())
+                if (target_ref && !my_handle || !my_handle.get() || !my_handle.get().get())
                     reset_walker();
 
 

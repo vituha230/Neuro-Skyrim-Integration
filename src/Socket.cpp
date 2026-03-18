@@ -401,6 +401,14 @@ bool neuro::NeuroSocket::unregister_all2()
 
 
 
+
+std::vector<std::string> delayed_messages{};
+
+void neuro::add_message_to_delayed_queue(std::string message)
+{
+    delayed_messages.push_back(message);
+}
+
 neurosdk_action actions_to_register[ActionsCount]{};
 
 bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
@@ -544,6 +552,9 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     something_is_registered = true;
 
 
+
+
+
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
                                          .value = {.actions_register = {.actions = actions_to_register,
                                                                         .actions_len = action_pos}} };
@@ -552,6 +563,26 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     {
         return false;
     }
+
+
+    std::string delayed_context = "";
+
+    for (auto delayed_message : delayed_messages)
+    {
+        if (delayed_context != "")
+            delayed_context += "; ";
+
+        delayed_context += delayed_message;
+    }
+
+    if (delayed_context != "")
+    {
+        delayed_messages.clear();
+        send_random_context(delayed_context, false);
+    }
+        
+
+
 
     return true;
 }

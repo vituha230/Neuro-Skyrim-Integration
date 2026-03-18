@@ -563,9 +563,14 @@ namespace neuro {
         bool action_register_watchdog(float dtime);
 
 
+        
+
+
         static void LogNeuro(neurosdk_severity_e aSeverity, char* aMsg, void* aUserData);
     };
 
+
+    void add_message_to_delayed_queue(std::string message);
 }
 
 

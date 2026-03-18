@@ -953,12 +953,9 @@ namespace Hooks {
                             }
                         
                         
+                        neuro::add_message_to_delayed_queue("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]");
 
-
-
-
-
-                        send_random_context("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]", false);
+                        //send_random_context(, false);
                     }
                 }
             }
