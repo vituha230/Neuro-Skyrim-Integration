@@ -829,10 +829,20 @@ namespace Hooks {
     };
 
 
+    RE::TESObjectCELL* old_cell = nullptr;
+
+
     struct LoadingMenuProcessMessage { 
         static RE::UI_MESSAGE_RESULTS thunk(RE::LoadingMenu* menu, RE::UIMessage& a_message) {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS OPENED");
+
+                auto player = RE::PlayerCharacter::GetSingleton();
+
+                if (player)
+                {
+                    old_cell = player->GetParentCell();
+                }
 
                 in_game = false;
 
@@ -858,7 +868,8 @@ namespace Hooks {
                 WalkerProcessor::reset_walker();
                 WalkerProcessor::reset_backup_pickup();
 
-                MiscThings::clear_object_list();
+                //MiscThings::clear_object_list(); //now cleared on menu close only if cell changed
+
                 Observer::reset_threats();
                 Observer::reset_observer();
                 Observer::clear_objects_to_track();
@@ -880,6 +891,9 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS CLOSED");
 
+
+
+
                 in_game = true;
 
                 register_allowed_actions();
@@ -889,6 +903,11 @@ namespace Hooks {
                 if (player)
                 {
                     auto cell = player->GetParentCell();
+
+
+                    if (cell != old_cell)
+                        MiscThings::clear_object_list();
+
                     if (cell)
                     {
                         std::string cell_name1 = cell->GetFullName();

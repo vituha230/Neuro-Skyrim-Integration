@@ -6248,13 +6248,17 @@ namespace MiscThings {
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
-        auto parent_cell = player->GetParentCell();
-
-        if (parent_cell)
+        if (player)
         {
-            if (parent_cell->IsInteriorCell())
-                return true;
+            auto parent_cell = player->GetParentCell();
+
+            if (parent_cell)
+            {
+                if (parent_cell->IsInteriorCell())
+                    return true;
+            }
         }
+
 
         return false;
     }

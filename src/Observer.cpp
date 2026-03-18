@@ -1018,6 +1018,7 @@ namespace Observer {
 									{
 										if (!MiscThings::is_object_in_the_list(a_ref))
 										{
+											float scan_distance_norm = scan_distance;
 											if (a_ref == RE::TESObjectREFR::LookupByID(0xC3B29))
 												scan_distance = 130.0f;
 
@@ -1027,6 +1028,8 @@ namespace Observer {
 												if (info != "" && MiscThings::is_object_valid(a_ref))
 													interesting_buffer.insert_or_assign(a_ref, info);
 											}
+
+											scan_distance = scan_distance_norm;
 										}
 									}
 
