@@ -7571,7 +7571,10 @@ namespace MiscThings {
                     bool no_faraways = false;
                     if (is_interior_cell())
                     {
-                        no_faraways = true;
+                        std::string probe_name = insert_object_into_list_and_get_info(this_object);
+
+                        if (probe_name.find("Word of Power") == std::string::npos)
+                            no_faraways = true;
                     }
 
                     if (!no_faraways)
