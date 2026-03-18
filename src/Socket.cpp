@@ -1026,13 +1026,62 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
                             if (name == Capabilities::DropInventoryItem::Name)
                             {
+                                
+
+                                Impl::JSON::NeuroChoiceJsonArrayInts json{};
+                                Impl::JSON::NeuroChoiceJsonArrayStrings json2{};
+
+                                
+
+                                if (glz::read_json(json, messageQueue[i].value.action.data))
+                                {
+                                    if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                    {
+                                        failed_to_parse_json = true;
+                                    }
+                                    else
+                                    {
+                                        std::vector<int> ids_vector{};
+
+                                        for (auto element : json2.ids_array)
+                                        {
+                                            try 
+                                            {
+                                                int id = std::stoi(element);
+                                                ids_vector.push_back(id);
+                                            }
+                                            catch (...) {
+                                                ; //just skip
+                                            }
+
+                                        }
+
+                                        if (std::size(ids_vector) > 0)
+                                        {
+                                            command_result = MiscThings::drop_array_of_inventory_objects(ids_vector);
+                                        }
+                                        else
+                                        {
+                                            command_result.first = false;
+                                            command_result.second = "Couldn't find any valid IDs in provided array";
+                                        }
+                                        
+                                    }
+                                }
+                                else
+                                {
+
+                                    command_result = MiscThings::drop_array_of_inventory_objects(json.ids_array);
+                                }
+                                    
+                                /*
                                 Impl::JSON::NeuroChoiceJson json{};
 
                                 if (glz::read_json(json, messageQueue[i].value.action.data))
                                     failed_to_parse_json = true;
                                 else
                                     command_result = MiscThings::activate_inventory_object_by_index(json.id, 2);
-
+                                */
                             }
 
 
@@ -1117,7 +1166,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                             if (command_result.second == "" && overweight)
                             {
                                 command_result.first = false;
-                                command_result.second = "Cannot do that while overencumbered. Drop something from the inventory first. Excess weight: " + std::to_string(overweight);
+                                command_result.second = "Cannot do that while overencumbered. Drop something from the inventory first. Excess weight: " + std::to_string(overweight) + ". Make sure to drop enough weight";
                             }
                             else
                             {

@@ -57,6 +57,8 @@ namespace MiscThings {
 
     void reset_misc();
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id);
+    std::pair<bool, std::string> drop_array_of_inventory_objects(std::vector<int> ids);
+
 
     std::pair<bool, std::string> get_current_quests();
 

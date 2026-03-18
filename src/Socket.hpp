@@ -250,11 +250,11 @@ namespace Capabilities
 
     namespace DropInventoryItem
     {
-        constexpr char Name[] = "drop_inventory_item";
+        constexpr char Name[] = "drop_inventory_items";
         constexpr char Desc[] =
-            R"(Drop inventory item. Requires item ID)";
+            R"(Drop inventory items. Requires array of item IDs)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object to use. Use get_inventory to get list of object IDs. ", "type": "integer" }}, "required": ["id"] })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "ids_array": { "description": "Array of IDs of objects to drop. Use get_inventory to get list of object IDs. ", "type": "array" }}, "required": ["ids_array"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
@@ -468,7 +468,15 @@ namespace Impl
         };
 
 
+        struct NeuroChoiceJsonArrayInts
+        {
+            std::vector<int> ids_array{};
+        };
 
+        struct NeuroChoiceJsonArrayStrings
+        {
+            std::vector<std::string> ids_array{};
+        };
     }
 }
 

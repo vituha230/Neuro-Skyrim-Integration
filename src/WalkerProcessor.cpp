@@ -8014,6 +8014,12 @@ namespace WalkerProcessor {
                     {
                         if (search_next_target_timer > 1.0f)
                         {
+                            std::string result_header = "[Fight ended";
+
+                            if (was_already_dead || (target_ref && !target_ref->IsActor()))
+                                result_header = "[You finished attacking " + reminder_target_name;
+
+
                             reset_walker();
                             std::string advice = "";
 
@@ -8030,10 +8036,7 @@ namespace WalkerProcessor {
                                 advice = "You can " + advice;
 
                             
-                            std::string result_header = "[Fight ended";
 
-                            if (was_already_dead || !target_ref->IsActor())
-                                result_header = "[You finished attacking " + reminder_target_name;
 
                             send_random_context(result_header + ". Choose next action to do. " + advice + "]", false);
                         }
@@ -8061,41 +8064,6 @@ namespace WalkerProcessor {
                         }
 
                         reset_walker();
-                    }
-                    return;
-                }
-
-
-
-                if (target_ref && !target_ref->data.objectReference)
-                    reset_walker();
-
-                RE::ObjectRefHandle my_handle{};
-                if (target_ref)
-                    my_handle = target_ref->GetHandle();
-
-                if (target_ref && !my_handle || !my_handle.get() || !my_handle.get().get())
-                    reset_walker();
-
-
-
-
-                if (make_clairvoyance_cast)
-                {
-                    //TODO: what if we didnt finish and processor stops?
-
-                    bool cast_result = cast_pathfinding(dtime);
-
-                    if (cast_result)
-                        make_clairvoyance_cast = false;
-                }
-
-
-                if (attack_paused)
-                {
-                    if (start_attacking)
-                    {
-                        lock_camera_onto_target(target_ref, dtime);
                     }
                     return;
                 }
@@ -8142,8 +8110,49 @@ namespace WalkerProcessor {
                     }
 
                     if (!is_fighting())
-                        return; 
+                        return;
                 }
+
+
+
+
+
+                if (target_ref && !target_ref->data.objectReference)
+                    reset_walker();
+
+                RE::ObjectRefHandle my_handle{};
+                if (target_ref)
+                    my_handle = target_ref->GetHandle();
+
+                if (target_ref && (!my_handle || !my_handle.get() || !my_handle.get().get()))
+                    reset_walker();
+
+
+
+
+                if (make_clairvoyance_cast)
+                {
+                    //TODO: what if we didnt finish and processor stops?
+
+                    bool cast_result = cast_pathfinding(dtime);
+
+                    if (cast_result)
+                        make_clairvoyance_cast = false;
+                }
+
+
+                if (attack_paused)
+                {
+                    if (start_attacking)
+                    {
+                        lock_camera_onto_target(target_ref, dtime);
+                    }
+                    return;
+                }
+
+
+
+                
 
 
 

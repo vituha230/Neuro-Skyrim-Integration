@@ -4540,6 +4540,41 @@ namespace MiscThings {
 
 
 
+    std::pair<bool, std::string> drop_array_of_inventory_objects(std::vector<int> ids)
+    {
+        std::pair<bool, std::string> result{};
+
+
+        int success = 0;
+        int fail = 0;
+
+        for (auto id : ids)
+        {
+            auto temp_result = activate_inventory_object_by_index(id, 2);
+
+            if (temp_result.first)
+                success++;
+            else
+                fail++;
+        }
+
+        std::string result_message = "";
+
+        if (success > 0)
+        {
+            result.first = true;
+            result.second = "[Successsfully dropped " + std::to_string(success) + "/" + std::to_string(success + fail) + " items]";
+        }
+        else
+        {
+            result.first = false;
+            result.second = "Couldnt drop any of selected items";
+        }
+            
+        return result;
+
+    }
+
 
 
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
