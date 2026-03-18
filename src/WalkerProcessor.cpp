@@ -8029,7 +8029,13 @@ namespace WalkerProcessor {
                             if (advice != "")
                                 advice = "You can " + advice;
 
-                            send_random_context("[Fight ended. Choose next action to do. " + advice + "]", false);
+                            
+                            std::string result_header = "[Fight ended";
+
+                            if (was_already_dead || !target_ref->IsActor())
+                                result_header = "[You finished attacking " + reminder_target_name;
+
+                            send_random_context(result_header + ". Choose next action to do. " + advice + "]", false);
                         }
                         else
                             search_next_target_timer += dtime;
