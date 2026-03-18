@@ -2783,6 +2783,9 @@ namespace WalkerProcessor {
                     result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f); //100
                 else
                     result = distance < 80.0f * (1 + MiscThings::is_on_horse() * 4.0f); //100
+
+                if (distance > 200.0f * (1 + MiscThings::is_on_horse() * 2.0f))
+                    result = true; //faulty pathfinding
             }
             else
             {
@@ -3559,6 +3562,7 @@ namespace WalkerProcessor {
         auto target_pos = target_ref->GetPosition();
 
 
+
         if (using_custom_path)
         {
             if (custom_path_appended)
@@ -3576,6 +3580,7 @@ namespace WalkerProcessor {
         if (MiscThings::is_intro2())
         {
             auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos;
+
             distance.z = 0.0f;
             if (distance.Length() < 80.0f)
                 return true;
@@ -3616,6 +3621,7 @@ namespace WalkerProcessor {
             }
             else
             {
+                //auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos; //experimenting
                 auto distance = target_pos - player_pos;
 
                 if (interaction_after_walk == 3)
@@ -3740,6 +3746,9 @@ namespace WalkerProcessor {
                 }
                 else
                 {
+                    auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos; //experimenting
+
+
                     if (abs(distance.z) < 200.0f)
                         distance.z = 0.0f;
 
@@ -9119,6 +9128,10 @@ namespace WalkerProcessor {
                                                             //walk_again();
 
                                                             return;
+                                                        }
+                                                        else
+                                                        {
+                                                            walk_retries = 0; //TEST
                                                         }
 
                                                         if (!had_any_path_found_this_run && !detect_stuck_walk_again_if_good(dtime)) //only if there was no navmesh path
