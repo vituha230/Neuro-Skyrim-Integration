@@ -314,9 +314,9 @@ namespace Capabilities
 
     namespace FollowQuest
     {
-        constexpr char Name[] = "follow_current_quest";
+        constexpr char Name[] = "follow_quest";
         constexpr char Desc[] =
-            R"(Walk towards current quest objective. Requires quest ID. )";
+            R"(Walk towards current quest objective)";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc };
     } // namespace SelectChoiceOption
