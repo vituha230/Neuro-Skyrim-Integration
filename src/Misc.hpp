@@ -204,6 +204,9 @@ namespace MiscThings {
     std::string fix_book_description(std::string description);
 
     std::string get_blocking_object_name(RE::TESObjectREFR* a_ref);
+    
+
+    float get_quest_target_distance(RE::TESObjectREFR* target);
 
 
     namespace General::Script

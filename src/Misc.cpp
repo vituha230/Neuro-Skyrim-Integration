@@ -18,6 +18,38 @@ namespace MiscThings {
 
 
 
+    float get_quest_target_distance(RE::TESObjectREFR* target)
+    {
+        if (target && target->data.objectReference)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_pos = player->GetPosition();
+            auto player_cell = player->GetParentCell();
+            auto target_cell = target->GetParentCell();
+
+
+            if (player_cell == target_cell)
+                return player->GetDistance(target, true);
+            else
+            {
+                if (target_cell)
+                {
+                    //target is inside
+                    auto target_cell_position = target_cell;
+
+                    bool stop_here = false;
+                }
+            }
+
+        }
+
+
+
+        return 9999999.0f;
+
+    }
+
+
 
 
 

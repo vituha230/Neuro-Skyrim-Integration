@@ -1549,7 +1549,7 @@ namespace WalkerProcessor {
 
                     std::string big_distance = "";
 
-                    float distance = player->GetDistance(target_ref);
+                    float distance = player->GetDistance(target_ref, true, true);
                    
                     if (distance > 50000.0f)
                     {
@@ -1561,7 +1561,7 @@ namespace WalkerProcessor {
 
                     reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
                     reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
-                    //reminder_message += big_distance;
+                    reminder_message += big_distance;
 
 
 
@@ -4539,7 +4539,7 @@ namespace WalkerProcessor {
                     left_attack_cancel();
 
                     std::string big_distance = "";
-                    float distance = player->GetDistance(target_ref);
+                    float distance = player->GetDistance(target_ref, true, true);
                     if (distance > 50000.0f)
                         big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
 
@@ -5075,13 +5075,16 @@ namespace WalkerProcessor {
 
 
                                                 std::string big_distance = "";
-                                                float distance = player->GetDistance(target_ref);
+                                                float distance = player->GetDistance(target_ref, true, true);
                                                 if (distance > 50000.0f)
                                                     big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
 
 
+
+                                                float test = MiscThings::get_quest_target_distance(target_ref);
+
                                                 result.first = true;
-                                                result.second = "[Started following quest: " + reminder_target_name + "...";// +big_distance + "]";
+                                                result.second = "[Started following quest: " + reminder_target_name + "..." + big_distance + "]";
                                                 return result;
                                             }
 
@@ -8125,12 +8128,12 @@ namespace WalkerProcessor {
                         auto player_pos = player->GetPosition();
                         if (player_pos.x > 600.0f)
                         {
-                            send_random_context("You passed the gate challenge");
+                            send_random_context("You passed the gate challenge!", false);
                             quicksave();
                         }
                         else
                         {
-                            send_random_context("You didnt make it through the gates...");
+                            send_random_context("You didnt make it through the gates... Maybe try different approach?");
                         }
 
                         reset_walker();

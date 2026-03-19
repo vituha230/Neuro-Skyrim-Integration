@@ -4,6 +4,7 @@
 //crucial:
 
 
+//TODO quest distance calculation function, split follow quest into follow_current_quest and choose_different_quest_to_follow, follow_current automatically chooses closest one if no quests chosen
 //TODO probe navmesh before doing long-walk-forward
 
 
