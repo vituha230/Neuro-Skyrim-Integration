@@ -5219,7 +5219,8 @@ namespace WalkerProcessor {
                                                     if (good_fasttravel_location != "")
                                                     {
                                                         //advice
-                                                        result.second += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                                        std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                                        add_delayed_message(advice);
                                                     }
                                                 }
 

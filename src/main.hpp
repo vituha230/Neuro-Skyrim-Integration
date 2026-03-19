@@ -28,6 +28,8 @@ bool visit_all_members3(std::vector<std::string>& results, const RE::GFxValue& i
 bool visit_all_members4(std::vector<std::string>& results, const RE::GFxValue& in, std::string* search_var, int depth, std::string current_path, int val_to_search);
 
 
+void add_delayed_message(std::string message);
+
 
 bool force_choice(std::vector<MenuOption> options, std::string message, int force_type);
 

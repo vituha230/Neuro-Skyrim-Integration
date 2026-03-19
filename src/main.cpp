@@ -116,7 +116,6 @@ bool in_game = false;
 /////////////////////////////////////////////////////////
 
 
-
 std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 
 
@@ -449,6 +448,47 @@ void set_allowed_events(int amount) {   allowed_events = amount;    }
 
 
 
+std::vector<std::string> delayed_messages{};
+
+
+void add_delayed_message(std::string message)
+{
+    delayed_messages.push_back(message);
+}
+
+
+float delayed_messages_timer = 0.0f;
+
+void send_delayed_messages(float dtime)
+{
+    if (std::size(delayed_messages) > 0)
+    {
+        if (delayed_messages_timer > 5.0f)
+        {
+            std::string total_message = "";
+
+            bool first = true;
+            for (auto delayed_msg : delayed_messages)
+            {
+                if (!first)
+                    total_message += "; ";
+
+                total_message += delayed_msg;
+                
+                first = false;
+            }
+
+            delayed_messages.clear();
+            delayed_messages_timer = 0.0f;
+
+            send_random_context(total_message, false);
+        }
+        else
+            delayed_messages_timer += dtime;
+    }
+    else
+        delayed_messages_timer = 0.0f;
+}
 
 
 
@@ -1682,6 +1722,8 @@ private:
 
                 WalkerProcessor::lower_processor(dtime);
                 
+
+                send_delayed_messages(dtime);
                 ;
             }
                 
