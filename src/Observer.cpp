@@ -870,7 +870,7 @@ namespace Observer {
 
 				if (!player->IsDead())
 				{
-					RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 5000.0f,
+					RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 4000.0f,
 						//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 						[&](RE::TESObjectREFR* a_ref) {
 

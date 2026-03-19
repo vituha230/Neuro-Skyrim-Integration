@@ -4,6 +4,8 @@
 //crucial:
 
 
+//TODO probe navmesh before doing long-walk-forward
+
 
 //TODO fasttravel advice
 //TODO map closest quest

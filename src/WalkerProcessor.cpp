@@ -14,6 +14,11 @@
 
 namespace WalkerProcessor {
 
+
+
+    bool correct_word_of_power = false;
+
+
     float active_attacking_time = 0.0f;
     float backup_interaction_time = 0.0f;
 
@@ -700,6 +705,19 @@ namespace WalkerProcessor {
                     {
 
 
+                        if (correct_word_of_power)
+                        {
+                            auto word_of_power = MiscThings::get_word_of_power(target_ref, true);
+
+                            if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
+                            {
+                                target_ref = word_of_power;
+                                correct_word_of_power = false;
+                            }
+                                
+                        }
+
+
                         //auto target_cell = target_ref->GetParentCell();
                         //marker->AsReference()->SetParentCell(target_cell);
 
@@ -818,13 +836,17 @@ namespace WalkerProcessor {
                     }
                     else
                     {
+
+
                         if (explore_mode)
                         {
                             //try to find different object
                             if (min_dist > 100.0f)
                             {
                                 min_dist /= 2.0f;
+
                                 auto result_probe = explore_world(true);
+                                
                             }
                             else
                             {
@@ -2210,6 +2232,7 @@ namespace WalkerProcessor {
         
 
 
+
         if (specific_shift != RE::NiPoint3::Zero())
         {
             dont_use_bounds_for_close_enough = true;
@@ -3055,6 +3078,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        correct_word_of_power = false;
+
 
         last_paths_best_guess = RE::NiPoint3::Zero();
 
@@ -4242,7 +4267,20 @@ namespace WalkerProcessor {
                 if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
                 {
                     dont_tell_result = true;
-                    target_ref = word_of_power;
+
+                    auto word_of_power_strict = MiscThings::get_word_of_power(object->second.object, true);
+
+                    if (word_of_power_strict && word_of_power_strict != (RE::TESObjectREFR*)(-1))
+                    {
+                        target_ref = word_of_power_strict;
+                    }
+                    else
+                    {
+                        correct_word_of_power = true;
+                        target_ref = object->second.object;
+                        dont_use_bounds_for_close_enough = true; //its a massive sphere
+                    }
+
                 }
                 else
                     target_ref = object->second.object;

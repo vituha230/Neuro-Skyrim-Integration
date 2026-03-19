@@ -186,7 +186,11 @@ namespace MiscThings {
 
 
 
-    RE::TESObjectREFR* get_word_of_power(RE::TESObjectREFR* trigger_zone_ref)
+
+
+
+
+    RE::TESObjectREFR* get_word_of_power(RE::TESObjectREFR* trigger_zone_ref, bool strict)
     {
         auto object_p = General::Script::GetObject(trigger_zone_ref, "WordWallTriggerScript");
         //auto object_p = General::Script::GetObject(trigger_zone_ref, "WordWallTrigger02Script");
@@ -204,6 +208,12 @@ namespace MiscThings {
             {
                 RE::BSFixedString prop_name2 = "lookTarget";
                 auto lookat_marker1 = General::Script::GetProperty<RE::TESObjectREFR*>(object_p, prop_name2);
+
+                if (!strict && (lookat_marker1 == nullptr))
+                {
+                    RE::BSFixedString prop_name3 = "lookTargetWord02";
+                    lookat_marker1 = General::Script::GetProperty<RE::TESObjectREFR*>(object_p, prop_name3);
+                }
 
 
                 return lookat_marker1;
@@ -1602,6 +1612,20 @@ namespace MiscThings {
             }
             else
             {
+                /* //changed approach
+                auto word_of_power = MiscThings::get_word_of_power(object);
+                if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
+                {
+                    auto wall_pos = object->GetPosition();
+                    auto word_of_power_pos = word_of_power->GetPosition();
+
+                    RE::NiPoint3 base_shift_vector = word_of_power_pos - wall_pos;
+                    result = base_shift_vector;
+                    return result;
+
+                }
+                */
+
                 auto base_obj = object->GetBaseObject();
                 if (base_obj)
                 {
