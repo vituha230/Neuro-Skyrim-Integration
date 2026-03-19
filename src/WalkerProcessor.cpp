@@ -5631,7 +5631,7 @@ namespace WalkerProcessor {
 
             auto base_type = base_obj->GetFormType();
 
-            if (base_obj && base_type != RE::FormType::Static)
+            if (target_ref->modelState != 0 && base_obj && base_type != RE::FormType::Static)
             {
                 auto player = RE::PlayerCharacter::GetSingleton();
                 auto player_ref = player->AsReference();
@@ -6896,6 +6896,71 @@ namespace WalkerProcessor {
                                 }
 
 
+
+                                if (base_obj)
+                                {
+                                    bool is_harvestable = false;
+
+                                    if (base_obj->GetFormType() == RE::FormType::Tree)
+                                    {
+                                        auto tree_form = (RE::TESObjectTREE*)base_obj;
+
+                                        auto test_flags = target_ref->AsReference()->GetFormFlags();
+
+                                        bool already_harvested = false;
+
+                                        if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                                            already_harvested = true;
+
+                                        if (test_flags & 2048) //this is potentially only one we need here
+                                            already_harvested = true;
+
+
+
+
+                                        if (tree_form->produceItem && !already_harvested)
+                                            is_harvestable = true;
+                                    }
+
+                                    if (base_obj->GetFormType() == RE::FormType::Flora)
+                                    {
+                                        auto tree_form = (RE::TESFlora*)base_obj;
+
+                                        auto test_flags = target_ref->AsReference()->GetFormFlags();
+                                        bool already_harvested = false;
+                                        if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                                            already_harvested = true;
+
+                                        if (tree_form->produceItem && !already_harvested)
+                                            is_harvestable = true;
+                                    }
+
+
+                                    if (is_harvestable)
+                                    {
+                                        if (!backup_pickup)
+                                        {
+                                            if (backup_pickup_attempts <= 3)
+                                            {
+                                                backup_pickup_attempts++;
+                                                backup_pickup = true;
+                                                backup_pickup_object = target_ref;
+                                            }
+                                            else
+                                            {
+                                                backup_pickup_attempts = 0;
+                                                backup_pickup = false;
+                                                backup_pickup_object = nullptr;
+                                                backup_pickup_time = 0.0f;
+                                            }
+                                        }
+                                    }
+                                }
+
+
+
+
+
                                 std::string no_result = "";
                                 if (!dont_tell_result)
                                 {
@@ -7069,10 +7134,10 @@ namespace WalkerProcessor {
                 result = "You walked up to location"; //default
             else
             {
-                if (quest_mode && (target_name == ""))
+
+                target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
+                if (quest_mode && (target_name == "")) //not guaranteed that insert_object will give us a name
                     target_name = "quest target point";
-                else
-                    target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
 
                 result = "You walked up to " + target_name; //default
 
@@ -8026,6 +8091,8 @@ namespace WalkerProcessor {
         try
         {
             auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_ref = player->AsReference();
+
             auto parent_cell = player->GetParentCell();
 
             auto control_map = RE::ControlMap::GetSingleton();
@@ -8128,7 +8195,7 @@ namespace WalkerProcessor {
                             std::string message = "[You feel dizzy";
 
                             
-                            auto player_ref = player->AsReference();
+                            
 
                             auto caster_123 = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
                             auto paralysis_spell = RE::TESForm::LookupByID(0x5AD5F)->As<RE::SpellItem>();
@@ -8320,7 +8387,7 @@ namespace WalkerProcessor {
 
 
 
-                if (target_ref && !target_ref->data.objectReference)
+                if (target_ref && (!target_ref->data.objectReference || target_ref == player_ref))
                     reset_walker();
 
                 RE::ObjectRefHandle my_handle{};
