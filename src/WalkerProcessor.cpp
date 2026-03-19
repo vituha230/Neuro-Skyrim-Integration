@@ -15,6 +15,8 @@
 namespace WalkerProcessor {
 
 
+    RE::TESObjectREFR* special_ref_for_distance_calculation = nullptr;
+
 
     bool correct_word_of_power = false;
 
@@ -1549,9 +1551,17 @@ namespace WalkerProcessor {
 
                     std::string big_distance = "";
 
+
+                    
                     float distance = player->GetDistance(target_ref, true, true);
                    
-                    if (distance > 50000.0f)
+                    if (special_ref_for_distance_calculation)
+                    {
+                        distance = player->GetDistance(special_ref_for_distance_calculation, true, true);
+                    }
+
+
+                    //if (distance > 40000.0f)
                     {
                         int distance_int = (int)(distance/100.0f);
                         big_distance = "Distance to target: " + std::to_string(distance_int) + " m. ";
@@ -3078,6 +3088,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        special_ref_for_distance_calculation = nullptr;
+
         correct_word_of_power = false;
 
 
@@ -4540,7 +4553,7 @@ namespace WalkerProcessor {
 
                     std::string big_distance = "";
                     float distance = player->GetDistance(target_ref, true, true);
-                    if (distance > 50000.0f)
+                    //if (distance > 40000.0f)
                         big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
 
                     result.first = true;
@@ -4768,6 +4781,80 @@ namespace WalkerProcessor {
 
         return result;
     }
+
+
+
+
+
+    std::pair<bool, std::string> walk_to_current_quest()
+    {
+        std::pair<bool, std::string> result{};
+
+
+        if (last_quest_chosen)
+        {
+            if (!MiscThings::quest_is_hidden(last_quest_chosen))
+            {
+                if (MiscThings::is_quest_list_valid())
+                {
+                    auto quest_list = MiscThings::get_p_quest_list();
+
+                    bool quest_is_still_there = false;
+                    for (auto quest_entry : *quest_list)
+                    {
+                        if (quest_entry.quest == last_quest_chosen)
+                        {
+                            quest_is_still_there = true;
+                            break;
+                        }
+                    }
+
+                    if (quest_is_still_there)
+                        return walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen), false);
+                }
+            }
+
+        }
+
+        //either quest disappeared, or became hidden, or quest list is invalid. find new best quest to follow
+
+        if (!MiscThings::is_quest_list_valid() || !MiscThings::get_p_quest_list() || std::size(*MiscThings::get_p_quest_list()) <= 0)
+        {
+            result.first = false;
+            result.second = "Cannot find any quests to follow";
+            return result;
+        }
+        else
+        {
+            auto quest_list = MiscThings::get_p_quest_list();
+
+            float min_distance = FLT_MAX;
+            int best_id = -1;
+
+            for (auto quest_entry : *quest_list)
+            {
+                if (quest_entry.estimate_distance < min_distance)
+                {
+                    best_id = quest_entry.id;
+                    min_distance = quest_entry.estimate_distance;
+                }
+            }
+
+            if (best_id != -1)
+                return walk_to_quest_by_index(best_id, false);
+            else
+            {
+                result.first = false;
+                result.second = "Cannot find any quests to follow";
+                return result;
+            }
+        }
+        
+
+    }
+
+
+
 
 
     std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target)
@@ -5076,12 +5163,20 @@ namespace WalkerProcessor {
 
                                                 std::string big_distance = "";
                                                 float distance = player->GetDistance(target_ref, true, true);
-                                                if (distance > 50000.0f)
+
+                                                if (std::size(target->teleportPath.teleportRefs) > 0)
+                                                {
+                                                    //in different location
+                                                    auto last_teleport_ref = target->teleportPath.teleportRefs.back().ref;
+                                                    distance = player->GetDistance(last_teleport_ref, true, true);
+
+                                                    special_ref_for_distance_calculation = last_teleport_ref;
+                                                }
+
+                                                //if (distance > 40000.0f)
                                                     big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
 
 
-
-                                                float test = MiscThings::get_quest_target_distance(target_ref);
 
                                                 result.first = true;
                                                 result.second = "[Started following quest: " + reminder_target_name + "..." + big_distance + "]";

@@ -34,7 +34,9 @@ neurosdk_action ActionsList[] = {
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
-                                    
+                                    Capabilities::ChangeQuest::Action,
+
+
                                     Capabilities::GetLocations::Action,
                                     
 
@@ -73,6 +75,7 @@ neurosdk_action ActionsListNoForces[] = {
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
+                                    Capabilities::ChangeQuest::Action,
 
                                     Capabilities::GetLocations::Action,
 
@@ -463,8 +466,9 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                     if (MiscThings::have_any_quests())
                     {
-                        actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
+                        actions_to_register[action_pos] = Capabilities::ChangeQuest::Action; action_pos++;
                     }
 
 
@@ -1170,7 +1174,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                             }
                             else
                             {
-                                if (name == Capabilities::FollowQuest::Name)
+                                if (name == Capabilities::ChangeQuest::Name)
                                 {
                                     Impl::JSON::NeuroChoiceJson json{};
 
@@ -1178,6 +1182,11 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                         failed_to_parse_json = true;
                                     else
                                         command_result = WalkerProcessor::walk_to_quest_by_index(json.id, false);
+                                }
+
+                                if (name == Capabilities::FollowQuest::Name)
+                                {
+                                   command_result = WalkerProcessor::walk_to_current_quest();
                                 }
 
 

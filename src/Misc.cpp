@@ -2324,6 +2324,19 @@ namespace MiscThings {
                                             this_quest.description = "";
                                             this_quest.category = 0;
 
+
+                                            if (std::size(target->teleportPath.teleportRefs) > 0)
+                                            {
+                                                //in different location
+                                                auto last_teleport_ref = target->teleportPath.teleportRefs.back().ref;
+                                                this_quest.estimate_distance = player->GetDistance(last_teleport_ref, true, true);
+                                            }
+                                            else
+                                            {
+                                                this_quest.estimate_distance = 0.0f; //this means we are in the same cell
+                                            }
+
+
                                             sortable_quests.push_back(this_quest);
 
                                             id++;

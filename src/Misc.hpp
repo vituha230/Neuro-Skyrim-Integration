@@ -23,6 +23,7 @@ namespace MiscThings {
         std::string displaytext;
         std::string description;
         std::string target_name;
+        float estimate_distance;
     };
 
 

@@ -314,11 +314,22 @@ namespace Capabilities
 
     namespace FollowQuest
     {
-        constexpr char Name[] = "follow_quest";
+        constexpr char Name[] = "follow_current_quest";
         constexpr char Desc[] =
-            R"(Walk towards the quest objective. Requires quest ID. )";
+            R"(Walk towards current quest objective. Requires quest ID. )";
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };
+    } // namespace SelectChoiceOption
+
+
+
+    namespace ChangeQuest
+    {
+        constexpr char Name[] = "change_quest_to_follow";
+        constexpr char Desc[] =
+            R"(Change current quest and start following new quest. Requires quest ID. )";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the quest to walk to. Use get_current_quests to get list of available quests. ", "type": "integer" } }, "required": ["id"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the new quest to walk to. Use get_current_quests to get list of available quests. ", "type": "integer" } }, "required": ["id"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption

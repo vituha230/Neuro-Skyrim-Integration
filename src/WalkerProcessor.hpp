@@ -27,6 +27,11 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> set_closed_door_choice(int choice);
 
 
+	std::pair<bool, std::string> walk_to_current_quest();
+
+
+
+
 	std::pair<bool, std::string> run_away();
 	std::pair<bool, std::string> exit_dungeon();
 
