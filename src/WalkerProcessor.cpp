@@ -1074,7 +1074,7 @@ namespace WalkerProcessor {
 
                     if (player && target_ref)
                     {
-                        if (player->GetDistance(target_ref) < 300.0f)
+                        if (player->GetDistance(target_ref, true) < 300.0f)
                             return result; //close-to-target alongs are fucked because of z shift
                     }
 
@@ -1728,7 +1728,7 @@ namespace WalkerProcessor {
 
                     if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
                     {
-                        if (target_ref->GetDistance(player_ref) < 200.0f)
+                        if (target_ref->GetDistance(player_ref, true) < 200.0f)
                         {
                             return target_ref;
                         }
@@ -6214,7 +6214,7 @@ namespace WalkerProcessor {
                             {
                                 no_weapon = true;
                                 attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
+                                if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
                                     cursor_up();
                             }
                             else
@@ -6227,7 +6227,7 @@ namespace WalkerProcessor {
                                 else
                                     attacking_weapon = get_equipped_weapon_name(true) + ". ";
 
-                                if (is_melee_weapon(true) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
+                                if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
                                     cursor_up();
                             }
                         }
@@ -6428,7 +6428,7 @@ namespace WalkerProcessor {
                                 if (!has_something_equipped(false) && has_something_equipped(true) && is_melee_weapon(true))
                                 {
                                     attacking_info = "[You are blocking";
-                                    if (player->GetDistance(target_ref) > 100.0f)
+                                    if (player->GetDistance(target_ref, true) > 100.0f)
                                         cursor_up();
                                 }
                                 else
@@ -6437,7 +6437,7 @@ namespace WalkerProcessor {
                                     {
                                         no_weapon = true;
                                         attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                        if (player->GetDistance(target_ref) > 80.0f * target_ref->GetScale())
+                                        if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
                                             cursor_up();
                                     }
                                     else
@@ -6450,7 +6450,7 @@ namespace WalkerProcessor {
                                         else
                                             attacking_weapon = get_equipped_weapon_name(false) + ". ";
 
-                                        if (is_melee_weapon(false) && player->GetDistance(target_ref) > 100.0f * target_ref->GetScale())
+                                        if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
                                             cursor_up();
                                     }
 
