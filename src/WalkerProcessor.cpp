@@ -4337,7 +4337,7 @@ namespace WalkerProcessor {
                     if (interaction_after_walk == 3 && target_ref->IsActor())
                         attacked_already_dead_in_a_row = 0;
 
-                if (attacked_already_dead_in_a_row > 3)
+                if (attacked_already_dead_in_a_row > 3 && target_ref->IsActor())
                 {
                     send_random_context("It might be pointless attacking those who are already dead. Dead bodies are marked with [DEAD] tag");
                 }
