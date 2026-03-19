@@ -1666,6 +1666,9 @@ private:
                 SleepWaitProcessor::processor(dtime);
                 BookProcessor::processor(dtime);
                 TrainingProcessor::processor(dtime);
+
+
+                WalkerProcessor::lower_processor(dtime);
                 
                 ;
             }

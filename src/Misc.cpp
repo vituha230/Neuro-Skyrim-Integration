@@ -686,7 +686,7 @@ namespace MiscThings {
 
 
 
-    std::string get_potential_blocking_object(float range)
+    std::string get_potential_blocking_object(float range, RE::TESObjectREFR* ignore_ref)
     {
         std::string result = "";
 
@@ -698,6 +698,9 @@ namespace MiscThings {
             RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, range,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref == ignore_ref)
+                        return RE::BSContainer::ForEachResult::kContinue;
 
                     if (!MiscThings::is_object_valid(a_ref))
                         return RE::BSContainer::ForEachResult::kContinue;

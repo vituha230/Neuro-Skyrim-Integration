@@ -159,7 +159,7 @@ namespace MiscThings {
     int trap_firing(RE::TESObjectREFR* trap);
     int two_state_activator_state(RE::TESObjectREFR* activator);
     int get_destructible_state(RE::TESObjectREFR* web);
-    std::string get_potential_blocking_object(float range = 1400.0f);
+    std::string get_potential_blocking_object(float range = 1400.0f, RE::TESObjectREFR* ignore_ref = nullptr);
 
     std::string lever_interaction_advice(RE::TESObjectREFR* lever);
 

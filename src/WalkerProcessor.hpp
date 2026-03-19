@@ -5,6 +5,8 @@
 namespace WalkerProcessor {
 
 	void processor(float dtime);
+	void lower_processor(float dtime);
+
 
 	void stop_casting();
 

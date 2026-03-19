@@ -1817,7 +1817,7 @@ namespace WalkerProcessor {
 
 
 
-    std::string test_about_to_be_blocked_by_blocking(float dtime)
+    std::string test_about_to_be_blocked_by_blocking(float dtime, RE::TESObjectREFR* ignore_ref = nullptr)
     {
         std::string result = "";
 
@@ -1833,7 +1833,7 @@ namespace WalkerProcessor {
         auto camera_pos = camera->pos;
 
         auto targeted_ref = MiscThings::GetRaycastRef(camera_pos, camera_dir.GetVectorY(), 300.0f);
-        if (targeted_ref)// && (targeted_ref != target_ref || quest_mode)) //not nice
+        if (targeted_ref && targeted_ref != ignore_ref)// && (targeted_ref != target_ref || quest_mode)) //not nice
         {
             std::string blocking_name = MiscThings::get_blocking_object_name2(targeted_ref);
 
@@ -6874,6 +6874,28 @@ namespace WalkerProcessor {
                             }
                             else
                             {
+                                if (is_container(target_ref) || (target_ref->IsActor() && target_ref->IsDead()))
+                                {
+                                    //even though its meant for picking up objects, it should technically work for containers or dead bodies too
+                                    if (!backup_pickup)
+                                    {
+                                        if (backup_pickup_attempts <= 3)
+                                        {
+                                            backup_pickup_attempts++;
+                                            backup_pickup = true;
+                                            backup_pickup_object = target_ref;
+                                        }
+                                        else
+                                        {
+                                            backup_pickup_attempts = 0;
+                                            backup_pickup = false;
+                                            backup_pickup_object = nullptr;
+                                            backup_pickup_time = 0.0f;
+                                        }
+                                    }
+                                }
+
+
                                 std::string no_result = "";
                                 if (!dont_tell_result)
                                 {
@@ -6884,7 +6906,8 @@ namespace WalkerProcessor {
                                     {
                                         std::string lever_advice = MiscThings::lever_interaction_advice(target_ref);
 
-                                        send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
+                                        if (backup_pickup_attempts <= 1)
+                                            send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
                                     }
 
 
@@ -7886,14 +7909,20 @@ namespace WalkerProcessor {
 
 
 
+    void lower_processor(float dtime)
+    {
+        if (backup_pickup)
+        {
+            if (get_cant_walk_reason() != "")
+            {
+                reset_backup_pickup();
+            }
+        }
+    }
+
 
 	void processor(float dtime)
 	{
-
-
-
-
-
 
         if (backup_pickup)
         {
@@ -7903,7 +7932,7 @@ namespace WalkerProcessor {
             }
             else
             {
-                if (backup_pickup_time > 0.5f)
+                if (backup_pickup_time > 0.3f)
                 {
                     if (MiscThings::is_object_still_valid(backup_pickup_object))
                     {
@@ -7922,6 +7951,7 @@ namespace WalkerProcessor {
 
             }
             
+            return;
         }
 
 
@@ -9082,7 +9112,7 @@ namespace WalkerProcessor {
                                                                         {
                                                                             if (!tried_to_come_closer)
                                                                             {
-                                                                                if (!walk_fixed_time(true, 0.4f, dtime)) //was 0.2, revert if bad
+                                                                                if (backup_pickup_attempts <= 1 && !walk_fixed_time(true, 0.4f, dtime)) //was 0.2, revert if bad
                                                                                 {
                                                                                     ;
                                                                                 }
@@ -9177,12 +9207,12 @@ namespace WalkerProcessor {
                                                 {
                                                     //maybe its a location switch door?
 
-                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.1f && (have_doors_nearby() || MiscThings::get_potential_blocking_object(400.0f) != "")) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
+                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.1f && (have_doors_nearby() || MiscThings::get_potential_blocking_object(400.0f, target_ref) != "")) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
                                                     {
                                                         if (!test_about_to_be_blocked_by_door(dtime))
                                                         {
 
-                                                            std::string blocking_name = test_about_to_be_blocked_by_blocking(dtime);
+                                                            std::string blocking_name = test_about_to_be_blocked_by_blocking(dtime, target_ref);
                                                             if (blocking_name != "")
                                                                 bool stop_here = false;
 
