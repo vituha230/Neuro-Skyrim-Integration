@@ -213,7 +213,9 @@ namespace MiscThings {
     std::string get_blocking_object_name(RE::TESObjectREFR* a_ref);
     
 
-    float get_quest_target_distance(RE::TESObjectREFR* target);
+    std::string is_stealing(RE::TESObjectREFR* object);
+
+
 
 
     namespace General::Script

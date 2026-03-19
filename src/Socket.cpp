@@ -266,7 +266,8 @@ bool neuro::NeuroSocket::Initialize()
 
     had_connection = true;
 
-    return SendContext(("You are playing Skyrim, an action RPG. " + in_game_text + "Try to have a fun adventure. ").c_str(),
+    //return SendContext(("You are playing Skyrim, an action RPG. " + in_game_text + "Try to have a fun adventure. ").c_str(),
+    return SendContext(("You are playing Skyrim, an action RPG. " + in_game_text + " Try to have a fun adventure. ").c_str(),
         true) &&
         IsAlive();
 }

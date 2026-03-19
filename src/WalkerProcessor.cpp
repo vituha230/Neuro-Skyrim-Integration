@@ -20,6 +20,7 @@ namespace WalkerProcessor {
 
     bool correct_word_of_power = false;
 
+    int advice_counter = 0;
 
     float active_attacking_time = 0.0f;
     float backup_interaction_time = 0.0f;
@@ -1572,8 +1573,10 @@ namespace WalkerProcessor {
                     {
                         std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(target_ref);
 
-                        if (good_fasttravel_location != "")
+                        if (good_fasttravel_location != "" && advice_counter < 2)
                         {
+                            advice_counter++;
+
                             //advice
                             big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
                         }
@@ -3102,6 +3105,8 @@ namespace WalkerProcessor {
     void reset_walker()
     {
 
+        advice_counter = 0;
+
         special_ref_for_distance_calculation = nullptr;
 
         correct_word_of_power = false;
@@ -4127,7 +4132,7 @@ namespace WalkerProcessor {
 
                 if ((!object->second.object->IsHumanoid() || (object->second.object->IsHumanoid() && object->second.object->IsDead())) && interaction == 2)
                 {
-                    if (object->second.object->IsInventoryObject())
+                    if (object->second.object->IsInventoryObject() || MiscThings::is_stealing(object->second.object) != "")
                     {
                         interaction = 1; //they probably want to steal it. allow this
                     }
