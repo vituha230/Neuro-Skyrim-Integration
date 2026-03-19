@@ -68,13 +68,23 @@ namespace MapProcessor {
 	}
 
 
+	//id, marker_ref, vector of nearest quests
 
-	std::map<int, RE::TESObjectREFR*> markers_to_remember{};
+	
+
+
+
+
+
+
+
 
 
 	std::vector<MenuOption> get_location_options()
 	{
-		markers_to_remember.clear();
+		std::map<int, std::pair<RE::TESObjectREFR*, std::vector<int>>> markers_to_remember{};
+
+		//markers_to_remember.clear();
 
 		std::vector<MenuOption> result{};
 		std::map<int, MenuOption> pre_result{};
@@ -93,6 +103,10 @@ namespace MapProcessor {
 
 			int closest_id = -1;
 			float closest_distance = FLT_MAX;
+
+
+
+
 
 
 			for (auto &marker : menu->mapMarkers)
@@ -131,7 +145,8 @@ namespace MapProcessor {
 
 									pre_result.insert({ id, option });
 
-									markers_to_remember.insert({ id, a_refrOut.get() });
+									markers_to_remember.insert({ id, {a_refrOut.get(), {}} });
+
 								}
 							}
 						}
@@ -142,26 +157,62 @@ namespace MapProcessor {
 			}
 
 
-			/*
-			auto player_quests_result = MiscThings::get_current_quests(); //update list
+			auto temp_quest_result = MiscThings::get_current_quests(); //refresh quests
 
-			auto player_quests = MiscThings::get_p_quest_list();
+			std::vector<MiscThings::quest>* p_quests = nullptr;
+
+			if (MiscThings::is_quest_list_valid())
+				p_quests = MiscThings::get_p_quest_list();
 
 
-			if (player_quests)
+			if (p_quests)
 			{
-				for (MiscThings::quest quest : *player_quests)
+				int quest_actual_id = 0;
+
+				for (auto a_quest : *p_quests)
 				{
-					quest.
-				}
+					RE::ObjectRefHandle quest_ref_handle{};
+					a_quest.target->GetTrackingRef(quest_ref_handle, a_quest.quest); //try tracked
+					if (!quest_ref_handle)
+						a_quest.target->GetTargetRef(quest_ref_handle, false, a_quest.quest); //no tracked - try actual target
 
 
-				for (std::pair<int, RE::TESObjectREFR*> marker_to_remember : markers_to_remember)
-				{
+					if (quest_ref_handle && quest_ref_handle.get() && quest_ref_handle.get().get())
+					{
+						auto quest_ref = quest_ref_handle.get().get();
+
+						if (quest_ref->data.objectReference)
+						{
+							float min_location_dist = FLT_MAX;
+							int id_closest_to_quest = -1;
+							for (auto marker : markers_to_remember)
+							{
+								auto marker_ref = marker.second.first;
+
+								if (marker_ref && marker_ref->data.objectReference)
+								{
+									float distance = marker_ref->GetDistance(quest_ref, true, true);
+
+									if (distance < min_location_dist)
+									{
+										id_closest_to_quest = marker.first;
+										min_location_dist = distance;
+									}
+								}
+							}
+
+							if (id_closest_to_quest >= 0 && min_location_dist <= 10000.0f)
+							{
+								markers_to_remember.at(id_closest_to_quest).second.push_back(quest_actual_id);
+							}
+						}
+
+					}
+
+					quest_actual_id++;
 
 				}
 			}
-			*/
 
 
 
@@ -174,6 +225,16 @@ namespace MapProcessor {
 				int local_id = option_raw.second.id;
 				option.id = local_id;
 				option.text = option_raw.second.text;
+				 
+				std::vector<int> closest_quests{};
+
+				auto temp_p = markers_to_remember.find(option.id);
+
+				if (temp_p != markers_to_remember.end())
+				{
+					closest_quests = temp_p->second.second;
+				}
+
 
 				if (can_travel.find(local_id) != can_travel.end())
 				{
@@ -182,15 +243,57 @@ namespace MapProcessor {
 						std::string can_travel_text = "";
 
 						if (can_travel.find(local_id)->second)
-							can_travel_text = ". Can fast travel there. ";
+							can_travel_text = ". Can fast travel. ";
 						else
-							can_travel_text = ". Cannot fast-travel there. ";
+							can_travel_text = ". Cannot fast-travel. ";
 
 						option.text += can_travel_text;
 					}
 					else
-						option.text += ". YOU ARE HERE. ";
+						option.text += ". You are here. ";
 				}
+
+
+				if (std::size(closest_quests) > 0)
+				{
+					std::string info = "";
+
+					bool is_first = true;
+					for (auto closest_quest_id : closest_quests)
+					{
+
+
+						if (closest_quest_id >= 0 && closest_quest_id < std::size(*p_quests))
+						{
+
+							auto quest_struct = p_quests->at(closest_quest_id);
+
+							if (is_first)
+							{
+								info = "Closest to quest";
+								if (std::size(closest_quests) > 1)
+									info += "s";
+
+								info += ": ";
+							}
+							else
+								info += "; ";
+
+
+							std::string quest_name = "[id " + std::to_string(quest_struct.id) + "] " + quest_struct.name + ": " + quest_struct.displaytext;
+
+							info += quest_name;
+
+							is_first = false;
+						}
+					}
+
+
+					if (info != "")
+						option.text += info;
+				}
+
+
 
 				result.push_back(option);
 			}

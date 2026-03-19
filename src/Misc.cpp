@@ -18,6 +18,89 @@ namespace MiscThings {
 
 
 
+    int get_very_close_quest()
+    {
+
+        if (!MiscThings::is_quest_list_valid())
+            auto temp_result = MiscThings::get_current_quests();
+
+        if (!MiscThings::is_quest_list_valid())
+            return -1;
+
+
+        auto quest_list = MiscThings::get_p_quest_list();
+
+        float min_distance = FLT_MAX;
+        
+        int best_id = -1;
+
+        for (auto quest_entry : *quest_list)
+        {
+            if (quest_entry.estimate_distance < min_distance)
+            {
+                best_id = quest_entry.id;
+                min_distance = quest_entry.estimate_distance;
+            }
+        }
+
+        if (min_distance < 2000.0f)
+        {
+            return best_id;
+        }
+
+        return -1;
+
+    }
+
+
+    std::string get_good_fasttravel_marker_for_quest_target(RE::TESObjectREFR* target)
+    {
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
+
+        float min_distance = FLT_MAX;
+
+        std::string sublocation_name = "";
+
+        for (auto marker : map_markers)
+        {
+            if (marker.get())
+            {
+                auto real_marker = marker.get().get();
+                auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
+                if (data && data->mapData && data->mapData->flags)
+                {
+                    if (data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo))
+                    {
+                        std::string marker_name = data->mapData->locationName.GetFullName();
+                        if (marker_name != "")
+                        {
+                            auto distance = real_marker->GetDistance(target, true, true);
+                            if (distance < min_distance)
+                            {
+                                min_distance = distance;
+                                sublocation_name = marker_name;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (min_distance <= 10000.0f && sublocation_name != "")
+        {
+            return sublocation_name;
+        }
+
+        return "";
+
+    }
+
+
+
+
+    /*
     float get_quest_target_distance(RE::TESObjectREFR* target)
     {
         if (target && target->data.objectReference)
@@ -48,7 +131,7 @@ namespace MiscThings {
         return 9999999.0f;
 
     }
-
+    */
 
 
 
@@ -1272,9 +1355,17 @@ namespace MiscThings {
                                 old_quest_notification = var_string;
 
                                 if (var_string.find("STARTED: ") == 0)
+                                {
                                     var_string = "Quest started: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
+                                    WalkerProcessor::test_new_very_close_quest();
+                                }
+                                    
                                 if (var_string.find("COMPLETED: ") == 0)
+                                {
                                     var_string = "Quest completed: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
+                                    WalkerProcessor::test_new_very_close_quest();
+                                }
+                                    
 
                                 if (var_string.find("DRAGON SOUL ABSORBED") != std::string::npos || var_string.find("WORD OF POWER LEARNED") != std::string::npos)
                                 {
@@ -1324,9 +1415,16 @@ namespace MiscThings {
                                 if (send_it)
                                 {
                                     if (var_string.find("Completed") == 0 || var_string.find("Failed") == 0)
+                                    {
                                         var_string = "Subquest " + var_string;
+                                        WalkerProcessor::test_new_very_close_quest();
+                                    }  
                                     else
+                                    {
                                         var_string = "New subquest: " + insert_quest_into_list_and_get_info(var_string);
+                                        WalkerProcessor::test_new_very_close_quest();
+                                    }
+                                        
 
                                     send_random_context("[" + var_string + "]", false);
                                 }
@@ -1848,6 +1946,14 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = door->GetModel();
+
+
+                        if (model.find("FarmhouseAnimDoor02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { -50.0f, 0.0f, 100.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (model.find("WRCastleDoor01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {

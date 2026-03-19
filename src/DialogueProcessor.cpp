@@ -36,6 +36,10 @@ namespace DialogueProcessor {
     float pause_time = 0.0f;
     float dialogue_selection_timeout = 0.0f;
 
+    float cursor_bad_timeout = 0.0f;
+    bool cursor_unstuck_dir = false;
+
+    float no_options_counter_time = 0.0f;
 
 
     RE::MenuTopicManager::Dialogue old_dialogue;
@@ -115,7 +119,7 @@ namespace DialogueProcessor {
 
 
 
-    std::vector<MenuOption> get_dialogue_options()
+    std::vector<MenuOption> get_dialogue_options(bool ignore_restrictions)
     {
         std::vector<MenuOption> dialogue_options;
 
@@ -132,13 +136,16 @@ namespace DialogueProcessor {
                         option.id = id;
                         option.text = dialogue->topicText.c_str();
 
-                        if (option.text != "...")
+                                    //these are some random flags that seem to work but not guaranteed so there is backup system that takes it all when no options is found
+                        if ((!(!dialogue->unk10 && !dialogue->unk14 && !dialogue->unk4C) || ignore_restrictions) && option.text != "...")
+                        //if ((dialogue->unk10 || ignore_restrictions) && option.text != "...")
                         {
                             dialogue_options.push_back(option);
-                            id++;
+                            
                             //RE::ConsoleLog::GetSingleton()->Print(dialogue->topicText.c_str());
                         }
 
+                        id++;
                     }
 
                     dialogue_options.push_back({ -1, "[STOP DIALOGUE]" });
@@ -231,12 +238,27 @@ namespace DialogueProcessor {
     {
         RE::UI* ui = RE::UI::GetSingleton();
         RE::GFxValue gfx_selected_list_index;
+        RE::GFxValue gfx_selected_list_index2;
+
 
         if (const auto var1 = ui->GetMenu(RE::DialogueMenu::MENU_NAME))
             if (const auto var2 = var1->uiMovie)
                 if (const auto var3 = var2->GetVariable(&gfx_selected_list_index, "_root.DialogueMenu_mc.TopicListHolder.List_mc.iSelectedIndex"))
                 {
-                    return gfx_selected_list_index.GetNumber();
+                    int temp_result = gfx_selected_list_index.GetNumber();
+
+                    if (temp_result == -1)
+                    {
+                        var2->GetVariable(&gfx_selected_list_index2, "_root.DialogueMenu_mc.TopicList.iSelectedIndex");
+
+                        temp_result = gfx_selected_list_index2.GetNumber();
+
+                        if (temp_result != -1)
+                            bool stop_here = false;
+                    }
+
+                    return temp_result;
+
                 }
         return -1;
     }
@@ -249,6 +271,23 @@ namespace DialogueProcessor {
 
         return true;
     }
+
+
+    void reset_menu()
+    {
+        old_dialogue.topicText = "";
+        dialogue_choice_made = false;
+        dialogue_choice = 0;
+        pause_time = 0.0f;
+        dialogue_selection_timeout = 0.0f;
+
+        cursor_bad_timeout = 0.0f;
+        cursor_unstuck_dir = false;
+
+        no_options_counter_time = 0.0f;
+    }
+
+
 
 
     void processor(float dtime)
@@ -270,11 +309,7 @@ namespace DialogueProcessor {
         {
             if (dialogue_selection_timeout > 10.0f)
             {
-                old_dialogue.topicText = "";
-                dialogue_choice_made = false;
-                dialogue_choice = 0;
-                dialogue_selection_timeout = 0.0f;
-                pause_time = 0.0f;
+                reset_menu();
             }
             else
                 dialogue_selection_timeout += dtime;
@@ -285,6 +320,8 @@ namespace DialogueProcessor {
 
                 if (cursor_pos > -1)
                 {
+                    cursor_bad_timeout = 0.0f;
+
                     std::string line = std::to_string(dialogue_choice) + "/" + std::to_string(cursor_pos);
                     RE::ConsoleLog::GetSingleton()->Print(line.c_str());
 
@@ -344,6 +381,22 @@ namespace DialogueProcessor {
 
                     dialogue_proc_time = 0.0f;
                 }
+                else
+                {
+                    cursor_bad_timeout += dtime;
+
+                    if (cursor_bad_timeout > 3.0f)
+                    {
+                        if (cursor_unstuck_dir)
+                            dialogue_cursor_down();
+                        else
+                            dialogue_cursor_up();
+
+                        cursor_unstuck_dir = !cursor_unstuck_dir;
+                        set_universal_block(0.5f);
+                    }
+                }
+
 
             }
             else
@@ -410,13 +463,35 @@ namespace DialogueProcessor {
                                     //TODO: add timer or check if npc finished talking. maybe autoskp for already said options
                                     force_dialogue(dialogue_options);
                                     */
-                                    auto options = get_dialogue_options();
-                                    if (std::size(options) == 0 || (std::size(options) == 2 && options[0].text == "..."))
+                                    auto options = get_dialogue_options(false);
+                                    if (std::size(options) == 1 || (std::size(options) == 2 && options[0].text == "..."))
                                     {
-                                        pause_time = 0.0f;
-                                        return; //just wait for it to disappear its fake
+                                        no_options_counter_time += dtime;
+
+                                        if (no_options_counter_time > 5.0f)
+                                        {
+                                            options = get_dialogue_options(true);
+
+                                            if (std::size(options) == 1 || (std::size(options) == 2 && options[0].text == "..."))
+                                            {
+                                                reset_menu(); // nothing works
+
+                                                quit_menu(); //cannot get any options.. and dialogue doesnt end... just close it???
+                                                return;
+                                            }
+
+                                            no_options_counter_time = 0.0f;
+                                            //and here we dont return because options got good
+                                        }
+                                        else
+                                        {
+                                            //pause_time = 0.0f;
+                                            return; //just wait for it to disappear its fake
+                                        }
+
                                     }
 
+                                    no_options_counter_time = 0.0f;
 
                                     if (force_choice(options, "You are in dialogue. Choose a line to say", force_type::dialogue_line))
                                     {
@@ -448,11 +523,7 @@ namespace DialogueProcessor {
 
         if (!in_dialogue)
         {
-            old_dialogue.topicText = "";
-            dialogue_choice_made = false;
-            dialogue_choice = 0;
-            pause_time = 0.0f;
-            dialogue_selection_timeout = 0.0f;
+            reset_menu();
 
         }
 

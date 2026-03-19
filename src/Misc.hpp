@@ -153,7 +153,13 @@ namespace MiscThings {
     std::string get_pillar_solved_text(RE::TESObjectREFR* pillar);
     //std::string get_puzzle_ring_solved_text(RE::TESObjectREFR* ring);
 
+
     std::string get_pillar_face_name(RE::TESObjectREFR* object, int code);
+
+    int get_very_close_quest();
+
+
+    std::string get_good_fasttravel_marker_for_quest_target(RE::TESObjectREFR* target);
 
 
     int trap_firing(RE::TESObjectREFR* trap);

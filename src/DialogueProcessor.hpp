@@ -60,7 +60,7 @@
 
         std::pair<bool, std::string> say_chosen_line(int id);
 
-        std::vector<MenuOption> get_dialogue_options();
+        std::vector<MenuOption> get_dialogue_options(bool ignore_restrictions);
         bool is_selected_line_correct();
         void dialogue_choice_reset();
 

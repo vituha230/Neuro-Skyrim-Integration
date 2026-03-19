@@ -2169,24 +2169,24 @@ void debug_scan(float dtime)
                         ;// auto test = var1.GetType();
            // }
         //}
-            const auto menu_view = ui->GetMovieView("Main Menu").get();
-            if (menu_view)
-            {
-                    if (menu_view->GetVariable(&var1, "_root"))
+            //const auto menu_view = ui->GetMovieView("Main Menu").get();
+            //if (menu_view)
+            //{
+            //        if (menu_view->GetVariable(&var1, "_root"))
                 ;// auto test = var1.GetType();
-            }
-            /*
+            //}
+            
 if (const auto ui = RE::UI::GetSingleton(); ui) {
-if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
+//if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
-*/
-            {
-            const auto menu_view = ui->GetMovieView("Main Menu").get();
-            if (menu_view)
-            {
-                if (menu_view->GetVariable(&var1, "_root"))
+
+            //{
+            //const auto menu_view = ui->GetMovieView("Main Menu").get();
+            //if (menu_view)
+           // {
+                //if (menu_view->GetVariable(&var1, "_root"))
                     {
                         //std::string result;
                         if (true)
@@ -2222,7 +2222,7 @@ if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
                             };
 
 
-                            search_var = "color";
+                            search_var = "iSelectedIndex";
                             //search_var = "Body";
 
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
@@ -2235,14 +2235,14 @@ if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
                             }
 
                             search_var = "showingCharacterList";
-                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
                             search_var = "iSelectedIndex";
-                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -2301,7 +2301,7 @@ if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
                             }
 
 
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "Gary", skip_problematic);
+                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "Gary", skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();

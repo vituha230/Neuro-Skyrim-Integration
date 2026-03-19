@@ -25,5 +25,8 @@ namespace MapProcessor {
 	std::string cant_open_map_reason();
 	bool map_is_allowed();
 
+
+
+
 }
 

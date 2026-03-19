@@ -1566,6 +1566,19 @@ namespace WalkerProcessor {
                         int distance_int = (int)(distance/100.0f);
                         big_distance = "Distance to target: " + std::to_string(distance_int) + " m. ";
                     }
+
+
+                    if (distance > 20000.0f)
+                    {
+                        std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(target_ref);
+
+                        if (good_fasttravel_location != "")
+                        {
+                            //advice
+                            big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                        }
+                    }
+
                         
 
 
@@ -4733,7 +4746,6 @@ namespace WalkerProcessor {
 
 
 
-
     int get_quest_id_by_refr(RE::TESQuest* quest)
     {
         int result = -1;
@@ -4784,6 +4796,24 @@ namespace WalkerProcessor {
 
 
 
+
+    //this is supposed to be called from misc's new quest detector
+    void test_new_very_close_quest()
+    {
+        if (last_quest_chosen)
+        {
+            int very_close_quest = MiscThings::get_very_close_quest();
+
+
+            if (very_close_quest != -1)
+            {
+                if (get_quest_id_by_refr(last_quest_chosen) != very_close_quest)
+                {
+                    last_quest_chosen = nullptr; //so it autorefreshes when walk initiates
+                }
+            }
+        }
+    }
 
 
     std::pair<bool, std::string> walk_to_current_quest()
@@ -5180,6 +5210,19 @@ namespace WalkerProcessor {
 
                                                 result.first = true;
                                                 result.second = "[Started following quest: " + reminder_target_name + "..." + big_distance + "]";
+
+
+                                                if (distance > 20000.0f)
+                                                {
+                                                    std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(target_ref);
+
+                                                    if (good_fasttravel_location != "")
+                                                    {
+                                                        //advice
+                                                        result.second += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                                    }
+                                                }
+
                                                 return result;
                                             }
 

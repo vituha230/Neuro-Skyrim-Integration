@@ -520,6 +520,9 @@ void send_random_context(std::string context, bool silent)
 
 
 
+//to filter multiple [DIALOGUE ENDED] messages in a row
+REX::TEnumSet<RE::UI_MESSAGE_TYPE, uint32_t> last_dialogue_message = RE::UI_MESSAGE_TYPE::kUpdate;
+
 
 
 class DialogueMenuEx final : public RE:: DialogueMenu //this allowes skip dialogue any time. someone's else plugin. credit or remove later.
@@ -534,6 +537,7 @@ public:
     RE::UI_MESSAGE_RESULTS ProcessMessageEx(RE::UIMessage& a_message)
     {
 
+
         std::string msg = "";
 
 
@@ -545,13 +549,21 @@ public:
         
         if (a_message.type == RE::UI_MESSAGE_TYPE::kHide)
         {
-            send_random_context("[The dialogue ended]", false);
-            register_allowed_actions();
+            if (last_dialogue_message != RE::UI_MESSAGE_TYPE::kHide)
+            {
+                send_random_context("[The dialogue ended]", false);
+                register_allowed_actions();
+            }
+            last_dialogue_message = a_message.type;
         }
             
+        
 
 
         if (a_message.type == RE::UI_MESSAGE_TYPE::kShow) {
+
+            last_dialogue_message = a_message.type;
+
             doAllowProgressFix();
 
             unregister_all_actions();
