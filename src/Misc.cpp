@@ -3211,13 +3211,24 @@ namespace MiscThings {
                 if (player_actor && player_actor->WouldBeStealing(object))
                     result = "[Is stealing]";
             }
+
+            if (result == "")
+            {
+                if (object->IsCrimeToActivate())
+                {
+                    if (base_type == RE::FormType::Container)
+                        result = "[Is stealing]";
+
+                    if (base_type == RE::FormType::Door)
+                        result = "[Is crime to break in]";
+
+                }
+                
+            }
+
         }
 
-        if (result == "")
-        {
-            if (object->IsCrimeToActivate())
-                result = "[Is stealing]";
-        }
+
 
 
         return result;
