@@ -659,6 +659,8 @@ float time_no_menus = 0.0f;
 
 
 int afk_threshold = 0;
+float time_threshold = 7.77f;
+
 
 bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aClosure)
 {
@@ -682,7 +684,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
     
     //float time_threshold = afk_threshold * 5.0f + 10.0f;
 
-    float time_threshold = 7.77f;
+    
 
     if (time_no_commands > time_threshold && time_walker_inactive > time_threshold && time_no_menus > time_threshold)
     {
@@ -706,6 +708,8 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
             advice = "You can " + advice;
 
         send_random_context("[Choose next action to do]", false);// . " + advice + "]", false);
+
+        time_threshold = (float)std::rand() / RAND_MAX * 4 + 6;
     }
 
     neurosdk_message_t* messageQueue{};
