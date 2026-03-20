@@ -6795,6 +6795,16 @@ namespace MiscThings {
         auto player_ref = player->AsReference();
         auto player_actor = (RE::Actor*)player_ref;
 
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        if (!can_walk && !can_look)
+            return result;
+
+
         float scan_distance = 3000.0f;
         auto player_cell = player->GetParentCell();
         if (player_cell && player_cell->IsInteriorCell())
