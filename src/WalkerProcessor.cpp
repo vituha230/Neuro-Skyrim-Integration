@@ -14,6 +14,8 @@
 
 namespace WalkerProcessor {
 
+    bool no_weapons_notified = false;
+
 
     RE::TESObjectREFR* special_ref_for_distance_calculation = nullptr;
 
@@ -3117,6 +3119,10 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        no_weapons_notified = false; 
+
+
         opening_door_attempts = 0;
 
         confirm_stealing = false;
@@ -6282,6 +6288,19 @@ namespace WalkerProcessor {
             }
                 
 
+            if (has_spell_equipped(true) && has_spell_equipped(false) && !is_offensive_spell(true) && !is_offensive_spell(false))
+            {
+                //cannpt attack. notify
+                if (!no_weapons_notified)
+                {
+                    no_weapons_notified = true;
+                    send_random_context("You dont have anything that can deal damage in your hands! Equip weapons or offensive spells to deal damage", false);
+                }
+
+            }
+            else
+                no_weapons_notified = false;
+
 
             //if (close_enough())
             //{
@@ -6481,13 +6500,17 @@ namespace WalkerProcessor {
 
                         bool dont_use_left = false;
 
-                        if (target_ref->IsActor())
+                        if (target_ref->IsActor() && target_ref->IsDead())
                         {
                             auto target_actor = (RE::Actor*)target_ref;
                             auto target_combat_controller = target_actor->combatController;
 
                             if (target_combat_controller)
                                 dont_use_left = (target_combat_controller->IsFleeing() || target_combat_controller->ignoringCombat || !target_combat_controller->startedCombat || target_combat_controller->stoppedCombat) && left_is_block();
+                        }
+                        else
+                        {
+                            dont_use_left |= left_is_block();
                         }
 
                         dont_use_left |= has_ranged_weapon_equipped(true);
@@ -6698,13 +6721,17 @@ namespace WalkerProcessor {
 
                             bool dont_use_left = false;
 
-                            if (target_ref->IsActor())
+                            if (target_ref->IsActor() && !target_ref->IsDead())
                             {
                                 auto target_actor = (RE::Actor*)target_ref;
                                 auto target_combat_controller = target_actor->combatController;
 
                                 if (target_combat_controller)
                                     dont_use_left = (target_combat_controller->IsFleeing() || target_combat_controller->ignoringCombat || !target_combat_controller->startedCombat || target_combat_controller->stoppedCombat) && left_is_block();
+                            }
+                            else
+                            {
+                                dont_use_left |= left_is_block();
                             }
 
                             dont_use_left |= has_ranged_weapon_equipped(false);
