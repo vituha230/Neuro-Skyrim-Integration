@@ -2751,7 +2751,7 @@ namespace Observer {
 						if (can_look)
 						{
 							register_look_at_object();
-							register_get_objects_around();
+							//register_get_objects_around();
 						}
 					}
 						

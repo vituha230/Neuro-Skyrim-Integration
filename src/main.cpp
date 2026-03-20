@@ -958,7 +958,7 @@ namespace Hooks {
 
                 exit_dungeon_was_registered = false;
 
-                send_random_context("[The game is loading. You are not in game yet]");
+                send_random_context("[The game is loading]");// .You are not in game yet]");
             }
 
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
@@ -1031,9 +1031,9 @@ namespace Hooks {
                         
                         
                         if (WalkerProcessor::walker_active())
-                            send_random_context("[You are in game. Current location: " + location_name + "]");
+                            send_random_context("[Current location: " + location_name + "]");
                         else
-                            neuro::add_message_to_delayed_queue("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]");
+                            neuro::add_message_to_delayed_queue("[Current location: " + location_name + ". Use commands to interact with the game. ]");
 
                         //send_random_context(, false);
                     }

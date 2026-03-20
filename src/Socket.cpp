@@ -258,10 +258,10 @@ bool neuro::NeuroSocket::Initialize()
     register_allowed_actions(true);
 
 
-    std::string in_game_text = "You are ingame. Use commands to interact with the world. ";
+    std::string in_game_text = " Use commands to interact with the world. ";
 
     if (!is_in_game())
-        in_game_text = "You are not in game. Wait for game to start. ";
+        ;// in_game_text = "You are not in game. Wait for game to start. ";
 
 
     had_connection = true;
