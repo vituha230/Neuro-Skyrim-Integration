@@ -14,6 +14,18 @@
 
 namespace WalkerProcessor {
 
+
+    bool multiple_paths_quest_choice_confirming = false;
+    bool multiple_paths_quest_choice_confirmed = false;
+    bool multiple_paths_quest_request_sent = false;
+    bool multiple_paths_quest_choice_valid = false;
+    int multiple_paths_quest_choice = -1;
+    std::vector<int> allowed_multiple_paths_quest_choices{};
+
+
+
+
+
     bool no_weapons_notified = false;
 
 
@@ -3168,6 +3180,15 @@ namespace WalkerProcessor {
     void reset_walker()
     {
 
+        multiple_paths_quest_choice_confirming = false;
+        multiple_paths_quest_choice_confirmed = false;
+        multiple_paths_quest_request_sent = false;
+        multiple_paths_quest_choice_valid = false;
+        multiple_paths_quest_choice = -1;
+        allowed_multiple_paths_quest_choices.clear();
+
+
+
         current_quest_target_followed = nullptr;
         current_quest_followed = nullptr;
 
@@ -4932,7 +4953,7 @@ namespace WalkerProcessor {
                     }
 
                     if (quest_is_still_there)
-                        return walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen), false);
+                        return walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen), false, false);
                 }
             }
 
@@ -4963,7 +4984,7 @@ namespace WalkerProcessor {
             }
 
             if (best_id != -1)
-                return walk_to_quest_by_index(best_id, false);
+                return walk_to_quest_by_index(best_id, false, false);
             else
             {
                 result.first = false;
@@ -4979,7 +5000,7 @@ namespace WalkerProcessor {
 
 
 
-    std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target)
+    std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target, bool skip_confirm)
     {
 
         std::pair<bool, std::string> result{};
@@ -5045,8 +5066,16 @@ namespace WalkerProcessor {
                             {
                                 if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
                                 {
-                                    quest_found = true;
-                                    break;
+                                    for (auto* target : std::span(objective->targets, objective->numTargets))
+                                    {
+                                        if (target && target == quest_entry.target)
+                                        {
+                                            quest_found = true;
+                                            break;
+
+                                        }
+                                    }
+
                                 }
                             }
 
@@ -5212,6 +5241,29 @@ namespace WalkerProcessor {
 
 
 
+
+
+                                                if (!skip_confirm && quest.name == "Unbound" && (target->alias == 124 || target->alias == 125))
+                                                {
+                                                    if (!multiple_paths_quest_choice_confirmed)
+                                                    {
+                                                        //dont accept right away
+                                                        multiple_paths_quest_choice_confirming = true;
+                                                        result.first = true;
+                                                        result.second = "[Processing...]";
+                                                        return result;
+                                                    }
+                                                    else
+                                                    {
+                                                        reset_multiple_paths_quest(); //clear choice and proceed
+                                                    }
+
+                                                }
+
+
+
+
+
                                                 if (have_target_to_walk)
                                                 {
                                                     Observer::reset_threats();
@@ -5361,6 +5413,10 @@ namespace WalkerProcessor {
 
     bool detect_quest_target_changed_and_walk()
     {
+        if (using_custom_path && std::size(path) > 0 && current_path_point < (std::size(path) - 1))
+            return false;
+
+
         bool result = false;
 
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -5388,6 +5444,48 @@ namespace WalkerProcessor {
                 {
                     auto quest_targets = objective->targets;
 
+
+                    //do this ONLY if old target's conditions are not met anymore
+                    for (auto* target : std::span(quest_targets, objective->numTargets)) 
+                    {
+                        if (target)
+                        {
+                            if (quest)
+                            {
+                                bool conditions_met = false;
+                                try {
+                                    if (target->conditions.head)
+                                    {
+                                        auto the_condition = target->conditions.head;
+
+                                        conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest);
+
+                                        RE::ObjectRefHandle quest_ref_handle{};
+                                        target->GetTrackingRef(quest_ref_handle, quest); //try tracked
+                                        if (!quest_ref_handle)
+                                            target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
+
+                                        if (quest_ref_handle)
+                                            if (quest_ref_handle.get())
+                                            {
+                                                auto quests_target_ref = quest_ref_handle.get().get();
+                                                if (target_ref == quests_target_ref && conditions_met)
+                                                    return false; //dont check if old objective is still valid
+                                            }
+
+                                    }
+                                    else
+                                        conditions_met = true;
+                                }
+                                catch (...) {
+                                    conditions_met = true;//met ?
+                                }
+
+                            }
+                        }
+                    }
+
+
                     for (auto* target : std::span(quest_targets, objective->numTargets)) {
                         if (target)
                         {
@@ -5409,6 +5507,9 @@ namespace WalkerProcessor {
                                 catch (...) {
                                     conditions_met = true;//met ?
                                 }
+
+
+
 
                                 if (conditions_met)
                                 {
@@ -8213,6 +8314,44 @@ namespace WalkerProcessor {
 
 
 
+    std::pair<bool, std::string> set_multiple_path_quest_choice(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!multiple_paths_quest_request_sent)
+        {
+            result.first = true;
+            result.second = "[Error]";
+        }
+        else
+        {
+            bool found = false;
+            for (auto allowed_id : allowed_multiple_paths_quest_choices)
+            {
+                if (allowed_id == id)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+            {
+                multiple_paths_quest_choice_valid = true;
+                multiple_paths_quest_choice = id;
+                result.first = true;
+                result.second = "[Processing...]";
+            }
+            else
+            {
+                result.first = false;
+                result.second = "[Invalid choice ID]";
+            }
+        }
+        return result;
+    }
+
+
 
 
 	float walker_processor_timer = 0.0f;
@@ -8231,8 +8370,80 @@ namespace WalkerProcessor {
     }
 
 
+    void reset_multiple_paths_quest()
+    {
+        multiple_paths_quest_choice_confirming = false;
+        multiple_paths_quest_choice_confirmed = false;
+        multiple_paths_quest_request_sent = false;
+        multiple_paths_quest_choice_valid = false;
+        multiple_paths_quest_choice = -1;
+        allowed_multiple_paths_quest_choices.clear();
+    }
+
+
 	void processor(float dtime)
 	{
+
+
+        if (multiple_paths_quest_choice_confirming)
+        {
+            if (!multiple_paths_quest_request_sent)
+            {
+                std::vector<MenuOption> options{};
+
+                auto temp_result = MiscThings::get_current_quests(); //refresh
+
+                if (!MiscThings::is_quest_list_valid())
+                {
+                    reset_multiple_paths_quest();
+                    return;
+                }
+
+
+                auto p_quests = MiscThings::get_p_quest_list();
+
+                for (auto a_quest : *p_quests)
+                {
+                    std::string quest_name = a_quest.name + ": " + a_quest.displaytext + " (" + a_quest.target_name + ")";
+                    options.push_back({ a_quest.id, quest_name });
+                    allowed_multiple_paths_quest_choices.push_back(a_quest.id);
+
+
+                }
+
+                if (std::size(options) <= 0)
+                {
+                    reset_multiple_paths_quest();
+                    return;
+                }
+
+                unregister_all_actions();
+
+                if (force_choice(options, "This quest offers you a choice. You must specify what path to choose", force_type::specify_quest_path))
+                {
+                    multiple_paths_quest_request_sent = true;
+                }
+            }
+            else
+            {
+                if (multiple_paths_quest_choice_valid)
+                {
+                    int choice_to_remember = multiple_paths_quest_choice;
+                    register_allowed_actions();
+                    reset_multiple_paths_quest();
+                    multiple_paths_quest_choice_confirmed = true;
+                    walk_to_quest_by_index(choice_to_remember, false, false); //skip confirm is false so it can clear old choice
+                    return;
+                }
+            }
+
+
+            return;
+        }
+        
+
+
+
 
 
         if (backup_pickup)

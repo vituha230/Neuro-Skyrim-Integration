@@ -20,9 +20,9 @@ namespace MiscThings {
 
     int get_very_close_quest()
     {
-
-        if (!MiscThings::is_quest_list_valid())
-            auto temp_result = MiscThings::get_current_quests();
+        auto temp_result = MiscThings::get_current_quests();
+        //if (!MiscThings::is_quest_list_valid())
+            
 
         if (!MiscThings::is_quest_list_valid())
             return -1;
@@ -2637,6 +2637,10 @@ namespace MiscThings {
                 auto displaytext_lower = lowercase_string(quest.displaytext);
                 auto name_lower = lowercase_string(quest.name);
 
+                std::string target_name_local = quest.target_name;
+                if (target_name_local != "")
+                    target_name_local = " (" + target_name_local + ")";
+
                 if (name_lower == quest_text)
                 {
                     result = "[id " + std::to_string(quest.id) + "] " + quest.name + ": " + quest.displaytext + quest.target_name;
@@ -2768,6 +2772,7 @@ namespace MiscThings {
                                                     {
                                                         if (result != "")
                                                             result += "; ";
+
 
                                                         result += "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
                                                         quests.push_back(this_quest);

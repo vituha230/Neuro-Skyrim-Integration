@@ -4,11 +4,6 @@
 //crucial:
 
 
-//TODO offer choice for follow_quest if quest has several paths. remember it
-
-//TODO continue walking to whatever we were walking after location switch
-
-
 //TODO probe navmesh before doing long-walk-forward
 
 

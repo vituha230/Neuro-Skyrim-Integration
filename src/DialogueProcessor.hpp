@@ -46,7 +46,8 @@
         timed_quest_puzzle,
         confirm_pillar,
         confirm_change_quest_course,
-        confirm_stealing
+        confirm_stealing,
+        specify_quest_path
 
     };
 
