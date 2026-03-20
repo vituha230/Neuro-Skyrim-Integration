@@ -690,6 +690,30 @@ namespace MapProcessor {
 
 					if (camera_posX_ok && camera_posY_ok)
 					{
+						if (click_location_timeout > 4.0f)
+						{
+							marker_posX *= 0.97;
+							marker_posY *= 0.97;
+						}
+						else
+							if (click_location_timeout > 3.0f)
+							{
+								marker_posX *= 0.97;
+								marker_posY *= 1.03;
+							}
+							else
+								if (click_location_timeout > 2.0f)
+								{
+									marker_posX *= 1.03;
+									marker_posY *= 0.97;
+								}
+								else
+									if (click_location_timeout > 1.0f)
+									{
+										marker_posX *= 1.03;
+										marker_posY *= 1.03;
+									}
+
 						float dif_posX = marker_posX - cursor_posX;
 						float dif_posY = marker_posY - cursor_posY;
 
@@ -1038,7 +1062,7 @@ namespace MapProcessor {
 						leftclick();
 						//perk_up();//also zoom mouse
 
-						click_location_timeout += dtime;
+						click_location_timeout += dtime + 0.5f;
 
 						if (click_location_timeout > 5.0f)
 						{
@@ -1149,7 +1173,7 @@ namespace MapProcessor {
 						leftclick();
 						//perk_up();//also zoom mouse
 
-						click_location_timeout += dtime;
+						click_location_timeout += dtime + 0.5f; //because leftclick() gives universal block 0.5
 
 						if (click_location_timeout > 5.0f)
 						{
