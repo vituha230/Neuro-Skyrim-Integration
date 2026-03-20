@@ -18,6 +18,19 @@ namespace WalkerProcessor {
     RE::TESObjectREFR* special_ref_for_distance_calculation = nullptr;
 
 
+    bool confirm_stealing = false;
+    bool stealing_request_sent = false;
+    bool stealing_choice_valid = false;
+    bool stealing_choice = false;
+    bool stealing_confirmed = false;
+    
+    bool pause_pre_stealing = false;
+    float pause_pre_stealing_time = 0.0f;
+
+    int opening_door_attempts = 0;
+
+    float stealing_timer = 0.0f;
+
     bool correct_word_of_power = false;
 
     int advice_counter = 0;
@@ -3104,6 +3117,19 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        opening_door_attempts = 0;
+
+        confirm_stealing = false;
+        stealing_request_sent = false;
+        stealing_choice_valid = false;
+        stealing_choice = false;
+        stealing_confirmed = false;
+
+        stealing_timer = 0.0f;
+
+        pause_pre_stealing = false;
+        pause_pre_stealing_time = 0.0f;
+
 
         advice_counter = 0;
 
@@ -6751,14 +6777,11 @@ namespace WalkerProcessor {
 
                         auto target_actor = (RE::Actor*)target_ref;
 
-                        if (target_actor->currentProcess)
+                        if (MiscThings::is_immortal(target_actor))
                         {
-                            if (target_actor->currentProcess->cachedValues && target_actor->currentProcess->cachedValues->flags && target_actor->currentProcess->cachedValues->flags.any(RE::CachedValues::Flags::kActorIsGhost))
-                            {
-                                send_random_context("Attacking doesnt work...", false);
+                                send_random_context("Attacking doesnt work... They are not dying.", false);
                                 reset_walker();
                                 return true;
-                            }
                         }
 
                         send_random_context("You keep attacking...", false);
@@ -6816,6 +6839,10 @@ namespace WalkerProcessor {
 
         if ((interaction_after_walk == 1 || interaction_after_walk == 2) && !(MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive()))//(quest_mode && !target_is_interactive())))
             return false;
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_ref = player->AsReference();
 
         switch (interaction_after_walk) {
 
@@ -6875,8 +6902,52 @@ namespace WalkerProcessor {
                 }
                 else
                 {
+
+                    if (target_ref)
+                    {
+                        if (MiscThings::is_stealing(target_ref) != "")
+                        {
+                            if (player && !player->IsSneaking())
+                            {
+                                crouch();
+                                pause_pre_stealing = true;
+                                pause_pre_stealing_time = 0.0f;
+                                //set_universal_block(0.5f);
+                                return false;
+                            }
+
+                            auto player_actor = (RE::Actor*)player_ref;
+
+
+                            //if (target_ref->IsCrimeToActivate())
+                            //auto test = player->lastSeenTime;
+
+
+                            //if (player_actor->WouldBeStealing(target_ref))
+                            if (!MiscThings::is_player_hidden())
+                            {
+                                if (stealing_timer > 4.0f)
+                                {
+                                    if (!stealing_confirmed)
+                                    {
+                                        confirm_stealing = true;
+                                        return false;
+                                    }
+                                }
+                                else
+                                {
+                                    stealing_timer += dtime;
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+
                     if (!interaction_context_sent)
                     {
+
+
+
                         interaction_context_sent = true;
                         if (target_ref)
                         {
@@ -7040,8 +7111,7 @@ namespace WalkerProcessor {
                         //confirm_workbench(); //HOOK Activate() or just try it with random arguments. seems like it might work.
                         
                         //auto workbench = (RE::TESFurniture*)target_ref;
-                        auto player = RE::PlayerCharacter::GetSingleton();
-                        auto player_ref = player->AsReference();
+
 
                         auto furniture_ref = (RE::TESObjectREFR*)(target_ref->data.objectReference);
 
@@ -8015,6 +8085,33 @@ namespace WalkerProcessor {
     }
 
 
+    std::pair<bool, std::string> set_stealing_choice(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!stealing_request_sent)
+        {
+            result.first = true;
+            result.second = "[Error]";
+        }
+        else
+        {
+            if (id == 0 || id == 1)
+            {
+                stealing_choice_valid = true;
+                stealing_choice = id;
+                result.first = true;
+                result.second = "[Processing...]";
+            }
+            else
+            {
+                result.first = false;
+                result.second = "[Invalid choice ID]";
+            }
+        }
+        return result;
+    }
+
 
 
 
@@ -8037,6 +8134,7 @@ namespace WalkerProcessor {
 
 	void processor(float dtime)
 	{
+
 
         if (backup_pickup)
         {
@@ -8383,6 +8481,7 @@ namespace WalkerProcessor {
                 }
 
 
+               
 
                 if (trying_to_change_quest_course)
                 {
@@ -8446,6 +8545,58 @@ namespace WalkerProcessor {
                 if (target_ref && (!my_handle || !my_handle.get() || !my_handle.get().get()))
                     reset_walker();
 
+
+
+                if (pause_pre_stealing)
+                {
+                    //crouch pause
+                    lock_camera_onto_target(target_ref, dtime);
+
+                    if (pause_pre_stealing_time > 0.5f)
+                    {
+                        pause_pre_stealing_time = 0.0f;
+                        pause_pre_stealing = false;
+                    }
+                    else
+                        pause_pre_stealing_time += dtime;
+                }
+
+                if (confirm_stealing)
+                {
+                    if (!stealing_request_sent)
+                    {
+                        std::vector<MenuOption> options{};
+                        options.push_back({ 0, "No" });
+                        options.push_back({ 1, "Yes" });
+
+                        unregister_all_actions();
+
+                        if (force_choice(options, "You are trying to steal something, but you cannot do it sneakily. Somebody sees you. Do you want to take it anyway? They might not like that...", force_type::confirm_stealing))
+                        {
+                            stealing_request_sent = true;
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        if (stealing_choice_valid)
+                        {
+                            register_allowed_actions();
+
+                            if (stealing_choice)
+                            {
+                                stealing_confirmed = true;
+                            }
+                            else
+                            {
+                                reset_walker();
+                                return;
+                            }
+                        }
+                        else
+                            return;
+                    }
+                }
 
 
 
@@ -8986,7 +9137,8 @@ namespace WalkerProcessor {
                                                     {
                                                         auto result_target = get_targeted_ref();
 
-                                                        if (!result_target && ((interaction_after_walk == 3 && has_ranged_weapon_equipped(true)) || shout_mode))
+                                                        //if (!result_target && ((interaction_after_walk == 3 && has_ranged_weapon_equipped(true)) || shout_mode))
+                                                        if (!result_target && ((interaction_after_walk == 3) || shout_mode))
                                                         {
                                                             result_target = target_ref;
                                                         }
@@ -9169,8 +9321,9 @@ namespace WalkerProcessor {
                                                                 }
                                                                 else
                                                                 {
-                                                                    if (is_door(result_target) && !is_targeted_door_locked())
+                                                                    if (is_door(result_target) && !is_targeted_door_locked() && opening_door_attempts <= 3)
                                                                     {
+                                                                        opening_door_attempts++;
                                                                         confirm(); //open the door
                                                                         set_universal_block(1.5f);
                                                                     }  

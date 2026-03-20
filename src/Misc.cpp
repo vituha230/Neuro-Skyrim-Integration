@@ -3076,6 +3076,20 @@ namespace MiscThings {
         return result;
     }
 
+
+    bool is_player_hidden()
+    {
+        if (auto ProcessLists = RE::ProcessLists::GetSingleton())
+        {
+            std::uint32_t LOSCount{ 1 };
+            return !(ProcessLists->RequestHighestDetectionLevelAgainstActor(RE::PlayerCharacter::GetSingleton(), LOSCount) > 0);
+        }
+        return false;
+
+    }
+
+
+
     std::string is_stealing(RE::TESObjectREFR* object)
     {
         std::string result = "";
@@ -3092,6 +3106,13 @@ namespace MiscThings {
                     result = "[Is stealing]";
             }
         }
+
+        if (result == "")
+        {
+            if (object->IsCrimeToActivate())
+                result = "[Is stealing]";
+        }
+
 
         return result;
     }
@@ -6630,6 +6651,27 @@ namespace MiscThings {
     }
 
 
+    bool is_immortal(RE::Actor* actor)
+    {
+        bool result = false;
+
+        if (actor->IsActor())
+        {
+            if (actor->boolFlags)
+                result |= actor->boolFlags.any(RE::Actor::BOOL_FLAGS::kEssential);// || right->boolFlags.any(RE::Actor::BOOL_FLAGS::kProtected);
+
+            result |= actor->IsChild();
+            result |= actor->IsInvulnerable();
+            
+            if (actor->currentProcess && actor->currentProcess->cachedValues && actor->currentProcess->cachedValues->flags && actor->currentProcess->cachedValues->flags.any(RE::CachedValues::Flags::kActorIsGhost))
+                result |= true;
+        }
+
+
+        return result;
+    }
+
+
     std::vector<RE::Actor*> get_player_attackers(bool raycastable_only)
     {
         std::vector<RE::Actor*> result{};
@@ -6666,7 +6708,14 @@ namespace MiscThings {
             RE::NiPoint3 pos_left = left->GetPosition();
             RE::NiPoint3 pos_right = right->GetPosition();
 
-            return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
+            bool left_immortal = is_immortal(left);
+            bool right_immortal = is_immortal(right);;
+            
+            if (left_immortal != right_immortal)
+                return left_immortal > right_immortal;
+
+
+            return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos);
 
             });
 

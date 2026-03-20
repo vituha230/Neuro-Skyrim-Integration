@@ -864,6 +864,10 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                         case force_type::confirm_change_quest_course:
                             command_result = WalkerProcessor::set_change_quest_course_choice(json.id); break;
 
+                        case force_type::confirm_stealing:
+                            command_result = WalkerProcessor::set_stealing_choice(json.id); break;
+
+
                         default:
                         {
                             command_result = { true, "You dont have any choices to make" };

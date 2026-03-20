@@ -31,6 +31,7 @@ namespace WalkerProcessor {
 
 	std::pair<bool, std::string> set_closed_door_choice(int choice);
 
+	std::pair<bool, std::string> set_stealing_choice(int id);
 
 	std::pair<bool, std::string> walk_to_current_quest();
 

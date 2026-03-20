@@ -14,6 +14,7 @@ namespace Observer {
 
 	bool surroundings_scanned = false;
 
+	float no_threats_timer = 0.0f;
 
 	float detect_threats_time = 0.0f;
 	bool threats_response_request_sent = false;
@@ -531,6 +532,8 @@ namespace Observer {
 		action_taken = false;
 		pause_was_made = false;
 		closest_guard = nullptr;
+
+		no_threats_timer = 0.0f;
 	}
 
 
@@ -664,6 +667,7 @@ namespace Observer {
 
 				if (std::size(attackers) != 0)
 				{
+					no_threats_timer = 0.0f;
 					if (!WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open())
 					{
 						//wait a little then notify
@@ -794,7 +798,13 @@ namespace Observer {
 				}
 				else
 				{
-					reset_threats();
+					if (no_threats_timer > 10.0f)
+					{
+						reset_threats();
+					}
+					else
+						no_threats_timer += dtime;
+					
 				}
 			}
 		}

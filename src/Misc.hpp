@@ -216,6 +216,8 @@ namespace MiscThings {
     std::string is_stealing(RE::TESObjectREFR* object);
 
 
+    bool is_immortal(RE::Actor* actor);
+    bool is_player_hidden();
 
 
     namespace General::Script
