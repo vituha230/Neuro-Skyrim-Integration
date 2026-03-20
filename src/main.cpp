@@ -4,6 +4,13 @@
 //crucial:
 
 
+
+
+//TODO check quests that have no target to walk to (for example use shout)
+//TODO also need to check some quest that needs something to be used from inventory
+//TODO arrays in looting, arrays in barter sell
+
+
 //TODO probe navmesh before doing long-walk-forward
 
 

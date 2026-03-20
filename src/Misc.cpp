@@ -3214,18 +3214,28 @@ namespace MiscThings {
 
             if (result == "")
             {
-                if (object->IsCrimeToActivate())
+                if (base_type == RE::FormType::Activator)
                 {
-                    if (base_type == RE::FormType::Container)
+                    auto activator = (RE::TESObjectACTI*)base_obj;
+                    std::string model = activator->GetModel();
+                    if (model.find("BarenziahsJewelryBox") != std::string::npos)
+                    {
                         result = "[Is stealing]";
-
-                    if (base_type == RE::FormType::Door)
-                        result = "[Is crime to break in]";
-
+                    }
                 }
-                
-            }
+                else
+                {
+                    if (object->IsCrimeToActivate() || player_actor->WouldBeStealing(object))
+                    {
+                        if (base_type == RE::FormType::Door)
+                            result = "[Is crime to break in]";
+                        else
+                            result = "[Is stealing]";
 
+
+                    }
+                }
+            }
         }
 
 

@@ -8869,6 +8869,8 @@ namespace WalkerProcessor {
                     }
                     else
                         pause_pre_stealing_time += dtime;
+
+                    return;
                 }
 
                 if (confirm_stealing)
