@@ -4,11 +4,11 @@
 //crucial:
 
 
+//TODO continue walking to whatever we were walking after location switch
+
+
 //TODO probe navmesh before doing long-walk-forward
 
-
-//TODO fasttravel advice
-//TODO map closest quest
 
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dwemer mechanisms/traps

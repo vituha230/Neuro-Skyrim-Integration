@@ -17,6 +17,13 @@ namespace WalkerProcessor {
     bool no_weapons_notified = false;
 
 
+    int last_walker_operation = -1; //for location switch. DO NOT RESET IN NORMAL RESET
+
+
+
+
+
+
     RE::TESObjectREFR* special_ref_for_distance_calculation = nullptr;
 
 
@@ -6806,7 +6813,8 @@ namespace WalkerProcessor {
 
                         if (MiscThings::is_immortal(target_actor))
                         {
-                                send_random_context("Attacking doesnt work... They are not dying.", false);
+                                send_random_context("Attacking doesnt work... They are not dying. You can try to run away or ignore the fight instead.", false);
+                                Observer::reset_threats(); //so it can actually offer choice to run or ignore
                                 reset_walker();
                                 return true;
                         }
