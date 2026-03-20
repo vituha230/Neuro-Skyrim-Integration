@@ -142,6 +142,10 @@ namespace MiscThings {
         auto player = RE::PlayerCharacter::GetSingleton();
         RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
 
+
+        if (is_interior_cell())
+            return "";
+
         float min_distance = FLT_MAX;
 
         std::string sublocation_name = "";
