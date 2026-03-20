@@ -837,11 +837,26 @@ namespace Observer {
 			{
 				auto object_list = MiscThings::get_p_objects_around();
 
+
+				auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
+
+
+				std::map<RE::TESObjectREFR*, int> current_objects{};
+
+				RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 30000.0,
+					[&](RE::TESObjectREFR* a_ref) {
+						
+						current_objects.insert({ a_ref, 0 });
+
+						return RE::BSContainer::ForEachResult::kContinue;
+					});
+
+
 				for (auto object : *object_list)
 				{
-					if (object.second.object)
+					if (object.second.object && current_objects.find(object.second.object) != current_objects.end())
 					{
-						if (!MiscThings::is_object_still_valid(object.second.object))
+						if (!MiscThings::is_object_valid(object.second.object))
 						{
 							MiscThings::nullify_object_by_id(object.first);
 						}

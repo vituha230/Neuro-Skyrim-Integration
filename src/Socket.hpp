@@ -254,11 +254,10 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Drop inventory items. Requires array of item IDs)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "ids_array": { "description": "Array of IDs of objects to drop. Use get_inventory to get list of object IDs. ", "type": "array" }}, "required": ["ids_array"] })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "ids_array": { "description": "Array of IDs of objects to drop. Use get_inventory to get list of object IDs. ", "type": "array", "items" : { "type": "integer" } }}, "required": ["ids_array"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
-
 
 
     //CastEquipSpell

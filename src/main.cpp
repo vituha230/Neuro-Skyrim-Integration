@@ -1719,6 +1719,9 @@ private:
             const auto ui = RE::UI::GetSingleton();
             if (ui && !ui->IsMenuOpen(RE::Console::MENU_NAME))
             {
+                Observer::cleanup_invalid_objects(dtime);
+
+
                 MiscThings::save_loader(dtime);
 
                 if (do_debug_scan) debug_scan(dtime);
@@ -1742,7 +1745,7 @@ private:
                 Observer::player_state_monitor(dtime);
                 Observer::detect_locations(dtime);
                 Observer::timed_quest_puzzles_processor(dtime);
-                Observer::cleanup_invalid_objects(dtime);
+                
 
                 RaceProcessor::processor(dtime);
 

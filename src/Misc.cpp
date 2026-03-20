@@ -7529,12 +7529,31 @@ namespace MiscThings {
     {
         auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
 
+
+        bool found = false;
+
+        //int dbg_int = 0;
+
+        RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 30000.0,
+            [&](RE::TESObjectREFR* a_ref) {
+                {
+                    if (a_ref == test_object)
+                    {
+                        found = true;
+                        return RE::BSContainer::ForEachResult::kStop;
+                    }
+                }
+                return RE::BSContainer::ForEachResult::kContinue;
+            });
+
+        if (!found)
+            return false;
+
         for (std::pair<int, object_data> object : objects_around)
         {
             if (object.second.object == test_object) //it existed in our list...
             {
                 bool its_valid = false;
-
                 /*
                 RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 50000.0,
                     [&](RE::TESObjectREFR* a_ref) {
