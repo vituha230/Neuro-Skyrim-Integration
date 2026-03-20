@@ -536,7 +536,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                     if (MiscThings::is_objects_around_valid())
                     {
                         actions_to_register[action_pos] = Capabilities::LookAtObject::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
+                        //actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
                     }
 
                 }
