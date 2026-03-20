@@ -2293,7 +2293,7 @@ namespace Observer {
 										{
 											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											std::string action = " is flying";
-											if (result.empty())
+											if (result.empty() && name != "")
 												result.push_back("[" + name + action + in_the_distance + "]");
 										}
 
@@ -2301,14 +2301,14 @@ namespace Observer {
 										{
 											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											std::string action = " is landing";
-											if (result.empty())
+											if (result.empty() && name != "")
 												result.push_back("[" + name + action + in_the_distance + "]");
 										}
 
 										if (new_state.action_flags & (int)RE::FLY_STATE::kHovering)
 										{
 											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
-											if (result.empty())
+											if (result.empty() && name != "")
 												std::string action = " is hovering";
 
 										}
@@ -2317,7 +2317,7 @@ namespace Observer {
 										{
 											std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											std::string action = " takes off";
-											if (result.empty())
+											if (result.empty() && name != "")
 												result.push_back("[" + name + action + in_the_distance + "]");
 										}
 

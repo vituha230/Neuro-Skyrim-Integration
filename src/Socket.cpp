@@ -512,6 +512,11 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
                         {
                             actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
+                            if (!MiscThings::have_any_quests())
+                            {
+                                actions_to_register[action_pos] = Capabilities::GetLocations::Action; action_pos++;
+                            }
+                                
                         }
                         else
                         {
@@ -703,6 +708,15 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                 advice += ", follow some quest";
             else
                 advice = "follow some quest";
+        else
+        {
+            if (!MiscThings::is_interior_cell())
+            if (advice != "")
+                advice += ", explore, go to location or use map to travel";
+            else
+                advice = "explore, go to location or use map to travel";
+        }
+
 
         if (advice != "")
             advice = "You can " + advice;

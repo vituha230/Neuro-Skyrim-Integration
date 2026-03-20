@@ -2600,7 +2600,7 @@ namespace MiscThings {
         if (!got_any_quests)
         {
             result.first = false;
-            result.second = "No active quests found. ";
+            result.second = "No active quests found. You can use map to travel to some location (even if it is not discovered yet, you can still travel there by foot), or go to some location nearby. ";
         }
         else
         {
