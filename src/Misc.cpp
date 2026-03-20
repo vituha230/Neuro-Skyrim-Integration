@@ -7368,6 +7368,16 @@ namespace MiscThings {
 
     bool is_object_valid(RE::TESObjectREFR* a_ref)
     {
+        if (!a_ref || !a_ref->data.objectReference)
+            return false;
+
+        RE::ObjectRefHandle my_handle{};
+        my_handle = a_ref->GetHandle();
+
+        if ((!my_handle || !my_handle.get() || !my_handle.get().get()))
+            return false;
+
+
         if (a_ref->AsReference()->modelState == 0)
             return false;
 
@@ -7525,6 +7535,7 @@ namespace MiscThings {
             {
                 bool its_valid = false;
 
+                /*
                 RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 50000.0,
                     [&](RE::TESObjectREFR* a_ref) {
                         if (test_object == a_ref) //it exists right now...
@@ -7535,7 +7546,8 @@ namespace MiscThings {
 
                         return RE::BSContainer::ForEachResult::kContinue;
                     });
-
+                */
+                its_valid = is_object_valid(test_object);
                 return its_valid;
             }
         }
