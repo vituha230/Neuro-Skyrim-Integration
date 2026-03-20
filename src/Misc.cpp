@@ -53,6 +53,89 @@ namespace MiscThings {
     }
 
 
+
+    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest)
+    {
+        float result = 0.0f;
+
+        if (target)
+        {
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+            if (player)
+            {
+                auto player_pos = player->GetPosition();
+
+                RE::NiPoint3 last_teleport_pos_end = RE::NiPoint3::Zero();
+
+                RE::ObjectRefHandle quest_ref_handle{};
+                target->GetTargetRef(quest_ref_handle, false, quest);
+                
+                RE::TESObjectREFR* quest_target_ref = nullptr;
+
+                if (quest_ref_handle)
+                    if (quest_ref_handle.get())
+                        quest_target_ref = quest_ref_handle.get().get();
+
+
+
+                for (auto teleport : target->teleportPath.teleportRefs)
+                {
+                    if (teleport.ref)
+                    {
+                        auto teleport_pos = teleport.ref->GetPosition(); //from where it teleports
+
+                        if (last_teleport_pos_end == RE::NiPoint3::Zero())
+                        {
+                            result += player_pos.GetDistance(teleport_pos);
+                        }
+                        else
+                            result += teleport_pos.GetDistance(last_teleport_pos_end);
+
+                        last_teleport_pos_end = teleport.teleportLocation; //where it teleports
+                    }
+
+                }
+
+                if (quest_target_ref)
+                {
+                    auto quest_target_ref_pos = quest_target_ref->GetPosition();
+                    if (last_teleport_pos_end != RE::NiPoint3::Zero())
+                        result += quest_target_ref_pos.GetDistance(last_teleport_pos_end);
+                    else
+                        result += quest_target_ref_pos.GetDistance(player_pos);
+                }
+
+
+                if (result == 0.0f)
+                {
+                    RE::ObjectRefHandle tracking_ref_handle{};
+
+                    target->GetTrackingRef(tracking_ref_handle, quest);
+
+                    RE::TESObjectREFR* tracking_ref = nullptr;
+
+                    if (tracking_ref_handle)
+                        if (tracking_ref_handle.get())
+                            tracking_ref = tracking_ref_handle.get().get();
+
+                    if (tracking_ref)
+                    {
+                        auto tracking_ref_pos = tracking_ref->GetPosition();
+
+                        result += tracking_ref_pos.GetDistance(player_pos);
+                    }
+                }
+
+
+            }
+        }
+
+        return result;
+    }
+
+
+
     std::string get_good_fasttravel_marker_for_quest_target(RE::TESObjectREFR* target)
     {
 
@@ -2437,6 +2520,9 @@ namespace MiscThings {
                                             this_quest.category = 0;
 
 
+                                            this_quest.estimate_distance = get_quest_target_distance(target, this_quest.quest);
+
+                                            /*
                                             if (std::size(target->teleportPath.teleportRefs) > 0)
                                             {
                                                 //in different location
@@ -2447,7 +2533,7 @@ namespace MiscThings {
                                             {
                                                 this_quest.estimate_distance = 0.0f; //this means we are in the same cell
                                             }
-
+                                            */
 
                                             sortable_quests.push_back(this_quest);
 
@@ -2486,7 +2572,18 @@ namespace MiscThings {
             if (target_name != "")
                 target_name = " (" + target_name + ")";
 
-            result_text += "[id " + std::to_string(sortable_quests.at(i - 1).id) + "] " + sortable_quests.at(i - 1).name + ": " + sortable_quests.at(i - 1).displaytext + target_name;
+
+            float distance = MiscThings::get_quest_target_distance(sortable_quests.at(i - 1).target, sortable_quests.at(i - 1).quest);
+
+            
+            std::string big_distance = "";//
+            
+            if (distance > 0.0f)
+                big_distance = ". Distance to target : " + std::to_string((int)distance / 100) + " m. ";
+
+
+
+            result_text += "[id " + std::to_string(sortable_quests.at(i - 1).id) + "] " + sortable_quests.at(i - 1).name + ": " + sortable_quests.at(i - 1).displaytext + target_name + big_distance;
             result_text += "\n";
 
         }
@@ -3118,6 +3215,36 @@ namespace MiscThings {
     }
 
 
+
+    std::string get_door_teleport(RE::TESObjectREFR* object)
+    {
+        auto extra = object->extraList.GetByType(RE::ExtraDataType::kTeleport);
+
+        std::string leads_to = "";
+
+        if (extra)
+        {
+            auto extra_teleport = (RE::ExtraTeleport*)extra;
+
+            if (auto teleport_target_data = extra_teleport->teleportData; teleport_target_data)
+                if (auto teleport_target_handle = teleport_target_data->linkedDoor; teleport_target_handle)
+                    if (auto teleport_target_refr = teleport_target_handle.get(); teleport_target_refr)
+                        if (auto target_cell = teleport_target_refr->GetParentCell(); target_cell)
+                        {
+                            leads_to = target_cell->GetName();
+
+                            if (leads_to == "")
+                                leads_to = "outside";
+                        }
+                        else
+                            leads_to = "outside";
+        }
+
+
+        return leads_to;
+    }
+
+
     std::string get_object_category(RE::TESObjectREFR* object)
     {
         if (!object->AsReference())
@@ -3196,25 +3323,7 @@ namespace MiscThings {
                 {
                     auto extra = object->extraList.GetByType(RE::ExtraDataType::kTeleport);
 
-                    std::string leads_to = "";
-
-                    if (extra)
-                    {
-                        auto extra_teleport = (RE::ExtraTeleport*)extra;
-
-                        if (auto teleport_target_data = extra_teleport->teleportData; teleport_target_data)
-                            if (auto teleport_target_handle = teleport_target_data->linkedDoor; teleport_target_handle)
-                                if (auto teleport_target_refr = teleport_target_handle.get(); teleport_target_refr)
-                                    if (auto target_cell = teleport_target_refr->GetParentCell(); target_cell)
-                                    {
-                                        leads_to = target_cell->GetName();
-
-                                        if (leads_to == "")
-                                            leads_to = "outside";
-                                    }
-                                    else
-                                        leads_to = "outside";
-                    }
+                    std::string leads_to = get_door_teleport(object);
 
                     if (leads_to != "")
                         result = "[Door to " + leads_to + "]";

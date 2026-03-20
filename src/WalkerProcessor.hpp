@@ -16,8 +16,13 @@ namespace WalkerProcessor {
 	void reset_walker();
 	//void reset_explore_mode();
 
+	void refresh_reminder_start_pos();
 
 	void test_new_very_close_quest();
+
+
+	bool get_just_teleported();
+	void clear_just_teleported();
 
 
 	std::pair<bool, std::string> walk_to_object_by_refr(RE::TESObjectREFR* target, int action, bool surrender_to_guards_mode = false);

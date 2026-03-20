@@ -219,6 +219,10 @@ namespace MiscThings {
     bool is_immortal(RE::Actor* actor);
     bool is_player_hidden();
 
+    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest);
+
+    std::string get_door_teleport(RE::TESObjectREFR* object);
+
 
     namespace General::Script
     {

@@ -20,6 +20,11 @@ namespace WalkerProcessor {
     int last_walker_operation = -1; //for location switch. DO NOT RESET IN NORMAL RESET
 
 
+    RE::TESQuestTarget* current_quest_target_followed = nullptr;
+    RE::TESQuest* current_quest_followed = nullptr;
+
+
+    bool just_teleported = false;
 
 
 
@@ -305,6 +310,18 @@ namespace WalkerProcessor {
     bool change_quest_course_choice_valid = false;
     int change_quest_course_choice = 0;
 
+
+
+
+    bool get_just_teleported()
+    {
+        return just_teleported;
+    }
+
+    void clear_just_teleported()
+    {
+        just_teleported = false;
+    }
 
 
     void reset_explore_mode_start_range()
@@ -1256,6 +1273,17 @@ namespace WalkerProcessor {
 
 
 
+    void refresh_reminder_start_pos()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        
+        if (player)
+            reminder_start_pos = player->GetPosition();
+    }
+
+
+
+
 
     float last_walk_reminded_time = 0.0f;
 
@@ -1578,11 +1606,21 @@ namespace WalkerProcessor {
                     
                     float distance = player->GetDistance(target_ref, true, true);
                    
+                    if (current_quest_target_followed && current_quest_followed)
+                    {
+                        distance = MiscThings::get_quest_target_distance(current_quest_target_followed, current_quest_followed);
+                    }
+
+
                     if (special_ref_for_distance_calculation)
                     {
                         distance = player->GetDistance(special_ref_for_distance_calculation, true, true);
                     }
 
+                    if (current_quest_target_followed && current_quest_followed)
+                    {
+                        distance = MiscThings::get_quest_target_distance(current_quest_target_followed, current_quest_followed);
+                    }
 
                     //if (distance > 40000.0f)
                     {
@@ -1606,10 +1644,13 @@ namespace WalkerProcessor {
 
                         
 
+                    if (!runaway_mode)
+                    {
+                        reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
+                        reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
+                        reminder_message += big_distance;
+                    }
 
-                    reminder_message += "Distance walked: " + std::to_string((int)(reminder_distance / 100.0f)) + " m. ";
-                    reminder_message += "Walk time: " + std::to_string((int)reminder_walk_time) + " s. ";
-                    reminder_message += big_distance;
 
 
 
@@ -3127,6 +3168,11 @@ namespace WalkerProcessor {
     void reset_walker()
     {
 
+        current_quest_target_followed = nullptr;
+        current_quest_followed = nullptr;
+
+        just_teleported = false;
+
         no_weapons_notified = false; 
 
 
@@ -4610,6 +4656,8 @@ namespace WalkerProcessor {
 
                     std::string big_distance = "";
                     float distance = player->GetDistance(target_ref, true, true);
+
+
                     //if (distance > 40000.0f)
                         big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
 
@@ -5189,6 +5237,10 @@ namespace WalkerProcessor {
                                                 quest_mode = true;
                                                 target_ref = quests_target_ref;
 
+
+                                                current_quest_target_followed = quest.target;
+                                                current_quest_followed = quest.quest;
+
                                                 reminder_target_name = "[id " + std::to_string(quest.id) + "] " + quest.name + ": " + quest.displaytext;
                                                 reminder_start_pos = player->GetPosition();
 
@@ -5238,6 +5290,12 @@ namespace WalkerProcessor {
                                                 std::string big_distance = "";
                                                 float distance = player->GetDistance(target_ref, true, true);
 
+                                                if (current_quest_target_followed && current_quest_followed)
+                                                {
+                                                    distance = MiscThings::get_quest_target_distance(current_quest_target_followed, current_quest_followed);
+                                                }
+
+                                                /*
                                                 if (std::size(target->teleportPath.teleportRefs) > 0)
                                                 {
                                                     //in different location
@@ -5246,6 +5304,8 @@ namespace WalkerProcessor {
 
                                                     special_ref_for_distance_calculation = last_teleport_ref;
                                                 }
+                                                */
+
 
                                                 //if (distance > 40000.0f)
                                                     big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
@@ -5406,6 +5466,10 @@ namespace WalkerProcessor {
 
                                                 
                                                 target_ref = quests_target_ref; //i think something is excessive here
+
+                                                current_quest_target_followed = target;
+                                                current_quest_followed = quest;
+
                                                 result = true;
                                             }
                                         }
@@ -8820,10 +8884,21 @@ namespace WalkerProcessor {
                                 if (!get_targeted_ref() || is_door(get_targeted_ref()))
                                 {
                                     if (!get_targeted_ref() || target_ref == get_targeted_ref())
-                                        reset_walker();//;// walk_forward_a_little = true;
+                                    {
+                                        if (target_ref == get_targeted_ref() && is_door(target_ref) && (MiscThings::get_door_teleport(target_ref) != ""))
+                                        {
+                                            just_teleported = true;
+                                            catch_door_result = false;
+                                            catch_door_result_time = 0.0f;
+                                            set_universal_block(1.5f);
+                                        }
+                                        else
+                                            reset_walker();//;// walk_forward_a_little = true;
+                                    }
                                     else
                                     {
                                         catch_door_result = false; //proceed whatever we did before after pause
+                                        catch_door_result_time = 0.0f;
                                         set_universal_block(1.5f);
                                     }
                                         

@@ -4,6 +4,8 @@
 //crucial:
 
 
+//TODO offer choice for follow_quest if quest has several paths. remember it
+
 //TODO continue walking to whatever we were walking after location switch
 
 
@@ -915,16 +917,38 @@ namespace Hooks {
                 {
                     MiscThings::reset_misc(); //clear compas locations on location change
                 }
+                else
+                {
+                    //probably death. reset walker and threats so we are asked what to do in potential fight
+                    WalkerProcessor::reset_walker();
+                    Observer::reset_threats();
+                }
+
+                
+                if (!WalkerProcessor::get_just_teleported())
+                {
+                    //walker didnt open any doors. its some weird situation/user loaded save manually/it was fasttravel/script travel.
+                    //actions must be redone
+
+                    WalkerProcessor::reset_walker();
+                    Observer::reset_threats();
+                }
+                else
+                {
+                    WalkerProcessor::clear_just_teleported();
+                }
+
 
 
          
                 RandomMessageBoxProcessor::reset_menu();
-                WalkerProcessor::reset_walker();
+                //WalkerProcessor::reset_walker();
+                //Observer::reset_threats();
                 WalkerProcessor::reset_backup_pickup();
 
                 //MiscThings::clear_object_list(); //now cleared on menu close only if cell changed
 
-                Observer::reset_threats();
+                
                 Observer::reset_observer();
                 Observer::clear_objects_to_track();
                 Observer::reset_quest_puzzles();
@@ -946,7 +970,7 @@ namespace Hooks {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS CLOSED");
 
 
-
+                
 
                 in_game = true;
 
@@ -960,7 +984,11 @@ namespace Hooks {
 
 
                     if (cell != old_cell)
+                    {
                         MiscThings::clear_object_list();
+                        WalkerProcessor::refresh_reminder_start_pos();
+                    }
+                        
 
                     if (cell)
                     {
@@ -1007,7 +1035,10 @@ namespace Hooks {
                             }
                         
                         
-                        neuro::add_message_to_delayed_queue("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]");
+                        if (WalkerProcessor::walker_active())
+                            send_random_context("[You are in game. Current location: " + location_name + "]");
+                        else
+                            neuro::add_message_to_delayed_queue("[You are in game. Current location: " + location_name + ". Use commands to interact with the game. ]");
 
                         //send_random_context(, false);
                     }
