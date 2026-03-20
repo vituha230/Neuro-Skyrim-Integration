@@ -2464,7 +2464,7 @@ namespace WalkerProcessor {
 
                             auto player_temp_pos = player->GetPosition();
 
-                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
+                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
                                 lookat_location.z -= 30.0f;
 
                             target_center = lookat_location;
@@ -2483,7 +2483,7 @@ namespace WalkerProcessor {
 
                             auto player_temp_pos = player->GetPosition();
 
-                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
+                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
                                 lookat_location.z -= 30.0f;
 
                             target_center = lookat_location;
