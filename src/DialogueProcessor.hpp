@@ -33,6 +33,7 @@
         smithing_item,
         map_location,
         container_item,
+        container_item_array,
         gift_item,
         messagebox_option,
         threat_response,

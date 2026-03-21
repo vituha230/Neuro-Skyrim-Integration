@@ -48,7 +48,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Select an option. )";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "Can only be used when you are asked to choose something. The ID of the selected option.", "type": "integer" } }, "required": ["id"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the selected option", "type": "integer" } }, "required": ["id"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
@@ -60,7 +60,7 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Select multiple options. )";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "Can only be used when you are asked to choose something. The ID of the selected option.", "type": "integer" }, "id2": { "description": "The ID of the selected option.", "type": "integer" }, "id3": { "description": "The ID of the selected option.", "type": "integer" } }, "required": ["id1", "id2"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the selected option", "type": "integer" }, "id2": { "description": "The ID of the selected option", "type": "integer" }, "id3": { "description": "The ID of the selected option", "type": "integer" } }, "required": ["id1", "id2"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption
@@ -72,7 +72,20 @@ namespace Capabilities
         constexpr char Desc[] =
             R"(Give a choice in string format. )";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "choice": { "description": "Can only be used when asked while creating your character. Choose your character's name", "type": "string" } }, "required": ["choice"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "choice": { "description": "Choose your character's name", "type": "string" } }, "required": ["choice"] })";
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+    } // namespace SelectChoiceOption
+
+
+
+    namespace SelectForceChoiceArray
+    {
+        constexpr char Name[] = "select_choice_array";
+        constexpr char Desc[] =
+            R"(Select multiple options)";
+        constexpr char JsonSchema[] =
+            R"({ "additionalProperties": false, "type": "object", "properties": { "ids_array": { "description": "Array of IDs of options", "type": "array", "items" : { "type": "integer" } }}, "required": ["ids_array"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption

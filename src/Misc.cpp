@@ -18,6 +18,7 @@ namespace MiscThings {
 
 
 
+
     int get_very_close_quest()
     {
         auto temp_result = MiscThings::get_current_quests();

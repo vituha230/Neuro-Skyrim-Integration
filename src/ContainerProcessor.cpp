@@ -29,7 +29,10 @@ int item_choice = -1;
 bool check_results = false;
 bool catch_pickpocket_result = false;
 bool close_empty_container = false;
-
+std::vector<int> item_choice_array{};
+int old_item_list_size = -1;
+bool refresh_items_list = false;
+bool process_next_item_after_refresh = false;
 
 
 
@@ -610,6 +613,9 @@ void setup_fill_item_list()
 	int max_scroll = get_item_max_scroll_position();
 	int scroll = get_item_scroll_position();
 
+	items_list.clear();
+	items_list_valid = false;
+
 	last_cursor_move = 0;
 	missing_item_detected = false;
 
@@ -700,14 +706,83 @@ void reset_container()
 
 	items_list.clear();
 
+	item_choice_array.clear();
 
+	old_item_list_size = -1;
 
+	refresh_items_list = false;
+	process_next_item_after_refresh = false;
 
 }
 
 
 
-std::pair<bool, std::string> set_item_choice(int id)
+
+
+
+std::vector<int> already_chosen_ids{};
+
+
+void process_next_item()
+{
+	if (std::size(item_choice_array) <= 0)
+		reset_container();
+	else
+	{
+		item_choice = item_choice_array.at(0);
+		item_choice_array.erase(item_choice_array.begin());
+
+
+		if (item_choice == -1)
+		{
+			quit_menu();
+			reset_container();
+			return;
+		}
+
+		if (item_choice == -2 && is_pickpocketing())
+		{
+			item_choice_valid = false;
+			process_next_item();
+			return;
+		}
+
+		if (item_choice == -2)
+		{
+			//take all
+			set_universal_block(1.0f);
+			ready_weapon();
+			reset_container();
+			return;
+		}
+		else
+		{
+			if (items_list_valid)
+			{
+				if (items_list.find(item_choice) == items_list.end())
+				{
+					item_choice_valid = false;
+					process_next_item();
+					return;
+				}
+				else
+				{
+					item_choice_valid = true;
+					return;
+				}
+			}
+			else
+			{
+				reset_container();
+				return;
+			}
+		}
+	}
+}
+
+
+
+std::pair<bool, std::string> set_item_choice_array(std::vector<int> ids)
 {
 	std::pair<bool, std::string> result{};
 
@@ -719,6 +794,49 @@ std::pair<bool, std::string> set_item_choice(int id)
 		return result;
 	}
 
+
+	//check take all
+	for (auto id : ids)
+	{
+		if (id == -2 && !is_pickpocketing())
+		{
+			set_universal_block(1.0f);
+			ready_weapon();
+
+			result.first = true;
+			result.second = "[Taking all...]";
+			return result;
+		}
+	}
+
+
+	if (std::size(ids) <= 0)
+	{
+		result.first = false;
+		result.second = "Invalid choice";
+		return result;
+	}
+
+
+	item_choice_array = ids;
+
+	process_next_item();
+	result.first = true;
+	result.second = "[Processing...]";
+
+	return result;
+}
+
+
+
+
+
+
+std::pair<bool, std::string> set_item_choice(int id)
+{
+	std::pair<bool, std::string> result{};
+
+	auto ui = RE::UI::GetSingleton();
 	if (!ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
 	{
 		result.first = true;
@@ -836,6 +954,16 @@ bool is_container_empty()
 
 
 
+
+
+
+
+
+
+
+
+
+
 float container_processor_timer = 0.0f;
 
 
@@ -884,6 +1012,12 @@ void processor(float dtime)
 			else
 			{   //NOW ITEMS
 
+				if (refresh_items_list)
+				{
+					refresh_items_list = false;
+					items_list_valid = false;
+				}
+
 				if (!items_list_valid && !check_results)
 					if (!filling_items)
 					{
@@ -894,6 +1028,30 @@ void processor(float dtime)
 						fill_items_list(0.02f);
 				else
 				{
+					filling_items = false;
+					if (!check_results)
+					{
+						int new_items_list_size = std::size(items_list);
+
+						if (new_items_list_size < old_item_list_size)
+						{
+							for (auto& a_choice : item_choice_array)
+							{
+								if (a_choice > 0 && a_choice > item_choice)
+									a_choice -= 1;
+							}
+						}
+
+						old_item_list_size = new_items_list_size;
+					}
+
+					if (process_next_item_after_refresh)
+					{
+						process_next_item_after_refresh = false;
+						process_next_item();
+						return;
+					}
+
 
 					if (!item_choice_request_sent && !check_results)
 					{
@@ -902,7 +1060,7 @@ void processor(float dtime)
 
 						if (std::size(options) <= 2)
 						{
-							send_random_context("[You opened a container. It is empty. Closing container...]");
+							send_random_context("[Container is empty. Closing container...]");
 							//if (force_choice(get_items_options(), "You opened a container. It is empty. Send -1 to exit. ", force_type::container_item))
 							missing_item_detected = false;
 							last_cursor_move = 0;
@@ -915,12 +1073,19 @@ void processor(float dtime)
 						}
 
 
-						if (force_choice(options, get_force_message(), force_type::container_item))
+						auto force_type = force_type::container_item;
+
+						if (!is_pickpocketing())
+							force_type = force_type::container_item_array;
+
+						if (force_choice(options, get_force_message(), force_type))
 						{
 							missing_item_detected = false;
 							last_cursor_move = 0;
 							item_choice_request_sent = true;
 						}
+
+
 					}
 					else
 					{
@@ -941,6 +1106,13 @@ void processor(float dtime)
 									check_results = true;
 									//this is [R]Craft button
 									//menu->uiMovie->Invoke("_root.Menu.BottomBarInfo.Buttons.3.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
+									
+									//RE::ItemList* old_item_list = menu->itemCard;
+
+									old_item_list_size = std::size(items_list);
+
+									
+
 									confirm();
 									set_universal_block(1.0f);
 									std::string result = get_result_message();
@@ -949,10 +1121,20 @@ void processor(float dtime)
 								}
 								else
 								{
-									if (is_pickpocketing())
-										catch_pickpocket_result = true;
+									check_results = false;
 
-									reset_container();
+									
+
+									if (is_pickpocketing())
+									{
+										reset_container();
+										catch_pickpocket_result = true;
+									}
+									else
+									{
+										refresh_items_list = true;
+										process_next_item_after_refresh = true;
+									}
 								}
 							}
 						}

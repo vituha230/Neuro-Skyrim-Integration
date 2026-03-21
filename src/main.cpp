@@ -4,6 +4,8 @@
 //crucial:
 
 
+//TODO finish arrays for containers and other menus
+
 
 
 //TODO check quests that have no target to walk to (for example use shout)
@@ -188,6 +190,10 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
 
         if (force_type == force_type::character_name)
             force_action = Capabilities::SelectForceChoiceString::Action;
+
+        if (force_type == force_type::container_item_array)
+            force_action = Capabilities::SelectForceChoiceArray::Action;
+
 
         neurosdk_action actions[] = { force_action };
 

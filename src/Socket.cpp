@@ -56,6 +56,9 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::SelectForceChoice::Action,
                                     Capabilities::SelectForceChoiceMultiple::Action,
                                     Capabilities::SelectForceChoiceString::Action,
+                                    Capabilities::SelectForceChoiceArray::Action,
+                                    
+
 
                                     Capabilities::GetObjectsAround::Action, //idk about this one
                                     Capabilities::GoToLocation::Action
@@ -302,8 +305,9 @@ bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
     std::string force_name_1 = Capabilities::SelectForceChoice::Name;
     std::string force_name_2 = Capabilities::SelectForceChoiceMultiple::Name;
     std::string force_name_3 = Capabilities::SelectForceChoiceString::Name;
+    std::string force_name_4 = Capabilities::SelectForceChoiceArray::Name;
 
-    if (!(size == 1 && (action_name == force_name_1 || action_name == force_name_2 || action_name == force_name_3))) //exclude forces
+    if (!(size == 1 && (action_name == force_name_1 || action_name == force_name_2 || action_name == force_name_3 || action_name == force_name_4))) //exclude forces
         something_is_registered = true;
 
     return true;
@@ -949,6 +953,47 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                     }
                 }
 
+                
+                if (name == Capabilities::SelectForceChoiceArray::Name)
+                {
+                    action_to_unregister = Capabilities::SelectForceChoiceArray::Action;
+
+                    if (get_active_force() == force_type::container_item_array)
+                    {
+                        Impl::JSON::NeuroChoiceJsonArrayInts json{};
+
+                        if (glz::read_json(json, messageQueue[i].value.action.data))
+                        {
+                            command_result.first = false;
+                            command_result.second = "Couldn't find any valid IDs in provided array";
+                        }
+                        else
+                        {
+                            command_result = ContainerProcessor::set_item_choice_array(json.ids_array);
+                        }
+                    }
+                    else
+                    {
+                        command_result = { true, "You dont have any choices to make" };
+                        register_allowed_actions();
+                    }
+                }
+
+
+                
+
+                                
+
+
+                                
+
+
+
+
+
+
+
+
                 if (command_result.first)// && !dont_reset_force) //if got positive result above - force has been cleared
                 {
                     
@@ -1059,12 +1104,13 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                 
 
                                 Impl::JSON::NeuroChoiceJsonArrayInts json{};
-                                Impl::JSON::NeuroChoiceJsonArrayStrings json2{};
+                                //Impl::JSON::NeuroChoiceJsonArrayStrings json2{};
 
                                 
 
                                 if (glz::read_json(json, messageQueue[i].value.action.data))
                                 {
+                                    /*
                                     if (glz::read_json(json2, messageQueue[i].value.action.data))
                                     {
                                         failed_to_parse_json = true;
@@ -1092,15 +1138,15 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                         }
                                         else
                                         {
+                                        */
                                             command_result.first = false;
                                             command_result.second = "Couldn't find any valid IDs in provided array";
-                                        }
+                                        //}
                                         
-                                    }
+                                    //}
                                 }
                                 else
                                 {
-
                                     command_result = MiscThings::drop_array_of_inventory_objects(json.ids_array);
                                 }
                                     
