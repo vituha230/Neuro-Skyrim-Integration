@@ -55,17 +55,21 @@ namespace MiscThings {
 
 
 
-    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest)
+    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* start)
     {
         float result = 0.0f;
 
         if (target)
         {
-
             auto player = RE::PlayerCharacter::GetSingleton();
+
             if (player)
             {
-                auto player_pos = player->GetPosition();
+
+                if (!start)
+                    start = player->AsReference();
+            
+                auto player_pos = start->GetPosition();
 
                 RE::NiPoint3 last_teleport_pos_end = RE::NiPoint3::Zero();
 
@@ -137,7 +141,7 @@ namespace MiscThings {
 
 
 
-    std::string get_good_fasttravel_marker_for_quest_target(RE::TESObjectREFR* target)
+    std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest)
     {
 
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -161,10 +165,12 @@ namespace MiscThings {
                 {
                     if (data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo))
                     {
+
                         std::string marker_name = data->mapData->locationName.GetFullName();
-                        if (marker_name != "")
+                        if (marker_name != "" && marker_name.find("Military Camp") == std::string::npos)
                         {
-                            auto distance = real_marker->GetDistance(target, true, true);
+                            //auto distance = real_marker->GetDistance(target, true, true);
+                            auto distance = get_quest_target_distance(target, quest, real_marker);
 
                             auto player_distance = player->GetDistance(real_marker, true, true);
 

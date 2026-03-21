@@ -1643,15 +1643,19 @@ namespace WalkerProcessor {
 
                     if (distance > 20000.0f)
                     {
-                        std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(target_ref);
-
-                        if (good_fasttravel_location != "" && advice_counter < 2)
+                        if (current_quest_target_followed && current_quest_followed)
                         {
-                            advice_counter++;
+                            std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
 
-                            //advice
-                            big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                            if (good_fasttravel_location != "" && advice_counter < 2)
+                            {
+                                advice_counter++;
+
+                                //advice
+                                big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                            }
                         }
+                        
                     }
 
                         
@@ -4859,7 +4863,7 @@ namespace WalkerProcessor {
 
 
 
-    int get_quest_id_by_refr(RE::TESQuest* quest)
+    int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective = nullptr)
     {
         int result = -1;
 
@@ -4892,11 +4896,16 @@ namespace WalkerProcessor {
                             {
                                 if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
                                 {
-                                    result = quest_entry.id;
-                                    break;
+                                    if (!specific_objective || (objective == specific_objective))
+                                    {
+                                        if (objective->numTargets > 0)
+                                        {
+                                            result = quest_entry.id;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
-
                         }
                     }
                 }
@@ -4953,7 +4962,14 @@ namespace WalkerProcessor {
                     }
 
                     if (quest_is_still_there)
-                        return walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen), false, false);
+                    {
+                        auto temp_result = walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen, last_quest_objective), false, false);
+                        if (!temp_result.first)
+                            temp_result = walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen), false, false); //now try without objective if objective failed
+
+                        return temp_result;
+                    }
+                        
                 }
             }
 
@@ -5374,13 +5390,15 @@ namespace WalkerProcessor {
 
                                                 if (distance > 20000.0f)
                                                 {
-                                                    std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(target_ref);
-
-                                                    if (good_fasttravel_location != "")
+                                                    if (current_quest_target_followed && current_quest_followed)
                                                     {
-                                                        //advice
-                                                        std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
-                                                        add_delayed_message(advice);
+                                                        std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
+                                                        if (good_fasttravel_location != "")
+                                                        {
+                                                            //advice
+                                                            std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                                            add_delayed_message(advice);
+                                                        }
                                                     }
                                                 }
 
@@ -5403,7 +5421,8 @@ namespace WalkerProcessor {
                     {
                         result.first = false;
                         result.second = "This quest has no target to walk to. Perhaps you need to do something else to complete it...";
-                        return result;
+                        //return result;
+                        //maybe it will find another objective that will actually work
                     }
                 }
             }
@@ -5413,7 +5432,9 @@ namespace WalkerProcessor {
         }
 
         result.first = false;
-        result.second = "Invalid quest ID. Use get_current_quests to get valid ID list";
+        if (result.second == "")
+            result.second = "Invalid quest ID. Use get_current_quests to get valid ID list";
+
         reset_walker();
 
         return result;

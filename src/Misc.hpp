@@ -159,7 +159,7 @@ namespace MiscThings {
     int get_very_close_quest();
 
 
-    std::string get_good_fasttravel_marker_for_quest_target(RE::TESObjectREFR* target);
+    std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest);
 
 
     int trap_firing(RE::TESObjectREFR* trap);
@@ -219,7 +219,7 @@ namespace MiscThings {
     bool is_immortal(RE::Actor* actor);
     bool is_player_hidden();
 
-    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest);
+    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* start = nullptr);
 
     std::string get_door_teleport(RE::TESObjectREFR* object);
 

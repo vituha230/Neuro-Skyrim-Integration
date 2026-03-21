@@ -6,8 +6,9 @@
 
 //TODO alchemy array instead of 3 ids, barter arrays and remove items you cant buy from list like in crafting menu
 
+
+
 //TODO check some quest that needs something to be used from inventory (are there any?)
-//TODO arrays in looting, arrays in barter sell
 
 
 //TODO probe navmesh before doing long-walk-forward
