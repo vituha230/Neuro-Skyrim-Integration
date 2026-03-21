@@ -2421,7 +2421,7 @@ namespace Observer {
 						//	;// radius = data_radius->radius;// *10.0f; //this radius is useless, markers just appear on 20k distance
 						//}
 
-						if (data && data->mapData && marker_name.find("Military Camp") == std::string::npos) //just filter military camps for now
+						if (real_marker && !real_marker->IsDisabled() && data && data->mapData)// && marker_name.find("Military Camp") == std::string::npos) //just filter military camps for now
 						{
 							if (marker_name != "")
 							{

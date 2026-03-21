@@ -182,7 +182,7 @@ namespace MiscThings {
             {
                 auto real_marker = marker.get().get();
                 auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
-                if (data && data->mapData && data->mapData->flags)
+                if (real_marker && !real_marker->IsDisabled() && data && data->mapData && data->mapData->flags)
                 {
                     if (data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo))
                     {
@@ -6981,6 +6981,9 @@ namespace MiscThings {
                 return false; //skip objects without world model
 
 
+            if (a_ref->IsDisabled())
+                return false;
+
             if (base_type == RE::FormType::Activator)
             {
                 auto test = (RE::TESObjectACTI*)base_obj;
@@ -7459,6 +7462,10 @@ namespace MiscThings {
 
         if (a_ref->AsReference()->modelState == 0)
             return false;
+
+        if (a_ref->IsDisabled())
+            return false;
+
 
         auto base_obj = a_ref->GetBaseObject();
 

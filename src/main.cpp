@@ -1020,7 +1020,7 @@ namespace Hooks {
                                     {
                                         auto real_marker = marker.get().get();
                                         auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
-                                        if (data && data->mapData && data->mapData->flags)
+                                        if (real_marker && !real_marker->IsDisabled() && data && data->mapData && data->mapData->flags)
                                         {
                                             std::string marker_name = data->mapData->locationName.GetFullName();
                                             if (marker_name != "")

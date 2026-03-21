@@ -191,9 +191,11 @@ namespace MapProcessor {
 								{
 									auto marker_ref = marker.second.first;
 
-									if (marker_ref && marker_ref->data.objectReference)
+									if (marker_ref && !marker_ref->IsDisabled() && marker_ref->data.objectReference)
 									{
-										float distance = marker_ref->GetDistance(quest_ref, true, true);
+										//float distance = marker_ref->GetDistance(quest_ref, true, true);
+										auto distance = MiscThings::get_quest_target_distance(a_quest.target, a_quest.quest, marker_ref);
+
 
 										if (distance < min_location_dist)
 										{
