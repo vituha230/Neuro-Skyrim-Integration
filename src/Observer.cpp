@@ -104,8 +104,8 @@ namespace Observer {
 
 
 	int old_greybeard_call_stage = 0;
-
-
+	bool greybeards_called = false;
+	float greybeards_called_timer = 0.0f;
 
 	void reset_quest_puzzles()
 	{
@@ -2762,12 +2762,26 @@ namespace Observer {
 
 					if (greybeard_call_stage == 10 && old_greybeard_call_stage == 0)
 					{
-						send_random_context("The ground shakes, and loud as thunder shout is heard from the sky, it said: Do-va-kiin!", false);
+						greybeards_called = true;
 					}
 
 					old_greybeard_call_stage = greybeard_call_stage;
 				}
 				
+
+
+				if (greybeards_called)
+				{
+					if (greybeards_called_timer > 1.0f)
+					{
+						greybeards_called = false;
+						greybeards_called_timer = 0.0f;
+						send_random_context("The ground shakes, and loud as thunder shout is heard from the sky, it said: Do-va-kiin!", false);
+					}
+					else
+						greybeards_called_timer += 0.5f;
+				}
+
 
 				//hit events
 
