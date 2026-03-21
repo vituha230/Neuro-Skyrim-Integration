@@ -40,7 +40,7 @@ bool slider_choice_valid = false;
 int slider_choice = -1;
 bool slider_confirmed = false;
 bool slider_confirming = false;
-
+bool quantity_was_specified = false;
 
 struct item_data {
 	std::string name;
@@ -725,7 +725,7 @@ void reset_container()
 	slider_choice = -1;
 	slider_confirmed = false;
 	slider_confirming = false;
-
+	quantity_was_specified = false;
 
 }
 
@@ -1192,7 +1192,20 @@ void processor(float dtime)
 								if (a_choice > 0 && a_choice > item_choice)
 									a_choice -= 1;
 							}
+
+							quantity_was_specified = false;
 						}
+						else
+						{
+							if (old_item_list_size != -1 && !quantity_was_specified)
+							{
+								//we took something but it didnt change the list. this means there are more items of that kind we just picked up. take all
+								process_next_item_after_refresh = false;
+								quantity_was_specified = false;
+							}
+						}
+
+						
 
 						old_item_list_size = new_items_list_size;
 					}
@@ -1278,6 +1291,10 @@ void processor(float dtime)
 
 									if (quantity_slider_active())
 									{
+										confirm();
+										set_universal_block(0.3f);
+										return;
+
 										if (!slider_request_sent)
 										{
 											if (force_choice({}, "Choose amount of " + get_item_text_by_id(item_choice) + " to take. Valid range: from " + 
@@ -1290,6 +1307,7 @@ void processor(float dtime)
 										{
 											if (slider_choice_valid)
 											{
+												quantity_was_specified = true;
 												if (slider_choice > 0)
 												{
 													if (get_slider_pos() != slider_choice)

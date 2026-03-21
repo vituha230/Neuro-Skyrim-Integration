@@ -5304,9 +5304,13 @@ namespace MiscThings {
 
     std::string get_inventory_item_full_info(RE::TESBoundObject* item)
     {
+
         std::string result = "";
 
         auto item_form = (RE::TESForm*)item;
+
+        //if (!item_form->sourceFiles.array || item_form->sourceFiles.array->size() <= 0)
+        //    return "";
 
         std::string actions = "";
 
@@ -5422,31 +5426,39 @@ namespace MiscThings {
             if (item_form->formType == RE::FormType::Ingredient || item_form->formType == RE::FormType::AlchemyItem)
                 ;// actions += "[Can consume]";
 
-            std::string item_name = item->GetName();
 
-            if (item_name != gold_name)
+            auto name = item->As<RE::TESFullName>();
+
+
+            if (name && name->fullName != "")
             {
 
-                if (item_name.find("<Alias=") != std::string::npos)
+                std::string item_name = item->GetName();
+
+                if (item_name != "" && item_name != gold_name)
                 {
-                    auto player = RE::PlayerCharacter::GetSingleton();
-                    auto quest_targets = player->questTargets;
 
-                    for (auto quest_target : quest_targets)
-                        item_name = replace_aliases(quest_target.first, item_name); //if there are more
+                    if (item_name.find("<Alias=") != std::string::npos)
+                    {
+                        auto player = RE::PlayerCharacter::GetSingleton();
+                        auto quest_targets = player->questTargets;
+
+                        for (auto quest_target : quest_targets)
+                            item_name = replace_aliases(quest_target.first, item_name); //if there are more
+                    }
+
+
+                    result += get_object_category(item_form);
+                    result += actions + " ";
+                    result += item_name;
+                    //result += "\n"; //TODO: replace with comma later
+
+                    //item_data database_data{};
+                    //database_data.amount = data.first;
+                    //database_data.object = data.second->GetObject();
+
+                    //inventory_items_list.insert({ id , database_data });
                 }
-                    
-
-                result += get_object_category(item_form);
-                result += actions + " ";
-                result += item_name;
-                //result += "\n"; //TODO: replace with comma later
-
-                //item_data database_data{};
-                //database_data.amount = data.first;
-                //database_data.object = data.second->GetObject();
-
-                //inventory_items_list.insert({ id , database_data });
             }
         }
 

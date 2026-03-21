@@ -1725,7 +1725,6 @@ private:
             {
                 Observer::cleanup_invalid_objects(dtime);
 
-
                 MiscThings::save_loader(dtime);
 
                 if (do_debug_scan) debug_scan(dtime);
