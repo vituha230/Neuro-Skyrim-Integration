@@ -25,7 +25,8 @@ namespace BarterProcessor {
     bool back_to_categories();
     bool back_to_items();
     bool back_to_barter_type_selection();
-    
+    bool switch_barter_type_selection();
+
 }
 
 

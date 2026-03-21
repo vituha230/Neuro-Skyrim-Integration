@@ -330,7 +330,7 @@ namespace BarterProcessor {
             return result;
         }
 
-        if (pos < get_slider_min() || pos > get_slider_max() || !item_choice_valid || !category_choice_valid || !barter_type_defined)
+        if (pos < get_slider_min() || pos > get_slider_max() || !item_choice_valid || !barter_type_defined)// || !category_choice_valid)
         {
             //TODO: give int result, separate invalid id, category undefined and barter_type undefined.
             //barter_item_request_sent = false; //FAILED FORCED ACTIONS ARE REFORCED AUTOMATICALLY
@@ -433,7 +433,8 @@ namespace BarterProcessor {
 
         if (id == -2)
         {
-            back_to_barter_type_selection();
+            //back_to_barter_type_selection();
+            switch_barter_type_selection();
             result.first = true;
             result.second = "[Went back to barter type selection]";
             return result;
@@ -449,7 +450,7 @@ namespace BarterProcessor {
 
 
 
-        if (items_list.find(id) == items_list.end() || !category_choice_valid || !barter_type_defined)
+        if (items_list.find(id) == items_list.end() || !barter_type_defined)// || !category_choice_valid)
         {
             //TODO: give int result, separate invalid id, category undefined and barter_type undefined.
             //barter_item_request_sent = false; //FAILED FORCED ACTIONS ARE REFORCED AUTOMATICALLY
@@ -508,6 +509,11 @@ namespace BarterProcessor {
 
             result.push_back(option);
         }
+
+        if (type == barter_type::sell)
+            result.push_back({ -2, "[SWITCH TO BUYING]" });
+        else
+            result.push_back({ -2, "[SWITCH TO SELLING]" });
 
         result.push_back({ -1, "[QUIT BARTER]" });
 
@@ -1240,6 +1246,24 @@ namespace BarterProcessor {
 
 
 
+    bool switch_barter_type_selection()
+    {
+        auto old_type = type;
+
+        left();
+        barter_reset();
+
+        if (old_type == barter_type::sell)
+            type = barter_type::buy;
+        else
+            type = barter_type::sell;
+
+        barter_type_defined = true;
+        barter_type_request_sent = true;
+
+        return true;
+    }
+
 
     void fill_categories_list_one_direction(barter_type type, bool direction_down, float dtime)
     {
@@ -1653,7 +1677,12 @@ namespace BarterProcessor {
         return result;
     }
 
+
+
+
+
     float barter_processor_timer = 0;
+
     void processor(float dtime)
     {
 
@@ -1672,7 +1701,7 @@ namespace BarterProcessor {
 
                 if (barter_type_defined)
                 {
-                    if (!categories_list_valid)
+                    if (false && !categories_list_valid)
                         if (!filling_categories)
                         {
                             setup_fill_category_list();
@@ -1682,20 +1711,26 @@ namespace BarterProcessor {
                             fill_categories_list(0.02f);
                     else
                     {
-                        if (!barter_category_request_sent)
+                        if (false && !barter_category_request_sent)
                         {
-
                             if (force_choice(get_barter_categories(), "You are bartering. Choose item category to " + get_barter_type_text(), force_type::barter_category))
                             {
-                                missing_category_detected = false;
+                               missing_category_detected = false;
                                 last_cursor_move = 0;
                                 barter_category_request_sent = true;
                             }
                         }
                         else
                         {
-                            if (category_choice_valid)
+                            if (true || category_choice_valid)
                             {
+                                if (type == barter_type::sell) //no more categories
+                                    category_choice = 11;
+                                else
+                                    category_choice = 0;
+
+                                category_choice_valid = true;
+
                                 if (get_category_selected_index() != category_choice && !item_confirming && !item_confirmed)
                                 {
                                     if (!missing_category_detected)

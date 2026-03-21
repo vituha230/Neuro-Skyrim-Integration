@@ -1286,9 +1286,6 @@ void processor(float dtime)
 								}
 								else
 								{
-
-
-
 									if (quantity_slider_active())
 									{
 										confirm();
