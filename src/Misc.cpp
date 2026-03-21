@@ -69,6 +69,12 @@ namespace MiscThings {
                 if (!start)
                     start = player->AsReference();
             
+
+                auto player_worldspace = start->GetWorldspace();
+
+                //if any teleports are in the same worldspace where player is, start from that teleport
+
+
                 auto player_pos = start->GetPosition();
 
                 RE::NiPoint3 last_teleport_pos_end = RE::NiPoint3::Zero();
@@ -84,20 +90,35 @@ namespace MiscThings {
 
 
 
+                bool shortcut_used = false;
+
                 for (auto teleport : target->teleportPath.teleportRefs)
                 {
                     if (teleport.ref)
                     {
                         auto teleport_pos = teleport.ref->GetPosition(); //from where it teleports
 
-                        if (last_teleport_pos_end == RE::NiPoint3::Zero())
+                        auto teleport_worldspace = teleport.ref->GetWorldspace();
+
+                        if (teleport_worldspace == player_worldspace && !shortcut_used)
                         {
+                            shortcut_used = true;
+                            result = 0.0f;
                             result += player_pos.GetDistance(teleport_pos);
+                            last_teleport_pos_end = teleport.teleportLocation;
                         }
                         else
-                            result += teleport_pos.GetDistance(last_teleport_pos_end);
+                        {
+                            if (last_teleport_pos_end == RE::NiPoint3::Zero())
+                            {
+                                result += player_pos.GetDistance(teleport_pos);
+                            }
+                            else
+                                result += teleport_pos.GetDistance(last_teleport_pos_end);
 
-                        last_teleport_pos_end = teleport.teleportLocation; //where it teleports
+                            last_teleport_pos_end = teleport.teleportLocation; //where it teleports
+                        }
+
                     }
 
                 }
@@ -169,9 +190,21 @@ namespace MiscThings {
                         std::string marker_name = data->mapData->locationName.GetFullName();
                         if (marker_name != "" && marker_name.find("Military Camp") == std::string::npos)
                         {
-                            //auto distance = real_marker->GetDistance(target, true, true);
+
+                            RE::ObjectRefHandle quest_ref_handle{};
+                            target->GetTargetRef(quest_ref_handle, false, quest);
+
+                            RE::TESObjectREFR* quest_target_ref = nullptr;
+
+                            if (quest_ref_handle)
+                                if (quest_ref_handle.get())
+                                    quest_target_ref = quest_ref_handle.get().get();
+
+
                             auto distance = get_quest_target_distance(target, quest, real_marker);
 
+                            //auto distance = real_marker->GetDistance(target, true, true);
+                            
                             auto player_distance = player->GetDistance(real_marker, true, true);
 
 
