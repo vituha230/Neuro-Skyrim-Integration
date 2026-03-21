@@ -324,6 +324,10 @@ namespace WalkerProcessor {
 
 
 
+    void set_just_teleported() //for map
+    {
+        just_teleported = true;
+    }
 
     bool get_just_teleported()
     {

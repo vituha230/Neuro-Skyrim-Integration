@@ -208,7 +208,7 @@ namespace MiscThings {
                             auto player_distance = player->GetDistance(real_marker, true, true);
 
 
-                            if (player_distance > 10000.0f && distance < min_distance)
+                            if (player_distance > 15000.0f && distance < min_distance)
                             {
                                 min_distance = distance;
                                 sublocation_name = marker_name;
@@ -219,7 +219,7 @@ namespace MiscThings {
             }
         }
 
-        if (min_distance <= 10000.0f && sublocation_name != "")
+        if (min_distance <= 15000.0f && sublocation_name != "")
         {
             return sublocation_name;
         }

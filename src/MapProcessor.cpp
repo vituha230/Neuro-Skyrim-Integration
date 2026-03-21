@@ -205,7 +205,7 @@ namespace MapProcessor {
 									}
 								}
 
-								if (id_closest_to_quest >= 0 && min_location_dist <= 10000.0f)
+								if (id_closest_to_quest >= 0 && min_location_dist <= 15000.0f)
 								{
 									markers_to_remember.at(id_closest_to_quest).second.push_back(quest_actual_id);
 								}
@@ -1030,6 +1030,8 @@ namespace MapProcessor {
 								}
 								else
 								{
+									WalkerProcessor::set_just_teleported();
+
 									rolled_over = false;
 									menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
 									set_universal_block(1.5f);
@@ -1216,7 +1218,7 @@ namespace MapProcessor {
 	
 			if (in_map)
 			{
-				WalkerProcessor::reset_walker();
+				//WalkerProcessor::reset_walker();
 
 				if (in_local_map())
 				{

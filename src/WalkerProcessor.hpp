@@ -25,6 +25,8 @@ namespace WalkerProcessor {
 
 	bool get_just_teleported();
 	void clear_just_teleported();
+	void set_just_teleported();
+
 
 	std::pair<bool, std::string> set_multiple_path_quest_choice(int id);
 
