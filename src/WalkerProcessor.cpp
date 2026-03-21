@@ -4976,11 +4976,15 @@ namespace WalkerProcessor {
 
             for (auto quest_entry : *quest_list)
             {
-                if (quest_entry.estimate_distance < min_distance)
+                if (quest_entry.target) //dont lock on quests without targets
                 {
-                    best_id = quest_entry.id;
-                    min_distance = quest_entry.estimate_distance;
+                    if (quest_entry.estimate_distance < min_distance)
+                    {
+                        best_id = quest_entry.id;
+                        min_distance = quest_entry.estimate_distance;
+                    }
                 }
+
             }
 
             if (best_id != -1)
@@ -5395,6 +5399,12 @@ namespace WalkerProcessor {
                             return walk_to_quest_by_index(index, true);
                         }
                     }
+                    else
+                    {
+                        result.first = false;
+                        result.second = "This quest has no target to walk to. Perhaps you need to do something else to complete it...";
+                        return result;
+                    }
                 }
             }
             else
@@ -5567,6 +5577,8 @@ namespace WalkerProcessor {
 
                                                 
                                                 target_ref = quests_target_ref; //i think something is excessive here
+
+                                                backup_interaction_made = false;
 
                                                 current_quest_target_followed = target;
                                                 current_quest_followed = quest;
@@ -7141,6 +7153,15 @@ namespace WalkerProcessor {
                                 }
                             }
                         }
+                        else
+                        {
+                            if (player && player->IsSneaking() && get_targeted_ref() && get_targeted_ref()->IsActor())
+                            {
+                                crouch(); //uncrouch
+                                set_universal_block(0.5f);
+                                return false;
+                            }
+                        }
                     }
 
                     if (!interaction_context_sent)
@@ -7326,7 +7347,13 @@ namespace WalkerProcessor {
                         //return false;
                     }
                     else
+                    {
+                        if (MiscThings::get_door_teleport(target_ref) != "")
+                            just_teleported = true;
+
                         confirm();
+                    }
+                        
 
                     return true;
                 }
@@ -9110,6 +9137,9 @@ namespace WalkerProcessor {
                                     }
                                     else
                                     {
+                                        if (backup_interaction_made)
+                                            backup_interaction_made = false; 
+
                                         catch_door_result = false; //proceed whatever we did before after pause
                                         catch_door_result_time = 0.0f;
                                         set_universal_block(1.5f);

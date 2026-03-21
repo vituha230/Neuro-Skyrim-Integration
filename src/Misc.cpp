@@ -2557,6 +2557,37 @@ namespace MiscThings {
                                 }
                             }
                         }
+                        else
+                        {
+                            //its displayed but has no targets. potentially quest without a target. still add in the list
+
+                            quest this_quest{};
+
+                            this_quest.id = id;
+                            this_quest.quest = the_quest;
+                            this_quest.name = the_quest->GetFullName();
+                            this_quest.target = nullptr;
+
+                            std::string displaytext = "";
+                            displaytext = objective->displayText;
+
+                            std::string target_name = "";
+
+                            this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                            this_quest.target_name = target_name;
+
+                            this_quest.objective = objective;
+                            this_quest.description = "";
+                            this_quest.category = 0;
+
+                            this_quest.estimate_distance = 0.0f;
+
+                            sortable_quests.push_back(this_quest);
+
+                            id++;
+                            got_any_quests = true;
+                        }
                     }
                 }
             }
