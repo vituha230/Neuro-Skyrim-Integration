@@ -2120,6 +2120,14 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("WRDoorMainGate01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 20.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
 
                         if (result == RE::NiPoint3::Zero())
                         {

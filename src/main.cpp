@@ -4,7 +4,7 @@
 //crucial:
 
 
-//TODO finish arrays for containers and other menus
+//TODO alchemy array instead of 3 ids, barter arrays and remove items you cant buy from list like in crafting menu
 
 
 

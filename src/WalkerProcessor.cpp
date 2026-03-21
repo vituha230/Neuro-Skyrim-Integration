@@ -9928,10 +9928,6 @@ namespace WalkerProcessor {
 
                                                             return;
                                                         }
-                                                        else
-                                                        {
-                                                            walk_retries = 0; //TEST
-                                                        }
 
                                                         if (!had_any_path_found_this_run && !detect_stuck_walk_again_if_good(dtime)) //only if there was no navmesh path
                                                             walk_forward();
@@ -10070,7 +10066,12 @@ namespace WalkerProcessor {
                                             {
                                                 ignore_closed_doors_time = 3.0f;
                                                 if (is_targeted_door_closed())
+                                                {
                                                     confirm(); //just unlock it
+                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "")
+                                                        just_teleported = true;
+                                                }
+                                                    
                                             }
                                             else
                                             {
