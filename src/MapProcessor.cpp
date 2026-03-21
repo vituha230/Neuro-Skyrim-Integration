@@ -172,43 +172,46 @@ namespace MapProcessor {
 				for (auto a_quest : *p_quests)
 				{
 					RE::ObjectRefHandle quest_ref_handle{};
-					a_quest.target->GetTrackingRef(quest_ref_handle, a_quest.quest); //try tracked
-					if (!quest_ref_handle)
-						a_quest.target->GetTargetRef(quest_ref_handle, false, a_quest.quest); //no tracked - try actual target
-
-
-					if (quest_ref_handle && quest_ref_handle.get() && quest_ref_handle.get().get())
+					if (a_quest.target)
 					{
-						auto quest_ref = quest_ref_handle.get().get();
+						a_quest.target->GetTrackingRef(quest_ref_handle, a_quest.quest); //try tracked
+						if (!quest_ref_handle)
+							a_quest.target->GetTargetRef(quest_ref_handle, false, a_quest.quest); //no tracked - try actual target
 
-						if (quest_ref->data.objectReference)
+
+						if (quest_ref_handle && quest_ref_handle.get() && quest_ref_handle.get().get())
 						{
-							float min_location_dist = FLT_MAX;
-							int id_closest_to_quest = -1;
-							for (auto marker : markers_to_remember)
+							auto quest_ref = quest_ref_handle.get().get();
+
+							if (quest_ref->data.objectReference)
 							{
-								auto marker_ref = marker.second.first;
-
-								if (marker_ref && marker_ref->data.objectReference)
+								float min_location_dist = FLT_MAX;
+								int id_closest_to_quest = -1;
+								for (auto marker : markers_to_remember)
 								{
-									float distance = marker_ref->GetDistance(quest_ref, true, true);
+									auto marker_ref = marker.second.first;
 
-									if (distance < min_location_dist)
+									if (marker_ref && marker_ref->data.objectReference)
 									{
-										id_closest_to_quest = marker.first;
-										min_location_dist = distance;
+										float distance = marker_ref->GetDistance(quest_ref, true, true);
+
+										if (distance < min_location_dist)
+										{
+											id_closest_to_quest = marker.first;
+											min_location_dist = distance;
+										}
 									}
+								}
+
+								if (id_closest_to_quest >= 0 && min_location_dist <= 10000.0f)
+								{
+									markers_to_remember.at(id_closest_to_quest).second.push_back(quest_actual_id);
 								}
 							}
 
-							if (id_closest_to_quest >= 0 && min_location_dist <= 10000.0f)
-							{
-								markers_to_remember.at(id_closest_to_quest).second.push_back(quest_actual_id);
-							}
 						}
-
 					}
-
+	
 					quest_actual_id++;
 
 				}
