@@ -1031,6 +1031,7 @@ namespace MapProcessor {
 								else
 								{
 									WalkerProcessor::set_just_teleported();
+									WalkerProcessor::invalidate_path();
 
 									rolled_over = false;
 									menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all

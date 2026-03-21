@@ -103,6 +103,10 @@ namespace Observer {
 	float object_cleanup_timer = 0.0f;
 
 
+	int old_greybeard_call_stage = 0;
+
+
+
 	void reset_quest_puzzles()
 	{
 		active_puzzle = -1;
@@ -2639,6 +2643,13 @@ namespace Observer {
 					bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
 					old_can_interact = can_interact;
 					old_can_look = can_look;
+
+
+					auto greybeard_call = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQGreybeardCall");
+					if (greybeard_call)
+						old_greybeard_call_stage = greybeard_call->GetCurrentStageID();
+
+
 				}
 				else
 				{
@@ -2743,6 +2754,21 @@ namespace Observer {
 				bool serving_jail = jail_quest->IsRunning() && (jail_quest->GetCurrentStageID() == 10) && (!jail_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD)) && !escaping_jail && !MiscThings::is_intro() && !MiscThings::is_intro2() && MiscThings::escaped_helgen();
 
 				
+				auto greybeard_call = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQGreybeardCall");
+
+				if (greybeard_call)
+				{
+					int greybeard_call_stage = greybeard_call->GetCurrentStageID();
+
+					if (greybeard_call_stage == 10 && old_greybeard_call_stage == 0)
+					{
+						send_random_context("The ground shakes, and loud as thunder shout is heard from the sky, it said: Do-va-kiin!", false);
+					}
+
+					old_greybeard_call_stage = greybeard_call_stage;
+				}
+				
+
 				//hit events
 
 

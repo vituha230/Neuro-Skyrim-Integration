@@ -324,6 +324,14 @@ namespace WalkerProcessor {
 
 
 
+
+
+    void invalidate_path()
+    {
+        current_path_point = -1;
+        path.clear();
+    }
+
     void set_just_teleported() //for map
     {
         just_teleported = true;
