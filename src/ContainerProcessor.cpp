@@ -35,6 +35,12 @@ bool refresh_items_list = false;
 bool process_next_item_after_refresh = false;
 
 
+bool slider_request_sent = false;
+bool slider_choice_valid = false;
+int slider_choice = -1;
+bool slider_confirmed = false;
+bool slider_confirming = false;
+
 
 struct item_data {
 	std::string name;
@@ -713,6 +719,14 @@ void reset_container()
 	refresh_items_list = false;
 	process_next_item_after_refresh = false;
 
+
+	slider_request_sent = false;
+	slider_choice_valid = false;
+	slider_choice = -1;
+	slider_confirmed = false;
+	slider_confirming = false;
+
+
 }
 
 
@@ -957,6 +971,144 @@ bool is_container_empty()
 
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// SLIDER
+/*
+
+			"_root.Menu_mc.ItemCard_mc.QuantitySlider_mc._focused" - slider active
+			_focused - slider active
+			_minimum
+			_maximum
+			_value - current position
+			*/
+
+int get_slider_min()
+{
+	RE::GFxValue var1;
+	RE::UI* ui = RE::UI::GetSingleton();
+	if (ui)
+		if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.ItemCard_mc.QuantitySlider_mc._minimum"))
+					if (!var1.IsNull() && var1.IsNumber())
+						return var1.GetNumber();
+	return -1;
+}
+
+int get_slider_max()
+{
+	RE::GFxValue var1;
+	RE::UI* ui = RE::UI::GetSingleton();
+	if (ui)
+		if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.ItemCard_mc.QuantitySlider_mc._maximum"))
+					if (!var1.IsNull() && var1.IsNumber())
+						return var1.GetNumber();
+	return -1;
+}
+
+int get_slider_pos()
+{
+	RE::GFxValue var1;
+	RE::UI* ui = RE::UI::GetSingleton();
+	if (ui)
+		if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.ItemCard_mc.QuantitySlider_mc._value"))
+					if (!var1.IsNull() && var1.IsNumber())
+						return var1.GetNumber();
+	return -1;
+}
+
+
+bool quantity_slider_active()
+{
+	bool result = false;
+	RE::GFxValue var1;
+	RE::UI* ui = RE::UI::GetSingleton();
+	if (ui)
+		if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.ItemCard_mc.QuantitySlider_mc._focused"))
+					if (!var1.IsNull() && var1.IsNumber() && (int)var1.GetNumber() == 1)
+						result = true;
+
+	return result;
+}
+
+
+void move_slider_to_pos(int desired_pos)
+{
+	int slider_pos = get_slider_pos();
+
+	if (slider_pos > desired_pos)
+	{
+		left();
+	}
+	if (slider_pos < desired_pos)
+	{
+		right();
+	}
+}
+
+
+
+std::pair<bool, std::string> set_slider_choice(int pos)
+{
+	std::pair<bool, std::string> result{};
+
+	auto ui = RE::UI::GetSingleton();
+	if (!ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
+	{
+		result.first = true;
+		result.second = "[Error]";
+		return result;
+	}
+
+	if (pos == -1)
+	{
+		quit_menu();
+		result.first = true;
+		result.second = "[Container closed]";
+		return result;
+	}
+
+	
+	if (pos != 0 && (pos < get_slider_min() || pos > get_slider_max() || !item_choice_valid))
+	{
+		result.first = false;
+		result.second = "Invalid slider position ID";
+		return result;
+	}
+
+	slider_choice = pos;
+	slider_choice_valid = true;
+
+	result.first = true;
+	result.second = "[Processing...]";
+	return result;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+std::string get_item_text_by_id(int id)
+{
+	auto item_pos = items_list.find(id);
+
+	if (item_pos == items_list.end())
+		return "";
+	else
+		return item_pos->second.name;
+}
+
+
+
 
 
 
@@ -1121,19 +1273,69 @@ void processor(float dtime)
 								}
 								else
 								{
-									check_results = false;
 
-									
 
-									if (is_pickpocketing())
+
+									if (quantity_slider_active())
 									{
-										reset_container();
-										catch_pickpocket_result = true;
+										if (!slider_request_sent)
+										{
+											if (force_choice({}, "Choose amount of " + get_item_text_by_id(item_choice) + " to take. Valid range: from " + 
+												std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::container_quantity))
+												slider_request_sent = true;
+
+											return;
+										}
+										else
+										{
+											if (slider_choice_valid)
+											{
+												if (slider_choice > 0)
+												{
+													if (get_slider_pos() != slider_choice)
+													{
+														move_slider_to_pos(slider_choice);
+														return;
+													}
+													else
+													{
+														if (!slider_confirmed)
+														{
+															confirm();
+															slider_confirming = true;
+															return;
+														}
+														else
+														{
+															return;
+															;//put some watchdog here
+														}
+													}
+												}
+												//cancel and no return so it finishes
+												cancel();
+											}
+											else
+												return;
+										}
 									}
-									else
+
+
 									{
-										refresh_items_list = true;
-										process_next_item_after_refresh = true;
+										//no slider or slider done
+
+										check_results = false;
+
+										if (is_pickpocketing())
+										{
+											reset_container();
+											catch_pickpocket_result = true;
+										}
+										else
+										{
+											refresh_items_list = true;
+											process_next_item_after_refresh = true;
+										}
 									}
 								}
 							}

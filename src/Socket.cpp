@@ -853,6 +853,9 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                         case force_type::container_item:
                             command_result = ContainerProcessor::set_item_choice(json.id); break;
 
+                        case force_type::container_quantity:
+                            command_result = ContainerProcessor::set_slider_choice(json.id); break;
+
                         case force_type::gift_item:
                             command_result = GiftProcessor::set_item_choice(json.id); break;
 

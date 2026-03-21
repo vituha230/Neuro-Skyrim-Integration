@@ -34,6 +34,7 @@
         map_location,
         container_item,
         container_item_array,
+        container_quantity,
         gift_item,
         messagebox_option,
         threat_response,
