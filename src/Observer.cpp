@@ -861,6 +861,11 @@ namespace Observer {
 							MiscThings::nullify_object_by_id(object.first);
 						}
 					}
+					else
+					{
+						//it doesnt exist anymore within 30k range
+						MiscThings::nullify_object_by_id(object.first);
+					}
 				}
 			}
 		}
