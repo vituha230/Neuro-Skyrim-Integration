@@ -1266,7 +1266,7 @@ void processor(float dtime)
 									
 
 									confirm();
-									set_universal_block(1.0f);
+									set_universal_block(0.3f);
 									std::string result = get_result_message();
 									if (result != "")
 										send_random_context("[" + result + "]", false);
@@ -1312,13 +1312,21 @@ void processor(float dtime)
 														}
 													}
 												}
-												//cancel and no return so it finishes
+
 												cancel();
+												set_universal_block(0.3f);
+												return;
 											}
 											else
 												return;
 										}
 									}
+
+										slider_request_sent = false;
+										slider_choice_valid = false;
+										slider_choice = -1;
+										slider_confirmed = false;
+										slider_confirming = false;
 
 
 									{
