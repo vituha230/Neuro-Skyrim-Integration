@@ -961,25 +961,39 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                 {
                     action_to_unregister = Capabilities::SelectForceChoiceArray::Action;
 
-                    if (get_active_force() == force_type::container_item_array)
-                    {
-                        Impl::JSON::NeuroChoiceJsonArrayInts json{};
+                    Impl::JSON::NeuroChoiceJsonArrayInts json{};
 
-                        if (glz::read_json(json, messageQueue[i].value.action.data))
-                        {
-                            command_result.first = false;
-                            command_result.second = "Couldn't find any valid IDs in provided array";
-                        }
-                        else
-                        {
-                            command_result = ContainerProcessor::set_item_choice_array(json.ids_array);
-                        }
+                    if (glz::read_json(json, messageQueue[i].value.action.data))
+                    {
+                        command_result.first = false;
+                        command_result.second = "Couldn't find any valid IDs in provided array";
                     }
                     else
                     {
-                        command_result = { true, "You dont have any choices to make" };
-                        register_allowed_actions();
+                        switch (get_active_force())
+                        {
+
+
+                        case (force_type::container_item_array):
+                            command_result = ContainerProcessor::set_item_choice_array(json.ids_array);
+
+                        case (force_type::barter_item_array):
+                            command_result = BarterProcessor::set_item_choice_array(json.ids_array);
+
+                        default:
+                        {
+                            command_result = { true, "You dont have any choices to make" };
+                            register_allowed_actions();
+                            break;
+                        }
+
+
+
+                        }
+
                     }
+
+
                 }
 
 

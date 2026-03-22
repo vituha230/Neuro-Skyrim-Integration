@@ -734,7 +734,6 @@ void reset_container()
 
 
 
-std::vector<int> already_chosen_ids{};
 
 
 void process_next_item()

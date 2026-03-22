@@ -17,6 +17,7 @@
         barter_type_force,
         barter_category,
         barter_item,
+        barter_item_array,
         barter_quantity,
         barter_vendor_not_enough_gold,
         lockpick_angle,

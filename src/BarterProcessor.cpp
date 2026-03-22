@@ -42,6 +42,11 @@ namespace BarterProcessor {
     bool item_confirmed = false;
     bool item_confirming = false;
     bool old_item_choice_text_valid = false;
+    std::vector<int> item_choice_array{};
+    int old_item_list_size = -1;
+    bool quantity_was_specified = false;
+    bool process_next_item_after_refresh = false;
+    bool refresh_items_list = false;
 
     bool barter_type_defined = false;
     bool barter_type_request_sent = false;
@@ -94,6 +99,49 @@ namespace BarterProcessor {
     };
 
     way_to_fill way{};
+
+
+
+
+    int id_to_pos(int id)
+    {
+        int result = -1;
+
+        if (items_list_valid)
+        {
+            if (items_list.find(id) != items_list.end())
+            {
+                result = std::distance(items_list.begin(), items_list.find(id));
+            }
+        }
+
+        if (result == -1)
+            bool stop_here = false;
+
+        return result;
+    }
+
+    int pos_to_id(int pos)
+    {
+        int result = -1;
+        if (items_list_valid)
+        {
+            if (pos < std::size(items_list))
+            {
+                auto it = items_list.begin();
+
+                std::advance(it, pos);
+
+                result = it->first;
+            }
+        }
+
+        if (result == -1)
+            bool stop_here = false;
+
+        return result;
+    }
+
 
 
 
@@ -167,6 +215,11 @@ namespace BarterProcessor {
         scroll_stuck = false;
         scroll_stuck_time = 0.0f;
 
+        item_choice_array.clear();
+        quantity_was_specified = false;
+        old_item_list_size = -1;
+        process_next_item_after_refresh = false;
+        refresh_items_list = false;
 
         return true;
     }
@@ -204,6 +257,9 @@ namespace BarterProcessor {
         scroll_stuck = false;
         scroll_stuck_time = 0.0f;
 
+        //item_choice_array.clear();
+        quantity_was_specified = false;
+
         return true;
     }
 
@@ -225,6 +281,12 @@ namespace BarterProcessor {
         slider_choice = 0;
         slider_choice_valid = false;
         slider_request_sent = false;
+
+        item_choice_array.clear();
+        old_item_list_size = -1;
+        quantity_was_specified = false;
+        process_next_item_after_refresh = false;
+        refresh_items_list = false;
 
         return true;
     }
@@ -410,7 +472,7 @@ namespace BarterProcessor {
 
 
 
-    std::pair<bool, std::string> set_item_choice(int id)
+    std::pair<bool, std::string> set_item_choice(int pos)
     {
         std::pair<bool, std::string> result{};
 
@@ -423,7 +485,7 @@ namespace BarterProcessor {
         }
 
 
-        if (id == -1)
+        if (pos == -1)
         {
             quit_menu();
             result.first = true;
@@ -431,16 +493,21 @@ namespace BarterProcessor {
             return result;
         }
 
-        if (id == -2)
+        if (pos == -2)
         {
             //back_to_barter_type_selection();
             switch_barter_type_selection();
             result.first = true;
-            result.second = "[Went back to barter type selection]";
+
+            std::string operation = "buying";
+            if (type == barter_type::sell)
+                operation = "selling";
+
+            result.second = "[Switching to " + operation + "...]";
             return result;
         }
 
-        if (id == -3)
+        if (pos == -3)
         {
             back_to_categories();
             result.first = true;
@@ -449,6 +516,8 @@ namespace BarterProcessor {
         }
 
 
+
+        int id = pos_to_id(pos);
 
         if (items_list.find(id) == items_list.end() || !barter_type_defined)// || !category_choice_valid)
         {
@@ -460,12 +529,113 @@ namespace BarterProcessor {
         }
 
 
-        item_choice = id;
+        item_choice = pos;
         item_choice_valid = true;
         result.first = true;
         result.second = "[Processing...]";
         return result;
     }
+
+
+
+    
+
+
+    void process_next_item()
+    {
+        //send_random_context("choice array size: " + std::to_string(std::size(item_choice_array)) + "; current choice: " + std::to_string(item_choice));
+
+        if (std::size(item_choice_array) <= 0)
+            back_to_items();
+        else
+        {
+            item_choice = item_choice_array.at(0);
+            item_choice_array.erase(item_choice_array.begin());
+
+
+            if (item_choice == -1)
+            {
+                quit_menu();
+                return;
+            }
+
+
+            if (item_choice == -2)
+            {
+                switch_barter_type_selection();
+                return;
+            }
+            else
+            {
+                if (items_list_valid)
+                {
+
+                    int id = pos_to_id(item_choice);
+
+                    if (items_list.find(id) == items_list.end())
+                    {
+                        item_choice_valid = false;
+                        process_next_item();
+                        return;
+                    }
+                    else
+                    {
+                        item_choice_valid = true;
+                        barter_item_request_sent = true; 
+                        return;
+                    }
+                }
+                else
+                {
+                    back_to_items();
+                    return;
+                }
+            }
+        }
+    }
+
+
+
+
+    std::pair<bool, std::string> set_item_choice_array(std::vector<int> ids)
+    {
+        std::pair<bool, std::string> result{};
+
+        auto ui = RE::UI::GetSingleton();
+        if (!ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+        {
+            result.first = true;
+            result.second = "[Error]";
+            return result;
+        }
+
+
+        if (std::size(ids) <= 0)
+        {
+            result.first = false;
+            result.second = "Invalid choice";
+            return result;
+        }
+
+
+        item_choice_array = ids;
+
+        process_next_item();
+        result.first = true;
+        result.second = "[Processing...]";
+
+        return result;
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     std::vector<MenuOption> get_barter_categories()
@@ -505,7 +675,7 @@ namespace BarterProcessor {
             if (stats != "")
                 stats = " [" + stats + "]";
 
-            MenuOption option = { item.first, item.second.name + stats + " - " + std::to_string(item.second.price) + " gold" };
+            MenuOption option = { id_to_pos(item.first), item.second.name + stats + " - " + std::to_string(item.second.price) + " gold"};
 
             result.push_back(option);
         }
@@ -577,6 +747,19 @@ namespace BarterProcessor {
             if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu)
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.InventoryLists_mc._ItemsList.iMaxScrollPosition"))
+                        //send_random_context(std::to_string(var1.GetNumber()).c_str());
+                        return var1.GetNumber();
+        return -1;
+    }
+
+    int get_item_min_scroll_position()
+    {
+        RE::GFxValue var1;
+        RE::UI* ui = RE::UI::GetSingleton();
+        if (ui)
+            if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu)
+                if (menu->uiMovie)
+                    if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.InventoryLists_mc._ItemsList.iMinScrollPosition"))
                         //send_random_context(std::to_string(var1.GetNumber()).c_str());
                         return var1.GetNumber();
         return -1;
@@ -1268,6 +1451,7 @@ namespace BarterProcessor {
     void fill_categories_list_one_direction(barter_type type, bool direction_down, float dtime)
     {
         int max_scroll = get_category_max_scroll_position();
+        
         int scroll = get_category_scroll_position();
 
         if (scroll == last_scroll && !scroll_stuck)
@@ -1328,7 +1512,11 @@ namespace BarterProcessor {
     void fill_items_list_one_direction(barter_type type, bool direction_down, float dtime)
     {
         int max_scroll = get_item_max_scroll_position();
+        int min_scroll = 0;// get_item_min_scroll_position();
         int scroll = get_item_scroll_position();
+
+        if (min_scroll > 1)
+            bool stop_here = false;
 
         if (scroll == last_scroll && !scroll_stuck)
             scroll_stuck_time += dtime;
@@ -1350,7 +1538,8 @@ namespace BarterProcessor {
             {
                 update_barter_items(); //do this on every scroll
                 if (scroll_stuck)
-                    perk_down();
+                    //perk_down();
+                    filling_items = false; //restart fill
                 else
                     cursor_down();
             }
@@ -1364,11 +1553,12 @@ namespace BarterProcessor {
             }
         }
         else
-            if (scroll > 0)
+            if (scroll > min_scroll)
             {
                 update_barter_items(); //do this on every scroll
                 if (scroll_stuck)
-                    perk_up();
+                    //perk_up();
+                    filling_items = false; //restart fill
                 else
                     cursor_up();
             }
@@ -1602,7 +1792,7 @@ namespace BarterProcessor {
 
     bool detect_item_barter_result(bool ignore_slider, bool ignore_vendor_not_enough_gold)
     {
-        if (!update_barter_item_by_id(item_choice))
+        if (!update_barter_item_by_id(pos_to_id(item_choice)))
         {
             old_item_choice_text = "";
             return true; //item disappeared
@@ -1626,7 +1816,7 @@ namespace BarterProcessor {
         }
 
 
-        std::string item_choice_text = get_item_text_by_id(item_choice);
+        std::string item_choice_text = get_item_text_by_id(pos_to_id(item_choice));
 
         if (item_choice_text == "")
         {
@@ -1662,6 +1852,8 @@ namespace BarterProcessor {
             item_confirmed = false;
             block_set = false;
             back_to_items();
+            refresh_items_list = true;
+            process_next_item_after_refresh = true;
         }
     }
 
@@ -1744,6 +1936,16 @@ namespace BarterProcessor {
                                         confirm();
                                     else
                                     {   //NOW ITEMS
+
+                                        
+
+                                        if (refresh_items_list)
+                                        {
+                                            refresh_items_list = false;
+                                            items_list_valid = false;
+                                        }
+
+
                                         if (!items_list_valid)
                                             if (!filling_items)
                                             {
@@ -1754,10 +1956,50 @@ namespace BarterProcessor {
                                                 fill_items_list(0.02f);
                                         else
                                         {
+                                            filling_items = false;
+                                            if (!item_confirming && !item_confirmed)
+                                            {
+                                                int new_items_list_size = std::size(items_list);
+
+                                                if (new_items_list_size < old_item_list_size)
+                                                {
+                                                    for (auto& a_choice : item_choice_array)
+                                                    {
+                                                        if (a_choice > 0 && a_choice > item_choice)
+                                                            a_choice -= 1;
+                                                    }
+
+                                                    quantity_was_specified = false;
+                                                }
+                                                else
+                                                {
+                                                    if (old_item_list_size != -1 && !quantity_was_specified)
+                                                    {
+                                                        //process_next_item_after_refresh = false;
+                                                        quantity_was_specified = false;
+                                                    }
+                                                }
+
+
+
+                                                old_item_list_size = new_items_list_size;
+                                            }
+
+
+                                            if (process_next_item_after_refresh)
+                                            {
+                                                process_next_item_after_refresh = false;
+                                                process_next_item();
+                                                return;
+                                            }
+
+
+
+
                                             if (!barter_item_request_sent && !item_confirming && !item_confirmed)
                                             {
 
-                                                if (force_choice(get_barter_items(), "You are bartering. Choose item to " + get_barter_type_text(), force_type::barter_item))
+                                                if (force_choice(get_barter_items(), "You are bartering. Choose item to " + get_barter_type_text(), force_type::barter_item_array))
                                                 {
                                                     missing_item_detected = false;
                                                     last_cursor_move = 0;
@@ -1769,10 +2011,10 @@ namespace BarterProcessor {
                                                 if (item_choice_valid)
                                                 {
                                                     int selected_index = get_item_selected_index();
-                                                    if (selected_index != item_choice && !item_confirmed && !item_confirming)
+                                                    if (selected_index != pos_to_id(item_choice) && !item_confirmed && !item_confirming)
                                                     {
                                                         if (!missing_item_detected)
-                                                            move_cursor_to_barter_item(item_choice);
+                                                            move_cursor_to_barter_item(pos_to_id(item_choice));
                                                         else
                                                             back_to_items();
                                                     }
@@ -1780,7 +2022,7 @@ namespace BarterProcessor {
                                                     {
                                                         if (!old_item_choice_text_valid)
                                                         {
-                                                            old_item_choice_text = get_item_text_by_id(item_choice);
+                                                            old_item_choice_text = get_item_text_by_id(pos_to_id(item_choice));
                                                             old_item_choice_text_valid = true;
                                                         }
 
@@ -1795,8 +2037,10 @@ namespace BarterProcessor {
                                                             else
                                                             {
                                                                 //leftclick();
+                                                                old_item_list_size = std::size(items_list);
                                                                 confirm();
                                                                 item_confirming = true;
+                                                                set_universal_block(0.3f);
                                                             }
 
                                                         }
@@ -1807,7 +2051,7 @@ namespace BarterProcessor {
                                                                 if (!slider_request_sent)
                                                                 {
                                                                     
-                                                                    if (force_choice({}, "You are bartering. Choose amount of " + get_item_text_by_id(item_choice) + " to " + get_barter_type_text() +
+                                                                    if (force_choice({}, "You are bartering. Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
                                                                         ". Valid range: from " + std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity))
                                                                         slider_request_sent = true;
                                                                 }
@@ -1964,6 +2208,10 @@ namespace BarterProcessor {
                                                                 else
                                                                 {
                                                                     finish_transaction();
+
+                                                                    //back_to_items();
+                                                                    //refresh_items_list = true;
+                                                                    //process_next_item_after_refresh = true;
                                                                 }
 
                                                             }

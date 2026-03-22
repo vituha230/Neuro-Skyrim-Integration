@@ -18,6 +18,7 @@ namespace BarterProcessor {
     //std::vector<MenuOption> get_barter_categories(barter_type type);
     std::pair<bool, std::string> set_category_choice(int id);
     std::pair<bool, std::string> set_item_choice(int id);
+    std::pair<bool, std::string> set_item_choice_array(std::vector<int> ids);
     std::pair<bool, std::string> set_slider_choice(int pos);
     std::pair<bool, std::string> set_vendor_not_enough_gold_choice(int choice);
 
