@@ -6,7 +6,6 @@
 
 //TODO weapon charging and enchantment info
 //TODO water walking
-//TODO dragon fights improvement
 
 
 //TODO check some quest that needs something to be used from inventory (are there any?)

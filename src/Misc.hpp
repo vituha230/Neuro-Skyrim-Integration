@@ -161,6 +161,8 @@ namespace MiscThings {
     bool is_dragon(RE::TESObjectREFR* refr);
     bool is_flying(RE::TESObjectREFR* refr);
 
+    bool is_player_swimming();
+
 
     std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest);
 

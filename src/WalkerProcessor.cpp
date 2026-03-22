@@ -1152,6 +1152,17 @@ namespace WalkerProcessor {
 
                         RE::NiPoint3 direction_vector = next_point_pos - current_path_point_pos;
 
+
+                        if (MiscThings::is_player_swimming())
+                        {
+                            auto player_pos = player->GetPosition();
+
+                            next_point_pos = path.at(std::min(((int)std::size(path) - 1), current_path_point + 1));
+                            direction_vector = next_point_pos - player_pos;
+                        }
+
+
+
                         direction_vector.Unitize();
 
                         if (MiscThings::is_on_horse())
@@ -1403,7 +1414,12 @@ namespace WalkerProcessor {
 
                 
 
+                
+
+
                 desired_direction = along_next_path_points_vector();
+
+
 
                 if (desired_direction != RE::NiPoint3::Zero())
                 {
@@ -2334,6 +2350,10 @@ namespace WalkerProcessor {
 
                             auto lookat_location = torso_pos;
 
+                            if (MiscThings::is_dragon(target))
+                                torso_pos.z += 100.0f;
+
+
                             auto player_temp_pos = player->GetPosition();
 
                             target_center = lookat_location;
@@ -2538,6 +2558,36 @@ namespace WalkerProcessor {
                 bool breakpoint123 = false;
                */ 
                     
+        }
+        else
+        {
+
+            if (target->IsActor())// && !target->IsDead())
+            {
+                auto target_actor = (RE::Actor*)target;
+
+                if (target_actor->currentProcess)
+                    if (target_actor->currentProcess->middleHigh)
+                        if (target_actor->currentProcess->middleHigh->headNode)
+                        {
+                            auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
+
+                            auto lookat_location = torso_pos;
+
+                            if (MiscThings::is_dragon(target))
+                                torso_pos.z += 100.0f;
+
+
+                            auto player_temp_pos = player->GetPosition();
+
+                            target_center = lookat_location;
+                            height = 0.0f;
+                            specific_shift = RE::NiPoint3::Zero();
+
+                            lookat_used = true;
+                        }
+
+            }
         }
         
 
@@ -2935,9 +2985,9 @@ namespace WalkerProcessor {
             {
                 auto distance = last_point_of_last_path.GetDistance(player_pos);
                 if ((int)std::size(path) < 3)
-                    result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f); //100
+                    result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 50.0f * MiscThings::is_player_swimming(); //100
                 else
-                    result = distance < 80.0f * (1 + MiscThings::is_on_horse() * 4.0f); //100
+                    result = distance < 80.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 50.0f * MiscThings::is_player_swimming(); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
@@ -2979,10 +3029,10 @@ namespace WalkerProcessor {
                             player_pos.z = 0.0f;
                             distance = current_path_point_pos.GetDistance(player_pos);
 
-                            result = distance < 80.0f; //100
+                            result = distance < 80.0f + 50.0f * MiscThings::is_player_swimming(); //100
                         }
                         else
-                            result = distance < (60.0f * (1 + MiscThings::is_on_horse() * 4.0f)); //100
+                            result = distance < (60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 50.0f*MiscThings::is_player_swimming()); //100
                     }
                     else
                         result = true;
@@ -3536,6 +3586,11 @@ namespace WalkerProcessor {
                 unslow_walk();
             }
 
+            if (was_charging_ranged)
+                cancel_charge_weapon();
+
+
+
         }
         //else
         //{
@@ -3879,7 +3934,8 @@ namespace WalkerProcessor {
                             range = range * 1.25;
 
 
-                        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
+                        //this is for melee
+                        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
                             range = 10000.0f;
 
 
@@ -6418,7 +6474,7 @@ namespace WalkerProcessor {
                                 auto range2 = effectSetting->data.projectileBase->data.range;
 
                                 if (range2 > 0.0f)
-                                    return range2;
+                                    return range2*0.9f;
                             }
 
                         }
@@ -6491,15 +6547,30 @@ namespace WalkerProcessor {
 
         lock_camera_onto_target(target_ref, dtime);
 
-
-        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)) && !target_ref->IsDead())
-            return false; //if we have melee weapon and its a flying dragon - just look at him until he lands
-
-
         bool result = false;
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
         auto player_actor = (RE::Actor*)player_ref;
+
+        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && !target_ref->IsDead())// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)) && !target_ref->IsDead())
+        {
+            float weapon_range = get_weapon_range(get_current_active_hand());
+            auto player_pos = player->GetPosition();
+            auto target_pos = target_ref->GetPosition();
+
+            if (player_pos.GetDistance(target_pos) > get_weapon_range(get_current_active_hand()))
+            {
+                if (was_charging_ranged)
+                    cancel_charge_weapon();
+
+                return false;
+            }
+                
+        }
+            
+
+
+
 
 
         if (!(player_actor->IsWeaponDrawn()) && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
@@ -9101,7 +9172,7 @@ namespace WalkerProcessor {
                     }
                     
 
-                    if (too_high_notified)
+                    if (too_high_notified && !(interaction_after_walk == 3))// && close_enough())) //attacks handled differently
                     {
                         if (target_is_too_high())
                         {
@@ -9123,6 +9194,10 @@ namespace WalkerProcessor {
                     }
                     else
                         bool stop_here = false;
+
+
+
+
 
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_actor = (RE::Actor*)player->AsReference();
@@ -9312,6 +9387,9 @@ namespace WalkerProcessor {
                                         {
                                             wiggle_body_then_walk_again = true;
 
+                                            if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
+                                                walk_retries = 0;
+
                                             walk_retries++;
                                             //walk_again();
 
@@ -9393,6 +9471,9 @@ namespace WalkerProcessor {
 
                                                 walk_retries++;
                                                 //walk_again();
+
+                                                if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
+                                                    walk_retries = 0;
 
                                                 return;
                                             }
@@ -9872,8 +9953,14 @@ namespace WalkerProcessor {
 
                                                 if (false && ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7)))
                                                 {
+                                                    if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
+                                                        walk_retries = 0;
+
                                                     if ((interaction_after_walk == 2) && ((int)std::size(path) < 3) && !had_successful_walk)
                                                         walk_retries++;
+
+                                                    if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
+                                                        walk_retries = 0;
 
                                                     walk_again();
                                                 } 
@@ -9980,6 +10067,9 @@ namespace WalkerProcessor {
 
                                                     if ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7))
                                                     {
+                                                        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
+                                                            walk_retries = 0;
+
                                                         had_successful_walk = false;
                                                         if ((interaction_after_walk == 2) && ((int)std::size(path) < 3) && !had_successful_walk)
                                                             walk_retries++;
@@ -10007,6 +10097,9 @@ namespace WalkerProcessor {
                                                             
                                                             walk_retries++;
                                                             //walk_again();
+                                                            
+                                                            if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
+                                                                walk_retries = 0;
 
                                                             return;
                                                         }

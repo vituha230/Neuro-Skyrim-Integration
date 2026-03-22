@@ -17,6 +17,20 @@ namespace MiscThings {
 
 
 
+    bool is_player_swimming()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            return player->actorState1.swimming;
+        }
+
+        return false;
+    }
+
+
+
     bool is_dragon(RE::TESObjectREFR* refr)
     {
         if (refr->IsActor())
