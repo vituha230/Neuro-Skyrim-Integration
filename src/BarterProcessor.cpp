@@ -79,6 +79,9 @@ namespace BarterProcessor {
     double debug_time = 0.0;
     int scroll_dbg = 0;
 
+    float move_cursor_timeout0 = 0.0f;
+    float move_cursor_timeout1 = 0.0f;
+    float move_cursor_timeout2 = 0.0f;
 
     /*
     struct ItemOption
@@ -224,6 +227,9 @@ namespace BarterProcessor {
         refresh_items_list = false;
         last_item_choice = -1;
 
+        if (inside_of_category())
+            left();
+
         return true;
     }
 
@@ -295,6 +301,9 @@ namespace BarterProcessor {
         refresh_items_list = false;
         last_item_choice = -1;
 
+        move_cursor_timeout0 = 0.0f;
+        move_cursor_timeout1 = 0.0f;
+        move_cursor_timeout2 = 0.0f;
 
         return true;
     }
@@ -1510,19 +1519,25 @@ namespace BarterProcessor {
 
     bool inside_of_category()
     {
-        if (quantity_slider_active())
-            return true;
-
         bool result = false;
+
         RE::UI* ui = RE::UI::GetSingleton();
         auto menu = ui->GetMenu<RE::BarterMenu>();
         RE::GFxValue var1;
 
         if (ui && menu && ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+        {
+            if (quantity_slider_active())
+                return true;
+
+            
+
             if (menu->uiMovie)
                 if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.InventoryLists_mc._ItemsList.focused")) //TEST THIS (seems to work, didnt test deep)
                     if (!var1.IsNull() && var1.IsNumber())
                         result = var1.GetNumber();
+        }
+        
 
         return result;
 
@@ -2089,18 +2104,34 @@ namespace BarterProcessor {
                                 if (get_category_selected_index() != category_choice && !item_confirming && !item_confirmed)
                                 {
                                     if (!missing_category_detected)
+                                    {
                                         move_cursor_to_barter_category(category_choice);
+                                        if (move_cursor_timeout0 > 15.0f)
+                                        {
+                                            barter_reset();
+                                            return;
+                                        }
+                                        else
+                                            move_cursor_timeout0 += 0.02f;
+                                    }
                                     else
+                                    {
+                                        move_cursor_timeout0 = 0.0f;
                                         barter_reset_categories_selection();
+                                    }
+                                        
                                 }
                                 else
+                                {
+                                    move_cursor_timeout0 = 0.0f;
+
                                     //if (get_selected_category() != category_choice && !item_confirming && !item_confirmed) 
                                     if (!inside_of_category() && !item_confirming && !item_confirmed)
                                         confirm();
                                     else
                                     {   //NOW ITEMS
 
-                                        
+
 
                                         if (refresh_items_list)
                                         {
@@ -2116,9 +2147,21 @@ namespace BarterProcessor {
                                                 filling_items = true;
                                             }
                                             else
+                                            {
                                                 fill_items_list(0.02f);
+
+                                                if (move_cursor_timeout1 > 15.0f)
+                                                {
+                                                    barter_reset();
+                                                    return;
+                                                }
+                                                else
+                                                    move_cursor_timeout1 += 0.02f;
+                                            }
+
                                         else
                                         {
+                                            move_cursor_timeout1 = 0.0f;
                                             filling_items = false;
                                             if (!item_confirming && !item_confirmed)
                                             {
@@ -2177,12 +2220,27 @@ namespace BarterProcessor {
                                                     if (selected_index != pos_to_id(item_choice) && !item_confirmed && !item_confirming)
                                                     {
                                                         if (!missing_item_detected)
+                                                        {
                                                             move_cursor_to_barter_item(pos_to_id(item_choice));
+
+                                                            if (move_cursor_timeout2 > 15.0f)
+                                                            {
+                                                                barter_reset();
+                                                                return;
+                                                            }
+                                                            else
+                                                                move_cursor_timeout2 += 0.02f;
+                                                        }
                                                         else
+                                                        {
+                                                            move_cursor_timeout2 = 0.0f;
                                                             back_to_items();
+                                                        }
+
                                                     }
                                                     else
                                                     {
+                                                        move_cursor_timeout2 = 0.0f;
                                                         if (!old_item_choice_text_valid)
                                                         {
                                                             old_item_choice_text = get_item_text_by_id(pos_to_id(item_choice));
@@ -2213,7 +2271,7 @@ namespace BarterProcessor {
                                                             {
                                                                 if (!slider_request_sent)
                                                                 {
-                                                                    
+
                                                                     if (force_choice({}, "You are bartering. " + get_gold_text() + ". Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
                                                                         ". Valid range: from " + std::to_string(0) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity))
                                                                         slider_request_sent = true;
@@ -2234,7 +2292,7 @@ namespace BarterProcessor {
                                                                                 finish_transaction();
                                                                                 return;
                                                                             }
-                                                                                
+
 
                                                                             if (!slider_confirmed)
                                                                             {
@@ -2257,7 +2315,7 @@ namespace BarterProcessor {
                                                                                 {
                                                                                     if (!vendor_not_enough_gold_request_sent)
                                                                                     {
-                                                                                        
+
                                                                                         if (force_choice({ {0, "No"}, {1, "Yes"}, {-1, "[QUIT BARTER]"} }, test + " Confirm?", force_type::barter_vendor_not_enough_gold))
                                                                                             vendor_not_enough_gold_request_sent = true;
                                                                                     }
@@ -2327,7 +2385,7 @@ namespace BarterProcessor {
                                                                 {
                                                                     if (!vendor_not_enough_gold_request_sent)
                                                                     {
-                                                                        
+
                                                                         if (force_choice({ {0, "No"}, {1, "Yes"}, {-1, "[QUIT BARTER]"} }, test + " Confirm?", force_type::barter_vendor_not_enough_gold))
                                                                             vendor_not_enough_gold_request_sent = true;
                                                                     }
@@ -2399,7 +2457,7 @@ namespace BarterProcessor {
                                         }
 
                                     }
-
+                                }
                             }
                             else
                             {

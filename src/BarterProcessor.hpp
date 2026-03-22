@@ -29,6 +29,9 @@ namespace BarterProcessor {
     bool switch_barter_type_selection();
 
     std::vector<MenuOption> get_barter_items();
+
+    bool inside_of_category();
+
 }
 
 
