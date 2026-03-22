@@ -3879,6 +3879,11 @@ namespace WalkerProcessor {
                             range = range * 1.25;
 
 
+                        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
+                            range = 10000.0f;
+
+
+
                         auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range);
 
                         //if (target_ref->IsActor() && target_ref->IsDead())
@@ -3949,6 +3954,15 @@ namespace WalkerProcessor {
                 }
                 else
                 {
+
+                    if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
+                        if (MiscThings::raycastable(target_ref, 10000.0f, false))
+                            return true;
+
+
+
+
+
                     auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos; //experimenting
 
 
@@ -6476,6 +6490,11 @@ namespace WalkerProcessor {
         }
 
         lock_camera_onto_target(target_ref, dtime);
+
+
+        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)) && !target_ref->IsDead())
+            return false; //if we have melee weapon and its a flying dragon - just look at him until he lands
+
 
         bool result = false;
         auto player = RE::PlayerCharacter::GetSingleton();

@@ -17,6 +17,37 @@ namespace MiscThings {
 
 
 
+    bool is_dragon(RE::TESObjectREFR* refr)
+    {
+        if (refr->IsActor())
+        {
+            auto actor_refr = (RE::Actor*)refr;
+            if (actor_refr->race->fullName == "Dragon Race")
+                return true;
+        }
+
+        return false;
+    }
+
+
+    bool is_flying(RE::TESObjectREFR* refr)
+    {
+        if (refr->IsActor())
+        {
+            auto actor_refr = (RE::Actor*)refr;
+            
+            auto fly_state = actor_refr->actorState1.flyState;
+
+
+            return fly_state == RE::FLY_STATE::kCruising || fly_state == RE::FLY_STATE::kHovering;
+        }
+
+        return false;
+        
+    }
+
+
+
 
     int get_player_gold()
     {
