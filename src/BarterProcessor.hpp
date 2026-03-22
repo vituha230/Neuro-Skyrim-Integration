@@ -28,6 +28,7 @@ namespace BarterProcessor {
     bool back_to_barter_type_selection();
     bool switch_barter_type_selection();
 
+    std::vector<MenuOption> get_barter_items();
 }
 
 

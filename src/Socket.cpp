@@ -975,10 +975,10 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
 
                         case (force_type::container_item_array):
-                            command_result = ContainerProcessor::set_item_choice_array(json.ids_array);
+                            command_result = ContainerProcessor::set_item_choice_array(json.ids_array); break;
 
                         case (force_type::barter_item_array):
-                            command_result = BarterProcessor::set_item_choice_array(json.ids_array);
+                            command_result = BarterProcessor::set_item_choice_array(json.ids_array); break;
 
                         default:
                         {

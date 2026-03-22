@@ -62,6 +62,8 @@ namespace BarterProcessor {
     bool scroll_stuck = false;
     float scroll_stuck_time = 0.0f;
 
+    int last_item_choice = -1;
+
     struct item_data {
         std::string name;
         int price;
@@ -220,6 +222,7 @@ namespace BarterProcessor {
         old_item_list_size = -1;
         process_next_item_after_refresh = false;
         refresh_items_list = false;
+        last_item_choice = -1;
 
         return true;
     }
@@ -260,6 +263,9 @@ namespace BarterProcessor {
         //item_choice_array.clear();
         quantity_was_specified = false;
 
+        
+
+
         return true;
     }
 
@@ -287,6 +293,8 @@ namespace BarterProcessor {
         quantity_was_specified = false;
         process_next_item_after_refresh = false;
         refresh_items_list = false;
+        last_item_choice = -1;
+
 
         return true;
     }
@@ -392,13 +400,13 @@ namespace BarterProcessor {
             return result;
         }
 
-        if (pos < get_slider_min() || pos > get_slider_max() || !item_choice_valid || !barter_type_defined)// || !category_choice_valid)
+        if (pos < 0 || pos > get_slider_max() || !item_choice_valid || !barter_type_defined)// || !category_choice_valid)
         {
             //TODO: give int result, separate invalid id, category undefined and barter_type undefined.
             //barter_item_request_sent = false; //FAILED FORCED ACTIONS ARE REFORCED AUTOMATICALLY
 
             result.first = false;
-            result.second = "Invalid slider position ID";
+            result.second = "Invalid amount if items";
             return result;
         }
 
@@ -580,9 +588,24 @@ namespace BarterProcessor {
                     }
                     else
                     {
-                        item_choice_valid = true;
-                        barter_item_request_sent = true; 
+                        if (items_list.find(pos_to_id(item_choice)) != items_list.end())
+                        {
+                            int item_price = items_list.find(pos_to_id(item_choice))->second.price;
+                            int player_gold = MiscThings::get_player_gold();
+
+                            if (type == barter_type::sell || (item_price <= player_gold))
+                            {
+                                item_choice_valid = true;
+                                barter_item_request_sent = true;
+                                last_item_choice = item_choice;
+                                return;
+                            }
+                        }
+
+                        //not enough gold, skip
+                        process_next_item();
                         return;
+
                     }
                 }
                 else
@@ -653,8 +676,57 @@ namespace BarterProcessor {
     }
 
 
+
+    std::vector<std::string> items_we_cant_buy{};
+
+    std::string get_items_we_cant_buy_text()
+    {
+
+        auto dummy = get_barter_items(); //so it refreshes the list because for some reason its evaluated before that even though its on the right
+
+        std::string result = "";
+
+        bool first = true;
+
+        for (auto item_cant_buy : items_we_cant_buy)
+        {
+            if (!first)
+                result += "; ";
+            result += item_cant_buy;
+
+            first = false;
+        }
+
+        if (result != "")
+            result = "Items you cannot afford: " + result;
+
+        return result;
+    }
+
+
+
+
+    int get_vendor_gold()
+    {
+        int result = 0;
+
+        RE::GFxValue var1;
+        RE::UI* ui = RE::UI::GetSingleton();
+        if (ui)
+            if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu)
+                if (menu->uiMovie)
+                    if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.iVendorGold"))
+                        return var1.GetNumber();
+
+        return result;
+    }
+
+
+
+
     std::vector<MenuOption> get_barter_items()
     {
+        items_we_cant_buy.clear();
         std::vector<MenuOption> result{};
         for (std::pair<int, item_data> item : items_list)
         {
@@ -675,20 +747,42 @@ namespace BarterProcessor {
             if (stats != "")
                 stats = " [" + stats + "]";
 
-            MenuOption option = { id_to_pos(item.first), item.second.name + stats + " - " + std::to_string(item.second.price) + " gold"};
+            if (type == barter_type::sell || (item.second.price <= MiscThings::get_player_gold()))
+            {
+                MenuOption option = { id_to_pos(item.first), item.second.name + stats + " - " + std::to_string(item.second.price) + " gold" };
+                result.push_back(option);
+            }
+            else
+                items_we_cant_buy.push_back(item.second.name + stats + " - " + std::to_string(item.second.price) + " gold");
 
-            result.push_back(option);
         }
 
-        if (type == barter_type::sell)
-            result.push_back({ -2, "[SWITCH TO BUYING]" });
-        else
-            result.push_back({ -2, "[SWITCH TO SELLING]" });
+        if (!(type == barter_type::buy && get_vendor_gold() == 0))
+        {
+            if (type == barter_type::sell)
+                result.push_back({ -2, "[SWITCH TO BUYING]" });
+            else
+                result.push_back({ -2, "[SWITCH TO SELLING]" });
+        }
+
 
         result.push_back({ -1, "[QUIT BARTER]" });
 
 
         return result;
+    }
+
+
+
+
+
+
+    std::string get_gold_text()
+    {
+        int player_gold = MiscThings::get_player_gold();
+        int vendor_gold = get_vendor_gold();
+
+        return "Your gold: " + std::to_string(player_gold) + ", vendor gold: " + std::to_string(vendor_gold);
     }
 
 
@@ -1055,6 +1149,20 @@ namespace BarterProcessor {
                                                 std::string weight = "";
                                                 std::string damage = "";
                                                 std::string armor = "";
+                                                int price = -1;
+
+
+                                                if (items_list.find(id) != items_list.end())
+                                                {
+                                                    //in case it disappeard due to some slider or other stuff, dont ruin old data
+                                                    auto old_item_data = items_list.find(id)->second;
+                                                    weight = old_item_data.weight;
+                                                    damage = old_item_data.damage;
+                                                    armor = old_item_data.armor;
+                                                    price = old_item_data.price;
+
+                                                }
+
 
                                                 RE::GFxValue subvar;
 
@@ -1068,10 +1176,13 @@ namespace BarterProcessor {
                                                     if (!subvar.IsNull() && subvar.IsString())
                                                         armor = subvar.GetString();
 
+                                                int new_price = get_price_selected_item();
 
+                                                if (new_price != -1)
+                                                    price = new_price;
 
                                                 data.name = name;
-                                                data.price = get_price_selected_item();
+                                                data.price = price;
                                                 data.weight = weight;
                                                 data.damage = damage;
                                                 data.armor = armor;
@@ -1293,6 +1404,8 @@ namespace BarterProcessor {
 
     int get_slider_max()
     {
+        int result = -1;
+
         RE::GFxValue var1;
         RE::UI* ui = RE::UI::GetSingleton();
         if (ui)
@@ -1300,8 +1413,50 @@ namespace BarterProcessor {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.ItemCard_mc.QuantitySlider_mc._maximum"))
                         if (!var1.IsNull() && var1.IsNumber())
-                            return var1.GetNumber();
-        return -1;
+                            result = var1.GetNumber();
+
+        if (result > 0 && type == barter_type::buy)
+        {
+            //limit by gold amount we have
+            int player_gold = MiscThings::get_player_gold();
+            if (items_list.find(pos_to_id(item_choice)) != items_list.end())
+            {
+                int item_price = items_list.find(pos_to_id(item_choice))->second.price;
+
+                if (item_price > 0)
+                {
+                    int max_can_buy = player_gold / item_price;
+
+                    if (max_can_buy < result)
+                        result = max_can_buy;
+                }
+            }
+            
+
+
+        }
+
+
+        if (result > 0 && type == barter_type::sell)
+        {
+            //limit by gold amount vendor has
+            int vendor_gold = get_vendor_gold();
+
+            if (items_list.find(pos_to_id(item_choice)) != items_list.end())
+            {
+                int item_price = items_list.find(pos_to_id(item_choice))->second.price;
+                if (item_price > 0)
+                {
+                    int max_can_buy = vendor_gold / item_price + 1;
+
+                    if (max_can_buy < result)
+                        result = max_can_buy;
+                }
+            }
+        }
+
+
+        return result;
     }
 
     int get_slider_pos()
@@ -1905,7 +2060,7 @@ namespace BarterProcessor {
                     {
                         if (false && !barter_category_request_sent)
                         {
-                            if (force_choice(get_barter_categories(), "You are bartering. Choose item category to " + get_barter_type_text(), force_type::barter_category))
+                            if (force_choice(get_barter_categories(), "You are bartering. " + get_gold_text() + ". Choose item category to " + get_barter_type_text(), force_type::barter_category))
                             {
                                missing_category_detected = false;
                                 last_cursor_move = 0;
@@ -1920,6 +2075,14 @@ namespace BarterProcessor {
                                     category_choice = 11;
                                 else
                                     category_choice = 0;
+
+
+                                if (type == barter_type::sell && get_vendor_gold() == 0)
+                                {
+                                    send_random_context("Vendor has no gold left", false);
+                                    switch_barter_type_selection();
+                                    return;
+                                }
 
                                 category_choice_valid = true;
 
@@ -1965,7 +2128,7 @@ namespace BarterProcessor {
                                                 {
                                                     for (auto& a_choice : item_choice_array)
                                                     {
-                                                        if (a_choice > 0 && a_choice > item_choice)
+                                                        if (a_choice > 0 && a_choice > last_item_choice)
                                                             a_choice -= 1;
                                                     }
 
@@ -1999,7 +2162,7 @@ namespace BarterProcessor {
                                             if (!barter_item_request_sent && !item_confirming && !item_confirmed)
                                             {
 
-                                                if (force_choice(get_barter_items(), "You are bartering. Choose item to " + get_barter_type_text(), force_type::barter_item_array))
+                                                if (force_choice(get_barter_items(), "You are bartering. " + get_gold_text() + ". Choose item to " + get_barter_type_text() + ". " + get_items_we_cant_buy_text(), force_type::barter_item_array))
                                                 {
                                                     missing_item_detected = false;
                                                     last_cursor_move = 0;
@@ -2051,18 +2214,28 @@ namespace BarterProcessor {
                                                                 if (!slider_request_sent)
                                                                 {
                                                                     
-                                                                    if (force_choice({}, "You are bartering. Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
-                                                                        ". Valid range: from " + std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity))
+                                                                    if (force_choice({}, "You are bartering. " + get_gold_text() + ". Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
+                                                                        ". Valid range: from " + std::to_string(0) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity))
                                                                         slider_request_sent = true;
                                                                 }
                                                                 else
                                                                 {
                                                                     if (slider_choice_valid)
                                                                     {
-                                                                        if (get_slider_pos() != slider_choice)
+
+                                                                        if (slider_choice != 0 && get_slider_pos() != slider_choice)
                                                                             move_slider_to_pos(slider_choice);
                                                                         else
                                                                         {
+                                                                            if (slider_choice == 0)
+                                                                            {
+                                                                                slider_confirmed = true;
+                                                                                cancel();
+                                                                                finish_transaction();
+                                                                                return;
+                                                                            }
+                                                                                
+
                                                                             if (!slider_confirmed)
                                                                             {
                                                                                 if (detect_item_barter_result(true, false))
@@ -2241,8 +2414,18 @@ namespace BarterProcessor {
                     if (!barter_type_request_sent)
                     {
                         
-                        if (force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering. Choose barter type", force_type::barter_type_force))
+                        if (get_vendor_gold() == 0)
+                        {
                             barter_type_request_sent = true;
+                            set_barter_type(1);
+                        }
+                        else
+                        {
+                            if (force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering. " + get_gold_text() + ". Choose barter type", force_type::barter_type_force))
+                                barter_type_request_sent = true;
+                        }
+
+
                     }
 
                 }
@@ -2461,7 +2644,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -2505,7 +2688,7 @@ if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
                             };
 
 
-                            search_var = "iSelectedIndex";
+                            search_var = "Gold";
                             //search_var = "Body";
 
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
@@ -2517,8 +2700,8 @@ if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
                                 auto test = var1.GetType();
                             }
 
-                            search_var = "showingCharacterList";
-                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            search_var = "gold";
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();

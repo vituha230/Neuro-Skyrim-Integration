@@ -18,6 +18,16 @@ namespace MiscThings {
 
 
 
+    int get_player_gold()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+            return player->GetGoldAmount();
+        else
+            return 0;
+    }
+
 
     int get_very_close_quest()
     {
