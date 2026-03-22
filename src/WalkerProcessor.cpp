@@ -3819,7 +3819,11 @@ namespace WalkerProcessor {
         auto player_pos = player->GetPosition();
         auto target_pos = target_ref->GetPosition();
 
-
+        if (player_pos.GetDistance(target_pos) > 30000.0f)
+        {
+            reset_walker();
+            return false;
+        }
 
         if (using_custom_path)
         {
@@ -3859,6 +3863,12 @@ namespace WalkerProcessor {
             {
 
                 auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, true) - player_pos;
+                
+                if (distance.Length() > 30000.0f)
+                {
+                    reset_walker();
+                    return false;
+                }
 
                 distance.z = 0.0f; //dont account for height
 
@@ -3881,6 +3891,15 @@ namespace WalkerProcessor {
             {
                 //auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos; //experimenting
                 auto distance = target_pos - player_pos;
+
+
+                if (distance.Length() > 30000.0f)
+                {
+                    reset_walker();
+                    return false;
+                }
+                    
+
 
                 if (interaction_after_walk == 3)
                 {
