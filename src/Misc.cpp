@@ -61,7 +61,7 @@ namespace MiscThings {
 
                 return fly_state == RE::FLY_STATE::kCruising || fly_state == RE::FLY_STATE::kHovering;
             }
-        }`
+        }
         
         return false;
         

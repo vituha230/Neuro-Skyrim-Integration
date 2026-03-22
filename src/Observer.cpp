@@ -107,6 +107,11 @@ namespace Observer {
 	bool greybeards_called = false;
 	float greybeards_called_timer = 0.0f;
 
+	bool old_had_any_quests = false;
+
+
+
+
 	void reset_quest_puzzles()
 	{
 		active_puzzle = -1;
@@ -2650,6 +2655,9 @@ namespace Observer {
 						old_greybeard_call_stage = greybeard_call->GetCurrentStageID();
 
 
+
+					old_had_any_quests = MiscThings::have_any_quests();
+
 				}
 				else
 				{
@@ -2787,6 +2795,7 @@ namespace Observer {
 
 
 
+
 				//auto test_wall_of_power = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70b4a);
 
 				//auto base_obj_test = test_wall_of_power->GetBaseObject();
@@ -2822,6 +2831,14 @@ namespace Observer {
 				old_objects_around_valid = MiscThings::is_objects_around_valid();
 
 
+				bool new_had_any_quests = MiscThings::have_any_quests();
+				
+
+				if (new_had_any_quests && !old_had_any_quests)
+					register_allowed_actions();
+
+
+				old_had_any_quests = new_had_any_quests;
 
 			
 				if (serving_jail && !jail_serving_notified)
