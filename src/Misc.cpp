@@ -33,12 +33,16 @@ namespace MiscThings {
 
     bool is_dragon(RE::TESObjectREFR* refr)
     {
-        if (refr->IsActor())
+        if (refr)
         {
-            auto actor_refr = (RE::Actor*)refr;
-            if (actor_refr->race->fullName == "Dragon Race")
-                return true;
+            if (refr->IsActor())
+            {
+                auto actor_refr = (RE::Actor*)refr;
+                if (actor_refr->race->fullName == "Dragon Race")
+                    return true;
+            }
         }
+
 
         return false;
     }
@@ -46,16 +50,19 @@ namespace MiscThings {
 
     bool is_flying(RE::TESObjectREFR* refr)
     {
-        if (refr->IsActor())
+        if (refr)
         {
-            auto actor_refr = (RE::Actor*)refr;
-            
-            auto fly_state = actor_refr->actorState1.flyState;
+            if (refr->IsActor())
+            {
+                auto actor_refr = (RE::Actor*)refr;
+
+                auto fly_state = actor_refr->actorState1.flyState;
 
 
-            return fly_state == RE::FLY_STATE::kCruising || fly_state == RE::FLY_STATE::kHovering;
-        }
-
+                return fly_state == RE::FLY_STATE::kCruising || fly_state == RE::FLY_STATE::kHovering;
+            }
+        }`
+        
         return false;
         
     }
