@@ -8948,13 +8948,14 @@ namespace WalkerProcessor {
                             std::string advice = "";
 
                             if (MiscThings::is_objects_around_valid())
-                                advice = "walk somewhere, interact with something";
+                                advice = "walk somewhere, interact with something, loot the bodies of defeated";
 
                             if (MiscThings::have_any_quests())
                                 if (advice != "")
                                     advice += ", follow some quest";
                                 else
                                     advice = "follow some quest";
+
 
                             if (advice != "")
                                 advice = "You can " + advice;
