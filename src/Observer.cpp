@@ -112,6 +112,11 @@ namespace Observer {
 
 
 
+	float jail_reminder_time = 0.0f;
+
+
+
+
 	void reset_quest_puzzles()
 	{
 		active_puzzle = -1;
@@ -2846,6 +2851,33 @@ namespace Observer {
 					jail_serving_notified = true;
 					send_random_context("[You are in jail. You can try to find a bed to sleep through your jail time, or try to escape (investigate surroundings)]", false);
 				}
+
+
+				if (serving_jail)
+				{
+					if (jail_reminder_time > 60.0f)
+					{
+						auto player_cell = player->GetParentCell();
+
+						if (player_cell && player_cell->GetFormID() == 0x16203)
+						{
+							auto cidhna_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS02");
+
+							if (cidhna_quest && (cidhna_quest->GetCurrentStageID() >= 5 || cidhna_quest->GetCurrentStageID() < 100))
+								;
+							else
+								send_random_context("[If you dont know what to do, you can find a pickaxe and mine some ore to serve your jail time and get out of jail]", false);
+						}
+						else
+							send_random_context("[If you dont know what to do, you can use nearest bed to serve your jail time and get out of jail]", false);
+
+						jail_reminder_time = 0.0f;
+					}
+					else
+						jail_reminder_time += 0.5f;
+				}
+				else
+					jail_reminder_time = 0.0f;
 
 				if (escaping_jail && !jail_escaping_notified)
 				{
