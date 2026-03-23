@@ -7247,7 +7247,7 @@ namespace MiscThings {
             bool right_immortal = is_immortal(right);;
             
             if (left_immortal != right_immortal)
-                return left_immortal > right_immortal;
+                return left_immortal < right_immortal;
 
 
             return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos);

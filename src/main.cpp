@@ -4,8 +4,9 @@
 //crucial:
 
 
-//TODO weapon charging and enchantment info
-
+//TODO low-charge notifications once per fight
+//TODO enchantment info
+//TODO oxygen control
 
 
 //TODO check some quest that needs something to be used from inventory (are there any?)

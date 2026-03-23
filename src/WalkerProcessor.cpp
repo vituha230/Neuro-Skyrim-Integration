@@ -7113,11 +7113,13 @@ namespace WalkerProcessor {
                 {
                     active_attacking_time += dtime;
 
+                    auto target_actor = (RE::Actor*)target_ref;
+
                     if (active_attacking_time > 20.0f)
                     {
                         active_attacking_time = 0.0f;
 
-                        auto target_actor = (RE::Actor*)target_ref;
+                        
 
                         if (MiscThings::is_immortal(target_actor))
                         {
@@ -7129,6 +7131,19 @@ namespace WalkerProcessor {
 
                         send_random_context("You keep attacking...", false);
                     }
+
+
+                    if (MiscThings::is_immortal(target_actor) && target_actor->GetActorValue(RE::ActorValue::kHealth) < 2)
+                    {
+                        auto attackers = MiscThings::get_player_attackers();
+
+                        if (std::size(attackers) > 1)
+                        {
+                            //there are other targets nearby. switch target
+                            return true;
+                        }
+                    }
+
                 }
                     
             }
