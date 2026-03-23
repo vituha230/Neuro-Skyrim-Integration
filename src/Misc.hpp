@@ -67,7 +67,7 @@ namespace MiscThings {
 
     std::vector<quest>* get_p_quest_list();
 
-    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false);
+    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false, RE::TESObjectREFR* exclude_ref = nullptr);
 
     bool is_pillar_solved(RE::TESObjectREFR* pillar);
 

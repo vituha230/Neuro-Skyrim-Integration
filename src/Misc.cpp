@@ -1704,8 +1704,11 @@ namespace MiscThings {
                                                     if (result_string != old_topleft_notification)
                                                     {
                                                         old_topleft_notification = result_string;
-                                                        if (result_string != "Autosaving..." && result_string != "Quicksaving..." && result_string != "Quickloading...")
+                                                        if (result_string != "Autosaving..." && result_string != "Quicksaving..." && result_string != "Quickloading..." && result_string.find("is too powerful") == std::string::npos)
                                                         {
+                                                            if (result_string.find("item has insufficient charge") != std::string::npos)
+                                                                result_string = "Weapon's enchantment charge depleted. Use soulgems to charge it";
+
                                                             if (result_string.find("hands are bound") != std::string::npos)
                                                                 if (MiscThings::is_intro())
                                                                     result_string += ". Wait for the game to progress. ";
@@ -7197,7 +7200,7 @@ namespace MiscThings {
     }
 
 
-    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only)
+    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only, RE::TESObjectREFR* exclude_ref)
     {
         std::vector<RE::Actor*> result{};
 
@@ -7228,7 +7231,15 @@ namespace MiscThings {
                 if (a_ref->IsActor())
                 {
                     if (is_enemy_to_actor(a_ref) && (!raycastable_only || raycastable(a_ref, 9000.0f, false)))
-                        result.push_back((RE::Actor*)a_ref);
+                    {
+                        auto target_actor = (RE::Actor*)a_ref;
+
+                        bool not_a_threat = MiscThings::is_immortal(target_actor) && target_actor->GetActorValue(RE::ActorValue::kHealth) < 2;
+
+                        if (!not_a_threat && (a_ref != exclude_ref) && !a_ref->IsChild())
+                            result.push_back((RE::Actor*)a_ref);
+                    }
+                        
                 }
 
 

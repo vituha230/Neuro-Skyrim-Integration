@@ -7135,9 +7135,9 @@ namespace WalkerProcessor {
 
                     if (MiscThings::is_immortal(target_actor) && target_actor->GetActorValue(RE::ActorValue::kHealth) < 2)
                     {
-                        auto attackers = MiscThings::get_player_attackers();
+                        auto attackers = MiscThings::get_player_attackers(false, target_ref);
 
-                        if (std::size(attackers) > 1)
+                        if (std::size(attackers) > 0)
                         {
                             //there are other targets nearby. switch target
                             return true;
@@ -7580,7 +7580,19 @@ namespace WalkerProcessor {
             else
             {
                 low_mana_detected = false;
-                if (still_alive)
+
+                bool ignore_alive = false;
+
+                if (target_ref->IsActor())
+                {
+                    auto target_actor = (RE::Actor*)target_ref;
+                    int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
+                    ignore_alive = MiscThings::is_immortal(target_actor) && cur_health < 2;
+
+
+                }
+
+                if (still_alive && !ignore_alive)
                     attacking_done = false; //cleanup from walk_again.
             }
 
@@ -8889,7 +8901,7 @@ namespace WalkerProcessor {
 
                 if (search_next_fight_target)
                 {
-                    auto next_targets = MiscThings::get_player_attackers();
+                    auto next_targets = MiscThings::get_player_attackers(false, target_ref);
 
                     if (std::size(next_targets) > 0)
                     {
