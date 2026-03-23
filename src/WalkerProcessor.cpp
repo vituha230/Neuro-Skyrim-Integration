@@ -1616,7 +1616,9 @@ namespace WalkerProcessor {
                 //right_attack_cancel();
                 //left_attack_cancel();
 
-                if (last_walk_reminded_time > 40.0f || ((explore_mode || runaway_mode) && last_walk_reminded_time > 15.0f))
+                bool brought_no_weapons_to_a_fight = has_spell_equipped(true) && has_spell_equipped(false) && !is_offensive_spell(true) && !is_offensive_spell(false);
+
+                if (last_walk_reminded_time > 40.0f || ((explore_mode || runaway_mode) && last_walk_reminded_time > 15.0f) || (interaction_after_walk == 3 && brought_no_weapons_to_a_fight && last_walk_reminded_time > 15.0f))
                 {
                     last_walk_reminded_time = 0.0f;
 
@@ -1639,6 +1641,8 @@ namespace WalkerProcessor {
                     else
                         reminder_message += reminder_target_name + ". ";
 
+                    if (brought_no_weapons_to_a_fight)
+                        reminder_message += " You dont have any weapons equipped for this fight! Equip something that can deal damage (weapon or spell). ";
 
                     std::string big_distance = "";
 
