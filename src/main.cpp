@@ -4,8 +4,6 @@
 //crucial:
 
 
-//TODO low-charge notifications once per fight
-//TODO enchantment info
 //TODO oxygen control
 
 

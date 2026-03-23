@@ -29,6 +29,7 @@ namespace MiscThings {
 
     struct item_data {
         RE::TESBoundObject* object;
+       // RE::InventoryEntryData* entry;
         int amount;
         //int price; //TODO: replace with something useful (maybe type of item)
     };
@@ -228,6 +229,9 @@ namespace MiscThings {
     float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* start = nullptr);
 
     std::string get_door_teleport(RE::TESObjectREFR* object);
+
+    std::string get_enchantment_info(RE::InventoryEntryData* item);
+    std::string fix_enchantment_description(std::string description, RE::EnchantmentItem* spell);
 
 
     namespace General::Script

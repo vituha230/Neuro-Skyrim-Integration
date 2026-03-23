@@ -5112,6 +5112,9 @@ namespace MiscThings {
 
 
 
+
+
+
     float get_soul_charge_value(REX::TEnumSet<RE::SOUL_LEVEL> soul)
     {
         int soul_int = (int)soul.underlying();
@@ -5149,78 +5152,80 @@ namespace MiscThings {
             auto obj = item->object;
             if (obj)
             {
-                auto ench = obj ? obj->As<RE::TESEnchantableForm>() : nullptr;
+                if (item->extraLists && item->IsEnchanted() && item->GetEnchantment())
+                {
+                    auto ench = obj ? obj->As<RE::TESEnchantableForm>() : nullptr;
 
-
-                if (item->extraLists) {
-                    for (auto& xList : *item->extraLists) {
-                        if (xList) {
-                            auto xCharge = xList->GetByType<RE::ExtraCharge>();
-                            auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
-                            if (xEnch && xEnch->enchantment && xEnch->charge != 0) 
-                            {
-                                if (xCharge) 
+                    if (item->extraLists) {
+                        for (auto& xList : *item->extraLists) {
+                            if (xList) {
+                                auto xCharge = xList->GetByType<RE::ExtraCharge>();
+                                auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
+                                if (xEnch && xEnch->enchantment && xEnch->charge != 0)
                                 {
-
-                                    float max_charge = xEnch->charge;
-                                    float cur_charge = xCharge->charge;
-
-                                    if (cur_charge >= max_charge)
-                                        return false;
-
-                                    // if (max_charge < cur_charge + charge_to_add)
+                                    if (xCharge)
                                     {
-                                        auto player_actor = (RE::Actor*)player->AsReference();
-                                        if (right)
+
+                                        float max_charge = xEnch->charge;
+                                        float cur_charge = xCharge->charge;
+
+                                        if (cur_charge >= max_charge)
+                                            return false;
+
+                                        // if (max_charge < cur_charge + charge_to_add)
                                         {
-                                            restore_actor_value(player_actor, RE::ActorValue::kRightItemCharge, charge_to_add);
+                                            auto player_actor = (RE::Actor*)player->AsReference();
+                                            if (right)
+                                            {
+                                                restore_actor_value(player_actor, RE::ActorValue::kRightItemCharge, charge_to_add);
+                                            }
+                                            //player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kRightItemCharge, max_charge);
+                                            else
+                                                restore_actor_value(player_actor, RE::ActorValue::kLeftItemCharge, charge_to_add);
+                                            //player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kLeftItemCharge, max_charge);
+
+                                            return true;
                                         }
-                                        //player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kRightItemCharge, max_charge);
+
+
+                                    }
+                                    else
+                                        return false;
+                                }
+                                else
+                                {
+                                    if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                                    {
+
+                                        float max_charge = ench->amountofEnchantment;
+                                        float cur_charge = 0;//xCharge->charge;
+
+                                        if (right)
+                                            cur_charge = player->GetActorValue(RE::ActorValue::kRightItemCharge);
                                         else
-                                            restore_actor_value(player_actor, RE::ActorValue::kLeftItemCharge, charge_to_add);
-                                        //player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kLeftItemCharge, max_charge);
+                                            cur_charge = player->GetActorValue(RE::ActorValue::kLeftItemCharge);
+
+
+                                        if (cur_charge >= max_charge)
+                                            return false;
+
+                                        if (max_charge < (cur_charge + charge_to_add))
+                                        {
+                                            if (right)
+                                                player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kRightItemCharge, max_charge - cur_charge);
+                                            else
+                                                player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kLeftItemCharge, max_charge - cur_charge);
+                                        }
+                                        else
+                                        {
+                                            if (right)
+                                                player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kRightItemCharge, charge_to_add);
+                                            else
+                                                player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kLeftItemCharge, charge_to_add);
+                                        }
 
                                         return true;
                                     }
-
-
-                                }
-                                else
-                                    return false;
-                            }
-                            else
-                            {
-                                if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
-                                {
-
-                                    float max_charge = ench->amountofEnchantment;
-                                    float cur_charge = 0;//xCharge->charge;
-
-                                    if (right)
-                                        cur_charge = player->GetActorValue(RE::ActorValue::kRightItemCharge);
-                                    else
-                                        cur_charge = player->GetActorValue(RE::ActorValue::kLeftItemCharge);
-
-
-                                    if (cur_charge >= max_charge)
-                                        return false;
-
-                                    if (max_charge < (cur_charge + charge_to_add))
-                                    {
-                                        if (right)
-                                            player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kRightItemCharge, max_charge - cur_charge);
-                                        else
-                                            player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kLeftItemCharge, max_charge - cur_charge);
-                                    }
-                                    else
-                                    {
-                                        if (right)
-                                            player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kRightItemCharge, charge_to_add);
-                                        else
-                                            player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kLeftItemCharge, charge_to_add);
-                                    }
-
-                                    return true;
                                 }
                             }
                         }
@@ -5600,6 +5605,73 @@ namespace MiscThings {
     }
 
 
+
+    std::string get_enchantment_info(RE::TESBoundObject* item)
+    {
+        std::string result = "";
+
+
+        RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
+            {
+                return true;// a_object.IsObject();
+            });
+
+            //auto item = entry->object;
+
+        if (inventory.find(item) != inventory.end())
+        {
+            auto entry_ptr = inventory.find(item);
+
+            auto entry = entry_ptr->second.second.get();
+
+            if (entry->extraLists && entry->IsEnchanted())
+            {
+                auto enchantment = entry->GetEnchantment();
+
+                //auto ench = item ? item->As<RE::TESEnchantableForm>() : nullptr;
+
+                    if (enchantment)
+                    {
+                        //auto enchantment = ench->formEnchanting;
+
+
+                        auto effect = enchantment->GetAVEffect();
+
+                        std::string descr = "";
+
+                        if (effect)
+                        {
+
+                            descr = effect->magicItemDescription;
+                            descr = fix_enchantment_description(descr, enchantment);
+
+                            result = "[Enchanted: " + descr + "]";
+                        }
+
+                        if (descr == "")
+                        {
+                            result = "[Enchanted]";
+                            /*
+                            RE::BSString temp_string;
+
+                            enchantment->GetDescription(temp_string, a_spell, 'MANC');
+
+                            descr = temp_string;
+                            descr = fix_spell_description(descr, a_spell);
+                            */
+                        }
+
+                    }
+            }
+        }
+        
+        return result;
+    }
+
+
+
+
+
     std::string get_inventory_item_full_info(RE::TESBoundObject* item)
     {
 
@@ -5725,6 +5797,9 @@ namespace MiscThings {
                 ;// actions += "[Can consume]";
 
 
+            actions += get_enchantment_info(item);
+
+
             auto name = item->As<RE::TESFullName>();
 
 
@@ -5824,6 +5899,11 @@ namespace MiscThings {
                 return result;
 
             auto& [quantity, data] = entry_ptr->second;
+
+            RE::InventoryEntryData* inv_entry = nullptr;
+
+            if (data)
+                inv_entry = data.get();
 
             std::string info = get_inventory_item_full_info(item);
 
@@ -5998,6 +6078,61 @@ namespace MiscThings {
 
         if (something_found)
             return fix_spell_description(description, spell);
+        else
+            return description;
+    }
+
+
+
+
+    std::string fix_enchantment_description(std::string description, RE::EnchantmentItem* spell)
+    {
+        bool something_found = false;
+
+        if (auto pos = description.find("<"); pos != std::string::npos)
+        {
+            auto pos2 = description.find(">");
+            if ((pos < (pos2 - 1)) && pos2 < description.length())
+            {
+                std::string keyword = description.substr(pos + 1, pos2 - pos - 1);
+
+
+                std::string replacement = "???";
+
+                if (keyword == "mag" || keyword == "MAG")
+                    if (spell->effects.front())
+                    {
+                        something_found = true;
+                        replacement = std::to_string((int)spell->effects.front()->GetMagnitude());
+                    }
+
+                if (keyword == "dur")
+                    if (spell->effects.front())
+                    {
+                        something_found = true;
+                        replacement = std::to_string((int)spell->effects.front()->GetDuration());
+                    }
+
+
+                if (is_digits(keyword))
+                {
+                    something_found = true;
+                    replacement = keyword;
+                }
+
+
+
+                if (replacement != "???")
+                {
+                    description.erase(pos, pos2 - pos + 1);
+                    description.insert(pos, replacement);
+                }
+            }
+
+        }
+
+        if (something_found)
+            return fix_enchantment_description(description, spell);
         else
             return description;
     }
