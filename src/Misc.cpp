@@ -1709,6 +1709,10 @@ namespace MiscThings {
                                                             if (result_string.find("item has insufficient charge") != std::string::npos)
                                                                 result_string = "Weapon's enchantment charge depleted. Use soulgems to charge it";
 
+                                                            if (result_string.find("has already caught you") != std::string::npos)
+                                                                WalkerProcessor::reset_walker();
+
+
                                                             if (result_string.find("hands are bound") != std::string::npos)
                                                                 if (MiscThings::is_intro())
                                                                     result_string += ". Wait for the game to progress. ";

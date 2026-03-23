@@ -24,7 +24,7 @@ namespace WalkerProcessor {
 
 
 
-
+    float pickpocket_timeout = 0.0f;
 
     bool no_weapons_notified = false;
 
@@ -3253,7 +3253,7 @@ namespace WalkerProcessor {
         multiple_paths_quest_choice = -1;
         allowed_multiple_paths_quest_choices.clear();
 
-
+        pickpocket_timeout = 0.0f;
 
         current_quest_target_followed = nullptr;
         current_quest_followed = nullptr;
@@ -9196,7 +9196,18 @@ namespace WalkerProcessor {
 
                         //lock_camera_onto_target(target_ref, dtime);
                         if (lock_camera_onto_target(target_ref, dtime) && close_enough())
+                        {
                             interact_with_target(dtime);
+
+                            pickpocket_timeout += dtime;
+
+                            if (pickpocket_timeout > 5.0f)
+                            {
+                                reset_walker();
+                                send_random_context("You cannot find a good position for pickpocket", false);
+                                return;
+                            }
+                        }
                         else
                         {
                             if (!close_enough())
