@@ -3333,7 +3333,7 @@ namespace MiscThings {
 
         if (base_type == RE::FormType::SoulGem)
         {
-            result = "[Soulgem]";
+            result = "[Soulgem";
 
             if (object)
             {
@@ -3344,9 +3344,15 @@ namespace MiscThings {
 
                 if (charge_text != "")
                 {
-                    result += "[" + charge_text + "]";
+                    result += ", " + charge_text + " soul";
+                }
+                else
+                {
+                    result += ", empty";
                 }
             }
+
+            result += "]";
 
         }
             
@@ -5805,10 +5811,10 @@ namespace MiscThings {
 
 
         if (inventory.find(item) == inventory.end())
-            return result; //not found
+            return result; //not found in actual inventory
 
 
-        if (!found)
+        if (!found) //means not found in the list
         {
             auto entry_ptr = inventory.find(item);
 
@@ -5822,16 +5828,16 @@ namespace MiscThings {
             if (info == "" || quantity <= 0)
                 return result;
 
-            result = "[id " + std::to_string(std::size(inventory_items_list)) + "]" + info;
+            int new_id = 0;
+            if (std::size(inventory_items_list) > 0)
+                new_id = inventory_items_list.rbegin()->first + 1;
+
+
+            result = "[id " + std::to_string(new_id) + "]" + info;
 
             item_data database_data{};
             database_data.amount = quantity;
             database_data.object = data->GetObject();
-
-
-            int new_id = 0;
-            if (std::size(inventory_items_list) > 0)
-                new_id = inventory_items_list.rbegin()->first + 1;
 
             inventory_items_list.insert({ new_id , database_data });
 
