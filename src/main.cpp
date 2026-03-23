@@ -5,7 +5,7 @@
 
 
 //TODO weapon charging and enchantment info
-//TODO water walking
+
 
 
 //TODO check some quest that needs something to be used from inventory (are there any?)

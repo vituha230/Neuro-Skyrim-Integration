@@ -9395,8 +9395,16 @@ namespace WalkerProcessor {
                                         {
                                             wiggle_body_then_walk_again = true;
 
-                                            if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
-                                                walk_retries = 0;
+                                            if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                                            {
+                                                if (walk_retries > 2)
+                                                {
+                                                    send_random_context("You keep following the dragon...", false); 
+                                                    walk_retries = 0;
+                                                }
+                                                
+                                            }
+                                                
 
                                             walk_retries++;
                                             //walk_again();
@@ -9480,8 +9488,15 @@ namespace WalkerProcessor {
                                                 walk_retries++;
                                                 //walk_again();
 
-                                                if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
-                                                    walk_retries = 0;
+                                                if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                                                {
+                                                    if (walk_retries > 2)
+                                                    {
+                                                        send_random_context("You keep following the dragon...", false);
+                                                        walk_retries = 0;
+                                                    }
+
+                                                }
 
                                                 return;
                                             }
@@ -9961,14 +9976,18 @@ namespace WalkerProcessor {
 
                                                 if (false && ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7)))
                                                 {
-                                                    if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
-                                                        walk_retries = 0;
+                                                    if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                                                    {
+                                                        if (walk_retries > 5)
+                                                        {
+                                                            send_random_context("You keep following the dragon...", false);
+                                                            walk_retries = 0;
+                                                        }
+
+                                                    }
 
                                                     if ((interaction_after_walk == 2) && ((int)std::size(path) < 3) && !had_successful_walk)
                                                         walk_retries++;
-
-                                                    if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
-                                                        walk_retries = 0;
 
                                                     walk_again();
                                                 } 
@@ -10075,8 +10094,15 @@ namespace WalkerProcessor {
 
                                                     if ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7))
                                                     {
-                                                        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
-                                                            walk_retries = 0;
+                                                        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                                                        {
+                                                            if (walk_retries > 5)
+                                                            {
+                                                                send_random_context("You keep following the dragon...", false);
+                                                                walk_retries = 0;
+                                                            }
+
+                                                        }
 
                                                         had_successful_walk = false;
                                                         if ((interaction_after_walk == 2) && ((int)std::size(path) < 3) && !had_successful_walk)
@@ -10106,8 +10132,15 @@ namespace WalkerProcessor {
                                                             walk_retries++;
                                                             //walk_again();
                                                             
-                                                            if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))
-                                                                walk_retries = 0;
+                                                            if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                                                            {
+                                                                if (walk_retries > 8)
+                                                                {
+                                                                    send_random_context("You keep following the dragon...", false);
+                                                                    walk_retries = 0;
+                                                                }
+
+                                                            }
 
                                                             return;
                                                         }

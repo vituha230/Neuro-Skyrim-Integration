@@ -5062,6 +5062,131 @@ namespace MiscThings {
 
 
 
+
+    float get_soul_charge_value(REX::TEnumSet<RE::SOUL_LEVEL> soul)
+    {
+        if (soul.any(RE::SOUL_LEVEL::kPetty))
+            return 250.0f;
+        if (soul.any(RE::SOUL_LEVEL::kLesser))
+            return 500.0f;
+        if (soul.any(RE::SOUL_LEVEL::kCommon))
+            return 1000.0;
+        if (soul.any(RE::SOUL_LEVEL::kGreater))
+            return 2000.0f;
+        if (soul.any(RE::SOUL_LEVEL::kGrand))
+            return 3000.0f;
+
+        return 0.0f;
+    }
+
+
+    bool charge_inventory_item(RE::InventoryEntryData* item, float charge_to_add, bool right)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (item)
+        {
+            auto obj = item->object;
+            if (obj)
+            {
+                auto ench = obj ? obj->As<RE::TESEnchantableForm>() : nullptr;
+
+
+                if (item->extraLists) {
+                    for (auto& xList : *item->extraLists) {
+                        if (xList) {
+                            auto xCharge = xList->GetByType<RE::ExtraCharge>();
+                            auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
+                            if (xEnch && xEnch->enchantment && xEnch->charge != 0) {
+                                if (xCharge) {
+
+                                    float max_charge = xEnch->charge;
+                                    float cur_charge = xCharge->charge;
+
+                                    if (cur_charge == max_charge)
+                                        return false;
+
+                                    if (max_charge < cur_charge + charge_to_add)
+                                    {
+                                        if (right)
+                                            player->SetActorValue(RE::ActorValue::kRightItemCharge, max_charge);
+                                        else
+                                            player->SetActorValue(RE::ActorValue::kLeftItemCharge, max_charge);
+                                    
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        if (right)
+                                            player->SetActorValue(RE::ActorValue::kRightItemCharge, cur_charge + charge_to_add);
+                                        else
+                                            player->SetActorValue(RE::ActorValue::kLeftItemCharge, cur_charge + charge_to_add);
+
+                                        return true;
+                                    }
+
+                                        
+
+                                    /*
+                                    if (max_charge < cur_charge + charge_to_add)
+                                    {
+                                        xCharge->charge = max_charge;
+                                    }
+                                    else
+                                        xCharge->charge += charge_to_add;
+                                    */
+
+                                }
+                                else
+                                    return false;
+                            }
+                            else
+                            {
+                                if (xCharge && ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                                {
+
+                                    float max_charge = ench->amountofEnchantment;
+                                    float cur_charge = xCharge->charge;
+
+                                    if (cur_charge == max_charge)
+                                        return false;
+
+                                    if (max_charge < cur_charge + charge_to_add)
+                                    {
+                                        if (right)
+                                            player->SetActorValue(RE::ActorValue::kRightItemCharge, max_charge - cur_charge);
+                                        else
+                                            player->SetActorValue(RE::ActorValue::kLeftItemCharge, max_charge - cur_charge);
+
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        if (right)
+                                            player->SetActorValue(RE::ActorValue::kRightItemCharge, charge_to_add);
+                                        else
+                                            player->SetActorValue(RE::ActorValue::kLeftItemCharge, charge_to_add);
+
+                                        return true;
+                                    }
+
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+
+
+
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
     {
         std::pair<bool, std::string> result{};
@@ -5241,34 +5366,68 @@ namespace MiscThings {
                                         //auto actor_equip = RE::ActorEquipManager::GetSingleton();
                                         //bool test123 = actor_equip->UnequipObject((RE::Actor*)player_ref, object);
 
-                                        auto right_hand = get_hand_contents(true);
-                                        auto left_hand = get_hand_contents(true);
+                                        std::vector<RE::TESForm*> hands{};
 
-                                        if (right_hand && right_hand->IsWeapon())
+                                        hands.push_back(get_hand_contents(true));
+                                        hands.push_back(get_hand_contents(false));
+
+                                        bool charge_right_hand = true;
+
+                                        for (auto hand : hands)
                                         {
-                                            auto weapon = (RE::TESObjectWEAP*)right_hand;
+                                            auto weapon = (RE::TESObjectWEAP*)hand;
 
-                                            auto object_ptr = inventory.find((RE::TESBoundObject*)right_hand);
+                                            auto object_ptr = inventory.find((RE::TESBoundObject*)hand);
 
                                             if (object_ptr != inventory.end())
                                             {
                                                 auto p_entry_data = &object_ptr->second.second;
-                                                
+
                                                 if (p_entry_data)
                                                 {
                                                     auto entry_data = p_entry_data->get();
 
                                                     auto charge = entry_data->GetEnchantmentCharge();
 
-                                                    if (charge.has_value() && charge < 100.0)
+                                                    auto soul = soulgem->currentSoul;
+
+                                                    float charge_to_add = get_soul_charge_value(soul);
+
+                                                    auto entry_object = entry_data->object;
+
+                                                    bool charge_result = charge_inventory_item(entry_data, charge_to_add, charge_right_hand);
+
+                                                    if (charge_result)
                                                     {
-                                                        auto soul = soulgem->currentSoul;
-                                                        bool stop_here = false;
+                                                        auto form_id = entry_object->GetFormID();
+
+                                                        
+
+                                                        if (form_id == 0x63b27 || //azure white
+                                                            form_id == 0x63b29 || //azure black
+                                                            form_id == 0xfe001801 //cc varla stone
+                                                            )
+                                                            soulgem->currentSoul = RE::SOUL_LEVEL::kNone; //clear soul
+                                                        else
+                                                        {
+                                                            auto object_ptr = inventory.find((RE::TESBoundObject*)object);
+
+                                                            if (object_ptr != inventory.end())
+                                                                if (object_ptr->first)
+                                                                    player->RemoveItem(object_ptr->first, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
+
+                                                            
+                                                        }
+
+                                                        //use successful. if its not 
                                                     }
 
+                                                    break;
                                                 }
+
                                             }
 
+                                            charge_right_hand = false;
                                             
                                         }
 
