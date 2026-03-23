@@ -3402,7 +3402,7 @@ namespace MiscThings {
             auto base_type = base_obj->GetFormType();
             if (base_obj->IsInventoryObject() || base_type == RE::FormType::Tree || base_type == RE::FormType::Flora)
             {
-                if (player_actor && player_actor->WouldBeStealing(object))
+                if (player_actor && player_actor->WouldBeStealing(object) && !object->IsActor())
                     result = "[Is stealing]";
             }
 
@@ -3424,7 +3424,8 @@ namespace MiscThings {
                         if (base_type == RE::FormType::Door)
                             result = "[Is crime to break in]";
                         else
-                            result = "[Is stealing]";
+                            if (!object->IsActor())
+                                result = "[Is stealing]";
 
 
                     }
