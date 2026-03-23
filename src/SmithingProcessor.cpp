@@ -1078,6 +1078,13 @@ std::string get_force_message(bool category)
 					if (menu_name == "Armor Smithing: Choose an item to improve")
 						result = "You are at workbench. Select item to improve. ";
 
+					if (menu_name == "Cooking Pot: Choose an item to create")
+						if (category)
+							result = "You are at cooking pot. Select item category. ";
+						else
+							result = "You are at cooking pot. Select item to cook. ";
+
+
 					if (result == "") //blacksmith forge
 						if (category)
 							result = "You are at blacksmith forge. Select item category. ";

@@ -3280,10 +3280,24 @@ namespace MiscThings {
     }
 
 
+    std::string get_soul_charge_text(REX::TEnumSet<RE::SOUL_LEVEL> soul)
+    {
+        if (soul.any(RE::SOUL_LEVEL::kPetty))
+            return "Petty";
+        if (soul.any(RE::SOUL_LEVEL::kLesser))
+            return "Lesser";
+        if (soul.any(RE::SOUL_LEVEL::kCommon))
+            return "Common";
+        if (soul.any(RE::SOUL_LEVEL::kGreater))
+            return "Greater";
+        if (soul.any(RE::SOUL_LEVEL::kGrand))
+            return "Grand";
+
+        return "";
+    }
 
 
-
-    std::string get_object_category(RE::TESForm* base_obj)
+    std::string get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object = nullptr)
     {
         std::string result = "";
 
@@ -3311,7 +3325,24 @@ namespace MiscThings {
             result = "[Consumable]";
 
         if (base_type == RE::FormType::SoulGem)
+        {
             result = "[Soulgem]";
+
+            if (object)
+            {
+                auto soulgem = (RE::TESSoulGem*)object;
+                auto soul = soulgem->currentSoul;
+
+                std::string charge_text = get_soul_charge_text(soul);
+
+                if (charge_text != "")
+                {
+                    result += "[" + charge_text + "]";
+                }
+            }
+
+        }
+            
 
         if (base_type == RE::FormType::Note)
             result = "[Note]";
@@ -5102,28 +5133,33 @@ namespace MiscThings {
 
                                     float max_charge = xEnch->charge;
                                     float cur_charge = xCharge->charge;
-
-                                    if (cur_charge == max_charge)
-                                        return false;
-
-                                    if (max_charge < cur_charge + charge_to_add)
+                                    //auto cur_charge_raw = item->GetEnchantmentCharge();
+                                    //if (cur_charge_raw.has_value())
                                     {
-                                        if (right)
-                                            player->SetActorValue(RE::ActorValue::kRightItemCharge, max_charge);
+                                        //float cur_charge = cur_charge_raw.value();
+                                        if (cur_charge == max_charge)
+                                            return false;
+
+                                        if (max_charge < cur_charge + charge_to_add)
+                                        {
+                                            if (right)
+                                                player->RestoreActorValue(RE::ActorValue::kRightItemCharge, max_charge);
+                                            else
+                                                player->RestoreActorValue(RE::ActorValue::kLeftItemCharge, max_charge);
+
+                                            return true;
+                                        }
                                         else
-                                            player->SetActorValue(RE::ActorValue::kLeftItemCharge, max_charge);
+                                        {
+                                            if (right)
+                                                player->RestoreActorValue(RE::ActorValue::kRightItemCharge, cur_charge + charge_to_add);
+                                            else
+                                                player->RestoreActorValue(RE::ActorValue::kLeftItemCharge, cur_charge + charge_to_add);
+
+                                            return true;
+                                        }
+                                    }
                                     
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        if (right)
-                                            player->SetActorValue(RE::ActorValue::kRightItemCharge, cur_charge + charge_to_add);
-                                        else
-                                            player->SetActorValue(RE::ActorValue::kLeftItemCharge, cur_charge + charge_to_add);
-
-                                        return true;
-                                    }
 
                                         
 
@@ -5147,30 +5183,34 @@ namespace MiscThings {
 
                                     float max_charge = ench->amountofEnchantment;
                                     float cur_charge = xCharge->charge;
-
-                                    if (cur_charge == max_charge)
-                                        return false;
-
-                                    if (max_charge < cur_charge + charge_to_add)
+                                    //auto cur_charge_raw = item->GetEnchantmentCharge();
+                                    //if (cur_charge_raw.has_value())
                                     {
-                                        if (right)
-                                            player->SetActorValue(RE::ActorValue::kRightItemCharge, max_charge - cur_charge);
+                                        //float cur_charge = cur_charge_raw.value();
+
+                                        if (cur_charge == max_charge)
+                                            return false;
+
+                                        if (max_charge < cur_charge + charge_to_add)
+                                        {
+                                            if (right)
+                                                player->RestoreActorValue(RE::ActorValue::kRightItemCharge, max_charge);
+                                            else
+                                                player->RestoreActorValue(RE::ActorValue::kLeftItemCharge, max_charge);
+
+                                            return true;
+                                        }
                                         else
-                                            player->SetActorValue(RE::ActorValue::kLeftItemCharge, max_charge - cur_charge);
+                                        {
+                                            if (right)
+                                                player->RestoreActorValue(RE::ActorValue::kRightItemCharge, charge_to_add + cur_charge);
+                                            else
+                                                player->RestoreActorValue(RE::ActorValue::kLeftItemCharge, charge_to_add + cur_charge);
 
-                                        return true;
+                                            return true;
+                                        }
+
                                     }
-                                    else
-                                    {
-                                        if (right)
-                                            player->SetActorValue(RE::ActorValue::kRightItemCharge, charge_to_add);
-                                        else
-                                            player->SetActorValue(RE::ActorValue::kLeftItemCharge, charge_to_add);
-
-                                        return true;
-                                    }
-
-
                                 }
                             }
                         }
@@ -5373,14 +5413,19 @@ namespace MiscThings {
 
                                         bool charge_right_hand = true;
 
+                                        bool no_weapons = true;
+                                        bool successful_charge = false;
+
                                         for (auto hand : hands)
                                         {
-                                            auto weapon = (RE::TESObjectWEAP*)hand;
+                                            //auto weapon = (RE::TESObjectWEAP*)hand;
 
                                             auto object_ptr = inventory.find((RE::TESBoundObject*)hand);
 
                                             if (object_ptr != inventory.end())
                                             {
+                                                no_weapons = false;
+
                                                 auto p_entry_data = &object_ptr->second.second;
 
                                                 if (p_entry_data)
@@ -5419,10 +5464,12 @@ namespace MiscThings {
                                                             
                                                         }
 
-                                                        //use successful. if its not 
+                                                        successful_charge = true;
+
+                                                        break;
                                                     }
 
-                                                    break;
+                                                    
                                                 }
 
                                             }
@@ -5430,6 +5477,21 @@ namespace MiscThings {
                                             charge_right_hand = false;
                                             
                                         }
+
+                                        if (no_weapons)
+                                        {
+                                            result.first = false;
+                                            result.second = "[Cannot use [id " + std::to_string(item_id) + "] " + object_name + " - no chargable weapons equipped]";
+                                            return result;
+                                        }
+
+                                        if (!successful_charge)
+                                        {
+                                            result.first = false;
+                                            result.second = "[Cannot use [id " + std::to_string(item_id) + "] " + object_name + " - cannot charge current weapons]";
+                                            return result;
+                                        }
+
 
                                         result.first = true;
                                         result.second = "[Using [id " + std::to_string(item_id) + "] " + object_name + "...]";
@@ -5669,7 +5731,7 @@ namespace MiscThings {
                     }
 
 
-                    result += get_object_category(item_form);
+                    result += get_object_category(item_form, item);
                     result += actions + " ";
                     result += item_name;
                     //result += "\n"; //TODO: replace with comma later
