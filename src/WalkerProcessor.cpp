@@ -6488,7 +6488,7 @@ namespace WalkerProcessor {
                         }
                     }
                     else
-                        return 999999.0f;
+                        return 1500.0f;
 
                 }
                 else
@@ -6648,7 +6648,10 @@ namespace WalkerProcessor {
                         //was_charging_ranged = false;
                         attack_action = 1;
                         
-                        return false;
+
+                        goto finalize_attack;
+
+                        //return false;
                     }
 
                     if (attack_action_time < get_attack_time(true) && !(has_spell_equipped(true) && !is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
@@ -6871,7 +6874,10 @@ namespace WalkerProcessor {
                             left_attack_cancel();
                             //was_charging_ranged = false;
                             attack_action = 0;
-                            return false;
+                            //return false;
+
+                            goto finalize_attack;
+
                         }
 
                         if (attack_action_time < get_attack_time(false) && !(has_spell_equipped(false) && !is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
@@ -7073,7 +7079,8 @@ namespace WalkerProcessor {
            // }
             
 
-            
+            finalize_attack:
+
 
             if (target_ref->IsActor() && !was_already_dead)
             {
