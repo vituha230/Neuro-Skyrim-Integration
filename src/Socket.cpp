@@ -671,6 +671,13 @@ int afk_threshold = 0;
 float time_threshold = 7.77f;
 
 
+float delayed_poke_time = 0.0f;
+bool make_delayed_poke = false;
+
+
+
+
+
 bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aClosure)
 {
     if (!IsAlive())
@@ -694,6 +701,38 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
     //float time_threshold = afk_threshold * 5.0f + 10.0f;
 
     
+    if (have_any_menus_open)
+    {
+        make_delayed_poke = false;
+        delayed_poke_time = 0.0f;
+    }
+
+
+
+    if (make_delayed_poke)
+    {
+        if (delayed_poke_time > 1.0f)
+        {
+            if (!have_any_menus_open && something_is_registered)
+            {
+                send_random_context("[Choose next action to do]", false);// . " + advice + "]", false);
+                delayed_poke_time = 0.0f;
+                make_delayed_poke = false;
+
+                WalkerProcessor::reset_inactive_timer();
+                time_no_commands = 0.0f;
+                time_no_menus = 0.0f;
+            }
+            else
+            {
+                delayed_poke_time = 0.0f;
+                make_delayed_poke = false;
+            }
+
+        }
+        else
+            delayed_poke_time += dtime;
+    }
 
     if (time_no_commands > time_threshold && time_walker_inactive > time_threshold && time_no_menus > time_threshold)
     {
@@ -1097,12 +1136,17 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
                                 command_result = MiscThings::GetObjectsAround(-1);
 
+                                make_delayed_poke = true;
+
                             }
 
 
                             if (name == Capabilities::GetInventory::Name)
                             {
                                 command_result = MiscThings::GetInventory();
+
+                                make_delayed_poke = true;
+
                             }
 
                             if (name == Capabilities::UseInventoryItem::Name)
@@ -1113,6 +1157,8 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                     failed_to_parse_json = true;
                                 else
                                     command_result = MiscThings::activate_inventory_object_by_index(json.id, 1);
+
+                                make_delayed_poke = true;
 
                             }
 
@@ -1165,6 +1211,9 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                 else
                                 {
                                     command_result = MiscThings::drop_array_of_inventory_objects(json.ids_array);
+
+                                    make_delayed_poke = true;
+
                                 }
                                     
                                 /*
@@ -1181,6 +1230,8 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                             if (name == Capabilities::GetSpells::Name)
                             {
                                 command_result = MiscThings::get_available_spells();
+
+                                make_delayed_poke = true;
                             }
 
 
@@ -1219,20 +1270,28 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                     {
                                         const char* action_names[] = { Capabilities::UnlockShoutLevel::Name };
                                         unregister_actions(action_names, std::size(action_names));
+
                                     }
+
+                                    make_delayed_poke = true;
                                 }
+
 
                             }
 
                             if (name == Capabilities::GetCurrentQuests::Name)
                             {
                                 command_result = MiscThings::get_current_quests();
+
+                                make_delayed_poke = true;
                             }
 
 
                             if (name == Capabilities::GetLocations::Name)
                             {
                                 command_result = MiscThings::get_locations_around();
+
+                                make_delayed_poke = true;
                             }
 
 
@@ -1241,6 +1300,8 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                             if (name == Capabilities::GetGold::Name)
                             {
                                 command_result = MiscThings::GetGold();
+
+                                make_delayed_poke = true;
                             }
 
 

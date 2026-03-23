@@ -6592,6 +6592,8 @@ namespace WalkerProcessor {
 
         bool actually_attacked = false;
 
+        bool no_weapons_equipped = false;
+
         if (target_ref && player_ref)
         {
             if (attack_action < 0 || attack_action > 1)
@@ -6602,6 +6604,7 @@ namespace WalkerProcessor {
                 attack_action = dont_use_right;
             }
                 
+            
 
             if (has_spell_equipped(true) && has_spell_equipped(false) && !is_offensive_spell(true) && !is_offensive_spell(false))
             {
@@ -6611,6 +6614,8 @@ namespace WalkerProcessor {
                     no_weapons_notified = true;
                     send_random_context("You dont have anything that can deal damage in your hands! Equip weapons or offensive spells to deal damage", false);
                 }
+
+                no_weapons_equipped = true;
 
             }
             else
@@ -7129,7 +7134,12 @@ namespace WalkerProcessor {
                                 return true;
                         }
 
-                        send_random_context("You keep attacking...", false);
+                        std::string message = "You keep attacking...";
+
+                        if (no_weapons_equipped)
+                            message = "You dont have anything that can deal damage in your hands! Equip weapons or offensive spells to deal damage";
+
+                        send_random_context(message, false);
                     }
 
 
