@@ -3289,15 +3289,17 @@ namespace MiscThings {
 
     std::string get_soul_charge_text(REX::TEnumSet<RE::SOUL_LEVEL> soul)
     {
-        if (soul.any(RE::SOUL_LEVEL::kPetty))
+        int soul_int = (int)soul.underlying();
+
+        if (soul_int == (int)RE::SOUL_LEVEL::kPetty)
             return "Petty";
-        if (soul.any(RE::SOUL_LEVEL::kLesser))
+        if (soul_int == (int)RE::SOUL_LEVEL::kLesser)
             return "Lesser";
-        if (soul.any(RE::SOUL_LEVEL::kCommon))
+        if (soul_int == (int)RE::SOUL_LEVEL::kCommon)
             return "Common";
-        if (soul.any(RE::SOUL_LEVEL::kGreater))
+        if (soul_int == (int)RE::SOUL_LEVEL::kGreater)
             return "Greater";
-        if (soul.any(RE::SOUL_LEVEL::kGrand))
+        if (soul_int == (int)RE::SOUL_LEVEL::kGrand)
             return "Grand";
 
         return "";
@@ -5109,18 +5111,29 @@ namespace MiscThings {
 
     float get_soul_charge_value(REX::TEnumSet<RE::SOUL_LEVEL> soul)
     {
-        if (soul.any(RE::SOUL_LEVEL::kPetty))
+        int soul_int = (int)soul.underlying();
+
+        if (soul_int == (int)RE::SOUL_LEVEL::kPetty)
             return 250.0f;
-        if (soul.any(RE::SOUL_LEVEL::kLesser))
+        if (soul_int == (int)RE::SOUL_LEVEL::kLesser)
             return 500.0f;
-        if (soul.any(RE::SOUL_LEVEL::kCommon))
+        if (soul_int == (int)RE::SOUL_LEVEL::kCommon)
             return 1000.0;
-        if (soul.any(RE::SOUL_LEVEL::kGreater))
+        if (soul_int == (int)RE::SOUL_LEVEL::kGreater)
             return 2000.0f;
-        if (soul.any(RE::SOUL_LEVEL::kGrand))
+        if (soul_int == (int)RE::SOUL_LEVEL::kGrand)
             return 3000.0f;
 
         return 0.0f;
+    }
+
+
+
+    void restore_actor_value(RE::Actor* actor, RE::ActorValue value, float amount)
+    {
+        using func_t = decltype(&restore_actor_value);
+        static REL::Relocation<func_t> func{ RELOCATION_ID(37513, 38455) };
+        func(actor, value, amount);
     }
 
 
@@ -5141,49 +5154,32 @@ namespace MiscThings {
                         if (xList) {
                             auto xCharge = xList->GetByType<RE::ExtraCharge>();
                             auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
-                            if (xEnch && xEnch->enchantment && xEnch->charge != 0) {
-                                if (xCharge) {
+                            if (xEnch && xEnch->enchantment && xEnch->charge != 0) 
+                            {
+                                if (xCharge) 
+                                {
 
                                     float max_charge = xEnch->charge;
                                     float cur_charge = xCharge->charge;
-                                    //auto cur_charge_raw = item->GetEnchantmentCharge();
-                                    //if (cur_charge_raw.has_value())
+
+                                    if (cur_charge >= max_charge)
+                                        return false;
+
+                                    // if (max_charge < cur_charge + charge_to_add)
                                     {
-                                        //float cur_charge = cur_charge_raw.value();
-                                        if (cur_charge == max_charge)
-                                            return false;
-
-                                        if (max_charge < cur_charge + charge_to_add)
+                                        auto player_actor = (RE::Actor*)player->AsReference();
+                                        if (right)
                                         {
-                                            if (right)
-                                                player->RestoreActorValue(RE::ActorValue::kRightItemCharge, max_charge);
-                                            else
-                                                player->RestoreActorValue(RE::ActorValue::kLeftItemCharge, max_charge);
-
-                                            return true;
+                                            restore_actor_value(player_actor, RE::ActorValue::kRightItemCharge, charge_to_add);
                                         }
+                                        //player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kRightItemCharge, max_charge);
                                         else
-                                        {
-                                            if (right)
-                                                player->RestoreActorValue(RE::ActorValue::kRightItemCharge, cur_charge + charge_to_add);
-                                            else
-                                                player->RestoreActorValue(RE::ActorValue::kLeftItemCharge, cur_charge + charge_to_add);
+                                            restore_actor_value(player_actor, RE::ActorValue::kLeftItemCharge, charge_to_add);
+                                        //player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kLeftItemCharge, max_charge);
 
-                                            return true;
-                                        }
+                                        return true;
                                     }
-                                    
 
-                                        
-
-                                    /*
-                                    if (max_charge < cur_charge + charge_to_add)
-                                    {
-                                        xCharge->charge = max_charge;
-                                    }
-                                    else
-                                        xCharge->charge += charge_to_add;
-                                    */
 
                                 }
                                 else
@@ -5191,39 +5187,37 @@ namespace MiscThings {
                             }
                             else
                             {
-                                if (xCharge && ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                                if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
                                 {
 
                                     float max_charge = ench->amountofEnchantment;
-                                    float cur_charge = xCharge->charge;
-                                    //auto cur_charge_raw = item->GetEnchantmentCharge();
-                                    //if (cur_charge_raw.has_value())
+                                    float cur_charge = 0;//xCharge->charge;
+
+                                    if (right)
+                                        cur_charge = player->GetActorValue(RE::ActorValue::kRightItemCharge);
+                                    else
+                                        cur_charge = player->GetActorValue(RE::ActorValue::kLeftItemCharge);
+
+
+                                    if (cur_charge >= max_charge)
+                                        return false;
+
+                                    if (max_charge < (cur_charge + charge_to_add))
                                     {
-                                        //float cur_charge = cur_charge_raw.value();
-
-                                        if (cur_charge == max_charge)
-                                            return false;
-
-                                        if (max_charge < cur_charge + charge_to_add)
-                                        {
-                                            if (right)
-                                                player->RestoreActorValue(RE::ActorValue::kRightItemCharge, max_charge);
-                                            else
-                                                player->RestoreActorValue(RE::ActorValue::kLeftItemCharge, max_charge);
-
-                                            return true;
-                                        }
+                                        if (right)
+                                            player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kRightItemCharge, max_charge - cur_charge);
                                         else
-                                        {
-                                            if (right)
-                                                player->RestoreActorValue(RE::ActorValue::kRightItemCharge, charge_to_add + cur_charge);
-                                            else
-                                                player->RestoreActorValue(RE::ActorValue::kLeftItemCharge, charge_to_add + cur_charge);
-
-                                            return true;
-                                        }
-
+                                            player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kLeftItemCharge, max_charge - cur_charge);
                                     }
+                                    else
+                                    {
+                                        if (right)
+                                            player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kRightItemCharge, charge_to_add);
+                                        else
+                                            player->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kLeftItemCharge, charge_to_add);
+                                    }
+
+                                    return true;
                                 }
                             }
                         }
@@ -5480,6 +5474,11 @@ namespace MiscThings {
                                                         successful_charge = true;
 
                                                         break;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (hands[0] == hands[1])
+                                                            break;
                                                     }
 
                                                     
