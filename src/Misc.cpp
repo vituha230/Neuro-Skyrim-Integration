@@ -2032,6 +2032,13 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("CookingPot") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 50.0f, 45.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
                     }
 
 
