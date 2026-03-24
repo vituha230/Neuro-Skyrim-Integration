@@ -323,7 +323,14 @@ namespace WalkerProcessor {
     int change_quest_course_choice = 0;
 
 
-
+    bool trying_to_attack_friend = false;
+    bool attack_friend_request_sent = false;
+    bool attack_friend_choice_valid = false;
+    int attack_friend_choice = 0;
+    int attack_friend_interaction = -1;
+    int attack_friend_id = -1;
+    bool attack_friend_confirmed = false;
+    std::string attack_friend_name = "";
 
 
     void invalidate_path()
@@ -3538,6 +3545,17 @@ namespace WalkerProcessor {
 
 
         dead_point_time = 0.0f;
+
+
+        trying_to_attack_friend = false;
+        attack_friend_request_sent = false;
+        attack_friend_choice_valid = false;
+        attack_friend_choice = -1;
+        attack_friend_interaction = -1;
+        attack_friend_id = -1;
+        attack_friend_confirmed = false;
+        attack_friend_name = "";
+
     }
 
     void walk_again()
@@ -4425,7 +4443,7 @@ namespace WalkerProcessor {
 
                 }
                 
-                if (interaction == 3 && is_fighting() && target_ref->IsActor() && !target_ref->IsDead() && (!object->second.object->IsActor() || object->second.object->IsDead()))
+                if (interaction == 3 && is_fighting() && target_ref->IsActor() && !target_ref->IsDead() && (!object->second.object->IsActor() || object->second.object->IsDead() || !MiscThings::is_enemy_to_actor(object->second.object)))
                 {
                     //already fighting and current target isnt dead, but new target is dead or isnt an actor
 
@@ -4440,10 +4458,34 @@ namespace WalkerProcessor {
                         reason = ". This object isnt a threat";
                     }
 
+
+                    if (object->second.object->IsActor() && !MiscThings::is_enemy_to_actor(object->second.object))
+                    {
+                        reason = ". This object is your ally";
+                    }
+
                     result.first = false;
                     result.second = "You are in the middle of a fight" + reason;
                     return result;
                 }
+
+
+                if (!attack_friend_confirmed && (interaction == 3 && MiscThings::is_friend(object->second.object) && (object->second.object->IsDragon() || object->second.object->IsHumanoid())))
+                {
+                    trying_to_attack_friend = true;
+                    attack_friend_interaction = interaction;
+                    attack_friend_id = index;
+                    attack_friend_name = MiscThings::insert_object_into_list_and_get_info(object->second.object);
+
+                    //dont accept right away
+                    result.first = true;
+                    result.second = "[Processing...]";
+                    return result;
+                }
+                else
+                    attack_friend_confirmed = false;
+
+
 
 
                 if (have_target_to_walk)
@@ -4522,7 +4564,9 @@ namespace WalkerProcessor {
 
 
 
-                
+
+
+
                 
 
                 have_target_to_walk = true;
@@ -8520,6 +8564,36 @@ namespace WalkerProcessor {
 
 
 
+    std::pair<bool, std::string> set_attack_friend_choice(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!attack_friend_request_sent)
+        {
+            result.first = true;
+            result.second = "[Error]";
+        }
+        else
+        {
+            if (id == 0 || id == 1)
+            {
+                attack_friend_choice_valid = true;
+                attack_friend_choice = id;
+                result.first = true;
+                result.second = "[Processing...]";
+            }
+            else
+            {
+                result.first = false;
+                result.second = "[Invalid choice ID]";
+            }
+        }
+        return result;
+    }
+
+
+
+
     std::pair<bool, std::string> set_multiple_path_quest_choice(int id)
     {
         std::pair<bool, std::string> result{};
@@ -8998,7 +9072,67 @@ namespace WalkerProcessor {
                 }
 
 
-               
+
+                if (trying_to_attack_friend)
+                {
+                    if (!attack_friend_request_sent)
+                    {
+                        std::vector<MenuOption> options{};
+                        options.push_back({ 0, "No" });
+                        options.push_back({ 1, "Yes" });
+
+                        unregister_all_actions();
+
+                        if (force_choice(options, "Are you sure you want to attack " + attack_friend_name + "? They are not your enemy.", force_type::confirm_attack_friend))
+                        {
+                            attack_friend_request_sent = true;
+                        }
+                    }
+                    else
+                    {
+                        if (attack_friend_choice_valid)
+                        {
+                            register_allowed_actions();
+                            if (attack_friend_choice)
+                            {
+
+
+                                attack_friend_confirmed = true;
+
+                                auto for_context = walk_to_object_by_index(attack_friend_id, attack_friend_interaction);
+
+                                trying_to_attack_friend = false;
+                                attack_friend_request_sent = false;
+                                attack_friend_choice_valid = false;
+                                attack_friend_choice = -1;
+                                attack_friend_interaction = -1;
+                                attack_friend_id = -1;
+                                attack_friend_confirmed = false;
+
+                                send_random_context(for_context.second);
+
+                            }
+                            else
+                            {
+                                //continue doing whatever we were doing
+                                trying_to_attack_friend = false;
+                                attack_friend_request_sent = false;
+                                attack_friend_choice_valid = false;
+                                attack_friend_choice = -1;
+                                attack_friend_interaction = -1;
+                                attack_friend_id = -1;
+                                attack_friend_confirmed = false;
+
+                            }
+                        }
+                    }
+
+                    if (!is_fighting())
+                        return;
+                }
+
+
+
 
                 if (trying_to_change_quest_course)
                 {

@@ -50,7 +50,7 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> walk_to_current_quest();
 
 
-
+	std::pair<bool, std::string> set_attack_friend_choice(int id);
 
 	std::pair<bool, std::string> run_away();
 	std::pair<bool, std::string> exit_dungeon();

@@ -230,8 +230,10 @@ namespace MiscThings {
 
     std::string get_door_teleport(RE::TESObjectREFR* object);
 
-    std::string get_enchantment_info(RE::InventoryEntryData* item);
+    //std::string get_enchantment_info(RE::InventoryEntryData* item);
     std::string fix_enchantment_description(std::string description, RE::EnchantmentItem* spell);
+
+    bool is_friend(RE::TESObjectREFR* object);
 
 
     namespace General::Script

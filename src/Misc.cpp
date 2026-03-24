@@ -17,6 +17,40 @@ namespace MiscThings {
 
 
 
+
+    bool is_friend(RE::TESObjectREFR* object)
+    {
+        if (is_enemy_to_actor(object))
+            return false;
+
+
+        if (object && object->IsActor())
+        {
+            auto actor_refr = (RE::Actor*)object;
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_ref = player->AsReference();
+            auto player_actor = (RE::Actor*)player_ref;
+
+
+            auto reaction = actor_refr->GetFactionReaction(player_actor);
+
+            bool is_hostile_to_player = actor_refr->IsHostileToActor(player_actor);
+
+            if (!is_hostile_to_player && (reaction != RE::FIGHT_REACTION::kEnemy))
+            {
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
+
+
+
+
     bool is_player_swimming()
     {
         auto player = RE::PlayerCharacter::GetSingleton();

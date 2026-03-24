@@ -4,6 +4,9 @@
 //crucial:
 
 
+//TODO test mainquest up to fus ro da
+
+
 //TODO oxygen control
 
 

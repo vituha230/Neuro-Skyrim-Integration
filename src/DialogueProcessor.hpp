@@ -50,7 +50,8 @@
         confirm_pillar,
         confirm_change_quest_course,
         confirm_stealing,
-        specify_quest_path
+        specify_quest_path,
+        confirm_attack_friend
 
     };
 
