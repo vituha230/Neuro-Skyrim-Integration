@@ -240,6 +240,9 @@ namespace MiscThings {
 
     bool is_serving_jail();
 
+    bool is_door_superlocked(RE::TESObjectREFR* target_refr);
+    int get_picks_amount_int();
+
 
     namespace General::Script
     {

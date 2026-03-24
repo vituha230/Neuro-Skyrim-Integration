@@ -7267,6 +7267,20 @@ namespace WalkerProcessor {
             {
                 if ((is_door(target_ref) || is_container(target_ref)) && is_targeted_door_locked())
                 {
+                    if (MiscThings::is_door_superlocked(target_ref))
+                    {
+                        send_random_context("Cannot lockpick this door", false);
+                        reset_walker();
+                        return true;
+                    }
+
+                    if (MiscThings::get_picks_amount_int() <= 0)
+                    {
+                        send_random_context("You dont have any lockpicks to open the lock", false);
+                        reset_walker();
+                        return true;
+                    }
+
                     if (!confirming_closed_door_interaction)
                     {
                         unregister_all_actions();
@@ -9983,6 +9997,21 @@ namespace WalkerProcessor {
                                                                         }
                                                                         else
                                                                         {
+                                                                            if (MiscThings::is_door_superlocked(target_ref))
+                                                                            {
+                                                                                send_random_context("Cannot lockpick this door", false);
+                                                                                reset_walker();
+                                                                                return;
+                                                                            }
+
+                                                                            if (MiscThings::get_picks_amount_int() <= 0)
+                                                                            {
+                                                                                send_random_context("You dont have any lockpicks to open the lock", false);
+                                                                                reset_walker();
+                                                                                return;
+                                                                            }
+
+
                                                                             if (is_door(result_target))
                                                                             {
                                                                                 if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(result_target), force_type::closed_door_choice))

@@ -197,31 +197,7 @@ namespace LockpickProcessor {
 
 
 
-	int get_picks_amount_int()
-	{
-		int result = 0;
-
-		const auto inv = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
-			{
-				return a_object.IsLockpick() || a_object.GetFormID() == 0x3A070;;// a_object.IsObject();
-			});
-
-
-		std::string lockpick_name = "Lockpick";
-
-		for (auto& [item, data] : inv)
-		{
-			if (data.first > 0 && item->GetName() != lockpick_name)
-			{
-				result = 999; //i think there are only normal lockpicks and that one infinite lockpick.. so if its not "Lockpick" then its infinite
-				break;
-			}
-			else
-				result = data.first;
-		}
-
-		return result;
-	}
+	
 
 
 	std::string get_picks_amount()
@@ -372,7 +348,7 @@ namespace LockpickProcessor {
 						{
 							send_random_context("[The lockpick broke]", false);
 							reset_lockpicking();
-							if (get_picks_amount_int() == 0)
+							if (MiscThings::get_picks_amount_int() == 0)
 							{
 								send_random_context("[Out of lockpicks. Exiting lockpicking menu]", false);
 								no_lockpicks = true;

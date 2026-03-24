@@ -68,6 +68,101 @@ namespace MiscThings {
         return result;
     }
 
+
+    int get_picks_amount_int()
+    {
+        int result = 0;
+
+        const auto inv = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
+            {
+                return a_object.IsLockpick() || a_object.GetFormID() == 0x3A070;;// a_object.IsObject();
+            });
+
+
+        std::string lockpick_name = "Lockpick";
+
+        for (auto& [item, data] : inv)
+        {
+            if (data.first > 0 && item->GetName() != lockpick_name)
+            {
+                result = 999; //i think there are only normal lockpicks and that one infinite lockpick.. so if its not "Lockpick" then its infinite
+                break;
+            }
+            else
+                result = data.first;
+        }
+
+        return result;
+    }
+
+
+
+
+    bool is_door_superlocked(RE::TESObjectREFR* target_refr)
+    {
+        bool result = false;
+
+        if (target_refr)
+        {
+            auto base_obj = target_refr->GetBaseObject();
+
+            if (base_obj->GetFormType() == RE::FormType::Door)
+            {
+                auto door_refr = (RE::TESObjectDOOR*)target_refr;
+
+
+                if (auto extra = target_refr->extraList.GetByType(RE::ExtraDataType::kLock); extra)
+                {
+                    auto extra_lock = (RE::ExtraLock*)extra;
+
+                    if (auto extra_lock_data = extra_lock->lock; extra_lock_data)
+                        if (extra_lock_data->IsLocked())
+                        {
+                            bool requires_key = extra_lock_data->GetLockLevel(target_refr) == RE::LOCK_LEVEL::kRequiresKey;
+                            if (requires_key)
+                            {
+                                if (auto key = extra_lock_data->key; key)
+                                {
+                                    if (!MiscThings::player_has_key(key))
+                                        result = true; //it requires key but player doesnt have it
+                                }
+                                else
+                                    result = true; //key doesnt exist
+                            }
+                        }
+                            
+
+
+
+                }
+
+                if (target_refr->IsLocked())
+                {
+                    auto lock = target_refr->GetLock();
+
+                    if (lock)
+                    {
+
+                        bool requires_key = lock->GetLockLevel(target_refr) == RE::LOCK_LEVEL::kRequiresKey;
+                        if (requires_key)
+                        {
+                            if (auto key = lock->key; key)
+                            {
+                                if (!MiscThings::player_has_key(key))
+                                    result = true; //it requires key but player doesnt have it
+                            }
+                            else
+                                result = true; //key doesnt exist
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
     bool is_door_locked(RE::TESObjectREFR* target_refr)
     {
         bool result = false;
