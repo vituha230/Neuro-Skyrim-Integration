@@ -9443,6 +9443,7 @@ namespace WalkerProcessor {
                     {
                         if (catch_door_result_time < 1.0f)
                         {
+                            catch_door_result_time += dtime;
 
                             if (!get_targeted_ref() || !is_targeted_door_locked()) //we still have the door targeted and it is unlocked now. or it was unlocked.
                             {
