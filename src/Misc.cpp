@@ -5660,6 +5660,10 @@ namespace MiscThings {
 
                                 result.first = false;
                                 result.second = "Cannot activate [id " + std::to_string(item_id) + "] " + object_name + "...]";
+
+                                if (object_name.find("Lockpick") != std::string::npos)
+                                    result.second += " lockpicks are used automatically when you interact with closed objects, dont need to use them from inventory";
+
                                 return result;
                             }
 
