@@ -45,7 +45,7 @@ The mod requires the runtime component of SKSE to run.
 - Extract archive contents into Skyrim install folder
 - Extract `SKSE_addresses.zip` contents into `Skyrim Special Edition\Data\SKSE\Plugins\`. Or download it from here: https://www.nexusmods.com/skyrimspecialedition/mods/32444
 ### Additional mod files
-- unpack `myScripts.zip` into `...\Skyrim Special Edition\Data\` folder, agree to replace files.
+- Backup (copy and rename) `...\Skyrim Special EditionData\Scripts` folder; unpack `Scripts` folder from `myScripts.zip` into `...\Skyrim Special Edition\Data\` folder, agree to replace files (some vanila files were changed).
 - Copy `mysc.esp` file from repository into `...\Skyrim Special Edition\Data\` directory. This file is required for some core mechanics of the mod to work.
 - At `%appdata%\Local\Skyrim Special Edition\` edit the `Plugins.txt` file: add `*mysc.esp` line in the end (asterisk required). If the file does not exist, create it. Example file contents (for me it has been created automatically):
 ```
