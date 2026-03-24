@@ -7843,7 +7843,10 @@ namespace WalkerProcessor {
                 if (!last_try)
                 {
                     //nothing found. run a raycast ignoring scan
-                    Observer::detect_interesting_objects(0.016, true);
+                    if (!MiscThings::is_serving_jail())
+                        Observer::detect_interesting_objects(0.016, true);
+
+
                     return path_is_blocked_result(result_target, true);
                 }
             }
@@ -9613,7 +9616,8 @@ namespace WalkerProcessor {
                                                     }
                                                     else
                                                     {
-                                                        Observer::detect_interesting_objects(0.016, true);
+                                                        if (!MiscThings::is_serving_jail())
+                                                            Observer::detect_interesting_objects(0.016, true);
                                                     }
 
                                                     send_random_context(fail_text, false);
@@ -10316,7 +10320,8 @@ namespace WalkerProcessor {
                                                             }
                                                             else
                                                             {
-                                                                Observer::detect_interesting_objects(0.016, true);
+                                                                if (!MiscThings::is_serving_jail())
+                                                                    Observer::detect_interesting_objects(0.016, true);
                                                             }
 
                                                             send_random_context(fail_text, false);
@@ -10345,7 +10350,8 @@ namespace WalkerProcessor {
                                                 }
                                                 else
                                                 {
-                                                    Observer::detect_interesting_objects(0.016, true);
+                                                    if (!MiscThings::is_serving_jail())
+                                                        Observer::detect_interesting_objects(0.016, true);
                                                 }
 
                                                 send_random_context(fail_text, false);
@@ -10415,7 +10421,8 @@ namespace WalkerProcessor {
                                                     }
                                                     else
                                                     {
-                                                        Observer::detect_interesting_objects(0.016, true);
+                                                        if (!MiscThings::is_serving_jail())
+                                                            Observer::detect_interesting_objects(0.016, true);
                                                     }
 
                                                     send_random_context(fail_text, false);

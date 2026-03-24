@@ -969,8 +969,8 @@ namespace Observer {
 								bool jail_distance_met = distance < 500.0f;
 								bool serving_jail = MiscThings::is_serving_jail();
 
-								bool jail_condition = serving_jail && jail_distance_met;
-
+								bool jail_condition_raycastable = serving_jail && jail_distance_met && MiscThings::raycastable(a_ref, 500.0f, false);
+								bool jail_condition_all = serving_jail && jail_distance_met;
 								
 
 
@@ -1057,7 +1057,7 @@ namespace Observer {
 
 									if (base_type == RE::FormType::Door)
 									{
-										if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
+										if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_all || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
 										{
 											std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											if (info != "")
@@ -1075,7 +1075,7 @@ namespace Observer {
 											if (a_ref == RE::TESObjectREFR::LookupByID(0xC3B29))
 												scan_distance = 130.0f;
 
-											if (jail_condition || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance, false))
+											if (jail_condition_all || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance, false))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "" && MiscThings::is_object_valid(a_ref))
@@ -1094,7 +1094,7 @@ namespace Observer {
 										{
 											if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
 											{
-												if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
+												if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_all || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
 												{
 													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 													if (info != "")
@@ -1113,7 +1113,7 @@ namespace Observer {
 
 										if (base_type == RE::FormType::Container)
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
+											if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
@@ -1196,7 +1196,7 @@ namespace Observer {
 											auto workbenchtype = furniture->workBenchData.benchType;
 											if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
 											{
-												if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
+												if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
 												{
 													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 													if (info != "")
@@ -1206,7 +1206,7 @@ namespace Observer {
 											else
 											{
 												if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-													if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
+													if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
 													{
 														std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 														if (info != "")
@@ -1244,7 +1244,7 @@ namespace Observer {
 										//may be ghost targets of greybeards
 
 										if (!MiscThings::is_object_in_the_list(a_ref))
-											if (a_ref->GetDistance(player_ref) < 200.0f || (jail_condition || ignore_raycast || MiscThings::raycastable(a_ref, 5000.0f)))
+											if (a_ref->GetDistance(player_ref) < 200.0f || (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 5000.0f)))
 											{
 												auto actor = (RE::Actor*)a_ref;
 												auto npc = (RE::TESNPC*)a_ref->data.objectReference;
