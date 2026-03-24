@@ -48,6 +48,80 @@ namespace MiscThings {
     }
 
 
+    bool player_has_key(RE::TESKey* key)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto inventory = player->GetInventory();
+
+            auto key_bound_object = (RE::TESBoundObject*)key;
+
+            if (inventory.find(key_bound_object) != inventory.end())
+                result = true;
+        }
+
+
+        return result;
+    }
+
+    bool is_door_locked(RE::TESObjectREFR* target_refr)
+    {
+        bool result = false;
+
+        if (target_refr)
+        {
+            auto base_obj = target_refr->GetBaseObject();
+
+            if (base_obj->GetFormType() == RE::FormType::Door)
+            {
+                auto door_refr = (RE::TESObjectDOOR*)target_refr;
+
+
+                if (auto extra = target_refr->extraList.GetByType(RE::ExtraDataType::kLock); extra)
+                {
+                    auto extra_lock = (RE::ExtraLock*)extra;
+
+                    if (auto extra_lock_data = extra_lock->lock; extra_lock_data)
+                        if (extra_lock_data->IsLocked())
+                            if (auto key = extra_lock_data->key; key)
+                            {
+                                if (!MiscThings::player_has_key(key))
+                                    result = true; //locked, no key. TODO: may be inaccessible at all. we wont be able to lockpick it
+                            }
+                            else
+                                result = true; //locked but no key
+
+
+
+                }
+
+                if (target_refr->IsLocked())
+                {
+                    auto lock = target_refr->GetLock();
+
+                    if (lock)
+                    {
+                        auto key = lock->key;
+                        if (!MiscThings::player_has_key(key))
+                            result = true; //locked, no key. TODO: may be inaccessible at all. we wont be able to lockpick it
+
+                    }
+                    else
+                        result = true; //locked but no lock.. ok..
+
+
+                    //if (target_refr->GetLockLevel() != RE::LOCK_LEVEL::kRequiresKey)
+                    //    return true;
+                }
+            }
+        }
+        
+        return result;
+    }
 
 
 
@@ -3423,6 +3497,22 @@ namespace MiscThings {
     }
 
 
+    bool is_serving_jail()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto escaping_jail = player->playerFlags.escaping;
+            bool serving_jail = (bool)player->currentPrisonFaction && !escaping_jail && !MiscThings::is_intro() && !MiscThings::is_intro2() && MiscThings::escaped_helgen();
+
+            return serving_jail;
+        }
+       
+        return false;
+    }
+
+
 
     std::string is_stealing(RE::TESObjectREFR* object)
     {
@@ -3456,11 +3546,13 @@ namespace MiscThings {
                     if (object->IsCrimeToActivate() || player_actor->WouldBeStealing(object))
                     {
                         if (base_type == RE::FormType::Door)
-                            result = "[Is crime to break in]";
+                        {
+                            if (is_door_locked(object))
+                                result = "[Is crime to break in]";
+                        }
                         else
                             if (!object->IsActor())
                                 result = "[Is stealing]";
-
 
                     }
                 }

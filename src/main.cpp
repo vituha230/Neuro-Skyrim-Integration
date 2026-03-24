@@ -4,6 +4,18 @@
 //crucial:
 
 
+//TODO after interacting with door that leadsd to another location walker isnt refreshed and tries to walk to that side of a door again
+//TODO also its flagged as break in(limit doors breakin to only closed doors)
+//TODO in prison detect close objects without raycast ALL OBJECTS
+
+//TODO figure out whats wrong with dialogues camera pointing into the floor sometimes
+//TODO dialogues mark already said lines
+//TODO remove useless actions while in jail
+
+
+
+
+
 //TODO test mainquest up to fus ro da
 
 

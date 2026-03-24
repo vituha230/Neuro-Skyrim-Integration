@@ -469,7 +469,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                             
                     //}
 
-                    if (MiscThings::have_any_quests())
+                    if (MiscThings::have_any_quests() && !MiscThings::is_serving_jail())
                     {
                         actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
@@ -505,7 +505,11 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                                 actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
                             }
 
-                            actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+                            if (!MiscThings::is_serving_jail())
+                            {
+                                actions_to_register[action_pos] = Capabilities::CallWaitMenu::Action; action_pos++;
+                            }
+                                
                         }
 
                         if (MapProcessor::map_is_allowed()) //must be watched to refresh

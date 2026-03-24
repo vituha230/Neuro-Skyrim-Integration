@@ -2036,25 +2036,7 @@ namespace WalkerProcessor {
 
 
 
-    bool player_has_key(RE::TESKey* key)
-    {
-        bool result = false;
-
-        auto player = RE::PlayerCharacter::GetSingleton();
-
-        if (player)
-        {
-            auto inventory = player->GetInventory();
-
-            auto key_bound_object = (RE::TESBoundObject*)key;
-
-            if (inventory.find(key_bound_object) != inventory.end())
-                result = true;
-        }
-
-
-        return result;
-    }
+    
 
 
     void cut_navmesh_on_target(RE::TESObjectREFR* target)
@@ -2114,47 +2096,7 @@ namespace WalkerProcessor {
 
         if (target_refr)
         {
-
-
-            auto door_refr = (RE::TESObjectDOOR*)target_refr;
-            
-
-            if (auto extra = target_refr->extraList.GetByType(RE::ExtraDataType::kLock); extra)
-            {
-                auto extra_lock = (RE::ExtraLock*)extra;
-
-                if (auto extra_lock_data = extra_lock->lock; extra_lock_data)
-                    if (extra_lock_data->IsLocked())
-                        if (auto key = extra_lock_data->key; key)
-                        {
-                            if (!player_has_key(key))
-                                result = true; //locked, no key. TODO: may be inaccessible at all. we wont be able to lockpick it
-                        }
-                        else
-                            result = true; //locked but no key
-                            
-
-
-            }
-
-            if (target_refr->IsLocked())
-            {
-                auto lock = target_refr->GetLock();
-
-                if (lock)
-                {
-                    auto key = lock->key;
-                    if (!player_has_key(key))
-                        result = true; //locked, no key. TODO: may be inaccessible at all. we wont be able to lockpick it
-
-                }
-                else
-                    result = true; //locked but no lock.. ok..
-
-                
-                //if (target_refr->GetLockLevel() != RE::LOCK_LEVEL::kRequiresKey)
-                //    return true;
-            }
+            result = MiscThings::is_door_locked(target_refr);
         }
         
         return result;
@@ -4164,6 +4106,24 @@ namespace WalkerProcessor {
     std::pair<bool, std::string> explore_world(bool internal_call)
     {
         std::pair<bool, std::string> result{};
+
+
+        if (MiscThings::is_objects_around_valid())
+        {
+            auto p_normal_objects_around = MiscThings::get_p_objects_around();
+
+            if (std::size(*p_normal_objects_around) > 0)
+            {
+                auto response = MiscThings::GetObjectsAround(-1);
+
+                response.second = "You are in jail... you look around... " + response.second;
+                return response;
+            }
+        }
+        
+
+
+
 
         std::string interesting = MiscThings::check_very_interesting_objects();
 
@@ -7559,7 +7519,7 @@ namespace WalkerProcessor {
                     }
                     else
                     {
-                        if (MiscThings::get_door_teleport(target_ref) != "")
+                        if (MiscThings::get_door_teleport(target_ref) != "" && quest_mode)
                             just_teleported = true;
 
                         confirm();
@@ -9454,7 +9414,7 @@ namespace WalkerProcessor {
                                 {
                                     if (!get_targeted_ref() || target_ref == get_targeted_ref())
                                     {
-                                        if (target_ref == get_targeted_ref() && is_door(target_ref) && (MiscThings::get_door_teleport(target_ref) != ""))
+                                        if (target_ref == get_targeted_ref() && is_door(target_ref) && (MiscThings::get_door_teleport(target_ref) != "") && quest_mode)
                                         {
                                             just_teleported = true;
                                             catch_door_result = false;
@@ -10478,7 +10438,7 @@ namespace WalkerProcessor {
                                                 if (is_targeted_door_closed())
                                                 {
                                                     confirm(); //just unlock it
-                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "")
+                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && quest_mode)
                                                         just_teleported = true;
                                                 }
                                                     
