@@ -6625,6 +6625,7 @@ namespace WalkerProcessor {
 
                 no_weapons_equipped = true;
 
+                goto finalize_attack;
             }
             else
                 no_weapons_notified = false;
@@ -7174,36 +7175,44 @@ namespace WalkerProcessor {
             }
             else
             {
-                if (attacking_inanimate_object_time > 3.0f)
+                if (no_weapons_equipped)
                 {
-                    if (MiscThings::get_destructible_state(target_ref) != 0)
-                    {
-                        right_attack_cancel();
-                        left_attack_cancel();
-
-                        attacking_inanimate_object_time = 0.0f;
-
-                        result = true;
-                    }
-                    else
-                        attacking_inanimate_object_time += dtime;
-
-                    if (attacking_inanimate_object_time > 5.0f)
-                    {
-                        right_attack_cancel();
-                        left_attack_cancel();
-
-                        attacking_inanimate_object_time = 0.0f;
-
-                        result = true;
-                    }
-
+                    result = true;
                 }
                 else
                 {
-                    if (actually_attacked)
-                        attacking_inanimate_object_time += dtime;
+                    if (attacking_inanimate_object_time > 3.0f)
+                    {
+                        if (MiscThings::get_destructible_state(target_ref) != 0)
+                        {
+                            right_attack_cancel();
+                            left_attack_cancel();
+
+                            attacking_inanimate_object_time = 0.0f;
+
+                            result = true;
+                        }
+                        else
+                            attacking_inanimate_object_time += dtime;
+
+                        if (attacking_inanimate_object_time > 5.0f)
+                        {
+                            right_attack_cancel();
+                            left_attack_cancel();
+
+                            attacking_inanimate_object_time = 0.0f;
+
+                            result = true;
+                        }
+
+                    }
+                    else
+                    {
+                        if (actually_attacked)
+                            attacking_inanimate_object_time += dtime;
+                    }
                 }
+                
             }
         }
         
