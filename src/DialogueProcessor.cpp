@@ -136,10 +136,15 @@ namespace DialogueProcessor {
                         option.id = id;
                         option.text = dialogue->topicText.c_str();
 
+                        bool already_said = dialogue->neverSaid;
+
                                     //these are some random flags that seem to work but not guaranteed so there is backup system that takes it all when no options is found
                         if ((!(!dialogue->unk10 && !dialogue->unk14 && !dialogue->unk4C) || ignore_restrictions) && option.text != "...")
                         //if ((dialogue->unk10 || ignore_restrictions) && option.text != "...")
                         {
+                            if (already_said)
+                                option.text = "[ALREADY SAID THIS] " + option.text;
+
                             dialogue_options.push_back(option);
                             
                             //RE::ConsoleLog::GetSingleton()->Print(dialogue->topicText.c_str());
