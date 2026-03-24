@@ -210,8 +210,14 @@ namespace RandomMessageBoxProcessor {
 								message_box_request_sent = true;
 							}
 							else
+							{
+								if (text.find("to serve your time in jail") != std::string::npos)
+									text = "Do you want to \"serve your time in jail\" (instantly skip jail)?";
+
 								if (force_choice(get_options(), text, force_type::messagebox_option))
 									message_box_request_sent = true;
+							}
+								
 						}
 
 					}
