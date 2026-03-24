@@ -9516,7 +9516,7 @@ namespace WalkerProcessor {
                         }
                         else
                         {
-                            send_random_context("[Interaction with object failed]", false);
+                            //send_random_context("[Interaction with object failed]", false);
                             reset_walker();
                             register_allowed_actions();
                         }

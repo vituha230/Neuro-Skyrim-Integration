@@ -521,18 +521,27 @@ void lockpick_move_x(float angle)
     //RE::BSInputEventQueue::GetSingleton()->AddThumbstickEvent(0.0f, 0.0f);
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(angle, 0.0, "RotatePick");
 
+    if (DialogueProcessor::is_in_dialogue())
+        bool stop_here = false;
 }
 
 
 void mouse_look(float x, float y)
 {
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y, "Look");
+
+    if (DialogueProcessor::is_in_dialogue())
+        bool stop_here = false;
+
 }
 
 
 void mouse_cursor_move(float x, float y)
 {
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y, "Cursor");
+
+    if (DialogueProcessor::is_in_dialogue())
+        bool stop_here = false;
 }
 
 
@@ -556,6 +565,9 @@ void mouse_mouse_x(float angle)
     bsInputEventQueue->PushOntoInputQueue(kEvent2);
     set_allowed_events(1);
     */
+
+    if (DialogueProcessor::is_in_dialogue())
+        bool stop_here = false;
 }
 
 
@@ -575,6 +587,9 @@ void mouse_mouse_y(float angle)
     bsInputEventQueue->PushOntoInputQueue(kEvent2);
     set_allowed_events(1);
     */
+
+    if (DialogueProcessor::is_in_dialogue())
+        bool stop_here = false;
 }
 
 
@@ -602,6 +617,9 @@ void mouse_mouse_x_y(float x, float y)
     bsInputEventQueue->PushOntoInputQueue(kEvent2);
     set_allowed_events(1);
     */
+
+    if (DialogueProcessor::is_in_dialogue())
+        bool stop_here = false;
 }
 
 
@@ -629,6 +647,9 @@ void mouse_mouse_x_y_limited(float x, float y)
     if (RE::BSInputEventQueue::GetSingleton()->mouseEventCount < 5) {
         RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y);
     }
+
+    if (DialogueProcessor::is_in_dialogue())
+        bool stop_here = false;
 }
 
 void walk_forward_limited()

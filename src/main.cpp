@@ -3,7 +3,6 @@
 
 //crucial:
 
-//TODO backup interaction on containers (and doors?) repeats infinitely until it unlocks
 
 //TODO figure out whats wrong with dialogues camera pointing into the floor sometimes
 
