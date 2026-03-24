@@ -226,11 +226,11 @@ namespace MiscThings {
 
         if (target_refr)
         {
-            auto base_obj = target_refr->GetBaseObject();
+            //auto base_obj = target_refr->GetBaseObject();
 
-            if (base_obj->GetFormType() == RE::FormType::Door)
+            //if (base_obj->GetFormType() == RE::FormType::Door || base_obj->GetFormType() == RE::FormType::Container)
             {
-                auto door_refr = (RE::TESObjectDOOR*)target_refr;
+                //auto door_refr = (RE::TESObjectDOOR*)target_refr;
 
 
                 if (auto extra = target_refr->extraList.GetByType(RE::ExtraDataType::kLock); extra)
