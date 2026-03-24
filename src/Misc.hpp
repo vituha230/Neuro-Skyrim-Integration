@@ -244,6 +244,9 @@ namespace MiscThings {
     int get_picks_amount_int();
 
 
+    bool is_bad_jailquest(RE::TESQuest* quest, RE::TESQuestTarget* target);
+
+
     namespace General::Script
     {
         using InternalVM = RE::BSScript::Internal::VirtualMachine;

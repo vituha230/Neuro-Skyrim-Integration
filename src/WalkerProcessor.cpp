@@ -5054,8 +5054,11 @@ namespace WalkerProcessor {
                     {
                         if (quest_entry.quest == last_quest_chosen)
                         {
-                            quest_is_still_there = true;
-                            break;
+                            if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                            {
+                                quest_is_still_there = true;
+                                break;
+                            }
                         }
                     }
 
@@ -5094,8 +5097,12 @@ namespace WalkerProcessor {
                 {
                     if (quest_entry.estimate_distance < min_distance)
                     {
-                        best_id = quest_entry.id;
-                        min_distance = quest_entry.estimate_distance;
+                        if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                        {
+                            best_id = quest_entry.id;
+                            min_distance = quest_entry.estimate_distance;
+                        }
+
                     }
                 }
 
@@ -5188,9 +5195,11 @@ namespace WalkerProcessor {
                                     {
                                         if (target && target == quest_entry.target)
                                         {
-                                            quest_found = true;
-                                            break;
-
+                                            if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                                            {
+                                                quest_found = true;
+                                                break;
+                                            }
                                         }
                                     }
 
@@ -5229,8 +5238,12 @@ namespace WalkerProcessor {
                 {
                     if (quest_entry.id == index)
                     {
-                        quest_found = true;
-                        break;
+                        if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                        {
+                            quest_found = true;
+                            break;
+                        }
+
                     }
                 }
 

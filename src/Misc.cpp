@@ -69,6 +69,63 @@ namespace MiscThings {
     }
 
 
+
+    bool is_bad_jailquest(RE::TESQuest* quest, RE::TESQuestTarget* target)
+    {
+        bool result = false;
+
+        
+        auto jail_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("JailQuest");
+
+        if (quest && target && jail_quest && quest == jail_quest)
+        {
+            RE::ObjectRefHandle quest_ref_handle{};
+
+            target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
+
+            if (quest_ref_handle)
+                if (quest_ref_handle.get())
+                {
+                    auto quests_target_ref = quest_ref_handle.get().get();
+
+                    if (quests_target_ref)
+                    {
+                        auto base_obj = quests_target_ref->GetBaseObject();
+
+                        if (base_obj && base_obj->GetFormType() == RE::FormType::Container)
+                        {
+                            //now check if its empty
+
+                            RE::ExtraDataList* extralist = &quests_target_ref->extraList;
+
+                            if (extralist)
+                            {
+                                RE::ExtraContainerChanges* extra_changes = (RE::ExtraContainerChanges*)extralist->GetByType(RE::ExtraDataType::kContainerChanges);
+
+                                if (extra_changes)
+                                {
+                                    if (extra_changes->changes && extra_changes->changes->entryList)
+                                    {
+                                        if (extra_changes->changes->entryList->size() <= 0)
+                                            return true; //its an empty jail container
+                                    }
+                                }
+                            }
+                            
+
+
+
+                            
+                        }
+                    }
+                }
+        }
+        
+        return result;
+    }
+
+
+
     int get_picks_amount_int()
     {
         int result = 0;
@@ -2824,6 +2881,10 @@ namespace MiscThings {
                                         if (conditions_met)
                                         {
                                             quest this_quest{};
+
+
+                                            if (is_bad_jailquest(the_quest, target))
+                                                continue;
 
                                             this_quest.id = id;
                                             this_quest.quest = the_quest;
