@@ -841,6 +841,8 @@ float fishing_reaction_time = 0.5f;
 
 void input_processor(float dtime)
 {
+    if (MiscThings::have_force_only_menu_open() || MiscThings::is_intro() || MiscThings::is_intro2())
+        reset_input_processor();
 
     //ccBGSSSE001_FishingSystemQuest
     //ccBGSSSE001_FishingSystemScript
