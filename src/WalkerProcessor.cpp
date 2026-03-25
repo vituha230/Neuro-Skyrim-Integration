@@ -1634,7 +1634,7 @@ namespace WalkerProcessor {
                 //right_attack_cancel();
                 //left_attack_cancel();
 
-                bool brought_no_weapons_to_a_fight = has_spell_equipped(true) && has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false);
+                bool brought_no_weapons_to_a_fight = MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false);
 
                 if (last_walk_reminded_time > 40.0f || ((explore_mode || runaway_mode) && last_walk_reminded_time > 15.0f) || (interaction_after_walk == 3 && brought_no_weapons_to_a_fight && last_walk_reminded_time > 15.0f))
                 {
@@ -6160,28 +6160,6 @@ namespace WalkerProcessor {
 
 
 
-
-    
-
-
-    bool has_spell_equipped(bool right)
-    {
-        bool result = false;
-
-        auto player = RE::PlayerCharacter::GetSingleton();
-        if (player)
-        {
-            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
-
-            if (spell && spell->GetFormType() == RE::FormType::Spell)
-                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-                    result = true;
-
-        }
-        return result;
-    }
-
-
     /*
     bool is_healing_spell(bool right)
     {
@@ -6661,17 +6639,17 @@ namespace WalkerProcessor {
         {
             if (attack_action < 0 || attack_action > 1)
             {
-                bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
+                bool dont_use_right = MiscThings::has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !MiscThings::has_spell_equipped(true)));
                 dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
                 
-                dont_use_right |= has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+                dont_use_right |= MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
 
                 attack_action = dont_use_right;
             }
                 
             
 
-            if (has_spell_equipped(true) && has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
+            if (MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
             {
                 //cannpt attack. notify
                 if (!no_weapons_notified)
@@ -6701,12 +6679,12 @@ namespace WalkerProcessor {
 
                     dont_check_mana = !is_concentration_spell(true) && is_casting_walker(true);
 
-                    bool low_mana_check = (!dont_check_mana && has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
+                    bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
 
                     if (low_mana_check)
                         low_mana_detected = true;
 
-                    if (low_mana_check || (has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(100.0f)))
+                    if (low_mana_check || (MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(100.0f)))
                     {
 
                         //set_universal_block(1.0f);
@@ -6720,7 +6698,7 @@ namespace WalkerProcessor {
                         //return false;
                     }
 
-                    if (attack_action_time < get_attack_time(true) && !(has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
+                    if (attack_action_time < get_attack_time(true) && !(MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
                     {
                         std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                         
@@ -6741,7 +6719,7 @@ namespace WalkerProcessor {
                         bool no_weapon = false;
                         bool silent = true;
 
-                        if (has_spell_equipped(true))
+                        if (MiscThings::has_spell_equipped(true))
                         {
                             if (attack_action_time > 0.7f);
                             was_charging_ranged = true;
@@ -6905,12 +6883,12 @@ namespace WalkerProcessor {
                         }
 
                         dont_use_left |= has_ranged_weapon_equipped(true);
-                        dont_use_left |= has_spell_equipped(true) && (!has_something_equipped(false) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(true)) && !has_spell_equipped(false)));
-                        bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
+                        dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(true)) && !MiscThings::has_spell_equipped(false)));
+                        bool dont_use_right = MiscThings::has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !MiscThings::has_spell_equipped(true)));
 
                         dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
-                        dont_use_right |= has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
-                        dont_use_left |= has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+                        dont_use_right |= MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+                        dont_use_left |= MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
 
                         if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                             attack_action = 1;
@@ -6933,12 +6911,12 @@ namespace WalkerProcessor {
 
                         dont_check_mana = !is_concentration_spell(false) && is_casting_walker(false);
 
-                        bool low_mana_check = (!dont_check_mana && has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
+                        bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
 
                         if (low_mana_check)
                             low_mana_detected = true;
 
-                        if (low_mana_check || (has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
+                        if (low_mana_check || (MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
                         {
                             //set_universal_block(1.0f);
                             left_attack_cancel();
@@ -6950,7 +6928,7 @@ namespace WalkerProcessor {
 
                         }
 
-                        if (attack_action_time < get_attack_time(false) && !(has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
+                        if (attack_action_time < get_attack_time(false) && !(MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
                         {
                             std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                             
@@ -6969,7 +6947,7 @@ namespace WalkerProcessor {
                             bool no_weapon = false;
                             bool silent = true;
 
-                            if (has_spell_equipped(false))
+                            if (MiscThings::has_spell_equipped(false))
                             {
 
                                 bool skip_cast = false;
@@ -7136,11 +7114,11 @@ namespace WalkerProcessor {
 
                             dont_use_left |= has_ranged_weapon_equipped(false);
 
-                            bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
+                            bool dont_use_right = MiscThings::has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !MiscThings::has_spell_equipped(true)));
                             dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
 
-                            dont_use_right |= has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
-                            dont_use_left |= has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+                            dont_use_right |= MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+                            dont_use_left |= MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                                 attack_action = 1;

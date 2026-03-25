@@ -785,13 +785,13 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
     dont_check_mana = !WalkerProcessor::is_concentration_spell(right) && WalkerProcessor::is_casting_walker(right);
 
-    bool low_mana_check = (!dont_check_mana && WalkerProcessor::has_spell_equipped(right) && (low_mana_detected || (MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(right))));
+    bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(right) && (low_mana_detected || (MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(right))));
 
     bool check_time = !MiscThings::is_self_healing_spell(right);
 
     spell_cast_time += dtime;
 
-    if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (WalkerProcessor::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
+    if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (MiscThings::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
     {
 
         //set_universal_block(1.0f);

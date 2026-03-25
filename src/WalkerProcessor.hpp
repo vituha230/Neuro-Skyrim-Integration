@@ -105,7 +105,6 @@ namespace WalkerProcessor {
 
 	void walk_whiterun_prison_grate();
 	bool is_concentration_spell(bool right);
-	bool has_spell_equipped(bool right);
 	float get_spell_cost(bool right);
 	std::string get_equipped_spell_name(bool right);
 

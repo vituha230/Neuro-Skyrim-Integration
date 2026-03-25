@@ -4716,15 +4716,35 @@ namespace MiscThings {
     //}
 
 
+    bool has_spell_equipped(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
+
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
+                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                    result = true;
+
+        }
+        return result;
+    }
+
 
 
     bool last_free_was_left = false;
 
-    RE::BGSEquipSlot* get_free_slot()
+    RE::BGSEquipSlot* get_free_slot(bool offensive = true)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto actor_equip = RE::ActorEquipManager::GetSingleton();
 
+
+        auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+        auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
 
         if (player && actor_equip)
         {
@@ -4733,19 +4753,24 @@ namespace MiscThings {
             auto equipped_list = actor_process->equippedObjects;
 
             if (!equipped_list[1])
-                return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand
+                return right_slot; //right hand
 
             if (!equipped_list[0])
-                return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand
+                return left_slot; //left hand
 
             //both are busy
 
             last_free_was_left = !last_free_was_left;
 
+            //it cant be used like this - then if non offensive spell is in left hand - cant equip anything else in that slot
+            //if (offensive && has_spell_equipped(false) && !is_offensive_spell(false)) //if this one is offensive and we have non offensive spell in left hand - 
+            //    return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+
+
             if (last_free_was_left)
-                return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+                return right_slot;
             else
-                return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+                return left_slot;
                 
 
             
@@ -7314,7 +7339,12 @@ namespace MiscThings {
                     {
                         if (slot_id == 0x00013F44) //either hand
                         {
+
                             auto slot = get_free_slot();
+
+                            if (!is_offensive_spell(spell))
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
+
                             std::string equip_hand = "";
 
                             bool right_hand = false;
@@ -7323,11 +7353,30 @@ namespace MiscThings {
                             {
                                 right_hand = true;
                                 equip_hand = " in right hand";
+
+                                if (get_hand_contents(true) == spell)
+                                {
+                                    result.first = true;
+                                    result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                                    return result;
+                                }
+
                             }
 
 
                             if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
+                            {
+
                                 equip_hand = " in left hand";
+
+                                if (get_hand_contents(false) == spell)
+                                {
+                                    result.first = true;
+                                    result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                                    return result;
+                                }
+                            }
+                                
 
 
 
@@ -7345,10 +7394,8 @@ namespace MiscThings {
                                     }
                                 }
 
-
                                 result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                             }
-
                             else
                                 result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                         }
