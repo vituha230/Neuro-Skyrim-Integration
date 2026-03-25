@@ -4108,7 +4108,7 @@ namespace WalkerProcessor {
         std::pair<bool, std::string> result{};
 
 
-        if (MiscThings::is_objects_around_valid())
+        if (MiscThings::is_objects_around_valid() && MiscThings::is_serving_jail())
         {
             auto p_normal_objects_around = MiscThings::get_p_objects_around();
 
