@@ -248,6 +248,8 @@ namespace MiscThings {
 
     bool player_brawling();
 
+    RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target);
+
 
     namespace General::Script
     {

@@ -589,6 +589,35 @@ namespace MiscThings {
 
 
 
+
+    RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
+    {
+        auto golden_claw_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS13");
+
+        if (quest == golden_claw_quest)
+        {
+            auto claw_stage = golden_claw_quest->GetCurrentStageID();
+
+            if (claw_stage == 12) //arvel is target, pathfinding will be fucked if cobweb isnt destroyed
+            {
+                auto cobweb = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xAA83F);
+
+                if (cobweb && MiscThings::get_destructible_state(cobweb) == 0) //it exists and it isnt destroyed
+                {
+                    auto spider_eggs = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3E63E);
+
+                    return spider_eggs;
+                }
+            }
+        }
+
+        return target;
+    }
+
+
+
+
+
     bool quest_is_hidden(RE::TESQuest* quest)
     {
         auto barrow_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ103");

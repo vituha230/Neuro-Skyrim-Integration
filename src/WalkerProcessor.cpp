@@ -5423,7 +5423,7 @@ namespace WalkerProcessor {
                                                 }
 
                                                 quest_mode = true;
-                                                target_ref = quests_target_ref;
+                                                target_ref = MiscThings::redirect_quest_target(quest.quest, quests_target_ref);
 
 
                                                 current_quest_target_followed = quest.target;
@@ -5669,6 +5669,9 @@ namespace WalkerProcessor {
                                         if (quest_ref_handle.get())
                                         {
                                             auto quests_target_ref = quest_ref_handle.get().get();
+
+                                            quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref);
+
                                             if (target_ref != quests_target_ref)
                                             {
                                                 path_valid = false;
@@ -5713,7 +5716,7 @@ namespace WalkerProcessor {
                                                 left_attack_cancel();
 
                                                 
-                                                target_ref = quests_target_ref; //i think something is excessive here
+                                                target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref); //i think something is excessive here
 
                                                 backup_interaction_made = false;
 
