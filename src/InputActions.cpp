@@ -531,7 +531,11 @@ void mouse_look(float x, float y)
     RE::BSInputEventQueue::GetSingleton()->AddMouseMoveEvent(x, y, "Look");
 
     if (DialogueProcessor::is_in_dialogue())
-        bool stop_here = false;
+    {
+        if (x != 0.0f || y != 0.0f)
+            bool stop_here = false;
+    }
+        
 
 }
 

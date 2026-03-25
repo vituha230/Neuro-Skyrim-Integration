@@ -110,9 +110,64 @@ bool is_pickpocketing()
 
 
 
+bool is_possessions_chest()
+{
+	RE::UI* ui = RE::UI::GetSingleton();
+	RE::GFxValue var1;
+
+	if (ui)
+	{
+		auto menu = ui->GetMenu<RE::ContainerMenu>();
+
+		if (menu)
+		{
+			auto container_ref_handle = menu->GetTargetRefHandle();
+
+			auto container_ref_ptr = RE::TESObjectREFR::LookupByHandle(container_ref_handle);
+
+			if (container_ref_ptr && container_ref_ptr.get())
+			{
+				auto container_ref = container_ref_ptr.get();
+
+				auto extra_list = &container_ref->extraList;
+
+				if (extra_list)
+				{
+					auto extra_alias = (RE::ExtraAliasInstanceArray*)extra_list->GetByType(RE::ExtraDataType::kAliasInstanceArray);
+
+					if (extra_alias)
+					{
+						for (auto alias : extra_alias->aliases)
+						{
+							if (alias && alias->alias)
+							{
+								std::string alias_name = alias->alias->aliasName.c_str();
+								std::string evidence = "EvidenceChest";
+
+								if (alias_name == evidence)
+								{
+									return true;
+								}
+
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+
 std::vector<MenuOption> get_items_options()
 {
 	std::vector<MenuOption> result{};
+
+	if (!is_pickpocketing())
+		result.push_back({ -2, "[TAKE ALL]" });
+
 
 	for (std::pair<int, item_data> item : items_list)
 	{
@@ -147,8 +202,15 @@ std::vector<MenuOption> get_items_options()
 		result.push_back(option);
 	}
 
-	if (!is_pickpocketing())
+
+
+
+	if (is_possessions_chest() && !is_pickpocketing())
+	{
+		result.clear();
 		result.push_back({ -2, "[TAKE ALL]" });
+	}
+
 
 	result.push_back({ -1, "[STOP LOOTING]" });
 	
@@ -1222,7 +1284,7 @@ void processor(float dtime)
 
 						auto options = get_items_options();
 
-						if (std::size(options) <= 2)
+						if (std::size(options) <= 2 && !is_possessions_chest())
 						{
 							send_random_context("[Container is empty. Closing container...]");
 							//if (force_choice(get_items_options(), "You opened a container. It is empty. Send -1 to exit. ", force_type::container_item))
