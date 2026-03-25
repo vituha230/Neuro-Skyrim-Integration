@@ -2047,7 +2047,13 @@ namespace WalkerProcessor {
 
 
 
-    
+    struct myPrimitive
+    {
+        uint32_t unk1;
+        uint32_t unk2;
+        uint32_t unk3;
+        RE::NiPoint3 bounds;
+    };
 
 
     void cut_navmesh_on_target(RE::TESObjectREFR* target)
@@ -2059,7 +2065,7 @@ namespace WalkerProcessor {
             if (avoidsphere_refr)
             {
                 
-                avoidsphere_refr->SetScale(1.0f);
+                //avoidsphere_refr->SetScale(1.0f);
 
                 auto target_bounds = target->GetBoundMax() - target->GetBoundMin();
                 auto avoidsphere_bounds = avoidsphere_refr->GetBoundMax() - avoidsphere_refr->GetBoundMin();
@@ -2073,7 +2079,19 @@ namespace WalkerProcessor {
 
                 float new_scale = max_target_bound / avoidsphere_bounds.x;
 
-                avoidsphere_refr->SetScale(new_scale);
+                
+                auto extralist = &avoidsphere_refr->extraList;
+
+                auto extra_primitive = (RE::ExtraPrimitive*)extralist->GetByType(RE::ExtraDataType::kPrimitive);
+
+                if (extra_primitive)
+                {
+                    myPrimitive* primitive = (myPrimitive*)(extra_primitive->primitive);
+
+                    primitive->bounds.x = max_target_bound / 2.0f;
+                    primitive->bounds.y = max_target_bound / 2.0f;
+                    primitive->bounds.z = max_target_bound / 2.0f;
+                }
 
                 avoidsphere_refr->MoveTo(target);
                 
