@@ -246,6 +246,8 @@ namespace MiscThings {
 
     bool is_bad_jailquest(RE::TESQuest* quest, RE::TESQuestTarget* target);
 
+    bool player_brawling();
+
 
     namespace General::Script
     {

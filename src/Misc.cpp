@@ -3675,6 +3675,28 @@ namespace MiscThings {
 
 
 
+    bool player_brawling()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            auto left_hand = player->currentProcess->equippedObjects[0];
+            auto right_hand = player->currentProcess->equippedObjects[1];
+
+            if (left_hand && right_hand)
+            {
+                if (left_hand->GetFormID() == 0x1f4 && right_hand->GetFormID() == 0x1f4)
+                {
+                    //both hands are fists
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
     std::string is_stealing(RE::TESObjectREFR* object)
     {
         std::string result = "";

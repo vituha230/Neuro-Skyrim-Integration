@@ -6219,6 +6219,9 @@ namespace WalkerProcessor {
     }
 
 
+
+
+
     bool has_something_equipped(bool right)
     {
         bool result = false;
@@ -7191,6 +7194,13 @@ namespace WalkerProcessor {
                         {
                             //there are other targets nearby. switch target
                             return true;
+                        }
+                        else
+                        {
+                            if (MiscThings::player_brawling())
+                            {
+                                return true;
+                            }
                         }
                     }
 
