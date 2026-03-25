@@ -142,7 +142,15 @@ namespace DialogueProcessor {
                         //if ((dialogue->unk10 || ignore_restrictions) && option.text != "...")
                         {
                             if (already_said)
-                                option.text = "[ALREADY SAID THIS] " + option.text;
+                                ;// option.text = "[ALREADY SAID THIS] " + option.text;
+
+                            if (dialogue->parentQuest)
+                            {
+                                auto the_quest = dialogue->parentQuest;
+                                if (the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
+                                    option.text = "[QUEST-RELATED] " + option.text;
+
+                            }
 
                             dialogue_options.push_back(option);
                             
@@ -152,6 +160,7 @@ namespace DialogueProcessor {
                         id++;
                     }
 
+                    
                     dialogue_options.push_back({ -1, "[STOP DIALOGUE]" });
                 }
 
