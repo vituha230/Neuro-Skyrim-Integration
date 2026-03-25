@@ -7290,6 +7290,10 @@ namespace WalkerProcessor {
                     if (MiscThings::get_picks_amount_int() <= 0)
                     {
                         send_random_context("You dont have any lockpicks to open the lock", false);
+
+                        if (is_door(target_ref))
+                            cut_navmesh_on_target(get_targeted_ref());
+
                         reset_walker();
                         return true;
                     }
@@ -10021,6 +10025,10 @@ namespace WalkerProcessor {
                                                                             if (MiscThings::get_picks_amount_int() <= 0)
                                                                             {
                                                                                 send_random_context("You dont have any lockpicks to open the lock", false);
+
+                                                                                if (is_door(result_target))
+                                                                                    cut_navmesh_on_target(result_target);
+
                                                                                 reset_walker();
                                                                                 return;
                                                                             }
