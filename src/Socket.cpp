@@ -679,7 +679,14 @@ float delayed_poke_time = 0.0f;
 bool make_delayed_poke = false;
 
 
-
+void neuro::reset_poke()
+{
+    time_no_commands = 0.0f;
+    time_no_menus = 0.0f;
+    delayed_poke_time = 0.0f;
+    make_delayed_poke = false;
+    WalkerProcessor::reset_inactive_timer();
+}
 
 
 bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aClosure)

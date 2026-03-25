@@ -133,6 +133,15 @@ bool in_game = false;
 std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 
 
+
+void reset_poke()
+{
+    neuro::reset_poke();
+}
+
+
+
+
 bool is_in_game()
 {
     RE::UI* ui = RE::UI::GetSingleton();

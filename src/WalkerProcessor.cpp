@@ -10297,6 +10297,18 @@ namespace WalkerProcessor {
                                                                     }
                                                                     else
                                                                     {
+                                                                        if (MiscThings::get_picks_amount_int() <= 0)
+                                                                        {
+                                                                            send_random_context("The path is blocked by a locked door and you dont have any lockpicks to open the lock", false);
+
+                                                                            if (is_door(target_ref))
+                                                                                cut_navmesh_on_target(get_targeted_ref());
+
+                                                                            reset_walker();
+                                                                            return;
+                                                                        }
+
+
                                                                         if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
                                                                             door_is_closed_request_sent = true;
                                                                     }
@@ -10552,6 +10564,19 @@ namespace WalkerProcessor {
                                                     }
                                                     else
                                                     {
+
+                                                        if (MiscThings::get_picks_amount_int() <= 0)
+                                                        {
+                                                            send_random_context("The path is blocked by a locked door and you dont have any lockpicks to open the lock", false);
+
+                                                            if (is_door(target_ref))
+                                                                cut_navmesh_on_target(get_targeted_ref());
+
+                                                            reset_walker();
+                                                            return;
+                                                        }
+
+
                                                         if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
                                                             door_is_closed_request_sent = true;
                                                     }

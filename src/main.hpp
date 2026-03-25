@@ -55,6 +55,10 @@ bool register_escape_jail();
 
 bool register_walk_to_object_do_nothing();
 
+
+void reset_poke();
+
+
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);
 void force_barter_operation();

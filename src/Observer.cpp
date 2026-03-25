@@ -2879,7 +2879,7 @@ namespace Observer {
 
 				if (serving_jail)
 				{
-					if (jail_reminder_time > 60.0f)
+					if (jail_reminder_time > 40.0f)
 					{
 						auto player_cell = player->GetParentCell();
 
@@ -2890,10 +2890,18 @@ namespace Observer {
 							if (cidhna_quest && (cidhna_quest->GetCurrentStageID() >= 5 || cidhna_quest->GetCurrentStageID() < 100))
 								;
 							else
+							{
 								send_random_context("[If you dont know what to do, you can find a pickaxe and mine some ore to serve your jail time and get out of jail]", false);
+								reset_poke();
+							}
+								
 						}
 						else
-							send_random_context("[If you dont know what to do, you can use nearest bed to serve your jail time and get out of jail]", false);
+						{
+							send_random_context("[If you dont know what to do, you can use nearest bed to \"serve your jail time\" and get out of jail (instantly)]", false);
+							reset_poke();
+						}
+							
 
 						jail_reminder_time = 0.0f;
 					}

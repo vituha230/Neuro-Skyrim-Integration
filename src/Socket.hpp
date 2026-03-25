@@ -602,6 +602,8 @@ namespace neuro {
 
 
     void add_message_to_delayed_queue(std::string message);
+    
+    void reset_poke();
 
 }
 
