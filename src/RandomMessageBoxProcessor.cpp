@@ -216,7 +216,7 @@ namespace RandomMessageBoxProcessor {
 									//text = "Do you want to \"serve your time in jail\" (instantly skip jail)?";
 									send_random_context("You serve your time in jail... and get released...", false);
 
-									set_message_box_choice(1);
+									set_message_box_choice(0);
 									message_box_request_sent = true;
 								}
 								else
