@@ -6630,6 +6630,8 @@ namespace WalkerProcessor {
                 bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
                 dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
                 
+                dont_use_right |= has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+
                 attack_action = dont_use_right;
             }
                 
@@ -6873,6 +6875,8 @@ namespace WalkerProcessor {
                         bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
 
                         dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
+                        dont_use_right |= has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+                        dont_use_left |= has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
 
                         if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                             attack_action = 1;
@@ -7100,6 +7104,9 @@ namespace WalkerProcessor {
 
                             bool dont_use_right = has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !has_spell_equipped(true)));
                             dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
+
+                            dont_use_right |= has_spell_equipped(true) && !is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+                            dont_use_left |= has_spell_equipped(false) && !is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                                 attack_action = 1;
@@ -7848,7 +7855,7 @@ namespace WalkerProcessor {
             auto player_pos = player->GetPosition();
             auto pos_dif = player_pos - last_player_pos;
 
-            if (pos_dif.Length() > 50.0f)
+            if (pos_dif.Length() > 200.0f)
             {
                 last_player_pos = player_pos;
                 time_stuck = 0.0f;
