@@ -1186,7 +1186,7 @@ namespace Observer {
 													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 													if (info != "")
 													{
-														if (MiscThings::get_player_gold() < 100 && info.find("Coin Purse") != std::string::npos)
+														if (!MiscThings::is_serving_jail() && MiscThings::get_player_gold() < 100 && info.find("Coin Purse") != std::string::npos)
 														{
 															if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
 																WalkerProcessor::reset_walker();
