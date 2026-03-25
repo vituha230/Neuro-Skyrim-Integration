@@ -6640,7 +6640,7 @@ namespace WalkerProcessor {
                 
             
 
-            if (has_spell_equipped(true) && has_spell_equipped(false) && !is_offensive_spell(true) && !is_offensive_spell(false))
+            if (has_spell_equipped(true) && has_spell_equipped(false) && !is_offensive_spell(true) && !is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
             {
                 //cannpt attack. notify
                 if (!no_weapons_notified)
