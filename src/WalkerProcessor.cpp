@@ -9643,7 +9643,7 @@ namespace WalkerProcessor {
                                 //if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
                                 if (MiscThings::is_intro() || path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3))
                                 {
-                                    time_stuck = 0.0f;
+                                    //time_stuck = 0.0f;
 
                                     if (use_last_point_of_last_path)
                                     {
