@@ -1215,6 +1215,10 @@ namespace WalkerProcessor {
 
             auto player_pos = RE::PlayerCharacter::GetSingleton()->GetPosition();
 
+
+            if (MiscThings::is_on_horse())
+                return false;
+
             if (path_valid && !use_last_point_of_last_path)
             {
                 float max_diff = 0.0f;
@@ -6562,6 +6566,15 @@ namespace WalkerProcessor {
 
     bool attack_target(float dtime)
     {
+
+        if (MiscThings::is_on_horse())
+        {
+            confirm();
+            return false; //get off the horse
+        }
+
+
+
         if (shout_mode)
         {
             if (shout_to_use)
@@ -7936,7 +7949,7 @@ namespace WalkerProcessor {
                 RE::TESObjectREFR* mount_refr = (RE::TESObjectREFR*)mount_ptr.get();
                 mount_name = MiscThings::insert_object_into_list_and_get_info(mount_refr);
             }
-            send_random_context("Cannot do this while on mount: " + mount_name, false);
+            send_random_context("Cannot do this while on mount: " + mount_name + ". Interact with mount to get off it first", false);
         }
         else
         {
@@ -8697,6 +8710,13 @@ namespace WalkerProcessor {
 
 	void processor(float dtime)
 	{
+
+        if (interaction_after_walk == 3 && MiscThings::is_on_horse())
+        {
+            confirm();
+            set_universal_block(1.0f);
+            return;
+        }
 
 
         if (multiple_paths_quest_choice_confirming)
