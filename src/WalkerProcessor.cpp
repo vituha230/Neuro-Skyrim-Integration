@@ -335,6 +335,7 @@ namespace WalkerProcessor {
 
     void invalidate_path()
     {
+        path_valid = false;
         current_path_point = -1;
         path.clear();
     }
@@ -10254,7 +10255,14 @@ namespace WalkerProcessor {
                                                             {
                                                                 ignore_closed_doors_time = 3.0f;
                                                                 if (is_targeted_door_closed())
+                                                                {
                                                                     confirm(); //just unlock it
+
+                                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode))
+                                                                        just_teleported = true;
+
+                                                                }
+                                                                    
                                                             }
                                                             else
                                                             {
@@ -10505,7 +10513,7 @@ namespace WalkerProcessor {
                                                 if (is_targeted_door_closed())
                                                 {
                                                     confirm(); //just unlock it
-                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && quest_mode)
+                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode))
                                                         just_teleported = true;
                                                 }
                                                     

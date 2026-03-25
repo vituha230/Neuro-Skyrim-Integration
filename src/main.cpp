@@ -929,6 +929,9 @@ namespace Hooks {
 
                 bool probably_death = delta_death < 10.0f;
 
+
+                WalkerProcessor::invalidate_path(); //conditionless
+
                 if (!probably_death)
                 {
                     MiscThings::reset_misc(); //clear compas locations on location change
