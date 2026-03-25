@@ -6792,6 +6792,8 @@ namespace WalkerProcessor {
                             }
 
 
+                            if (attacking_weapon == "")
+                                attacking_weapon = "fists. ";
 
                             if (attacking_info == "")
                             {
@@ -7025,6 +7027,10 @@ namespace WalkerProcessor {
 
                                 if (attacking_info == "")
                                 {
+
+                                    if (attacking_weapon == "")
+                                        attacking_weapon = "fists. ";
+
                                     if (casting)
                                     {
                                         attacking_info = start_attacking_info + attacking_weapon;
