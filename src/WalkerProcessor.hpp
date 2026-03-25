@@ -29,7 +29,6 @@ namespace WalkerProcessor {
 
 	void invalidate_path();
 
-	bool is_offensive_spell(bool right);
 
 	std::pair<bool, std::string> set_multiple_path_quest_choice(int id);
 

@@ -250,6 +250,8 @@ namespace MiscThings {
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target);
 
+    bool is_offensive_spell(bool right);
+
 
     namespace General::Script
     {

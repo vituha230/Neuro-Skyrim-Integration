@@ -7661,6 +7661,35 @@ namespace MiscThings {
     }
 
 
+    bool is_offensive_spell(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
+
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
+                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                {
+                    for (auto effect : spell->effects)
+                    {
+                        if (effect->IsHostile())
+                        {
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+
+        }
+        return result;
+    }
+
+
+
+
     bool is_immortal(RE::Actor* actor)
     {
         bool result = false;
