@@ -43,6 +43,9 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> explore_world(bool internal_call);
 
 
+	bool is_running_away();
+
+
 	std::pair<bool, std::string> set_closed_door_choice(int choice);
 
 	std::pair<bool, std::string> set_stealing_choice(int id);

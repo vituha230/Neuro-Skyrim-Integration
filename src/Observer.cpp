@@ -814,7 +814,8 @@ namespace Observer {
 				{
 					if (no_threats_timer > 10.0f)
 					{
-						reset_threats();
+						if (!WalkerProcessor::is_running_away())
+							reset_threats();
 					}
 					else
 						no_threats_timer += dtime;

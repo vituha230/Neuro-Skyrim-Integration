@@ -401,6 +401,10 @@ namespace WalkerProcessor {
         return explore_mode;
     }
 
+    bool is_running_away()
+    {
+        return runaway_mode;
+    }
 
     bool is_fighting()
     {
@@ -5919,7 +5923,7 @@ namespace WalkerProcessor {
             have_target_to_walk = true;
             interaction_after_walk = 0;
             runaway_mode = true;
-            reminder_target_name = "running away. ";
+            reminder_target_name = "running away]";
             reminder_start_pos = player->GetPosition();
             result.first = true;
             result.second = "[Running away...]";
