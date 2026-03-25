@@ -615,6 +615,11 @@ bool neuro::NeuroSocket::action_register_watchdog(float dtime)
     {
         if (action_watchdog_timer > 20.0f)
         {
+            if (MiscThings::is_game_paused())
+            {
+                MiscThings::unpause_game();
+            }
+
             action_watchdog_timer = 0.0f;
             register_allowed_actions();
             return true;

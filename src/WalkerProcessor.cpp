@@ -2057,7 +2057,28 @@ namespace WalkerProcessor {
         {
             auto avoidsphere_refr = avoidsphere_form->AsReference();
             if (avoidsphere_refr)
+            {
+                
+                avoidsphere_refr->SetScale(1.0f);
+
+                auto target_bounds = target->GetBoundMax() - target->GetBoundMin();
+                auto avoidsphere_bounds = avoidsphere_refr->GetBoundMax() - avoidsphere_refr->GetBoundMin();
+                
+
+
+                target_bounds.z = 0.0f;
+                avoidsphere_bounds.z = 0.0f;
+
+                float max_target_bound = std::max(target_bounds.x, target_bounds.y);
+
+                float new_scale = max_target_bound / avoidsphere_bounds.x;
+
+                avoidsphere_refr->SetScale(new_scale);
+
                 avoidsphere_refr->MoveTo(target);
+                
+            }
+                
         }
     }
 
@@ -10592,7 +10613,7 @@ namespace WalkerProcessor {
                                                     //send_random_context("The path is blocked by a locked door!");
                                                     unregister_all_actions();
                                                     auto attackers = MiscThings::get_player_attackers();
-                                                    if (std::size(attackers) > 0)
+                                                    if (std::size(attackers) > 0 && runaway_mode)
                                                     {
                                                         confirm(); //lockpick it
                                                     }

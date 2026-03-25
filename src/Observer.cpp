@@ -671,6 +671,22 @@ namespace Observer {
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();
 
+
+		if (threats_response_request_sent && threats_response_choice_valid)
+		{
+			//had one instance of it not unpausing the game for no visible reason.. unpause it here
+			if (MiscThings::is_game_paused())
+			{
+				MiscThings::unpause_game();
+
+				set_universal_block(0.5f);
+				return;
+			}
+
+		}
+
+
+
 		if (observers_green_light)
 		{
 			if (dont_check_threats_timer > 0.0f)
