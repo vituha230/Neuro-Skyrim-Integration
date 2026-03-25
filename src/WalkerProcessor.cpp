@@ -23,6 +23,8 @@ namespace WalkerProcessor {
     std::vector<int> allowed_multiple_paths_quest_choices{};
 
 
+    bool stop_sneaking = false;
+
 
     float pickpocket_timeout = 0.0f;
 
@@ -2708,7 +2710,7 @@ namespace WalkerProcessor {
                     if (player)
                     {
                         if (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead()))
-                            if (!player->IsSneaking() && !using_custom_path && !location_mode && !(quest_mode && target->IsActor() && !target->IsDead()))
+                            if (!stop_sneaking && !player->IsSneaking() && !using_custom_path && !location_mode && !(quest_mode && target->IsActor() && !target->IsDead()))
                             {
                                 lock_camera_wants_to_crouch = true;
                                 crouch(); //if target is very low - sneak on it
@@ -3224,6 +3226,7 @@ namespace WalkerProcessor {
 
         no_weapons_notified = false; 
 
+        stop_sneaking = false; 
 
         opening_door_attempts = 0;
 
@@ -7414,6 +7417,7 @@ namespace WalkerProcessor {
                             {
                                 crouch(); //uncrouch
                                 set_universal_block(0.5f);
+                                stop_sneaking = true;
                                 return false;
                             }
                         }
