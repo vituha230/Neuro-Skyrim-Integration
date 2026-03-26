@@ -888,8 +888,10 @@ namespace WalkerProcessor {
                     originalStart(a_guideEffect); //call original function, let it read fake target, then restore original quest flags
                     
 
-                    player->playerMapMarker = p_marker; //restore
-
+                    if (p_marker)
+                    {
+                        player->playerMapMarker = p_marker; //restore
+                    }
 
                     for (auto quest_to_restore : quests_to_restore)
                         if (quest_to_restore.second)
@@ -5163,7 +5165,11 @@ namespace WalkerProcessor {
             {
                 if (quest_entry.target) //dont lock on quests without targets
                 {
-                    if (quest_entry.estimate_distance < min_distance)
+                    float corrected_distance = quest_entry.estimate_distance;
+                    if (corrected_distance == 0.0f)
+                        corrected_distance = 9999999.0f;
+
+                    if (corrected_distance < min_distance)
                     {
                         if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
                         {
@@ -5598,11 +5604,18 @@ namespace WalkerProcessor {
                     }
                     else
                     {
+                        //no target
                         result.first = false;
                         result.second = "This quest has no target to walk to. Perhaps you need to do something else to complete it...";
                         //return result;
                         //maybe it will find another objective that will actually work
                     }
+                }
+                else
+                {
+                    //no objective
+                    result.first = false;
+                    result.second = "This quest has no target to walk to. Perhaps you need to do something else to complete it...";
                 }
             }
             else

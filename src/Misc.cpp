@@ -359,7 +359,11 @@ namespace MiscThings {
 
         for (auto quest_entry : *quest_list)
         {
-            if (quest_entry.estimate_distance < min_distance)
+            float corrected_distance = quest_entry.estimate_distance;
+            if (corrected_distance == 0.0f)
+                corrected_distance = 9999999.0f;
+
+            if (corrected_distance < min_distance)
             {
                 best_id = quest_entry.id;
                 min_distance = quest_entry.estimate_distance;
@@ -2877,6 +2881,7 @@ namespace MiscThings {
             
                 RE::TESQuest* the_quest = quest_target.first;
 
+                bool found_objective = false;
 
                 for (auto objective : the_quest->objectives)
                 {
@@ -2965,6 +2970,8 @@ namespace MiscThings {
 
                                             id++;
                                             got_any_quests = true;
+
+                                            found_objective = true;
                                         }
                                     }
                                 }
@@ -2972,7 +2979,7 @@ namespace MiscThings {
                         }
                         else
                         {
-                            //its displayed but has no targets. potentially quest without a target. still add in the list
+                            //objective is displayed but has no targets. potentially quest without a target. still add in the list
 
                             quest this_quest{};
 
@@ -3000,11 +3007,48 @@ namespace MiscThings {
 
                             id++;
                             got_any_quests = true;
+
+                            found_objective = true;
                         }
+                    }
+                }
+                //all objectives are checked
+
+                if (the_quest && !found_objective)
+                {
+                    if (the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD))
+                    {
+                        //displayed but no objective. still add into list, maybe it just needs to wait or do something else
+
+                        quest this_quest{};
+
+                        this_quest.id = id;
+                        this_quest.quest = the_quest;
+                        this_quest.name = the_quest->GetFullName();
+                        this_quest.target = nullptr;
+
+                        std::string displaytext = "";
+                        std::string target_name = "";
+
+                        this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                        this_quest.target_name = target_name;
+
+                        this_quest.objective = nullptr;
+                        this_quest.description = "";
+                        this_quest.category = 0;
+
+                        this_quest.estimate_distance = 0.0f;
+
+                        sortable_quests.push_back(this_quest);
+
+                        id++;
+                        got_any_quests = true;
                     }
                 }
             }
         }
+
 
         //sort
 

@@ -4,6 +4,7 @@
 //crucial:
 
 
+
 //TODO figure out whats wrong with dialogues camera pointing into the floor sometimes
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects
