@@ -80,6 +80,21 @@ namespace DialogueProcessor {
 
 
 
+    void fix_cursor()
+    {
+        auto menu_cursor = RE::MenuCursor::GetSingleton();
+
+        float K = 100.0f;
+
+        if (menu_cursor)
+        {
+            menu_cursor->cursorPosX = menu_cursor->screenWidthX * 0.5f;
+            menu_cursor->cursorPosY = menu_cursor->screenWidthY * 0.5f;
+        }
+    }
+
+
+
     void dialogue_choice_reset()
     {
         dialogue_choice = 0;
@@ -314,7 +329,11 @@ namespace DialogueProcessor {
         RE::MenuTopicManager* topic_manager = RE::MenuTopicManager::GetSingleton();
 
         if (in_dialogue)
+        {
+            fix_cursor();
             WalkerProcessor::reset_walker();
+        }
+            
 
 
 

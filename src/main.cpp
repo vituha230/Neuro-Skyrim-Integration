@@ -4,16 +4,12 @@
 //crucial:
 
 
-//TODO path-point-reached timeout
 
-//TODO figure out whats wrong with dialogues camera pointing into the floor sometimes (cursor in menus related?)
-
-//opened static nameless objects (gates/bridges) dont appear as blocking objects
+//opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
 
 //TODO test high hrothgar part1 more
 
-//TODO test mainquest up to fus ro da
 
 //TODO automatically look at someone who talks around if walker is inactive for 3+ seconds
 
