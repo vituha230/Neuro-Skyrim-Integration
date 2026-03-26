@@ -3843,7 +3843,7 @@ namespace MiscThings {
                                 result = "[Is crime to break in]";
                         }
                         else
-                            if (!object->IsActor())
+                            if (!object->IsActor() && base_type != RE::FormType::Static)
                                 result = "[Is stealing]";
 
                     }

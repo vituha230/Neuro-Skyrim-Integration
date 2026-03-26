@@ -46,6 +46,8 @@ namespace Observer {
 
 	bool old_can_interact = false;
 	bool old_can_look = false;
+	bool old_can_walk = false;
+
 
 	float detect_locations_timer = 0.0f;
 
@@ -2819,9 +2821,12 @@ namespace Observer {
 
 					auto control_map = RE::ControlMap::GetSingleton();
 					bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
-					bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+					bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
+					bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+
 					old_can_interact = can_interact;
 					old_can_look = can_look;
+					old_can_walk = can_walk;
 
 
 					auto greybeard_call = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQGreybeardCall");
@@ -3107,9 +3112,24 @@ namespace Observer {
 					//}
 				}
 
+				if (!old_can_walk && can_walk)
+				{
+					unregister_look_action();
+					register_allowed_actions();
+				}
+
+				if (old_can_walk && !can_walk)
+				{
+					unregister_all_actions();
+					register_look_at_object();
+				}
+
+
+
+
 				old_can_look = can_look;
 				old_can_interact = can_interact;
-
+				old_can_walk = can_walk;
 
 				bool cur_mount = MiscThings::is_on_horse();
 
