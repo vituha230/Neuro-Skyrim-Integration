@@ -6884,6 +6884,7 @@ namespace MiscThings {
 
     bool have_force_only_menu_open()
     {
+        //DOES NOT INCLUDE TWEEN MENU
         bool result = false;
 
         RE::UI* ui = RE::UI::GetSingleton();
