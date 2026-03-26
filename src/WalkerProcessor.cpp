@@ -25,6 +25,8 @@ namespace WalkerProcessor {
 
     bool stop_sneaking = false;
 
+    float path_point_reached_timeout = 0.0f;
+
 
     float pickpocket_timeout = 0.0f;
 
@@ -3000,7 +3002,7 @@ namespace WalkerProcessor {
 
 
 
-    bool path_point_reached()
+    bool path_point_reached(float dtime)
     {
         
 
@@ -3031,6 +3033,17 @@ namespace WalkerProcessor {
                 {
                     if (std::size(path) <= 0)
                         return true;
+
+
+                    path_point_reached_timeout += dtime;
+
+                    if (path_point_reached_timeout > 5.0f)
+                    {
+                        return true;
+                    }
+
+
+
 
                     if (current_path_point < (int)std::size(path))
                     {
@@ -3278,6 +3291,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        path_point_reached_timeout = 0.0f;
 
         multiple_paths_quest_choice_confirming = false;
         multiple_paths_quest_choice_confirmed = false;
@@ -3585,6 +3599,9 @@ namespace WalkerProcessor {
     {
         //if (!using_custom_path)
         {
+
+            path_point_reached_timeout = 0.0f;
+
 
             backup_interaction_time = 0.0f;
 
@@ -9718,8 +9735,9 @@ namespace WalkerProcessor {
 
                                 
                                 //if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
-                                if (MiscThings::is_intro() || path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3))
+                                if (MiscThings::is_intro() || path_point_reached(dtime) || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3))
                                 {
+                                    path_point_reached_timeout = 0.0f;
                                     //time_stuck = 0.0f;
 
                                     if (use_last_point_of_last_path)
