@@ -3816,13 +3816,17 @@ namespace WalkerProcessor {
         {
             if (target_ref && player)
             {
-                //auto player_pos = player->GetPosition();
-                //auto target_pos = target_ref->GetPosition();
+                auto player_pos = player->GetPosition();
+                auto target_pos = target_ref->GetPosition();
 
-                //auto distance = target_pos - player_pos;
-                float distance = player->GetDistance(target_ref, true, true);
+                auto distance = target_pos - player_pos;
 
-                if (distance < 400.0f)
+                distance.z = 0.0f;
+
+
+                //float distance = player->GetDistance(target_ref, true, true);
+
+                if (distance.Length() < 3000.0f)
                     return true;
             }
         }
