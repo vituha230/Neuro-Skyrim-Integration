@@ -675,7 +675,7 @@ namespace Observer {
 		if (threats_response_request_sent && threats_response_choice_valid)
 		{
 			//had one instance of it not unpausing the game for no visible reason.. unpause it here
-			if (MiscThings::is_game_paused() && !MiscThings::have_force_only_menu_open())
+			if (MiscThings::is_game_paused() && !MiscThings::have_force_only_menu_open() && !MiscThings::player_has_levelup())
 			{
 				MiscThings::unpause_game();
 
