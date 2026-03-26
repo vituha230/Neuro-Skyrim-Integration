@@ -778,6 +778,7 @@ namespace WalkerProcessor {
                     {
                         RE::TESObjectREFR* probe_target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker
 
+                        
                         pre_probe_target = target_ref;
                         target_ref = probe_target;
                     }
@@ -958,6 +959,7 @@ namespace WalkerProcessor {
                         navmesh_probe_result = std::size(hazards) > 2;
                         navmesh_probe_result_valid = true;
                         navmesh_probe_mode = false;
+                        target_ref = pre_probe_target;
                         //and here it ends
                     }
                     else
