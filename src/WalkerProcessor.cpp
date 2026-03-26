@@ -15,6 +15,13 @@
 namespace WalkerProcessor {
 
 
+
+    bool navmesh_probe_mode = false;
+    bool navmesh_probe_result_valid = false;
+    bool navmesh_probe_result = false;
+
+
+
     bool multiple_paths_quest_choice_confirming = false;
     bool multiple_paths_quest_choice_confirmed = false;
     bool multiple_paths_quest_request_sent = false;
@@ -736,6 +743,15 @@ namespace WalkerProcessor {
 
 
 
+    bool probe_failed()
+    {
+        if (navmesh_probe_result_valid)
+            return !navmesh_probe_result;
+
+        return false;
+    }
+
+
     namespace Hooks {
 
         struct Pathing {
@@ -754,6 +770,19 @@ namespace WalkerProcessor {
 
                 if (my_quest)
                 {
+
+
+                    RE::TESObjectREFR* pre_probe_target = target_ref;
+
+                    if (navmesh_probe_mode)
+                    {
+                        RE::TESObjectREFR* probe_target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker
+
+                        pre_probe_target = target_ref;
+                        target_ref = probe_target;
+                    }
+
+
 
                     if (!target_ref)
                     {
@@ -802,7 +831,7 @@ namespace WalkerProcessor {
                                 target_ref = word_of_power;
                                 correct_word_of_power = false;
                             }
-                                
+
                         }
 
 
@@ -890,14 +919,14 @@ namespace WalkerProcessor {
                     {
                         player->playerMapMarker.reset();
                     }
-                    
+
                     auto marker_path = player->playerMarkerPath;
 
                     player->playerMarkerPath = nullptr;
 
                     //saved_guide_effect = a_guideEffect;
                     originalStart(a_guideEffect); //call original function, let it read fake target, then restore original quest flags
-                    
+
 
                     if (p_marker)
                     {
@@ -924,115 +953,141 @@ namespace WalkerProcessor {
                     auto hazards = a_guideEffect->hazards;
                     auto quest = a_guideEffect->questTarget;
 
-                    for (auto hazard : hazards)
-                        path.push_back(hazard.get()->data.location);
-
-                    if (std::size(path) > 2)
+                    if (navmesh_probe_mode)
                     {
-                        had_any_path_found_this_run = true;
-                        if (explore_mode)
-                        {
-                            reset_explore_mode_start_range();
-                            if (!explore_mode_notified)
-                            {
-                                send_random_context("[You found a direction to explore, and started walking", false);
-                                explore_mode_notified = true;
-                            }
-                            
-                        }
+                        navmesh_probe_result = std::size(hazards) > 2;
+                        navmesh_probe_result_valid = true;
+                        navmesh_probe_mode = false;
+                        //and here it ends
                     }
                     else
                     {
-
-
-                        if (explore_mode)
+                        for (auto hazard : hazards)
                         {
-                            //try to find different object
-                            if (min_dist > 100.0f)
-                            {
-                                min_dist /= 2.0f;
+                            path.push_back(hazard.get()->data.location);
+                        }
 
-                                auto result_probe = explore_world(true);
-                                
-                            }
-                            else
-                            {
-                                //min_dist = 20000.0f;
-                                explore_mode = false;
-                                reset_walker();
 
-                                if (MiscThings::is_interior_cell())
+                        if (std::size(path) > 2)
+                        {
+                            had_any_path_found_this_run = true;
+                            if (explore_mode)
+                            {
+                                reset_explore_mode_start_range();
+                                if (!explore_mode_notified)
                                 {
-                                    register_exit_dungeon();
-                                    unregister_explore_action();
+                                    send_random_context("[You found a direction to explore, and started walking", false);
+                                    explore_mode_notified = true;
                                 }
 
-                                send_random_context("You cannot find any interesting direction to explore", false);
                             }
-
-                            return;
                         }
                         else
                         {
-                            if (target_ref)
+                            if (explore_mode)
                             {
-                                if (target_is_too_high())
+                                //try to find different object
+                                if (min_dist > 100.0f)
                                 {
-                                    if (!too_high_notified)
+                                    min_dist /= 2.0f;
+
+                                    auto result_probe = explore_world(true);
+
+                                }
+                                else
+                                {
+                                    //min_dist = 20000.0f;
+                                    explore_mode = false;
+                                    reset_walker();
+
+                                    if (MiscThings::is_interior_cell())
                                     {
-                                        too_high_notified = true;
-                                        send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
+                                        register_exit_dungeon();
+                                        unregister_explore_action();
+                                    }
+
+                                    send_random_context("You cannot find any interesting direction to explore", false);
+                                }
+
+                                return;
+                            }
+                            else
+                            {
+                                if (target_ref)
+                                {
+                                    if (target_is_too_high())
+                                    {
+                                        if (!too_high_notified)
+                                        {
+                                            too_high_notified = true;
+                                            send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!navmesh_probe_result_valid)
+                                        {
+                                            navmesh_probe_mode = true;
+                                            navmesh_probe_result = false;
+                                            navmesh_probe_result_valid = false;
+                                            return;
+                                            //and we hope whoever called us - calls us again and we get probe
+                                        }
                                     }
                                 }
-                            }
-                        }
 
-                    }
+                                
 
-
-                    if (marker)
-                        if (auto marker_ref = marker->AsReference(); marker_ref && (int)std::size(path) > 0)
-                        {
-                            auto marker_pos = marker_ref->GetPosition();
-                            auto last_hazard_pos = path.at((int)std::size(path) - 1);
-
-                            if ((marker_pos - last_hazard_pos).Length() < 150.0f)
-                                path.push_back(marker_ref->GetPosition());
-                        }
-                            
-
-                    if (using_custom_path)
-                    {
-                        if (!path.empty())
-                        {
-                            auto last_point = path.at(std::size(path) - 1);
-
-                            if (last_point.GetDistance(custom_path.at(0)) < 200.0f)
-                            {
-                                custom_path_appended = true;
-                                path.insert(path.end(), custom_path.cbegin(), custom_path.cend()); //append custom path
                             }
 
-                            /*
-                            int pos = 0;
+                        }
 
-                            for (auto point : custom_path)
+
+                        if (marker)
+                            if (auto marker_ref = marker->AsReference(); marker_ref && (int)std::size(path) > 0)
                             {
-                                if (last_point.GetDistance(point) < 200.0f)
+                                auto marker_pos = marker_ref->GetPosition();
+                                auto last_hazard_pos = path.at((int)std::size(path) - 1);
+
+                                if ((marker_pos - last_hazard_pos).Length() < 150.0f)
+                                    path.push_back(marker_ref->GetPosition());
+                            }
+
+
+                        if (using_custom_path)
+                        {
+                            if (!path.empty())
+                            {
+                                auto last_point = path.at(std::size(path) - 1);
+
+                                if (last_point.GetDistance(custom_path.at(0)) < 200.0f)
                                 {
-                                    std::vector<RE::NiPoint3> new_custom_path{};
-                                    for (int i = pos; i < std::size(custom_path); i++)
-                                        new_custom_path.push_back(custom_path.at(i));
-
-                                    path.insert(path.end(), new_custom_path.cbegin(), new_custom_path.cend()); //append custom path
+                                    custom_path_appended = true;
+                                    path.insert(path.end(), custom_path.cbegin(), custom_path.cend()); //append custom path
                                 }
-                                pos++;
-                            }
-                            */
-                        }
-                    }
 
-                    path_valid = true;
+                                /*
+                                int pos = 0;
+
+                                for (auto point : custom_path)
+                                {
+                                    if (last_point.GetDistance(point) < 200.0f)
+                                    {
+                                        std::vector<RE::NiPoint3> new_custom_path{};
+                                        for (int i = pos; i < std::size(custom_path); i++)
+                                            new_custom_path.push_back(custom_path.at(i));
+
+                                        path.insert(path.end(), new_custom_path.cbegin(), new_custom_path.cend()); //append custom path
+                                    }
+                                    pos++;
+                                }
+                                */
+                            }
+                        }
+
+                        path_valid = true;
+                    }
+                    
 
                 }
                 else
@@ -3297,6 +3352,11 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        navmesh_probe_mode = false;
+        navmesh_probe_result_valid = false;
+        navmesh_probe_result = false;
+
         path_point_reached_timeout = 0.0f;
 
         multiple_paths_quest_choice_confirming = false;
@@ -10515,7 +10575,7 @@ namespace WalkerProcessor {
                                                             return;
                                                         }
 
-                                                        if (!had_any_path_found_this_run && !detect_stuck_walk_again_if_good(dtime)) //only if there was no navmesh path
+                                                        if (!probe_failed && !had_any_path_found_this_run && !detect_stuck_walk_again_if_good(dtime)) //only if there was no navmesh path
                                                             walk_forward();
                                                         else
                                                         {
