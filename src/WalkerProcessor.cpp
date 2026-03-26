@@ -335,11 +335,17 @@ namespace WalkerProcessor {
     std::string attack_friend_name = "";
 
 
+    bool use_last_point_of_last_path = false;
+    RE::NiPoint3 last_point_of_last_path{};
+
+
+
     void invalidate_path()
     {
         path_valid = false;
         current_path_point = -1;
         path.clear();
+        use_last_point_of_last_path = false;
     }
 
     void set_just_teleported() //for map
@@ -883,6 +889,9 @@ namespace WalkerProcessor {
                         player->playerMapMarker.reset();
                     }
                     
+                    auto marker_path = player->playerMarkerPath;
+
+                    player->playerMarkerPath = nullptr;
 
                     //saved_guide_effect = a_guideEffect;
                     originalStart(a_guideEffect); //call original function, let it read fake target, then restore original quest flags
@@ -892,6 +901,8 @@ namespace WalkerProcessor {
                     {
                         player->playerMapMarker = p_marker; //restore
                     }
+
+                    player->playerMarkerPath = marker_path;
 
                     for (auto quest_to_restore : quests_to_restore)
                         if (quest_to_restore.second)
@@ -1103,8 +1114,7 @@ namespace WalkerProcessor {
         };
     }
 
-    bool use_last_point_of_last_path = false;
-    RE::NiPoint3 last_point_of_last_path{};
+
 
 
 
@@ -9336,6 +9346,10 @@ namespace WalkerProcessor {
 
                 if (make_clairvoyance_cast)
                 {
+                    if (MiscThings::is_loading() || just_teleported)
+                        return;
+
+
                     //TODO: what if we didnt finish and processor stops?
 
                     bool cast_result = cast_pathfinding(dtime);

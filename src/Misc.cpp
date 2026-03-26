@@ -15,6 +15,15 @@ namespace MiscThings {
 
     long long gave_interesting_notification_timestamp = 0;
 
+    bool is_loading()
+    {
+        auto ui = RE::UI::GetSingleton();
+        if (ui && ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME))
+            return true;
+
+        return false;
+    }
+
 
 
 

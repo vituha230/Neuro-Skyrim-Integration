@@ -253,6 +253,8 @@ namespace MiscThings {
     bool is_offensive_spell(bool right);
     bool has_spell_equipped(bool right);
 
+    bool is_loading();
+
 
     namespace General::Script
     {

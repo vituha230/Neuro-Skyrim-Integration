@@ -969,6 +969,7 @@ namespace Hooks {
 
 
 
+
          
                 RandomMessageBoxProcessor::reset_menu();
                 //WalkerProcessor::reset_walker();
@@ -1064,6 +1065,8 @@ namespace Hooks {
                             }
                         
                         
+                        WalkerProcessor::invalidate_path(); //conditionless
+
                         if (WalkerProcessor::walker_active())
                             send_random_context("[Current location: " + location_name + "]");
                         else
@@ -2574,6 +2577,8 @@ class MyHook {
         else
             debug_time2 += dtime;
             */
+        
+
         
         input_processor(dtime);
 
