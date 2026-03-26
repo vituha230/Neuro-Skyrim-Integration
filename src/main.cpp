@@ -103,6 +103,8 @@ bool API_CONTROL_CRAFTING = false;
 
 
 bool do_debug_scan = false;
+bool autolook_at_speakers_on_afk = true;
+
 
 
 /////////////////////////////////////////////////////////
@@ -2613,6 +2615,10 @@ class MyHook {
             subtitle_history_clear_time += dtime;
 
 
+
+
+
+
         RE::SubtitleManager* sub_manager = RE::SubtitleManager::GetSingleton();
         if (sub_manager)
             if (sub_manager->subtitles.data())
@@ -2658,6 +2664,18 @@ class MyHook {
 
 
                         send_speech_context(speaker, subtitle_msg);
+
+
+                        if (autolook_at_speakers_on_afk)
+                        {
+                            if (WalkerProcessor::get_walker_inactive_time() > 4.0f && MiscThings::raycastable(speaker, 5000.0f, false))
+                            {
+                                WalkerProcessor::look_at_object_by_refr(speaker);
+                            }
+                        }
+
+
+
 
                         subtitle_history_clear_time = 0.0f;
 

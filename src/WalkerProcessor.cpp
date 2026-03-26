@@ -4858,6 +4858,90 @@ namespace WalkerProcessor {
     }
 
 
+    std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object)
+    {
+
+        std::pair<bool, std::string> result{};
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            result.first = false;
+            result.second = "You cannot look yet";
+            return result;
+        }
+
+
+            if (object)
+            {
+
+                if (have_target_to_walk)
+                {
+                    Observer::reset_threats();
+                    if (target_ref != object)
+                        reset_walker();
+                    else
+                    {
+                        result.first = true;
+                        result.second = "You keep looking...";
+                        return result;
+                    }
+                }
+
+
+
+                right_attack_cancel();
+                left_attack_cancel();
+
+
+
+                target_ref = object;
+
+                have_target_to_walk = true;
+
+                reminder_start_pos = player->GetPosition();
+                reminder_start_pos = player->GetPosition();
+                reminder_target_name = MiscThings::insert_object_into_list_and_get_info(object);
+
+                interaction_after_walk = -1;
+
+                looking_mode = true;
+
+                result.first = true;
+                if (!MiscThings::is_intro())
+                    result.second = "[Looking at " + reminder_target_name + "...]";
+                else
+                    result.second = "[Looking at " + reminder_target_name + "...]";
+
+                return result;
+            }
+
+
+        result.first = false;
+        result.second = "Invalid object ID"; //TODO more info
+
+        return result;
+    }
+
+
+
 
 
 
@@ -7417,7 +7501,7 @@ namespace WalkerProcessor {
 
         auto result_target = get_targeted_ref();
 
-        if ((interaction_after_walk == 1 || interaction_after_walk == 2) && !(MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive()))//(quest_mode && !target_is_interactive())))
+        if ((interaction_after_walk == 1 || interaction_after_walk == 2) && !(looking_mode || MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive()))//(quest_mode && !target_is_interactive())))
             return false;
 
 
@@ -9480,7 +9564,7 @@ namespace WalkerProcessor {
                     else
                         walker_inactive_time += dtime;
 
-                    if (MiscThings::is_intro())
+                    if (MiscThings::is_intro() || looking_mode)
                     {
                         if (lock_camera_onto_target(target_ref, dtime))
                         {
@@ -9766,18 +9850,19 @@ namespace WalkerProcessor {
                         }
                         else
                         {
-                            if (path_valid || use_last_point_of_last_path)
+
+                            if (looking_mode || path_valid || use_last_point_of_last_path)
                             {
                                 if (!use_last_point_of_last_path && (current_path_point == -1))
                                 {
-                                    if (std::size(path) > 0)
+                                    if (!looking_mode && std::size(path) > 0)
                                     {
                                         current_path_point = 0;
                                         last_point_posZ = path.at(current_path_point).z;
                                     }
                                     else
                                     {
-                                        if ((int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
+                                        if (!looking_mode && (int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
                                         {
                                             wiggle_body_then_walk_again = true;
 
@@ -9803,7 +9888,7 @@ namespace WalkerProcessor {
 
                                 
                                 //if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
-                                if (MiscThings::is_intro() || path_point_reached(dtime) || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3))
+                                if (looking_mode || MiscThings::is_intro() || path_point_reached(dtime) || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3))
                                 {
                                     path_point_reached_timeout = 0.0f;
                                     //time_stuck = 0.0f;
@@ -9919,7 +10004,7 @@ namespace WalkerProcessor {
                                     else
                                     {
                                         //if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path) || MiscThings::is_intro())
-                                        if (MiscThings::is_intro() || use_last_point_of_last_path || (std::size(path) == 0) || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)))
+                                        if (looking_mode || MiscThings::is_intro() || use_last_point_of_last_path || (std::size(path) == 0) || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)))
                                         {
                                             dead_point_time = 0.0f;
                                             if (reset_after_walk)
@@ -10014,7 +10099,7 @@ namespace WalkerProcessor {
                                             }
                                                 
 
-                                            if (got_close_for_pickpocket || close_enough() || MiscThings::is_intro())
+                                            if (got_close_for_pickpocket || close_enough() || MiscThings::is_intro() || looking_mode)
                                             {
                                                 if (interaction_after_walk == 2)
                                                 {
@@ -10032,7 +10117,7 @@ namespace WalkerProcessor {
                                                         return; 
                                                     }
                                                         
-                                                    if (MiscThings::is_intro() || locking_failed || (get_targeted_ref() == target_ref) || lock_camera_onto_target(target_ref, dtime) || location_mode)
+                                                    if (looking_mode || MiscThings::is_intro() || locking_failed || (get_targeted_ref() == target_ref) || lock_camera_onto_target(target_ref, dtime) || location_mode)
                                                     {
                                                         auto result_target = get_targeted_ref();
 
@@ -10045,7 +10130,7 @@ namespace WalkerProcessor {
 
                                                         //
 
-                                                        if (MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive())//(quest_mode && !target_is_interactive()))
+                                                        if (looking_mode || MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive())//(quest_mode && !target_is_interactive()))
                                                         {
                                                             //all good
 

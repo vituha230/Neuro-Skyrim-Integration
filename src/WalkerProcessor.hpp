@@ -91,6 +91,9 @@ namespace WalkerProcessor {
 	bool target_is_too_high();
 
 
+	std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object);
+
+
 
 	bool is_exploring();
 
