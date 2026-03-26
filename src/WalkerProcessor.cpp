@@ -6923,7 +6923,7 @@ namespace WalkerProcessor {
                         }
                         else
                         {
-                            dont_use_left |= left_is_block();
+                            ;// dont_use_left |= left_is_block();
                         }
 
                         dont_use_left |= has_ranged_weapon_equipped(true);
@@ -7153,7 +7153,7 @@ namespace WalkerProcessor {
                             }
                             else
                             {
-                                dont_use_left |= left_is_block();
+                                ;// dont_use_left |= left_is_block();
                             }
 
                             dont_use_left |= has_ranged_weapon_equipped(false);

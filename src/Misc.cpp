@@ -7148,6 +7148,11 @@ namespace MiscThings {
                         if (slot_id == 0x00013F44) //either hand
                         {
                             auto slot = get_free_slot();
+
+                            if (!is_offensive_spell(spell))
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
+
+
                             std::string equip_hand = "";
 
                             bool right_hand = false;

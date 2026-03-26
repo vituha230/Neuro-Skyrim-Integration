@@ -962,7 +962,10 @@ namespace MapProcessor {
 			if (catch_result != "")
 			{
 				if (catch_result == "Autosaving...")
+				{
+					quicksave();
 					send_random_context("[Successfully travelled]", false);
+				}
 				else
 					send_random_context("[" + catch_result + "]", false);
 
