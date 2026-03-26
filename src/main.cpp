@@ -2605,8 +2605,10 @@ class MyHook {
             for (int i = 1; i < std::size(subtitle_msg_old_vector); i++)
                 subtitle_msg_old_vector.at(i) = "";
 
-            if (subtitle_history_clear_time > 10.0f)
+            if (subtitle_history_clear_time > 5.0f)
                 subtitle_msg_old_vector.clear(); //clear all. if its a repeat, its been actually repeated.
+
+            subtitle_history_clear_time += dtime;
         }
         else
             subtitle_history_clear_time += dtime;
