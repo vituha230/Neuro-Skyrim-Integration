@@ -3035,7 +3035,8 @@ namespace WalkerProcessor {
                         return true;
 
 
-                    path_point_reached_timeout += dtime;
+                    if (!using_custom_path)
+                        path_point_reached_timeout += dtime;
 
                     if (path_point_reached_timeout > 5.0f)
                     {
