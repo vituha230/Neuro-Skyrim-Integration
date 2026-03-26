@@ -2605,10 +2605,11 @@ class MyHook {
             for (int i = 1; i < std::size(subtitle_msg_old_vector); i++)
                 subtitle_msg_old_vector.at(i) = "";
 
-            if (subtitle_history_clear_time > 5.0f)
+            if (subtitle_history_clear_time > 10.0f)
                 subtitle_msg_old_vector.clear(); //clear all. if its a repeat, its been actually repeated.
 
-            subtitle_history_clear_time += dtime;
+            if (!DialogueProcessor::is_in_dialogue())
+                subtitle_history_clear_time += dtime; //dont do this in dialogue, it might repeat the lines if they are too long
         }
         else
             subtitle_history_clear_time += dtime;
@@ -2646,7 +2647,19 @@ class MyHook {
                     //RE::ConsoleLog::GetSingleton()->Print(subtitle_msg.c_str());
                     if (sub_manager->currentSpeaker.get())
                     {
-                        send_speech_context(sub_manager->currentSpeaker.get().get(), subtitle_msg);
+                        auto speaker = sub_manager->currentSpeaker.get().get();
+
+                        auto delphine = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13485);
+
+                        if (speaker == delphine && subtitle_msg.find("Close the door, then we can talk.") != std::string::npos)
+                        {
+                            Observer::set_quest_puzzle_type(4);
+                            unregister_all_actions();
+                        }
+                            
+
+
+                        send_speech_context(speaker, subtitle_msg);
 
                         subtitle_history_clear_time = 0.0f;
 

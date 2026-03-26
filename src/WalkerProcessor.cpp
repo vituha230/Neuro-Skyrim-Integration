@@ -3002,6 +3002,9 @@ namespace WalkerProcessor {
 
     bool path_point_reached()
     {
+        
+
+
         bool result = false;
 
         auto player_pos = RE::PlayerCharacter::GetSingleton()->GetPosition();
@@ -3026,6 +3029,9 @@ namespace WalkerProcessor {
             {
                 if (path_valid)
                 {
+                    if (std::size(path) <= 0)
+                        return true;
+
                     if (current_path_point < (int)std::size(path))
                     {
                         auto current_path_point_pos = path.at(current_path_point);
@@ -9677,9 +9683,6 @@ namespace WalkerProcessor {
                         {
                             if (path_valid || use_last_point_of_last_path)
                             {
-
-
-
                                 if (!use_last_point_of_last_path && (current_path_point == -1))
                                 {
                                     if (std::size(path) > 0)
@@ -9712,6 +9715,8 @@ namespace WalkerProcessor {
                                     }
                                 }
 
+
+                                
                                 //if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
                                 if (MiscThings::is_intro() || path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3))
                                 {

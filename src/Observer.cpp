@@ -179,6 +179,25 @@ namespace Observer {
 				break;
 			}
 
+
+			case 4:
+			{
+				if (id >= 1 && id <= 6)
+				{
+					puzzle_choice = id;
+					puzzle_choice_valid = true;
+					result.first = true;
+					result.second = "[Processing...]";
+				}
+				else
+				{
+					result.first = false;
+					result.second = "Invalid choice ID";
+				}
+
+				break;
+			}
+
 			default:
 			{
 				reset_quest_puzzles();
@@ -262,6 +281,8 @@ namespace Observer {
 				{
 					if (puzzle_choice_valid)
 					{
+						register_allowed_actions();
+
 						if (puzzle_pause_was_made)
 						{
 							if (MiscThings::is_game_paused())
@@ -499,6 +520,117 @@ namespace Observer {
 
 				break;
 			}
+
+
+			case 4:
+			{
+				if (!puzzle_request_was_sent)
+				{
+					std::vector<MenuOption> options{};
+					//options.push_back({ 1, "Run around a keystone" });
+					options.push_back({ 1, "Close the door" });
+					options.push_back({ 2, "Do some spins" });
+					options.push_back({ 3, "Do nothing" });
+					options.push_back({ 4, "Run away" });
+					options.push_back({ 5, "Pickpocket Delphine" });
+					options.push_back({ 6, "Attack Delphine" });
+
+					if (force_choice(options, "Looks like Delphine wants you to close the door before you can continue talking... What will you do?", force_type::timed_quest_puzzle))
+					{
+						puzzle_request_was_sent = true;
+
+						//if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+						//{
+						//	puzzle_request_was_sent = true;
+						//	puzzle_pause_was_made = true;
+						//	MiscThings::pause_game();
+						//}
+					}
+				}
+				else
+				{
+					if (puzzle_choice_valid)
+					{
+						if (puzzle_pause_was_made)
+						{
+							if (MiscThings::is_game_paused())
+							{
+								MiscThings::unpause_game();
+							}
+							//set_universal_block(0.5f);
+							puzzle_pause_was_made = false;
+							return;
+
+						}
+
+						pause_puzzle_scan_time = 5.0f;
+
+						switch (puzzle_choice)
+						{
+							//case 1:
+							//{
+							//	reset_quest_puzzles();
+							//	break;
+							//}
+						case 1:
+						{
+							auto door_refr = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe3a79);
+							WalkerProcessor::walk_to_object_by_refr(door_refr, 1);
+							reset_quest_puzzles();
+							break;
+						}
+						case 2:
+						{
+							int amount_of_spins = (float)std::rand() / RAND_MAX * 6 + 1;
+							int speed = (float)std::rand() / RAND_MAX * 11 - 5.5f;
+							if (speed == 0)
+								speed = 5;
+
+							WalkerProcessor::make_spins(amount_of_spins, speed);
+							reset_quest_puzzles();
+							break;
+						}
+						case 3:
+						{
+							reset_quest_puzzles();
+							break;
+						}
+						case 4:
+						{
+							WalkerProcessor::walk_to_object_by_index(-1, 0);
+							reset_quest_puzzles();
+							break;
+						}
+
+						case 5:
+						{
+							auto delphine = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13485);
+							WalkerProcessor::walk_to_object_by_refr(delphine, 2);
+							reset_quest_puzzles();
+							break;
+						}
+
+						case 6:
+						{
+							auto delphine = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13485);
+							WalkerProcessor::walk_to_object_by_refr(delphine, 3);
+							reset_quest_puzzles();
+							break;
+						}
+
+						default:
+						{
+							reset_quest_puzzles();
+							break;
+						}
+						}
+					}
+				}
+
+
+				break;
+			}
+
 
 
 
