@@ -82,6 +82,8 @@ namespace LevelupProcessor {
 					result.first = true;
 					result.second = "[Error]";
 				}
+
+				break;
 			}
 			case 3:
 			{
