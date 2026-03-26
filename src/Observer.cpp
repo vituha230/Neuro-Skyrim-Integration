@@ -1272,7 +1272,7 @@ namespace Observer {
 										//may be ghost targets of greybeards
 
 										if (!MiscThings::is_object_in_the_list(a_ref))
-											if (a_ref->GetDistance(player_ref) < 200.0f || (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 5000.0f)))
+											if (a_ref->GetDistance(player_ref) < 200.0f || (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 5000.0f, false)))
 											{
 												auto actor = (RE::Actor*)a_ref;
 												auto npc = (RE::TESNPC*)a_ref->data.objectReference;

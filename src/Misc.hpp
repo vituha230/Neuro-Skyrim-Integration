@@ -254,6 +254,7 @@ namespace MiscThings {
     bool has_spell_equipped(bool right);
 
     bool is_loading();
+    bool dont_interact_with(RE::TESObjectREFR* target);
 
 
     namespace General::Script

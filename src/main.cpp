@@ -10,7 +10,7 @@
 //opened static nameless objects (gates/bridges) dont appear as blocking objects
 
 
-
+//TODO test high hrothgar part1 more
 
 //TODO test mainquest up to fus ro da
 

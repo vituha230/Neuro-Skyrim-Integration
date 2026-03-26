@@ -5865,9 +5865,13 @@ namespace WalkerProcessor {
             {
                 bool shout_mode_remember = shout_mode;
                 bool gate_shout_remember = gate_shout;
+                RE::TESShout* shout_to_remember = shout_to_use;
+
                 reset_walker();
                 shout_mode = shout_mode_remember;
                 gate_shout = gate_shout_remember;
+                shout_to_use = shout_to_remember;
+
                 if (gate_shout)
                     unregister_all_actions();
             }
@@ -7333,6 +7337,10 @@ namespace WalkerProcessor {
 
         case (1):
         {
+            if (MiscThings::dont_interact_with(result_target))
+                return true;
+
+
             if (confirming_closed_door_interaction)
             {
                 if (door_is_closed_choice_valid)
@@ -10053,6 +10061,7 @@ namespace WalkerProcessor {
                                                                                 else
                                                                                 {
                                                                                     lock_camera_onto_target(target_ref, dtime); //keep camera locked in until the walker is reset externally if no action specified
+                                                                                    
                                                                                     if (quest_mode && result_target)
                                                                                         interaction_after_walk = 1; //interact if there is something and it was quest
                                                                                     if (explore_mode)

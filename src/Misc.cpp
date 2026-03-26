@@ -25,6 +25,33 @@ namespace MiscThings {
     }
 
 
+    
+    bool dont_interact_with(RE::TESObjectREFR* target)
+    {
+        auto greybeard_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x886b4);
+        auto greybeard_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x886b5);
+        auto greybeard_3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x886b6);
+
+        auto greybeard_quest_1 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ105");
+
+        if (greybeard_quest_1)
+        {
+            auto greybeard_quest_1_stage = greybeard_quest_1->GetCurrentStageID();
+
+            if (greybeard_quest_1_stage < 300)
+            {
+                if (target == greybeard_1 || target == greybeard_2 || target == greybeard_3)
+                    return true;
+            }
+        }
+        
+
+        
+        return false;
+    }
+
+
+
 
 
     bool is_friend(RE::TESObjectREFR* object)
