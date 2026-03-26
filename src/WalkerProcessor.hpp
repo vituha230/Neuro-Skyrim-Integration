@@ -58,7 +58,7 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> exit_dungeon();
 
 
-	bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime);
+	bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, bool slow = false);
 
 	std::pair<bool, std::string> walk_to_location_by_index(int location);
 	bool walk_to_location_by_refr(RE::TESObjectREFR* refr);

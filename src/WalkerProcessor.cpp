@@ -2472,7 +2472,7 @@ namespace WalkerProcessor {
     int debug_mode_cam = 0;
 
 
-    bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime)
+    bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, bool slow)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
@@ -2864,6 +2864,11 @@ namespace WalkerProcessor {
         }
 
 
+        float coef = 400.0f;
+
+        if (slow)
+            coef = 100.0f;
+
         if (MiscThings::is_intro())
         {
             mouse_x = mulX * 50.0f;
@@ -2871,8 +2876,8 @@ namespace WalkerProcessor {
         }
         else
         {
-            mouse_x = mulX * 400.0f;
-            mouse_y = mulZ * 400.0f;
+            mouse_x = mulX * coef;
+            mouse_y = mulZ * coef;
         }
 
 
@@ -10024,8 +10029,11 @@ namespace WalkerProcessor {
 
                                                                                     backup_interaction_time += dtime;
 
-                                                                                    if (backup_interaction_time > 5.0f)
+                                                                                    if (backup_interaction_time > 10.0f)
                                                                                         reset_walker();
+
+                                                                                    lock_camera_onto_target(target_ref, dtime, true);
+
                                                                                 }
                                                                                     
                                                                             }
