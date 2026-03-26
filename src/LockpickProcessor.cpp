@@ -346,7 +346,7 @@ namespace LockpickProcessor {
 					{
 						if (detect_pick_broke()) //this check acts funny so do it in 2 places
 						{
-							send_random_context("[The lockpick broke]", false);
+							send_random_context("[The lockpick broke]", true);
 							reset_lockpicking();
 							if (MiscThings::get_picks_amount_int() == 0)
 							{
@@ -363,7 +363,7 @@ namespace LockpickProcessor {
 							{
 								if (detect_pick_broke()) //this check acts funny so do it in 2 places
 								{
-									send_random_context("[The lockpick broke]", false);
+									send_random_context("[The lockpick broke]", true);
 									reset_lockpicking();
 									set_universal_block(1.5f);
 								}
