@@ -874,9 +874,21 @@ namespace WalkerProcessor {
                         }
                     }
 
+
+                    RE::TESObjectREFR* player_marker = nullptr;
+                    auto p_marker = player->playerMapMarker;
+
+                    if (p_marker)
+                    {
+                        player->playerMapMarker.reset();
+                    }
+                    
+
                     //saved_guide_effect = a_guideEffect;
                     originalStart(a_guideEffect); //call original function, let it read fake target, then restore original quest flags
                     
+
+                    player->playerMapMarker = p_marker; //restore
 
 
                     for (auto quest_to_restore : quests_to_restore)
