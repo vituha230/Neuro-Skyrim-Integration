@@ -1171,12 +1171,12 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
                             if (name == Capabilities::UseInventoryItem::Name)
                             {
-                                Impl::JSON::NeuroChoiceJson json{};
+                                Impl::JSON::NeuroChoiceJsonArrayInts json{};
 
                                 if (glz::read_json(json, messageQueue[i].value.action.data))
                                     failed_to_parse_json = true;
                                 else
-                                    command_result = MiscThings::activate_inventory_object_by_index(json.id, 1);
+                                    command_result = MiscThings::activate_array_of_inventory_objects(json.ids_array);
 
                                 make_delayed_poke = true;
 
@@ -1187,63 +1187,19 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                 
 
                                 Impl::JSON::NeuroChoiceJsonArrayInts json{};
-                                //Impl::JSON::NeuroChoiceJsonArrayStrings json2{};
-
-                                
 
                                 if (glz::read_json(json, messageQueue[i].value.action.data))
                                 {
-                                    /*
-                                    if (glz::read_json(json2, messageQueue[i].value.action.data))
-                                    {
-                                        failed_to_parse_json = true;
-                                    }
-                                    else
-                                    {
-                                        std::vector<int> ids_vector{};
-
-                                        for (auto element : json2.ids_array)
-                                        {
-                                            try 
-                                            {
-                                                int id = std::stoi(element);
-                                                ids_vector.push_back(id);
-                                            }
-                                            catch (...) {
-                                                ; //just skip
-                                            }
-
-                                        }
-
-                                        if (std::size(ids_vector) > 0)
-                                        {
-                                            command_result = MiscThings::drop_array_of_inventory_objects(ids_vector);
-                                        }
-                                        else
-                                        {
-                                        */
-                                            command_result.first = false;
-                                            command_result.second = "Couldn't find any valid IDs in provided array";
-                                        //}
-                                        
-                                    //}
+                                    failed_to_parse_json = true;
+                                    //command_result.first = false;
+                                    //command_result.second = "Couldn't find any valid IDs in provided array";
                                 }
                                 else
                                 {
                                     command_result = MiscThings::drop_array_of_inventory_objects(json.ids_array);
-
-                                    make_delayed_poke = true;
-
                                 }
-                                    
-                                /*
-                                Impl::JSON::NeuroChoiceJson json{};
 
-                                if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
-                                else
-                                    command_result = MiscThings::activate_inventory_object_by_index(json.id, 2);
-                                */
+                                make_delayed_poke = true;
                             }
 
 

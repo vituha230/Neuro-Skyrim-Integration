@@ -1226,7 +1226,12 @@ namespace Observer {
 											if (a_ref == RE::TESObjectREFR::LookupByID(0xC3B29))
 												scan_distance = 130.0f;
 
-											if (jail_condition_all || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance, false))
+											bool local_ignore_raycast = false;
+
+											if (name.find("Nirnroot") != std::string::npos || name.find("Ashpile") != std::string::npos)
+												local_ignore_raycast = true;
+
+											if (jail_condition_all || local_ignore_raycast || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance, false))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "" && MiscThings::is_object_valid(a_ref))

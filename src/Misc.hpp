@@ -258,6 +258,7 @@ namespace MiscThings {
 
     bool is_container_empty(RE::TESObjectREFR* object);
 
+    std::pair<bool, std::string> activate_array_of_inventory_objects(std::vector<int> ids);
 
     namespace General::Script
     {

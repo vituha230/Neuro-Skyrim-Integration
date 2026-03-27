@@ -248,14 +248,13 @@ namespace Capabilities
     } // namespace SelectChoiceOption
 
 
-
     namespace UseInventoryItem
     {
-        constexpr char Name[] = "use_inventory_item";
+        constexpr char Name[] = "use_inventory_items";
         constexpr char Desc[] =
-            R"(Use inventory item. Requires item ID)";
+            R"(Use inventory items. Requires array of item IDs)";
         constexpr char JsonSchema[] =
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object to use. Use get_inventory to get list of object IDs. ", "type": "integer" } }, "required": ["id"] })";//
+            R"({ "additionalProperties": false, "type": "object", "properties": { "ids_array": { "description": "Array of IDs of objects to use. Use get_inventory to get list of object IDs. ", "type": "array", "items" : { "type": "integer" } }}, "required": ["ids_array"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption

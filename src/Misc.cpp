@@ -5615,7 +5615,46 @@ namespace MiscThings {
     }
 
 
+    std::pair<bool, std::string> activate_array_of_inventory_objects(std::vector<int> ids)
+    {
+        std::pair<bool, std::string> result{};
 
+
+        int success = 0;
+        int fail = 0;
+
+        std::string full_result = "";
+
+
+        for (auto id : ids)
+        {
+            auto temp_result = activate_inventory_object_by_index(id, 1);
+
+            if (temp_result.first)
+                success++;
+            else
+                fail++;
+
+            full_result += temp_result.second + "; ";
+
+        }
+
+        std::string result_message = "";
+
+        if (success > 0)
+        {
+            result.first = true;
+            result.second = "[Successsfully used " + std::to_string(success) + "/" + std::to_string(success + fail) + " items: " + full_result + "]";
+        }
+        else
+        {
+            result.first = false;
+            result.second = "Couldnt use any of selected items: " + full_result;
+        }
+
+        return result;
+
+    }
 
 
 

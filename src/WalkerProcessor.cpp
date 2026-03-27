@@ -16,6 +16,8 @@ namespace WalkerProcessor {
 
 
 
+    int stable_target = 0;
+
     bool navmesh_probe_mode = false;
     bool navmesh_probe_result_valid = false;
     bool navmesh_probe_result = false;
@@ -226,8 +228,8 @@ namespace WalkerProcessor {
 
 
     int attack_action = -1;
-    float attack_action_time = 0.0f;
-
+    float attack_action_time0 = 0.0f;
+    float attack_action_time1 = 0.0f;
 
     RE::NiPoint3 last_target_pos{};
     RE::NiPoint3 last_u{};
@@ -625,7 +627,8 @@ namespace WalkerProcessor {
 
                 right_attack_cancel();
                 left_attack_cancel();
-                attack_action_time = 0.0f;
+                attack_action_time0 = 0.0f;
+                attack_action_time1 = 0.0f;
             }
             else
             {
@@ -3426,6 +3429,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        stable_target = 0;
+
         silly_walk_mode = false;
 
         navmesh_probe_mode = false;
@@ -3664,7 +3670,8 @@ namespace WalkerProcessor {
         gave_attacking_info = false;
 
         attack_action = -1;
-        attack_action_time = 0.0f;
+        attack_action_time0 = 0.0f;
+        attack_action_time1 = 0.0f;
 
         last_target_pos = RE::NiPoint3::Zero();
         last_u = RE::NiPoint3::Zero();
@@ -3741,6 +3748,8 @@ namespace WalkerProcessor {
         //if (!using_custom_path)
         {
 
+            stable_target = 0;
+
             path_point_reached_timeout = 0.0f;
 
 
@@ -3777,7 +3786,9 @@ namespace WalkerProcessor {
             lasttime = 0;
             lasttime_close_enough = 0;
 
-            attack_action_time = 0.0f;
+            attack_action_time0 = 0.0f;
+            attack_action_time1 = 0.0f;
+
             got_close_for_pickpocket = false;
 
             //search_next_fight_target = false;
@@ -6993,13 +7004,13 @@ namespace WalkerProcessor {
                         //was_charging_ranged = false;
                         attack_action = 1;
                         
-
                         goto finalize_attack;
+                        //goto attack_action_1;
 
                         //return false;
                     }
 
-                    if (attack_action_time < get_attack_time(true) && !(MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
+                    if (attack_action_time0 < get_attack_time(true) && !(MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
                     {
                         std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                         
@@ -7022,7 +7033,7 @@ namespace WalkerProcessor {
 
                         if (MiscThings::has_spell_equipped(true))
                         {
-                            if (attack_action_time > 0.7f);
+                            if (attack_action_time0 > 0.7f);
                             ;// was_charging_ranged = true;
 
                             if (!is_casting_walker(true))
@@ -7032,7 +7043,7 @@ namespace WalkerProcessor {
                                     skip_cast = true;
                                     attack_spell_cast_timeout = 0.0f;
                                     right_attack_cancel();
-                                    attack_action_time = 0.0f;
+                                    attack_action_time0 = 0.0f;
                                 }
                                 else
                                     attack_spell_cast_timeout += dtime;
@@ -7060,7 +7071,7 @@ namespace WalkerProcessor {
 
                             if (has_ranged_weapon_equipped(true))
                             {
-                                if (attack_action_time > 0.9f);
+                                if (attack_action_time0 > 0.9f);
                                     was_charging_ranged = true;
                                 right_attack_bow();
                             }
@@ -7152,7 +7163,7 @@ namespace WalkerProcessor {
                         }
 
 
-                        attack_action_time += dtime;
+                        attack_action_time0 += dtime;
                     }
                     else
                     {
@@ -7163,7 +7174,7 @@ namespace WalkerProcessor {
                         was_charging_ranged = false;
                         right_attack_cancel();
 
-                        attack_action_time = 0.0f;
+                        attack_action_time0 = 0.0f;
 
                         float choose_next_action = (float)std::rand() / RAND_MAX;
 
@@ -7209,6 +7220,8 @@ namespace WalkerProcessor {
                 else
                 {
 
+                attack_action_1:
+
                     if (attack_action == 1)
                     {
                         if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
@@ -7235,7 +7248,7 @@ namespace WalkerProcessor {
 
                         }
 
-                        if (attack_action_time < get_attack_time(false) && !(MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
+                        if (attack_action_time1 < get_attack_time(false) && !(MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
                         {
                             std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                             
@@ -7266,7 +7279,7 @@ namespace WalkerProcessor {
                                         skip_cast = true;
                                         attack_spell_cast_timeout = 0.0f;
                                         left_attack_cancel();
-                                        attack_action_time = 0.0f;
+                                        attack_action_time1 = 0.0f;
                                     }
                                         
                                     else
@@ -7274,7 +7287,7 @@ namespace WalkerProcessor {
                                 }
                                 else
                                 {
-                                    if (attack_action_time > 0.7f);
+                                    if (attack_action_time1 > 0.7f);
                                     ;//was_charging_ranged = true;
 
                                     attack_spell_cast_timeout = 0.0f;
@@ -7392,7 +7405,7 @@ namespace WalkerProcessor {
                                     send_random_context(attacking_info + "]", silent);
                             }
 
-                            attack_action_time += dtime;
+                            attack_action_time1 += dtime;
                         }
                         else
                         {
@@ -7401,7 +7414,7 @@ namespace WalkerProcessor {
                             was_charging_ranged = false;
 
                             left_attack_cancel();
-                            attack_action_time = 0.0f;
+                            attack_action_time1 = 0.0f;
                             float choose_next_action = (float)std::rand() / RAND_MAX;
 
                             bool dont_use_left = false;
@@ -7806,6 +7819,7 @@ namespace WalkerProcessor {
 
 
 
+
                                 if (base_obj)
                                 {
                                     bool is_harvestable = false;
@@ -7866,7 +7880,28 @@ namespace WalkerProcessor {
                                     }
                                 }
 
+                                
 
+                                if (MiscThings::is_insect(target_ref))
+                                {
+                                    //register backup-pickup for them
+                                    if (!backup_pickup)
+                                    {
+                                        if (backup_pickup_attempts <= 3)
+                                        {
+                                            backup_pickup_attempts++;
+                                            backup_pickup = true;
+                                            backup_pickup_object = target_ref;
+                                        }
+                                        else
+                                        {
+                                            backup_pickup_attempts = 0;
+                                            backup_pickup = false;
+                                            backup_pickup_object = nullptr;
+                                            backup_pickup_time = 0.0f;
+                                        }
+                                    }
+                                }
 
 
 
@@ -10219,7 +10254,14 @@ namespace WalkerProcessor {
                                                         return; 
                                                     }
                                                         
-                                                    if (looking_mode || MiscThings::is_intro() || locking_failed || (get_targeted_ref() == target_ref) || lock_camera_onto_target(target_ref, dtime) || location_mode)
+                                                    if (get_targeted_ref() == target_ref)
+                                                    {
+                                                        stable_target++;
+                                                    }
+                                                    else
+                                                        stable_target = 0;
+
+                                                    if (looking_mode || MiscThings::is_intro() || locking_failed || ((get_targeted_ref() == target_ref) && stable_target > 4) || lock_camera_onto_target(target_ref, dtime) || location_mode)
                                                     {
                                                         auto result_target = get_targeted_ref();
 
