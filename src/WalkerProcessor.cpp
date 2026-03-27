@@ -20,6 +20,7 @@ namespace WalkerProcessor {
     bool navmesh_probe_result_valid = false;
     bool navmesh_probe_result = false;
 
+    bool silly_walk_mode = false;
 
 
     bool multiple_paths_quest_choice_confirming = false;
@@ -1697,7 +1698,7 @@ namespace WalkerProcessor {
 
                 float stamina_state = MiscThings::get_player_stamina() / MiscThings::get_player_max_stamina();
 
-                if (may_sprint())
+                if (!silly_walk_mode && !MiscThings::is_interior_cell() && may_sprint())
                 {
                     //sprint();
                     if (stamina_state > 0.6f)
@@ -3425,6 +3426,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        silly_walk_mode = false;
 
         navmesh_probe_mode = false;
         navmesh_probe_result_valid = false;
@@ -4766,6 +4768,10 @@ namespace WalkerProcessor {
 
 
 
+                float silly_walk_chance = (float)std::rand() / RAND_MAX;
+
+                if (silly_walk_chance < 0.1)
+                    silly_walk_mode = true;
 
 
 
@@ -9986,7 +9992,8 @@ namespace WalkerProcessor {
                                     {
                                         if (path_valid)
                                         {
-                                            walk_to_point(dtime);
+                                            if (!silly_walk_mode)
+                                                walk_to_point(dtime);
                                             use_last_point_of_last_path = false;
                                             current_path_point = -1;
                                             return; //use new path
@@ -10045,7 +10052,8 @@ namespace WalkerProcessor {
                                             correct_marker_pos();
 
                                             if (current_path_point < std::size(path))
-                                                walk_to_point(dtime);
+                                                if (!silly_walk_mode)
+                                                    walk_to_point(dtime);
 
                                         }
                                         else
