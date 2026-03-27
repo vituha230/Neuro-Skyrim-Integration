@@ -5794,6 +5794,7 @@ namespace WalkerProcessor {
                         result.second = "This quest has no target to walk to. Perhaps you need to do something else to complete it...";
                         //return result;
                         //maybe it will find another objective that will actually work
+                        return result;
                     }
                 }
                 else
@@ -5801,6 +5802,7 @@ namespace WalkerProcessor {
                     //no objective
                     result.first = false;
                     result.second = "This quest has no target to walk to. Perhaps you need to do something else to complete it...";
+                    return result;
                 }
             }
             else
