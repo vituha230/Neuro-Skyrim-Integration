@@ -1371,7 +1371,7 @@ namespace WalkerProcessor {
 
     bool may_sprint()
     {
-        return true;
+        //return true;
         bool result = false;
         try {
 
@@ -1418,6 +1418,18 @@ namespace WalkerProcessor {
     }
 
 
+
+    bool player_is_sprinting()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            return player->playerFlags.isSprinting;
+        }
+
+        return false;
+    }
 
 
 
@@ -1682,17 +1694,49 @@ namespace WalkerProcessor {
                 if (needs_jump() && !player->IsSneaking())
                     jump(); //if next point is much higher - we probably need to jump.
 
-                //this will probably never work until there is a way to actually hold a button
-                
+
+                float stamina_state = MiscThings::get_player_stamina() / MiscThings::get_player_max_stamina();
+
                 if (may_sprint())
                 {
-                    //if (!player->IsSprinting() && !was_sprinting)
-                    //if (!player->IsSprinting())
-                    //{
-                        sprint();
-                        was_sprinting = true;
-                    //}
+                    //sprint();
+                    if (stamina_state > 0.6f)
+                    if (!player_is_sprinting())// && !was_sprinting)
+                    {
+                        if (!launching_sprint())
+                        {
+                            make_launch_sprint();
+                            was_sprinting = true;
+                        }
+                            
+                    }
+
+
+
+                       
+
+                    //if (!was_sprinting || !player->IsSprinting())
+                    {
+                        //if (!player->IsSprinting() && !was_sprinting)
+                        //if (!player->IsSprinting())
+                        //{
+                      //  sprint();
+                        //was_sprinting = true;
+                        //}
+                    }
                 } 
+
+                if (player_is_sprinting() && stamina_state < 0.1f)
+                {
+                    if (!launching_sprint())
+                    {
+                        make_launch_sprint();
+                        was_sprinting = false;
+                    }
+
+                }
+
+                /*
                 else
                 {
                     if (was_sprinting && player->IsSprinting())
@@ -1707,8 +1751,7 @@ namespace WalkerProcessor {
                     }
                         
                 }
-                
-
+                */
                 //cursor_up(); //TODO: proper walk mechanics. somethimes just holding W is not good
 
 
@@ -6888,10 +6931,13 @@ namespace WalkerProcessor {
         {
             if (attack_action < 0 || attack_action > 1)
             {
-                bool dont_use_right = MiscThings::has_spell_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && !MiscThings::has_spell_equipped(true)));
-                dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
-                
-                dont_use_right |= MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+
+                bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+
+                bool dont_use_right = false;
+
+                dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true) && !left_is_useless);
+
 
                 attack_action = dont_use_right;
             }
@@ -9940,6 +9986,7 @@ namespace WalkerProcessor {
                                     {
                                         if (path_valid)
                                         {
+                                            walk_to_point(dtime);
                                             use_last_point_of_last_path = false;
                                             current_path_point = -1;
                                             return; //use new path
@@ -9996,6 +10043,10 @@ namespace WalkerProcessor {
                                             last_point_posZ = path.at(current_path_point).z;
                                             current_path_point++;
                                             correct_marker_pos();
+
+                                            if (current_path_point < std::size(path))
+                                                walk_to_point(dtime);
+
                                         }
                                         else
                                         {

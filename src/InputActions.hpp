@@ -50,6 +50,12 @@ void right_attack_cancel();
 void sprint();
 void unsprint();
 
+
+
+void make_launch_sprint();
+bool launching_sprint();
+
+
 void use_ult();
 
 
@@ -89,3 +95,6 @@ bool input_wants_to_cast();
 bool is_fishing();
 
 void lockpick_move_x(float angle);
+
+
+void sprint_start();

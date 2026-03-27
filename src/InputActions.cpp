@@ -16,6 +16,10 @@
 //test clear
 
 
+bool launch_sprint = false;
+float launch_sprint_time = 0.0f;
+
+
 bool long_cast_ult = false;
 float use_ult_time = 0.0f;
 bool canceled_inputs = false;
@@ -53,6 +57,9 @@ void reset_input_processor()
 
     fishing_timer = 0.0f;
 
+
+    launch_sprint = false;
+    launch_sprint_time = 0.0f;
 }
 
 /*
@@ -672,10 +679,21 @@ void walk_forward_limited()
 
 
 
+void sprint_start()
+{
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprint, RE::INPUT_DEVICES::kGamepad);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0f, 0.0f);
+    //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 0.0f, 0.0f);
+    //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprint, RE::INPUT_DEVICES::kKeyboard);
+    //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
+    //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
+}
+
 
 void sprint()
 {
 
+    /*
     //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprintStart, RE::INPUT_DEVICES::kGamepad);
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0f, 100000000.0f);
 
@@ -693,6 +711,15 @@ void sprint()
     //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
     //set_allowed_events(2);
     //set_universal_block(0.5f);
+    */
+
+    //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprint, RE::INPUT_DEVICES::kGamepad);
+    //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 1.0f, 1000.0f);
+
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprint, RE::INPUT_DEVICES::kKeyboard);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
+    //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
+
 }
 
 
@@ -700,8 +727,12 @@ void sprint()
 void unsprint()
 {
 
-    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprint, RE::INPUT_DEVICES::kGamepad);
-    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 0.0, 0.0);
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprint, RE::INPUT_DEVICES::kKeyboard);
+   // RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
+
+    //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->sprint, RE::INPUT_DEVICES::kGamepad);
+    //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kGamepad, my_key, 0.0, 0.0);
 
 
     //static auto kEvent1 = RE::ButtonEvent::Create(RE::INPUT_DEVICE::kNone, "shout", 0, 1.0f, 0.0f);
@@ -830,6 +861,17 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 }
 
 
+bool launching_sprint()
+{
+    return launch_sprint;
+}
+
+void make_launch_sprint()
+{
+    launch_sprint = true;
+    launch_sprint_time = 0.0f;
+}
+
 
 
 void make_long_ult_cast()
@@ -905,6 +947,21 @@ void input_processor(float dtime)
             right_hand_cast = false;
             notified_cast = false;
         }
+    }
+
+
+    if (launch_sprint)
+    {
+        if (launch_sprint_time < 0.1f)
+        {
+            launch_sprint_time += dtime;
+            sprint();
+        }
+        else
+        {
+            launch_sprint = false;
+            launch_sprint_time = 0.0f;
+        }  
     }
 
 
