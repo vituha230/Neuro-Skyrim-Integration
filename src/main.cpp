@@ -4,40 +4,33 @@
 //crucial:
 
 
-
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
+//TODO check healing spells freezing battle when full hp
 
 //TODO test high hrothgar part1 more
 
-
-//TODO automatically look at someone who talks around if walker is inactive for 3+ seconds
-
-
 //TODO oxygen control
-
-
 
 //TODO check some quest that needs something to be used from inventory (are there any?)
 
-
-//TODO probe navmesh before doing long-walk-forward
-
+//TODO fix quests without target not appearing in quest list (dragonborn dlc quest OR MIGHT KEEP IT AS IS SO THEY DONT GO THERE)
 
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dwemer mechanisms/traps
 //TODO slaughterfish fights
-//TODO underwater + oxygen control
-//TODO inventory weight control (maybe force throw away things?)
 //TODO test all spells
 //TODO: check all menus after force/choice merge
 //TODO catch animation events on all objects
 //TODO letter aliases for locations (foreachscript scanner)
 
+
+//TODO complex actions like "go to trader, collect ingredients nearby"
+
+
+
 //arbitrary:
 //TODO maybe autouse heal/mana potions when needed.
-//TODO add quicksaves after big events
-//TODO maybe slam all barter items into one category like in alchemy
 //TODO running when path is along straight line
 //TODO put things into container/gift menu (i think for followers its give not take)
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
@@ -45,7 +38,6 @@
 
 
 
-//TODO fix long distance run away (maybe take a bunch of objects with grid-like map distribution and take 2nd closest one) POTENTIALLY FIXED? test more
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME container menu bugged, after taking 1st item it doesnt force and looks like the scan is broken in this case
 //TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME if attack ralof, sometimes it holds block forever (looks like when target got too far away while we were blocking - the block isnt interrupted)
 

@@ -256,6 +256,8 @@ namespace MiscThings {
     bool is_loading();
     bool dont_interact_with(RE::TESObjectREFR* target);
 
+    bool is_container_empty(RE::TESObjectREFR* object);
+
 
     namespace General::Script
     {

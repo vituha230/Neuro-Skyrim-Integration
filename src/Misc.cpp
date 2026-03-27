@@ -3806,6 +3806,46 @@ namespace MiscThings {
     }
 
 
+    bool is_container_empty(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto base_obj = object->GetBaseObject();
+
+            if (base_obj->GetFormType() == RE::FormType::Container)
+            {
+                auto container = (RE::TESObjectCONT*)base_obj;
+
+                auto extalist = &object->extraList;
+
+                auto extra_changes = (RE::ExtraContainerChanges*)extalist->GetByType(RE::ExtraDataType::kContainerChanges);
+
+                bool no_changes = true;
+
+                if (extra_changes)
+                {
+                    if (extra_changes->changes)
+                    {
+                        if (extra_changes->changes->changed)
+                        {
+                            if (extra_changes->changes->entryList)
+                                return extra_changes->changes->entryList->size() == 0;
+                            else
+                                return true;
+                        }       
+                    }
+                }
+
+                //if we are here - no changes. check base info
+
+                return container->numContainerObjects == 0;
+            }
+        }
+
+        return true;
+    }
+
+
     std::string is_stealing(RE::TESObjectREFR* object)
     {
         std::string result = "";
