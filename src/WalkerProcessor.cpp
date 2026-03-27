@@ -5620,9 +5620,9 @@ namespace WalkerProcessor {
 
             if (actual_id < std::size(*quest_list) && actual_id >= 0 && player_ref)
             {
-                auto quest = quest_list->at(actual_id);
+                auto quest_entry = quest_list->at(actual_id);
 
-                auto objective = quest.objective;
+                auto objective = quest_entry.objective;
 
                 if (objective)
                 {
@@ -5637,7 +5637,7 @@ namespace WalkerProcessor {
                         for (auto* target : std::span(quest_targets, objective->numTargets)) {
                             if (target)
                             {
-                                if (quest.quest)
+                                if (quest_entry.quest)
                                 {
                                     bool conditions_met = false;
                                     //this needs to be figured out
@@ -5646,7 +5646,7 @@ namespace WalkerProcessor {
                                         {
                                             auto the_condition = target->conditions.head;
 
-                                            conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest.quest);
+                                            conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest_entry.quest, target);
 
                                             bool test_stop = false;
 
@@ -5665,11 +5665,11 @@ namespace WalkerProcessor {
                                     if (conditions_met)
                                     {
                                         RE::ObjectRefHandle quest_ref_handle{};
-                                        target->GetTrackingRef(quest_ref_handle, quest.quest); //try tracked
+                                        target->GetTrackingRef(quest_ref_handle, quest_entry.quest); //try tracked
                                         if (!quest_ref_handle)
-                                            target->GetTargetRef(quest_ref_handle, false, quest.quest); //no tracked - try actual target
+                                            target->GetTargetRef(quest_ref_handle, false, quest_entry.quest); //no tracked - try actual target
 
-                                        if (!ignore_specified_target && target != quest.target)
+                                        if (!ignore_specified_target && target != quest_entry.target)
                                             continue;
 
                                         if (quest_ref_handle)
@@ -5683,7 +5683,7 @@ namespace WalkerProcessor {
 
                                                 bool quest_is_questionable = false;
 
-                                                if (last_quest_chosen && quest.quest != last_quest_chosen)
+                                                if (last_quest_chosen && quest_entry.quest != last_quest_chosen)
                                                 {
                                                     //check if last quest is still there and ask for confirmation to digress from it
                                                     if (!MiscThings::quest_is_hidden(last_quest_chosen))
@@ -5701,8 +5701,8 @@ namespace WalkerProcessor {
                                                         if (quest_is_still_there)
                                                         {
                                                             quest_is_questionable = true;
-                                                            new_quest_chosen = quest.quest;
-                                                            new_quest_chosen_name = quest.name + ": " + quest.displaytext;
+                                                            new_quest_chosen = quest_entry.quest;
+                                                            new_quest_chosen_name = quest_entry.name + ": " + quest_entry.displaytext;
 
                                                             trying_to_change_quest_course = true;
                                                         }
@@ -5712,8 +5712,8 @@ namespace WalkerProcessor {
 
                                                 if (!quest_is_questionable)
                                                 {
-                                                    last_quest_chosen = quest.quest;
-                                                    last_quest_chosen_name = quest.name + ": " + quest.displaytext;
+                                                    last_quest_chosen = quest_entry.quest;
+                                                    last_quest_chosen_name = quest_entry.name + ": " + quest_entry.displaytext;
                                                 }
                                                 else
                                                 {
@@ -5727,7 +5727,7 @@ namespace WalkerProcessor {
 
 
 
-                                                if (!skip_confirm && quest.name == "Unbound" && (target->alias == 124 || target->alias == 125))
+                                                if (!skip_confirm && quest_entry.name == "Unbound" && (target->alias == 124 || target->alias == 125))
                                                 {
                                                     if (!multiple_paths_quest_choice_confirmed)
                                                     {
@@ -5771,13 +5771,13 @@ namespace WalkerProcessor {
                                                 }
 
                                                 quest_mode = true;
-                                                target_ref = MiscThings::redirect_quest_target(quest.quest, quests_target_ref);
+                                                target_ref = MiscThings::redirect_quest_target(quest_entry.quest, quests_target_ref);
 
 
-                                                current_quest_target_followed = quest.target;
-                                                current_quest_followed = quest.quest;
+                                                current_quest_target_followed = quest_entry.target;
+                                                current_quest_followed = quest_entry.quest;
 
-                                                reminder_target_name = "[id " + std::to_string(quest.id) + "] " + quest.name + ": " + quest.displaytext;
+                                                reminder_target_name = "[id " + std::to_string(quest_entry.id) + "] " + quest_entry.name + ": " + quest_entry.displaytext;
                                                 reminder_start_pos = player->GetPosition();
 
                                                //MiscThings::insert_quest_into_list_and_get_info(quest);
@@ -5813,7 +5813,7 @@ namespace WalkerProcessor {
                                                     interaction_after_walk = 1;
 
 
-                                                last_quest = quest.quest;
+                                                last_quest = quest_entry.quest;
                                                 last_quest_objective = objective;
 
 
@@ -5962,7 +5962,7 @@ namespace WalkerProcessor {
                                     {
                                         auto the_condition = target->conditions.head;
 
-                                        conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest);
+                                        conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest, target);
 
                                         RE::ObjectRefHandle quest_ref_handle{};
                                         target->GetTrackingRef(quest_ref_handle, quest); //try tracked
@@ -6001,7 +6001,7 @@ namespace WalkerProcessor {
                                     {
                                         auto the_condition = target->conditions.head;
 
-                                        conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest);
+                                        conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest, target);
 
                                         bool test_stop = false;
                                     }

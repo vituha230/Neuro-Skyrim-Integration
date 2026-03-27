@@ -2855,25 +2855,63 @@ namespace MiscThings {
     }
 
 
-    bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest)
+    bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest, RE::TESQuestTarget* target)
     {
         if (condition)
         {
             auto params = RE::ConditionCheckParams::ConditionCheckParams(nullptr, nullptr);
 
+            auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
+
+
+
+            int run_on_who_flag = condition->data.object.underlying();
+
+            if (run_on_who_flag == (int)RE::CONDITIONITEMOBJECT::kSelf)
+            {
+                RE::ObjectRefHandle quest_ref_handle{};
+                target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
+
+                if (quest_ref_handle && quest_ref_handle.get() && quest_ref_handle.get().get())
+                params.targetRef = quest_ref_handle.get().get();
+            }
+
+            if (run_on_who_flag == (int)RE::CONDITIONITEMOBJECT::kRef)
+            {
+                if (condition->data.runOnRef && condition->data.runOnRef.get() && condition->data.runOnRef.get().get())
+                    params.targetRef == condition->data.runOnRef.get().get();
+            }
+
+            if (run_on_who_flag == (int)RE::CONDITIONITEMOBJECT::kQuestAlias)
+            {
+                int alias_id = condition->data.dataID;
+
+                if (quest->refAliasMap.find(alias_id) != quest->refAliasMap.end())
+                {
+                    auto alias_handle = quest->refAliasMap.find(alias_id)->second;
+
+                    if (alias_handle && alias_handle.get() && alias_handle.get().get())
+                    params.targetRef = alias_handle.get().get();
+                } 
+            }
+
+            //params.targetRef = player_ref;
+
             params.quest = quest;
+
+            params.actionRef = params.targetRef;
 
             if (condition->IsTrue(params))
             {//this one is true
                 if (!condition->data.flags.isOR && condition->next)
-                    return recursive_quest_condition_check(condition->next, quest); //if its not OR and have next, check next.
+                    return recursive_quest_condition_check(condition->next, quest, target); //if its not OR and have next, check next.
                 else
                     return true; //its OR, or there is no next
             }
             else
             {//this one is false
                 if (condition->data.flags.isOR && condition->next) //if its OR and we have next, check next.
-                    return recursive_quest_condition_check(condition->next, quest);
+                    return recursive_quest_condition_check(condition->next, quest, target);
                 else
                     return false; //its false, there its not OR with next even if next exists
             }
@@ -2914,28 +2952,26 @@ namespace MiscThings {
         auto player_objectives = player->objectives;
 
 
-        //for (auto quest_target : player_quest_targets)
-        for (auto player_objective : player_objectives)
+        std::map<RE::TESQuest*, int> quests_and_objectives{};
+
+        //for (auto player_objective : player_objectives)
+        for (auto quest_target : player_quest_targets)
         {
-            auto objective = player_objective.Objective;
 
-            if (objective)
+            RE::TESQuest* the_quest = quest_target.first;
+
+
+            bool found_objective = false;
+
+            for (auto objective : the_quest->objectives)
             {
-
-                bool found_objective = false;
-
-                //for (auto objective : the_quest->objectives)
-
-
-                RE::TESQuest* the_quest = objective->ownerQuest;
-
-
-                if (the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
+                if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
                 {
                     if (the_quest != my_quest && !MiscThings::quest_is_hidden(the_quest))
                     {
 
                         if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+                        //if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
                         {
 
                             if (objective->numTargets != 0)
@@ -2954,7 +2990,7 @@ namespace MiscThings {
                                                 {
                                                     auto the_condition = target->conditions.head;
 
-                                                    conditions_met = recursive_quest_condition_check(the_condition, the_quest);
+                                                    conditions_met = recursive_quest_condition_check(the_condition, the_quest, target);
 
                                                     bool test_stop = false;
 
@@ -3003,23 +3039,29 @@ namespace MiscThings {
 
                                                 this_quest.estimate_distance = get_quest_target_distance(target, this_quest.quest);
 
-                                                /*
-                                                if (std::size(target->teleportPath.teleportRefs) > 0)
-                                                {
-                                                    //in different location
-                                                    auto last_teleport_ref = target->teleportPath.teleportRefs.back().ref;
-                                                    this_quest.estimate_distance = player->GetDistance(last_teleport_ref, true, true);
-                                                }
-                                                else
-                                                {
-                                                    this_quest.estimate_distance = 0.0f; //this means we are in the same cell
-                                                }
-                                                */
+                                                
+                                                //if (std::size(target->teleportPath.teleportRefs) > 0)
+                                                //{
+                                                //    //in different location
+                                                //    auto last_teleport_ref = target->teleportPath.teleportRefs.back().ref;
+                                                //    this_quest.estimate_distance = player->GetDistance(last_teleport_ref, true, true);
+                                                //}
+                                                //else
+                                                //{
+                                                //    this_quest.estimate_distance = 0.0f; //this means we are in the same cell
+                                                //}
+                                                
 
                                                 sortable_quests.push_back(this_quest);
 
                                                 id++;
                                                 got_any_quests = true;
+
+
+                                                if (quests_and_objectives.find(the_quest) == quests_and_objectives.end())
+                                                {
+                                                    quests_and_objectives.insert({ the_quest, 0 });
+                                                }
 
                                                 found_objective = true;
                                             }
@@ -3059,49 +3101,275 @@ namespace MiscThings {
                                 got_any_quests = true;
 
                                 found_objective = true;
+
+                                if (quests_and_objectives.find(the_quest) == quests_and_objectives.end())
+                                {
+                                    quests_and_objectives.insert({ the_quest, 0 });
+                                }
                             }
                         }
                     }
+                }
+            }
 
-                    //all objectives are checked
-                    /*
-                    if (the_quest && !found_objective)
+            //all objectives are checked
+
+            if (the_quest && !found_objective)
+            {
+                if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
+                {
+                    //displayed but no objective. still add into list, maybe it just needs to wait or do something else
+                    if (the_quest != my_quest && !MiscThings::quest_is_hidden(the_quest))
                     {
-                        if (the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD))
+                        quest this_quest{};
+
+                        this_quest.id = id;
+                        this_quest.quest = the_quest;
+                        this_quest.name = the_quest->GetFullName();
+                        this_quest.target = nullptr;
+
+                        std::string displaytext = "";
+                        std::string target_name = "";
+
+                        this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                        this_quest.target_name = target_name;
+
+                        this_quest.objective = nullptr;
+                        this_quest.description = "";
+                        this_quest.category = 0;
+
+                        this_quest.estimate_distance = 0.0f;
+
+                        sortable_quests.push_back(this_quest);
+
+                        id++;
+                        got_any_quests = true;
+
+
+                        if (quests_and_objectives.find(the_quest) == quests_and_objectives.end())
                         {
-                            //displayed but no objective. still add into list, maybe it just needs to wait or do something else
-
-                            quest this_quest{};
-
-                            this_quest.id = id;
-                            this_quest.quest = the_quest;
-                            this_quest.name = the_quest->GetFullName();
-                            this_quest.target = nullptr;
-
-                            std::string displaytext = "";
-                            std::string target_name = "";
-
-                            this_quest.displaytext += replace_aliases(the_quest, displaytext);
-
-                            this_quest.target_name = target_name;
-
-                            this_quest.objective = nullptr;
-                            this_quest.description = "";
-                            this_quest.category = 0;
-
-                            this_quest.estimate_distance = 0.0f;
-
-                            sortable_quests.push_back(this_quest);
-
-                            id++;
-                            got_any_quests = true;
+                            quests_and_objectives.insert({ the_quest, 0 });
                         }
                     }
-                    */
+                }
+            }
+
+        }
+        
+
+
+       
+        //for (auto quest_target : player_quest_targets)
+        for (auto player_objective : player_objectives)
+        {
+            auto objective = player_objective.Objective;
+
+            if (objective)
+            {
+
+                bool found_objective = false;
+
+                //for (auto objective : the_quest->objectives)
+
+
+                RE::TESQuest* the_quest = objective->ownerQuest;
+
+                if (quests_and_objectives.find(the_quest) == quests_and_objectives.end())
+                {
+
+                    if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
+                    {
+                        if (the_quest != my_quest && !MiscThings::quest_is_hidden(the_quest))
+                        {
+
+                            if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+                            {
+
+                                if (objective->numTargets != 0)
+                                {
+                                    auto quest_targets = objective->targets;
+
+                                    for (auto* target : std::span(quest_targets, objective->numTargets)) {
+                                        if (target)
+                                        {
+                                            if (the_quest)
+                                            {
+                                                bool conditions_met = false;
+                                                //this needs to be figured out
+                                                try {
+                                                    if (target->conditions.head)
+                                                    {
+                                                        auto the_condition = target->conditions.head;
+
+                                                        conditions_met = recursive_quest_condition_check(the_condition, the_quest, target);
+
+                                                        bool test_stop = false;
+
+                                                    }
+                                                    else
+                                                        conditions_met = true;
+
+                                                }
+                                                catch (...) {
+                                                    conditions_met = true;//met ?
+                                                }
+
+                                                if (conditions_met)
+                                                {
+                                                    quest this_quest{};
+
+
+                                                    if (is_bad_jailquest(the_quest, target))
+                                                        continue;
+
+                                                    this_quest.id = id;
+                                                    this_quest.quest = the_quest;
+                                                    this_quest.name = the_quest->GetFullName();
+                                                    this_quest.target = target;
+
+                                                    std::string displaytext = "";
+                                                    displaytext = objective->displayText;
+
+                                                    std::string target_name = "";
+                                                    target_name = get_alias_name_by_id(the_quest, target->alias);
+
+                                                    this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                                                    if (this_quest.name == "Unbound" && target->alias == 124)
+                                                        target_name = "Go with Hadvar (Imperials)";
+
+                                                    if (this_quest.name == "Unbound" && target->alias == 125)
+                                                        target_name = "Go with Ralof (Stormcloaks)";
+
+                                                    this_quest.target_name = target_name;
+
+                                                    this_quest.objective = objective;
+                                                    this_quest.description = "";
+                                                    this_quest.category = 0;
+
+
+                                                    this_quest.estimate_distance = get_quest_target_distance(target, this_quest.quest);
+
+                                                    
+                                                    //if (std::size(target->teleportPath.teleportRefs) > 0)
+                                                    //{
+                                                    //    //in different location
+                                                    //    auto last_teleport_ref = target->teleportPath.teleportRefs.back().ref;
+                                                    //    this_quest.estimate_distance = player->GetDistance(last_teleport_ref, true, true);
+                                                    //}
+                                                    //else
+                                                    //{
+                                                    //    this_quest.estimate_distance = 0.0f; //this means we are in the same cell
+                                                    //}
+                                                    
+
+                                                    if (quests_and_objectives.find(the_quest) != quests_and_objectives.end())
+                                                    {
+                                                        quests_and_objectives.find(the_quest)->second++;
+                                                    }
+
+
+
+                                                    sortable_quests.push_back(this_quest);
+
+                                                    id++;
+                                                    got_any_quests = true;
+
+                                                    found_objective = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //objective is displayed but has no targets. potentially quest without a target. still add in the list
+
+                                    quest this_quest{};
+
+                                    this_quest.id = id;
+                                    this_quest.quest = the_quest;
+                                    this_quest.name = the_quest->GetFullName();
+                                    this_quest.target = nullptr;
+
+                                    std::string displaytext = "";
+                                    displaytext = objective->displayText;
+
+                                    std::string target_name = "";
+
+                                    this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                                    this_quest.target_name = target_name;
+
+                                    this_quest.objective = objective;
+                                    this_quest.description = "";
+                                    this_quest.category = 0;
+
+                                    this_quest.estimate_distance = 0.0f;
+
+                                    sortable_quests.push_back(this_quest);
+
+                                    id++;
+                                    got_any_quests = true;
+
+                                    found_objective = true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
-            
+           
+
+
+        //test quests with no objectives
+        /*
+        for (auto quest_and_objective : quests_and_objectives)
+        {
+            auto the_quest = quest_and_objective.first;
+
+            if (the_quest && quest_and_objective.second <= 0)
+            {
+                if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
+                {
+                    //displayed but no objective. still add into list, maybe it just needs to wait or do something else
+
+                    quest this_quest{};
+
+                    this_quest.id = id;
+                    this_quest.quest = the_quest;
+                    this_quest.name = the_quest->GetFullName();
+                    this_quest.target = nullptr;
+
+                    std::string displaytext = "";
+                    std::string target_name = "";
+
+                    this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                    this_quest.target_name = target_name;
+
+                    this_quest.objective = nullptr;
+                    this_quest.description = "";
+                    this_quest.category = 0;
+
+                    this_quest.estimate_distance = 0.0f;
+
+                    sortable_quests.push_back(this_quest);
+
+                    id++;
+                    got_any_quests = true;
+                }
+            }
+        }
+        */
+
+
+
+
+
+
 
         //sort
 
@@ -3250,7 +3518,7 @@ namespace MiscThings {
                                                     {
                                                         auto the_condition = target->conditions.head;
 
-                                                        conditions_met = recursive_quest_condition_check(the_condition, the_quest);
+                                                        conditions_met = recursive_quest_condition_check(the_condition, the_quest, target);
 
                                                         bool test_stop = false;
 
