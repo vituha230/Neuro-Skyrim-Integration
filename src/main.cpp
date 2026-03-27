@@ -12,10 +12,6 @@
 
 //TODO oxygen control
 
-//TODO check some quest that needs something to be used from inventory (are there any?)
-
-//TODO fix quests without target not appearing in quest list (dragonborn dlc quest OR MIGHT KEEP IT AS IS SO THEY DONT GO THERE)
-
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO dwemer mechanisms/traps
 //TODO slaughterfish fights

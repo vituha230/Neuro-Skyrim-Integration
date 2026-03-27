@@ -600,8 +600,8 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player->AsReference();
 
         //GetAttackState()
-        if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
-            is_casting_walker(true) || is_casting_walker(false))
+        if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached)// || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
+            //is_casting_walker(true) || is_casting_walker(false))
             ready_weapon();
     }
 
@@ -3183,6 +3183,34 @@ namespace WalkerProcessor {
     {
         return is_casting_clairvoyance;
     }
+
+
+
+    bool is_casting_walker2(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto left_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand);
+        auto right_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kRightHand);
+
+        if (right)
+        {
+            auto state = right_caster->state;
+            if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(right)))
+                result = true;
+        }
+        else
+        {
+            auto state = left_caster->state;
+            if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(right)) && !MiscThings::is_intro2())
+                result = true;
+        }
+
+
+        return result;
+    }
+
 
     bool is_casting_walker(bool right)
     {
@@ -6860,7 +6888,7 @@ namespace WalkerProcessor {
         {
             if (attack_action < 0 || attack_action > 1)
             {
-                bool dont_use_right = MiscThings::has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !MiscThings::has_spell_equipped(true)));
+                bool dont_use_right = MiscThings::has_spell_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && !MiscThings::has_spell_equipped(true)));
                 dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
                 
                 dont_use_right |= MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
@@ -6898,7 +6926,7 @@ namespace WalkerProcessor {
 
                     bool dont_check_mana = false;
 
-                    dont_check_mana = !is_concentration_spell(true) && is_casting_walker(true);
+                    dont_check_mana = !is_concentration_spell(true) && is_casting_walker2(true);
 
                     bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
 
@@ -6943,7 +6971,7 @@ namespace WalkerProcessor {
                         if (MiscThings::has_spell_equipped(true))
                         {
                             if (attack_action_time > 0.7f);
-                            was_charging_ranged = true;
+                            ;// was_charging_ranged = true;
 
                             if (!is_casting_walker(true))
                             {
@@ -7103,13 +7131,19 @@ namespace WalkerProcessor {
                             ;// dont_use_left |= left_is_block();
                         }
 
-                        dont_use_left |= has_ranged_weapon_equipped(true);
-                        dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(true)) && !MiscThings::has_spell_equipped(false)));
-                        bool dont_use_right = MiscThings::has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !MiscThings::has_spell_equipped(true)));
 
-                        dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
-                        dont_use_right |= MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
-                        dont_use_left |= MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+                        bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+                        bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+
+                        bool dont_use_right = false;
+
+
+                        dont_use_left |= has_ranged_weapon_equipped(true) && !no_ammo();
+                        //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
+                        //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
+
+                        dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true) && !left_is_useless);
+
 
                         if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                             attack_action = 1;
@@ -7130,7 +7164,7 @@ namespace WalkerProcessor {
 
                         bool dont_check_mana = false;
 
-                        dont_check_mana = !is_concentration_spell(false) && is_casting_walker(false);
+                        dont_check_mana = !is_concentration_spell(false) && is_casting_walker2(false);
 
                         bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
 
@@ -7189,7 +7223,7 @@ namespace WalkerProcessor {
                                 else
                                 {
                                     if (attack_action_time > 0.7f);
-                                        was_charging_ranged = true;
+                                    ;//was_charging_ranged = true;
 
                                     attack_spell_cast_timeout = 0.0f;
                                 }
@@ -7333,13 +7367,18 @@ namespace WalkerProcessor {
                                 ;// dont_use_left |= left_is_block();
                             }
 
-                            dont_use_left |= has_ranged_weapon_equipped(false);
+                            bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+                            bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
 
-                            bool dont_use_right = MiscThings::has_spell_equipped(false) && (!has_something_equipped(true) || (!low_mana_detected && (MiscThings::get_player_mana() > get_spell_cost(false)) && !MiscThings::has_spell_equipped(true)));
-                            dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true));
+                            bool dont_use_right = false;
 
-                            dont_use_right |= MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
-                            dont_use_left |= MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+
+                            dont_use_left |= has_ranged_weapon_equipped(true) && !no_ammo();
+                            //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
+                            //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
+
+                            dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true) && !left_is_useless);
+
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                                 attack_action = 1;
@@ -9706,7 +9745,7 @@ namespace WalkerProcessor {
                         if (!tried_to_draw_weapon2 || draw_weapon_check_time2 > 2.0f)
                         {
                             draw_weapon_check_time2 = 0.0f;
-                            ready_weapon();
+                            ;// ready_weapon();
                             tried_to_draw_weapon2 = true;
                         }
                         else
