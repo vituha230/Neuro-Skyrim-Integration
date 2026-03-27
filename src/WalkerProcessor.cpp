@@ -5411,7 +5411,13 @@ namespace WalkerProcessor {
                         if (!temp_result.first)
                             temp_result = walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen), false, false); //now try without objective if objective failed
 
-                        return temp_result;
+                        if (temp_result.first)
+                        {
+                            return temp_result;
+                        }
+
+                        //else - find another quest
+                        
                     }
                         
                 }
