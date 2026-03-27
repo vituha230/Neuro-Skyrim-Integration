@@ -10806,7 +10806,7 @@ namespace WalkerProcessor {
                                                             return;
                                                         }
 
-                                                        if (!probe_failed && !had_any_path_found_this_run && !detect_stuck_walk_again_if_good(dtime)) //only if there was no navmesh path
+                                                        if (probe_failed() && !had_any_path_found_this_run && !detect_stuck_walk_again_if_good(dtime)) //only if there was no navmesh path
                                                             walk_forward();
                                                         else
                                                         {
