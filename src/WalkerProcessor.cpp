@@ -9834,7 +9834,7 @@ namespace WalkerProcessor {
                         if (!tried_to_draw_weapon2 || draw_weapon_check_time2 > 2.0f)
                         {
                             draw_weapon_check_time2 = 0.0f;
-                            ;// ready_weapon();
+                            ready_weapon();
                             tried_to_draw_weapon2 = true;
                         }
                         else
