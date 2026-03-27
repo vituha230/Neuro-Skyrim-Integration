@@ -2958,7 +2958,7 @@ namespace WalkerProcessor {
 
         if (!high_precision)
         {
-            if (abs(mouse_y) < 3.0f)
+            if (abs(mouse_y) < 3.0f && abs(mouse_y) >= 1.0f)
             {
                 if (mouse_y < 0.0f)
                     mouse_y = -3.0f;
@@ -2966,7 +2966,7 @@ namespace WalkerProcessor {
                     mouse_y = 3.0f;
             }
 
-            if (abs(mouse_x) < 3.0f)
+            if (abs(mouse_x) < 3.0f && abs(mouse_x) >= 1.0f)
             {
                 if (mouse_x < 0.0f)
                     mouse_x = -3.0f;
@@ -9607,7 +9607,7 @@ namespace WalkerProcessor {
 
                     if (MiscThings::is_intro() || looking_mode)
                     {
-                        if (lock_camera_onto_target(target_ref, dtime))
+                        if (lock_camera_onto_target(target_ref, dtime, true))
                         {
                             reset_walker();
                         }
@@ -9620,6 +9620,8 @@ namespace WalkerProcessor {
                             else
                                 intro_look_timeout += dtime;
                         }
+
+                        return;
                     }
 
 
