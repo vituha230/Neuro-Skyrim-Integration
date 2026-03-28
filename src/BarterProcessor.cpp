@@ -2569,7 +2569,7 @@ void debug_scan(float dtime)
 
     if (!list_was_sent)
     {
-        if (auto menu = ui->GetMenu<RE::BarterMenu>(); menu)
+        if (auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
         {
             if (menu->itemList)
             {
@@ -2702,7 +2702,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -2746,7 +2746,7 @@ if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
                             };
 
 
-                            search_var = "Gold";
+                            search_var = "Cultist";
                             //search_var = "Body";
 
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
@@ -2817,15 +2817,15 @@ if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu) {
                             */
 
 
-                            search_var = "CONTINUE";
-                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            search_var = "CULTIST";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
-
-                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "Gary", skip_problematic);
+                            search_var = "Cultist";
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "Gary", skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -2900,7 +2900,7 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
 */
 
     
-    std::vector<std::string> paths_to_var_to_check = { 
+    std::vector<std::string> paths_to_var_to_check = {
         //"_root.Menu.ItemInfo",
         //"_root.Menu.ItemInfoHolder",
         //"_root.Menu.ItemInfo.EnchantingSlider_mc",
@@ -2909,7 +2909,7 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
         //"_root.Bottom.LocalMapButton.border",
         //"_root.Bottom.LocalMapButton.constraints",
         //"_root.Bottom.LocalMapButton.constraints.elements.0",
-        
+
         //"_root.Menu_mc.ItemCard_mc.ItemValueText"
         //"_root.HUDMovieBaseInstance.QuestUpdateBaseInstance.LevelUpTextInstance",
         //"_root.HUDMovieBaseInstance.HudElements.14.LevelUpTextInstance"
@@ -2921,10 +2921,10 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
         //"_root.Bottom.LocalMapButton.constraints.elements.0.clip",
         //"_root.Bottom.LocalMapButton.constraints.scope"
 
-        "_root.SleepWaitMenu_mc",
-        "_root.SleepWaitMenu_mc.HoursSlider"
-
-
+        //"_root.SleepWaitMenu_mc",
+        "_root.Menu_mc.ItemCard_mc",
+        "_root.Menu_mc.InventoryLists_mc._ItemsList"
+        "_root.Menu_mc.InventoryLists_mc._ItemsList.Entry0"
 
         //"_root.Menu.InventoryLists._ItemsList.Entry0",
         //"_root.Menu.InventoryLists._ItemsList.Entry0.textField"
@@ -2965,7 +2965,7 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
     if (const auto ui = RE::UI::GetSingleton(); ui) 
         //if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) 
         //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu)
-        if (const auto menu = ui->GetMenu<RE::TrainingMenu>(); menu)
+        if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
         {
 
             if (menu->uiMovie)

@@ -42,6 +42,23 @@ bool slider_confirmed = false;
 bool slider_confirming = false;
 bool quantity_was_specified = false;
 
+
+int amount_skips = 0;
+
+bool missing_category_detected = false;
+
+float move_cursor_timeout0 = 0.0f;
+float move_cursor_timeout1 = 0.0f;
+float move_cursor_timeout2 = 0.0f;
+
+float bad_pos_time = 0.0f;
+
+int last_selected_index = 0;
+
+std::vector<std::string> item_names_to_skip{};
+
+
+
 struct item_data {
 	std::string name;
 	std::string price;
@@ -328,6 +345,47 @@ void move_to_item(int index)
 }
 
 
+int get_item_selected_position()
+{
+	RE::GFxValue var1;
+	RE::UI* ui = RE::UI::GetSingleton();
+	if (ui)
+		if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.InventoryLists_mc.ItemsListHolder.List_mc.iSelectedIndex"))
+					return var1.GetNumber();
+
+	return -1;
+}
+
+std::string get_item_selected_name()
+{
+	RE::GFxValue var1;
+	RE::UI* ui = RE::UI::GetSingleton();
+	if (ui)
+		if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.ItemCard_mc.ItemName.text"))
+					return var1.GetString();
+
+	return "";
+}
+
+
+
+void move_to_position(int index)
+{
+	int selected_item = get_item_selected_position();
+
+	if (is_inside_of_category())
+	{
+		if (selected_item > index)
+			cursor_up();
+
+		if (selected_item < index)
+			cursor_down();
+	}
+}
 
 
 //_root.Menu_mc.InventoryLists_mc._ItemsList.Entry9.textField.text = Salt Pile (4)
@@ -707,6 +765,38 @@ void setup_fill_item_list()
 
 
 
+bool is_malborn()
+{
+
+	RE::UI* ui = RE::UI::GetSingleton();
+
+	if (ui)
+	{
+		auto menu = ui->GetMenu<RE::ContainerMenu>();
+		if (menu)
+		{
+			auto target_ref_handle = menu->GetTargetRefHandle();
+
+			auto target_ref_ptr = RE::TESObjectREFR::LookupByHandle(target_ref_handle);
+
+			if (target_ref_ptr && target_ref_ptr.get())
+			{
+				auto target_ref = target_ref_ptr.get();
+
+				//33f46
+				auto malborn = RE::TESObjectREFR::LookupByID(0x39f1e);
+
+
+				if (target_ref == malborn)
+					return (target_ref->IsActor() && !target_ref->IsDead());
+
+			}
+		}
+	}
+
+	return false;
+}
+
 
 
 
@@ -730,9 +820,24 @@ std::string get_result_message()
 							if (var1.GetElement(0, &subvar)) //size-1 or 0? idk the order..
 								if (subvar.GetMember("TextFieldClip", &subvar))
 									if (subvar.GetMember("tf1", &subvar))
-										if (subvar.GetMember("text", &subvar))
-											if (subvar.IsString())
-												result = subvar.GetString();
+									{
+										RE::GFxValue subvar_text;
+										if (subvar.GetMember("text", &subvar_text))
+											if (subvar_text.IsString())
+											{
+												result = subvar_text.GetString();
+
+												if (is_malborn())
+												{
+													subvar_text.SetString("");
+													subvar.SetMember("text", subvar_text);
+													//var1.SetArraySize(0);
+													//var1.RemoveElements(0, size);
+													//bool test_result = menu->uiMovie->SetVariable("_root.HUDMovieBaseInstance.MessagesInstance.ShownMessageArray", var1, RE::GFxMovie::SetVarType::kNormal);
+													//bool stop_here = false;
+												}
+											}
+									}					
 						}
 
 					}
@@ -789,6 +894,20 @@ void reset_container()
 	slider_confirming = false;
 	quantity_was_specified = false;
 
+
+	missing_category_detected = false;
+	move_cursor_timeout0 = 0.0f;
+	move_cursor_timeout1 = 0.0f;
+	move_cursor_timeout2 = 0.0f;
+
+	amount_skips = 0;
+
+
+	last_selected_index = 0;
+
+	item_names_to_skip.clear();
+
+	bad_pos_time = 0.0f;
 }
 
 
@@ -1032,6 +1151,7 @@ bool is_container_empty()
 
 
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// SLIDER
 /*
@@ -1177,12 +1297,66 @@ std::string get_item_text_by_id(int id)
 
 
 
+
+int get_category_selected_index()
+{
+	RE::GFxValue var1;
+	RE::UI* ui = RE::UI::GetSingleton();
+	if (ui)
+		if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.InventoryLists_mc.CategoriesListHolder.List_mc.iSelectedIndex"))
+					return var1.GetNumber();
+
+	return -1;
+}
+
+
+
+void move_cursor_to_category(int id)
+{
+	int id_selected = get_category_selected_index();
+
+	if (last_cursor_move != 1 && last_cursor_move != 2)
+		bool test = true;
+
+
+	if (is_inside_of_category())
+		left();
+	else
+	{
+		if (id_selected > id)
+		{
+			if (last_cursor_move == 2)
+				missing_category_detected = true;
+			last_cursor_move = 1;
+			cursor_up();
+		}
+		if (id_selected < id)
+		{
+			if (last_cursor_move == 1)
+				missing_category_detected = true;
+			last_cursor_move = 2;
+			cursor_down();
+		}
+	}
+
+	
+}
+
+
+
+
+
+
+
 float container_processor_timer = 0.0f;
+
 
 
 void processor(float dtime)
 {
-
+	//return;
 	RE::UI* ui = RE::UI::GetSingleton();
 
 	//std::string test = "";
@@ -1214,189 +1388,331 @@ void processor(float dtime)
 
 		if (in_container)
 		{
-
 			if (close_empty_container)
-				quit_menu();
+			{
+				cancel();
+			}
+				//quit_menu();
 
 			WalkerProcessor::reset_walker();
 
-			if (!is_inside_of_category() && !is_container_empty() && !check_results)
-				right();// confirm();
-			else
-			{   //NOW ITEMS
 
-				if (refresh_items_list)
+			bool category_done = false;
+			int category_choice = 0;
+
+			if (is_malborn())
+			{
+				Observer::set_dont_inform_inventory();
+				category_choice = 11;
+			}
+
+			if (get_category_selected_index() != category_choice)
+			{
+				if (!missing_category_detected)
 				{
-					refresh_items_list = false;
-					items_list_valid = false;
-				}
-
-				if (!items_list_valid && !check_results)
-					if (!filling_items)
+					move_cursor_to_category(category_choice);
+					if (move_cursor_timeout0 > 10.0f)
 					{
-						setup_fill_item_list();
-						filling_items = true;
+						reset_container();
+						return;
 					}
 					else
-						fill_items_list(0.02f);
+						move_cursor_timeout0 += 0.02f;
+				}
 				else
 				{
-					filling_items = false;
-					if (!check_results)
+					move_cursor_timeout0 = 0.0f;
+					reset_container();
+				}
+
+			}
+			else
+			{
+				if (!is_inside_of_category() && !is_container_empty() && !check_results)
+					right();// confirm();
+				else
+				{   //NOW ITEMS
+
+					if (refresh_items_list)
 					{
-						int new_items_list_size = std::size(items_list);
+						refresh_items_list = false;
+						items_list_valid = false;
+					}
 
-						if (new_items_list_size < old_item_list_size)
+					if (!is_malborn() && !items_list_valid && !check_results)
+						if (!filling_items)
 						{
-							for (auto& a_choice : item_choice_array)
-							{
-								if (a_choice > 0 && a_choice > item_choice)
-									a_choice -= 1;
-							}
-
-							quantity_was_specified = false;
+							setup_fill_item_list();
+							filling_items = true;
 						}
 						else
 						{
-							if (old_item_list_size != -1 && !quantity_was_specified)
+							fill_items_list(0.02f);
+
+							if (move_cursor_timeout1 > 10.0f)
 							{
-								//we took something but it didnt change the list. this means there are more items of that kind we just picked up. take all
-								process_next_item_after_refresh = false;
-								quantity_was_specified = false;
+								reset_container();
+								return;
 							}
+							else
+								move_cursor_timeout1 += 0.02f;
 						}
 
-						
-
-						old_item_list_size = new_items_list_size;
-					}
-
-					if (process_next_item_after_refresh)
+					else
 					{
-						process_next_item_after_refresh = false;
-						process_next_item();
-						return;
-					}
-
-
-					if (!item_choice_request_sent && !check_results)
-					{
-
-						auto options = get_items_options();
-
-						if (std::size(options) <= 2 && !is_possessions_chest())
+						move_cursor_timeout1 = 0.0f;
+						filling_items = false;
+						if (!check_results)
 						{
-							send_random_context("[Container is empty. Closing container...]");
-							//if (force_choice(get_items_options(), "You opened a container. It is empty. Send -1 to exit. ", force_type::container_item))
-							missing_item_detected = false;
-							last_cursor_move = 0;
-							item_choice_request_sent = true;
-							close_empty_container = true;
+							int new_items_list_size = std::size(items_list);
 
-							set_universal_block(2.0f);
+							if (new_items_list_size < old_item_list_size)
+							{
+								for (auto& a_choice : item_choice_array)
+								{
+									if (a_choice > 0 && a_choice > item_choice)
+										a_choice -= 1;
+								}
 
+								quantity_was_specified = false;
+							}
+							else
+							{
+								if (old_item_list_size != -1 && !quantity_was_specified)
+								{
+									//we took something but it didnt change the list. this means there are more items of that kind we just picked up. take all
+									process_next_item_after_refresh = false;
+									quantity_was_specified = false;
+								}
+							}
+
+
+
+							old_item_list_size = new_items_list_size;
+						}
+
+						if (process_next_item_after_refresh)
+						{
+							process_next_item_after_refresh = false;
+							process_next_item();
 							return;
 						}
 
 
-						auto force_type = force_type::container_item;
-
-						if (!is_pickpocketing())
-							force_type = force_type::container_item_array;
-
-						if (force_choice(options, get_force_message(), force_type))
+						if (!is_malborn() && !item_choice_request_sent && !check_results)
 						{
-							missing_item_detected = false;
-							last_cursor_move = 0;
-							item_choice_request_sent = true;
-						}
 
+							auto options = get_items_options();
 
-					}
-					else
-					{
-						if (item_choice_valid)
-						{
-							int selected_index = get_item_selected_index();
-							if ((selected_index != item_choice) && !check_results)
+							if (std::size(options) <= 2 && !is_possessions_chest())
 							{
-								if (!missing_item_detected)
-									move_to_item(item_choice);
-								else
-									reset_container();
+								send_random_context("[Container is empty. Closing container...]");
+								//if (force_choice(get_items_options(), "You opened a container. It is empty. Send -1 to exit. ", force_type::container_item))
+								missing_item_detected = false;
+								last_cursor_move = 0;
+								item_choice_request_sent = true;
+								close_empty_container = true;
+
+								set_universal_block(2.0f);
+
+								return;
+							}
+
+
+							if (is_malborn())
+							{
+								missing_item_detected = false;
+								last_cursor_move = 0;
+								item_choice_request_sent = true;
+
+								std::vector<int> all_ids{};
+
+								bool first = true;
+								for (auto option : options)
+								{
+									if (option.id != -2)
+										all_ids.push_back(option.id);
+								}
+
+								set_item_choice_array(all_ids);
+
 							}
 							else
 							{
-								if (!check_results)
+								auto force_type = force_type::container_item;
+
+								if (!is_pickpocketing())
+									force_type = force_type::container_item_array;
+
+								if (force_choice(options, get_force_message(), force_type))
 								{
-									check_results = true;
-									//this is [R]Craft button
-									//menu->uiMovie->Invoke("_root.Menu.BottomBarInfo.Buttons.3.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
-									
-									//RE::ItemList* old_item_list = menu->itemCard;
-
-									old_item_list_size = std::size(items_list);
-
-									
-
-									confirm();
-									set_universal_block(0.3f);
-									std::string result = get_result_message();
-									if (result != "")
-										send_random_context("[" + result + "]", false);
+									missing_item_detected = false;
+									last_cursor_move = 0;
+									item_choice_request_sent = true;
 								}
-								else
+							}
+						}
+						else
+						{
+							if (is_malborn() || item_choice_valid)
+							{
+								int selected_index = get_item_selected_index();
+								if (!is_malborn() && (selected_index != item_choice) && !check_results)
 								{
-									if (quantity_slider_active())
+									if (!missing_item_detected)
 									{
-										confirm();
-										set_universal_block(0.3f);
-										return;
-
-										if (!slider_request_sent)
+										move_to_item(item_choice);
+										if (move_cursor_timeout2 > 10.0f)
 										{
-											if (force_choice({}, "Choose amount of " + get_item_text_by_id(item_choice) + " to take. Valid range: from " + 
-												std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::container_quantity))
-												slider_request_sent = true;
-
+											reset_container();
 											return;
 										}
 										else
+											move_cursor_timeout2 += 0.02f;
+									}
+									else
+									{
+										move_cursor_timeout2 = 0.0f;
+										reset_container();
+									}
+								}
+								else
+								{
+									move_cursor_timeout2 = 0.0f;
+									if (!check_results)
+									{
+										
+										//this is [R]Craft button
+										//menu->uiMovie->Invoke("_root.Menu.BottomBarInfo.Buttons.3.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
+
+										//RE::ItemList* old_item_list = menu->itemCard;
+
+										old_item_list_size = std::size(items_list);
+
+
+										//if (get_item_selected_position() != last_selected_index)
+										//	amount_skips = get_item_selected_position();
+
+
+										if (is_malborn())
 										{
-											if (slider_choice_valid)
+											bool bad_pos = false;
+
+											int cur_pos = get_item_selected_index();
+
+											for (auto skip_name : item_names_to_skip)
 											{
-												quantity_was_specified = true;
-												if (slider_choice > 0)
+												if (get_item_selected_name() == skip_name)
 												{
-													if (get_slider_pos() != slider_choice)
+													cursor_down();
+													perk_down();
+													bad_pos = true;
+													bad_pos_time += 0.02f;
+
+													if (bad_pos_time > 3.0f)
 													{
-														move_slider_to_pos(slider_choice);
-														return;
+														send_random_context("You gave Malborn all your items so he can smuggle them into the embassy...");
+														Observer::reset_dont_inform_inventory();
+														close_empty_container = true;
 													}
-													else
+														
+													return;
+												}
+													
+											}
+
+											if (!bad_pos)
+											{
+												ready_weapon();
+												bad_pos_time = 0.0f;
+											}
+												
+										}
+										else
+											confirm();
+
+										if (!is_malborn())
+											set_universal_block(0.3f);
+
+										std::string result = get_result_message();
+										if (result != "")
+										{
+											if (!is_malborn())
+												send_random_context("[" + result + "]", false);
+											else
+											{
+												if (result.find("Quest Items cannot") != std::string::npos)
+												{
+													item_names_to_skip.push_back(get_item_selected_name());
+												}
+													
+											}
+										}
+
+										check_results = true;
+											
+									}
+									else
+									{
+										if (quantity_slider_active())
+										{
+											
+											if (!is_malborn())
+											{
+												confirm();
+												set_universal_block(0.3f);
+											}
+											else
+											{
+												confirm_fast();
+											}
+
+											return;
+
+											if (!slider_request_sent)
+											{
+												if (force_choice({}, "Choose amount of " + get_item_text_by_id(item_choice) + " to take. Valid range: from " +
+													std::to_string(get_slider_min()) + " to " + std::to_string(get_slider_max()), force_type::container_quantity))
+													slider_request_sent = true;
+
+												return;
+											}
+											else
+											{
+												if (slider_choice_valid)
+												{
+													quantity_was_specified = true;
+													if (slider_choice > 0)
 													{
-														if (!slider_confirmed)
+														if (get_slider_pos() != slider_choice)
 														{
-															confirm();
-															slider_confirming = true;
+															move_slider_to_pos(slider_choice);
 															return;
 														}
 														else
 														{
-															return;
-															;//put some watchdog here
+															if (!slider_confirmed)
+															{
+																confirm();
+																slider_confirming = true;
+																return;
+															}
+															else
+															{
+																return;
+																;//put some watchdog here
+															}
 														}
 													}
-												}
 
-												cancel();
-												set_universal_block(0.3f);
-												return;
+													cancel();
+													set_universal_block(0.3f);
+													return;
+												}
+												else
+													return;
 											}
-											else
-												return;
 										}
-									}
 
 										slider_request_sent = false;
 										slider_choice_valid = false;
@@ -1405,20 +1721,21 @@ void processor(float dtime)
 										slider_confirming = false;
 
 
-									{
-										//no slider or slider done
-
-										check_results = false;
-
-										if (is_pickpocketing())
 										{
-											reset_container();
-											catch_pickpocket_result = true;
-										}
-										else
-										{
-											refresh_items_list = true;
-											process_next_item_after_refresh = true;
+											//no slider or slider done
+
+											check_results = false;
+
+											if (is_pickpocketing())
+											{
+												reset_container();
+												catch_pickpocket_result = true;
+											}
+											else
+											{
+												refresh_items_list = true;
+												process_next_item_after_refresh = true;
+											}
 										}
 									}
 								}
@@ -1428,7 +1745,6 @@ void processor(float dtime)
 				}
 			}
 
-			
 		}
 		else
 		{

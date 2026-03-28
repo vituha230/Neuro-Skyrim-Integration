@@ -23,6 +23,10 @@ namespace Observer {
 	void reset_observer();
 
 
+	void set_dont_inform_inventory();
+	void reset_dont_inform_inventory();
+	bool not_informing_inventory();
+
 	void detect_locations(float dtime);
 
 	bool are_surroundings_scanned();

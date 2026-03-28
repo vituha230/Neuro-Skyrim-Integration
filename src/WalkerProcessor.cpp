@@ -7675,7 +7675,7 @@ namespace WalkerProcessor {
 
                     if (!confirming_closed_door_interaction)
                     {
-                        unregister_all_actions();
+                        
 
                         auto attackers = MiscThings::get_player_attackers();
                         if (std::size(attackers) > 0)
@@ -7685,6 +7685,8 @@ namespace WalkerProcessor {
                         }
                         else
                         {
+                            unregister_all_actions();
+
                             if (is_door(target_ref))
                             {
                                 if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(target_ref), force_type::closed_door_choice))
@@ -10435,7 +10437,7 @@ namespace WalkerProcessor {
                                                             {
                                                                 if (!confirming_closed_door_interaction && (is_door(result_target) || is_container(result_target)) && is_targeted_door_locked())
                                                                 {
-                                                                    unregister_all_actions();
+                                                                    
                                                                     
                                                                     {
                                                                         auto attackers = MiscThings::get_player_attackers();
@@ -10463,7 +10465,7 @@ namespace WalkerProcessor {
                                                                                 return;
                                                                             }
 
-
+                                                                            unregister_all_actions();
                                                                             if (is_door(result_target))
                                                                             {
                                                                                 if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(result_target), force_type::closed_door_choice))
@@ -10698,7 +10700,7 @@ namespace WalkerProcessor {
                                                                 if (!door_is_closed_request_sent)
                                                                 {
                                                                     //send_random_context("The path is blocked by a locked door!");
-                                                                    unregister_all_actions();
+                                                                    
                                                                     auto attackers = MiscThings::get_player_attackers();
                                                                     if (std::size(attackers) > 0)
                                                                     {
@@ -10717,7 +10719,7 @@ namespace WalkerProcessor {
                                                                             return;
                                                                         }
 
-
+                                                                        unregister_all_actions();
                                                                         if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
                                                                             door_is_closed_request_sent = true;
                                                                     }
@@ -10965,7 +10967,7 @@ namespace WalkerProcessor {
                                                 {
                                                     
                                                     //send_random_context("The path is blocked by a locked door!");
-                                                    unregister_all_actions();
+                                                    
                                                     auto attackers = MiscThings::get_player_attackers();
                                                     if (std::size(attackers) > 0 && runaway_mode)
                                                     {
@@ -10985,7 +10987,7 @@ namespace WalkerProcessor {
                                                             return;
                                                         }
 
-
+                                                        unregister_all_actions();
                                                         if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
                                                             door_is_closed_request_sent = true;
                                                     }

@@ -4,6 +4,10 @@
 //crucial:
 
 
+
+//TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
+
+
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
 //TODO test high hrothgar part1 more
@@ -87,7 +91,7 @@ bool API_CONTROL_LOCKPICK = false;
 bool API_CONTROL_CRAFTING = false;
 
 
-bool do_debug_scan = false;
+bool do_debug_scan = true;
 bool autolook_at_speakers_on_afk = true;
 
 
@@ -559,6 +563,9 @@ void send_random_context(std::string context, bool silent)
         return;
 
     if (context.find("No direct path seen") != std::string::npos)
+        return;
+
+    if (Observer::not_informing_inventory() && context.find("Quest Items cannot be removed") != std::string::npos)
         return;
 
     if (m_neuroSocket)

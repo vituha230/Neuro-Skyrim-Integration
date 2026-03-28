@@ -50,7 +50,7 @@ void right_attack_cancel();
 void sprint();
 void unsprint();
 
-
+void confirm_fast();
 
 void make_launch_sprint();
 bool launching_sprint();

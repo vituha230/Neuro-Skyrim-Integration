@@ -117,6 +117,8 @@ namespace Observer {
 	float jail_reminder_time = 0.0f;
 
 
+	bool dont_inform_inventory = false;
+
 
 
 	void reset_quest_puzzles()
@@ -753,9 +755,26 @@ namespace Observer {
 		interesting_buffer.clear();
 
 		object_cleanup_timer = 0.0f;
+
+		dont_inform_inventory = false;
 	}
 
 	
+
+	bool not_informing_inventory()
+	{
+		return dont_inform_inventory;
+	}
+
+	void set_dont_inform_inventory()
+	{
+		dont_inform_inventory = true;
+	}
+
+	void reset_dont_inform_inventory()
+	{
+		dont_inform_inventory = false;
+	}
 
 	std::vector<MenuOption> get_threat_options()
 	{
@@ -2736,7 +2755,8 @@ namespace Observer {
 				{
 					std::string message = "[No longer in the inventory: ";
 					message += removed_info;
-					send_random_context(message);
+					if (!dont_inform_inventory)
+						send_random_context(message);
 				}
 
 
