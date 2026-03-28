@@ -119,6 +119,8 @@ float restore_actions_timer = 0.0f;
 bool in_game = false;
 
 
+long long context_chars_sent = 0;
+
 /////////////////////////////////////////////////////////
 
 
@@ -596,12 +598,15 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text)
         if (DialogueProcessor::is_in_dialogue(speaker))
             speech_context = "[Dialogue] " + speech_context;
 
+
+        context_chars_sent += speech_context.length();
+
         if (m_neuroSocket)
             m_neuroSocket->SendContext(speech_context.c_str(), true);
     }
 }
 
-long long context_chars_sent = 0;
+
 
 
 void send_random_context(std::string context, bool silent)

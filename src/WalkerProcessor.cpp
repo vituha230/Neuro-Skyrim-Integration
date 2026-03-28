@@ -15,6 +15,7 @@
 namespace WalkerProcessor {
 
 
+    float crouch_timeout = 0.0f;
 
     int stable_target = 0;
 
@@ -3450,6 +3451,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        crouch_timeout = 0.0f;
 
         stable_target = 0;
 
@@ -7738,14 +7740,21 @@ namespace WalkerProcessor {
                     {
                         if (MiscThings::is_stealing(target_ref) != "")
                         {
-                            if (player && !player->IsSneaking())
+                            if ((crouch_timeout < 5.0f) && (player && !player->IsSneaking()))
                             {
                                 crouch();
                                 pause_pre_stealing = true;
                                 pause_pre_stealing_time = 0.0f;
                                 //set_universal_block(0.5f);
+                                crouch_timeout += dtime;
+
+
                                 return false;
                             }
+
+                            if (player && player->IsSneaking())
+                                crouch_timeout = 0.0f;
+                                
 
                             auto player_actor = (RE::Actor*)player_ref;
 
