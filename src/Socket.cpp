@@ -20,6 +20,11 @@ bool something_is_registered = false;
 
 std::string greet_phrase = "You are playing Skyrim, an action RPG. Use commands to interact with the world. Try to have a fun adventure. ";
 
+long long timestamp_greet_sent = 0;
+
+
+
+
 neurosdk_action ActionsList[] = {
                                     Capabilities::WalkToObjectDoNothing::Action,
                                     Capabilities::WalkToObject::Action,
@@ -188,7 +193,7 @@ bool neuro::NeuroSocket::SendContext(StringView aContext, bool aSilent)
 }
 
 bool neuro::NeuroSocket::SendForcedAction(StringView aActionName, StringView aQuery, StringView aState,
-    StringView aPriority)
+    StringView aPriority, bool ephemeral)
 {
     const char* tempActionNames[] = { aActionName.Data() };
 
@@ -196,7 +201,7 @@ bool neuro::NeuroSocket::SendForcedAction(StringView aActionName, StringView aQu
                            .value = {.actions_force = {.state = aState.Data(),
                                                        .query = aQuery.Data(),
                                                        .priority = aPriority.Data(),
-                                                       .ephemeral_context = true,//.ephemeral_context = false,
+                                                       .ephemeral_context = ephemeral,//.ephemeral_context = false,
                                                        .action_names = tempActionNames,
                                                        .action_names_len = 1}} };
 
@@ -269,6 +274,13 @@ bool neuro::NeuroSocket::Initialize()
 
     had_connection = true;
 
+
+    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+    timestamp_greet_sent = now;
+
+    
+
     //return SendContext(("You are playing Skyrim, an action RPG. " + in_game_text + "Try to have a fun adventure. ").c_str(),
     return SendContext(greet_phrase.c_str(),
         true) &&
@@ -286,6 +298,10 @@ bool neuro::NeuroSocket::SendGreeting()
         had_connection = false;
         return false;
     }
+
+
+    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+    timestamp_greet_sent = now;
 
     return SendContext(greet_phrase.c_str(),
         true) &&
@@ -590,6 +606,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     }
     
 
+
     if (action_pos <= 0)
         return true;
 
@@ -731,6 +748,15 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
         return false;
     }
 
+
+
+    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+    float delta_greet = (double)(now - timestamp_greet_sent) / 1000000000.0;
+
+    if (delta_greet > 6000.0f)
+    {
+        SendGreeting();
+    }
 
     time_no_commands += dtime;
     float time_walker_inactive = WalkerProcessor::get_walker_inactive_time();

@@ -92,7 +92,9 @@ bool API_CONTROL_CRAFTING = false;
 
 
 bool do_debug_scan = false;
+
 bool autolook_at_speakers_on_afk = true;
+bool count_ephemeral_force = true;
 
 
 
@@ -182,6 +184,9 @@ int force_to_remember{};
 bool resend_active_force()
 {
     set_active_force(-1);
+
+
+
     return force_choice(options_to_remember, message_to_remember, force_to_remember);
 }
 
@@ -212,11 +217,16 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
         {
 
             set_active_force(force_type);
-
             MiscThings::clean_controls_from_string(&message);
             set_universal_block(1.0f);
             std::string json{};
             bool result = !glz::write_json(options, json);
+
+            bool ephemeral = true;
+
+            if (!ephemeral || count_ephemeral_force)
+                context_chars_sent += json.length();
+
             m_neuroSocket->SendForcedAction(force_action.name,
                 message.c_str(),
                 json.c_str(),
@@ -1840,7 +1850,7 @@ private:
                 ;
 
 
-                if (context_chars_sent > 99999999999999)
+                if (context_chars_sent > 50000)
                 {
                     context_chars_sent = 0;
                     m_neuroSocket->SendGreeting();

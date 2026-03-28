@@ -140,6 +140,88 @@ namespace DialogueProcessor {
 
         RE::MenuTopicManager* topic_manager = RE::MenuTopicManager::GetSingleton();
 
+        /*
+        _root.DialogueMenu_mc.TopicListHolder.List_mc.Entry4.textField.text = Here you go. (Show invitation)
+        _root.DialogueMenu_mc.TopicListHolder.List_mc.EntriesA[3].0.text = Here you go. (Show invitation)
+        _root.DialogueMenu_mc.TopicListHolder.List_mc._filterer._filterArray[3].0.text = Here you go. (Show invitation)
+*/
+
+        RE::GFxValue options_array;
+        RE::UI* ui = RE::UI::GetSingleton();
+        if (ui)
+            if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu)
+                if (menu->uiMovie)
+                    if (menu->uiMovie->GetVariable(&options_array, "_root.DialogueMenu_mc.TopicListHolder.List_mc._filterer._filterArray"))
+                    {
+                        if (!options_array.IsNull() && options_array.IsArray())
+                        {
+                            for (int i = 0; i < options_array.GetArraySize(); i++)
+                            {
+                                RE::GFxValue var_element;
+
+                                if (options_array.GetElement(i, &var_element))
+                                {
+                                    if (var_element.IsObject())
+                                    {
+                                        RE::GFxValue var_text;
+                                        RE::GFxValue var_index;
+
+                                        std::string text = "";
+                                        int index = -1;
+
+                                        if (var_element.GetMember("text", &var_text))
+                                        {
+                                            if (!var_text.IsNull() && var_text.IsString())
+                                            {
+                                                text = var_text.GetString();
+
+                                                if (var_element.GetMember("topicIndex", &var_index))
+                                                {
+                                                    if (!var_index.IsNull() && var_index.IsNumber())
+                                                    {
+                                                        index = var_index.GetNumber();
+
+                                                        if (index != -1 && text != "")
+                                                        {
+
+                                                            if (topic_manager)
+                                                                if (topic_manager->dialogueList)
+                                                                    if (topic_manager->dialogueList->front())
+                                                                    {
+                                                                        int id = 0;
+                                                                        for (auto& dialogue : *topic_manager->dialogueList)
+                                                                        {
+                                                                            if (id == index)
+                                                                            {
+                                                                                auto the_quest = dialogue->parentQuest;
+                                                                                //if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
+                                                                                if (MiscThings::is_quest_active(the_quest))
+                                                                                    text = "[QUEST-RELATED] " + text;
+
+
+                                                                                MenuOption option;
+                                                                                option.id = index;
+                                                                                option.text = text;
+                                                                                dialogue_options.push_back(option);
+                                                                            }
+
+                                                                            id++;
+                                                                        }
+                                                                    }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+
+        /*
         if (topic_manager)
             if (topic_manager->dialogueList)
                 if (topic_manager->dialogueList->front())
@@ -178,6 +260,12 @@ namespace DialogueProcessor {
                     
                     dialogue_options.push_back({ -1, "[STOP DIALOGUE]" });
                 }
+
+
+    */
+
+        dialogue_options.push_back({ -1, "[STOP DIALOGUE]" });
+
 
         return dialogue_options;
     }

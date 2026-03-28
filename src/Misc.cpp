@@ -3440,6 +3440,28 @@ namespace MiscThings {
 
 
 
+    bool is_quest_active(RE::TESQuest* quest)
+    {
+        auto temp_result = get_current_quests();
+
+        if (is_quest_list_valid())
+        {
+            auto p_quests = get_p_quest_list();
+
+            if (p_quests)
+            {
+                for (auto quest_entry : *p_quests)
+                {
+                    if (quest_entry.quest == quest)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
     std::string insert_quest_into_list_and_get_info(std::string quest_text)
     {
         std::string result = "";// quest_text;

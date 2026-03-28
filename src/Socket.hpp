@@ -555,7 +555,7 @@ namespace neuro {
          *
          * \return The success of the operation.
          */
-        bool SendForcedAction(StringView aActionName, StringView aQuery, StringView aState, StringView aPriority = "medium");
+        bool SendForcedAction(StringView aActionName, StringView aQuery, StringView aState, StringView aPriority = "medium", bool ephemeral = true);
 
         /**
          * \brief Poll Neuro's socket and check for new messages.

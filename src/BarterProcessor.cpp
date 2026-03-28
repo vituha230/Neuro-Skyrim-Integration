@@ -2702,7 +2702,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -2817,7 +2817,7 @@ if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu) {
                             */
 
 
-                            search_var = "CULTIST";
+                            search_var = "invitation";
                             search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
@@ -2922,9 +2922,10 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
         //"_root.Bottom.LocalMapButton.constraints.scope"
 
         //"_root.SleepWaitMenu_mc",
-        "_root.Menu_mc.ItemCard_mc",
-        "_root.Menu_mc.InventoryLists_mc._ItemsList"
-        "_root.Menu_mc.InventoryLists_mc._ItemsList.Entry0"
+        //"_root.Menu_mc.ItemCard_mc",
+       // "_root.Menu_mc.InventoryLists_mc._ItemsList"
+        //"_root.Menu_mc.InventoryLists_mc._ItemsList.Entry0"
+        "_root.DialogueMenu_mc.TopicListHolder.List_mc._filterer._filterArray.0"
 
         //"_root.Menu.InventoryLists._ItemsList.Entry0",
         //"_root.Menu.InventoryLists._ItemsList.Entry0.textField"
@@ -2965,7 +2966,7 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
     if (const auto ui = RE::UI::GetSingleton(); ui) 
         //if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) 
         //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu)
-        if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu)
+        if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu)
         {
 
             if (menu->uiMovie)
