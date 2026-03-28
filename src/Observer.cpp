@@ -47,6 +47,7 @@ namespace Observer {
 	bool old_can_interact = false;
 	bool old_can_look = false;
 	bool old_can_walk = false;
+	bool old_can_fight = false;
 
 
 	float detect_locations_timer = 0.0f;
@@ -118,6 +119,12 @@ namespace Observer {
 
 
 	bool dont_inform_inventory = false;
+
+
+	RE::SIT_SLEEP_STATE old_sit_state{};
+
+
+	std::string old_furniture_name = "";
 
 
 
@@ -723,7 +730,7 @@ namespace Observer {
 		old_can_interact = false;
 		old_unbound_quest_stage = 0;
 		old_can_look = false;
-
+		old_can_fight = false;
 
 		jail_serving_notified = false;
 		jail_escaping_notified = false;
@@ -2846,14 +2853,15 @@ namespace Observer {
 						
 
 					auto control_map = RE::ControlMap::GetSingleton();
-					bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+					bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+					bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 					bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
 					bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
 
 					old_can_interact = can_interact;
 					old_can_look = can_look;
 					old_can_walk = can_walk;
-
+					old_can_fight = can_fight;
 
 					auto greybeard_call = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQGreybeardCall");
 					if (greybeard_call)
@@ -2862,6 +2870,9 @@ namespace Observer {
 
 
 					old_had_any_quests = MiscThings::have_any_quests();
+					old_sit_state = player->GetSitSleepState();
+					old_furniture_name = "";
+
 
 				}
 				else
@@ -2957,7 +2968,8 @@ namespace Observer {
 				auto control_map = RE::ControlMap::GetSingleton();
 				bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
 				bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
-				bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+				bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+				bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
 
 				auto escaping_jail = player->playerFlags.escaping;
@@ -3124,7 +3136,6 @@ namespace Observer {
 					register_allowed_actions();
 				}
 
-
 				if (old_can_look && !can_look)
 				{
 					//auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
@@ -3152,10 +3163,32 @@ namespace Observer {
 
 
 
+				if (!old_can_fight && can_fight)
+				{
+					register_attack_action();
+				}
+
+				if (old_can_fight && !can_fight)
+				{
+					unregister_attack_action();
+				}
+
+
+				if (!old_can_interact && can_interact)
+				{
+					register_walk_and_interact();
+				}
+
+				if (old_can_interact && !can_interact)
+				{
+					unregister_walk_and_interact();
+				}
+
 
 				old_can_look = can_look;
 				old_can_interact = can_interact;
 				old_can_walk = can_walk;
+				old_can_fight = can_fight;
 
 				bool cur_mount = MiscThings::is_on_horse();
 
@@ -3215,6 +3248,57 @@ namespace Observer {
 				old_occupied_furniture = occupied_furniture;
 
 
+
+
+
+				auto sit_state = player->GetSitSleepState();
+
+				
+				if (old_sit_state != sit_state)
+				{
+					auto furniture_handle = player_actor->GetOccupiedFurniture();
+
+					if (furniture_handle && furniture_handle.get() && furniture_handle.get().get())
+					{
+						auto furniture_refr = furniture_handle.get().get();
+						auto base_obj = furniture_refr->GetBaseObject();
+						if (base_obj && base_obj->GetFormType() == RE::FormType::Furniture)
+						{
+							auto furniture = (RE::TESFurniture*)base_obj;
+
+							std::string furniture_name = furniture->GetFullName();
+
+							if (furniture_name != "")
+							{
+								if (furniture_name.find("Carriage") != std::string::npos)
+								{
+									if (sit_state == RE::SIT_SLEEP_STATE::kWaitingForSitAnim)
+										send_random_context("[You get into carriage...]");
+
+								}
+									
+								old_furniture_name = furniture_name;
+							}
+							//auto model = furniture->GetModel();
+
+							//bool stop_here = false;
+						}
+					}
+
+					if (sit_state == RE::SIT_SLEEP_STATE::kNormal)
+					{
+						if (old_furniture_name.find("Carriage") != std::string::npos)
+							send_random_context("[You get out of carriage...]");
+
+
+						old_furniture_name = "";
+					}
+						
+
+				}
+
+
+				old_sit_state = sit_state;
 
 
 

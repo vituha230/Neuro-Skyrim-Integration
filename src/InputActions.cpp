@@ -951,7 +951,7 @@ void input_processor(float dtime)
 
     if (do_cast)
     {
-        if (make_long_cast_spell_hand(right_hand_cast, dtime))
+        if (MiscThings::is_player_swimming() || make_long_cast_spell_hand(right_hand_cast, dtime))
         {
             do_cast = false;
             right_hand_cast = false;
@@ -962,7 +962,7 @@ void input_processor(float dtime)
 
     if (launch_sprint)
     {
-        if (launch_sprint_time < 0.1f)
+        if (!MiscThings::is_player_swimming() && launch_sprint_time < 0.1f)
         {
             launch_sprint_time += dtime;
             sprint();
@@ -976,7 +976,7 @@ void input_processor(float dtime)
 
 
 
-    if (long_cast_ult)
+    if (!MiscThings::is_player_swimming() && long_cast_ult)
     {
         set_universal_block(0.5f);
         if (!canceled_inputs)

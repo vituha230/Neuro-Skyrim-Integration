@@ -91,8 +91,9 @@ bool API_CONTROL_LOCKPICK = false;
 bool API_CONTROL_CRAFTING = false;
 
 
-bool do_debug_scan = true;
+bool do_debug_scan = false;
 bool autolook_at_speakers_on_afk = true;
+
 
 
 
@@ -317,6 +318,29 @@ bool register_look_at_object()
 }
 
 
+
+bool register_walk_and_interact()
+{
+    neurosdk_action actions[] = { Capabilities::WalkToObject::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
+bool register_attack_action()
+{
+    neurosdk_action actions[] = { Capabilities::AttackObject::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
 bool register_quest_actions()
 {
     neurosdk_action actions[] = { Capabilities::GetCurrentQuests::Action, Capabilities::FollowQuest::Action };
@@ -339,6 +363,27 @@ bool unregister_look_action()
     return false;
 }
 
+
+bool unregister_walk_and_interact()
+{
+    const char* action_names[] = { Capabilities::WalkToObject::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
+
+bool unregister_attack_action()
+{
+    const char* action_names[] = { Capabilities::AttackObject::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
 
 bool unregister_spin_action()
 {
@@ -2657,10 +2702,12 @@ class MyHook {
 
                         send_speech_context(speaker, subtitle_msg);
 
+                        if (speaker == delphine && subtitle_msg.find("You can't go to a party at the Thalmor Embassy dressed like that.") != std::string::npos)
+                            send_random_context("[You must have both costume and shoes equipped for this quest to proceed. Check inventory and equip it, if its not equipped yet]", false);
 
                         if (autolook_at_speakers_on_afk)
                         {
-                            if (WalkerProcessor::get_walker_inactive_time() > 4.0f && MiscThings::raycastable(speaker, 5000.0f, false))
+                            if (WalkerProcessor::get_walker_inactive_time() > 4.0f && MiscThings::raycastable(speaker, 5000.0f, false) && WalkerProcessor::walker_active())
                             {
                                 WalkerProcessor::look_at_object_by_refr(speaker);
                             }

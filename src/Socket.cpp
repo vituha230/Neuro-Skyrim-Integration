@@ -433,6 +433,14 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     }
 
 
+    auto player = RE::PlayerCharacter::GetSingleton();
+    auto control_map = RE::ControlMap::GetSingleton();
+    bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+    bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || (player ? player->IsInRagdollState() : false);
+    bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+    bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+
     int action_pos = 0;
 
 
@@ -440,6 +448,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     int unbound_quest_stage = threshold_quest->GetCurrentStageID();
 
     int active_force = get_active_force();
+
 
     if (active_force == -1)
     {
@@ -479,12 +488,15 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                     if (!MiscThings::is_intro2()) //must be watched to refresh
                     {
-                        
-                        actions_to_register[action_pos] = Capabilities::AttackObject::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::PickpocketObject::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::CastSpell::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::EquipSpell::Action; action_pos++;
+                        if (can_fight)
+                        {
+                            actions_to_register[action_pos] = Capabilities::AttackObject::Action; action_pos++;
+                            actions_to_register[action_pos] = Capabilities::PickpocketObject::Action; action_pos++;
+                            actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
+                            actions_to_register[action_pos] = Capabilities::CastSpell::Action; action_pos++;
+                            actions_to_register[action_pos] = Capabilities::EquipSpell::Action; action_pos++;
+                        }
+
                         actions_to_register[action_pos] = Capabilities::Spin::Action; action_pos++;
 
 
@@ -512,12 +524,12 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                                 
                         }
 
-                        if (MapProcessor::map_is_allowed()) //must be watched to refresh
+                        if (MapProcessor::map_is_allowed() && can_fight) //must be watched to refresh
                         {
                             actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
                         }
 
-                        if (!MiscThings::is_interior_cell()) //refreshed automatically when we switch location
+                        if (!MiscThings::is_interior_cell() && can_fight) //refreshed automatically when we switch location
                         {
                             actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
                             if (!MiscThings::have_any_quests())

@@ -2588,11 +2588,9 @@ namespace MiscThings {
                             auto pos_dif = player_pos - object_pos;
 
                             
-
-
                             RE::NiPoint3 dbg_point = { 1.0f, 1.0f, 1.0f };
 
-                            if (pos_dif.z < 30.0f)
+                            if (abs(pos_dif.z) < 40.0f)
                                 dbg_point.z = 100.0f;
 
                             return dbg_point;
@@ -6590,7 +6588,7 @@ namespace MiscThings {
                 if (is_equipped(item))
                     actions += "[Equipped" + hand_text + "]";// [Can unequip] ";
                 else
-                    ;// actions += "[Can equip]" + twohanded;
+                    actions += "[Not equipped" + hand_text + "]";// [Can unequip] ";
 
                 actions += stats;
             }
@@ -7998,7 +7996,8 @@ namespace MiscThings {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         bool result = false;
         auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
@@ -8019,7 +8018,8 @@ namespace MiscThings {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
 
         bool result = false;
@@ -8221,7 +8221,8 @@ namespace MiscThings {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         if (!can_walk && !can_look)
             return result;

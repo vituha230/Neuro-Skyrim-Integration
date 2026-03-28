@@ -2188,6 +2188,18 @@ namespace WalkerProcessor {
 
     void cut_navmesh_on_target(RE::TESObjectREFR* target)
     {
+        std::vector<RE::TESObjectREFR*> dont_cut_list =
+        {
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee)
+        };
+
+        for (auto dont_cut : dont_cut_list)
+        {
+            if (target == dont_cut)
+                return;
+        }
+
+
         auto avoidsphere_form = RE::TESObjectREFR::LookupByID(0x7002dbf);
         if (avoidsphere_form)
         {
@@ -3126,15 +3138,24 @@ namespace WalkerProcessor {
             {
                 auto distance = last_point_of_last_path.GetDistance(player_pos);
                 if ((int)std::size(path) < 3)
-                    result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 50.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
                 else
-                    result = distance < 80.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 50.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < 80.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
 
                 //if (distance > 200.0f * (1 + MiscThings::is_on_horse() * 2.0f))
                     
+
+                if (!using_custom_path)
+                    path_point_reached_timeout += dtime;
+
+                if (path_point_reached_timeout > 2.0f)
+                {
+                    return true;
+                }
+
             }
             else
             {
@@ -3147,7 +3168,7 @@ namespace WalkerProcessor {
                     if (!using_custom_path)
                         path_point_reached_timeout += dtime;
 
-                    if (path_point_reached_timeout > 5.0f)
+                    if (path_point_reached_timeout > 4.0f)
                     {
                         return true;
                     }
@@ -3185,10 +3206,10 @@ namespace WalkerProcessor {
                             player_pos.z = 0.0f;
                             distance = current_path_point_pos.GetDistance(player_pos);
 
-                            result = distance < 80.0f + 50.0f * MiscThings::is_player_swimming(); //100
+                            result = distance < 80.0f + 70.0f * MiscThings::is_player_swimming(); //100
                         }
                         else
-                            result = distance < (60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 50.0f*MiscThings::is_player_swimming()); //100
+                            result = distance < (60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f*MiscThings::is_player_swimming()); //100
                     }
                     else
                         result = true;
@@ -4410,7 +4431,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -4534,7 +4556,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -4873,7 +4896,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -4966,7 +4990,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -5043,7 +5068,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -5152,7 +5178,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -5210,7 +5237,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -5488,7 +5516,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -5928,7 +5957,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -6119,7 +6149,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -8361,7 +8392,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -8410,7 +8442,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -8479,7 +8512,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -8618,7 +8652,8 @@ namespace WalkerProcessor {
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
         bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
         //if (player_actor && !player_actor->movementController->controlsDriven)
         if (!can_walk && !can_look)
@@ -9245,7 +9280,8 @@ namespace WalkerProcessor {
             auto control_map = RE::ControlMap::GetSingleton();
             bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
             bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
-            bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+            bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+            bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
 
             

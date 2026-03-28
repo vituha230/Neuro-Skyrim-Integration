@@ -52,9 +52,12 @@ bool unregister_spin_action();
 bool register_surrender_to_guards();
 bool unregister_surrender_to_guards();
 bool register_escape_jail();
-
+bool register_attack_action();
+bool unregister_attack_action();
 bool register_walk_to_object_do_nothing();
 
+bool register_walk_and_interact();
+bool unregister_walk_and_interact();
 
 void reset_poke();
 
