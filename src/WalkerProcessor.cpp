@@ -9111,7 +9111,7 @@ namespace WalkerProcessor {
 	void processor(float dtime)
 	{
 
-        if (interaction_after_walk == 3 && MiscThings::is_on_horse())
+        if (have_target_to_walk && interaction_after_walk != 0 && MiscThings::is_on_horse() && close_enough())
         {
             confirm();
             set_universal_block(1.0f);
