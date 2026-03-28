@@ -18,7 +18,7 @@ bool had_connection = false;
 bool ever_registered = false;
 bool something_is_registered = false;
 
-
+std::string greet_phrase = "You are playing Skyrim, an action RPG. Use commands to interact with the world. Try to have a fun adventure. ";
 
 neurosdk_action ActionsList[] = {
                                     Capabilities::WalkToObjectDoNothing::Action,
@@ -261,21 +261,36 @@ bool neuro::NeuroSocket::Initialize()
     register_allowed_actions(true);
 
 
-    std::string in_game_text = " Use commands to interact with the world. ";
+    //std::string in_game_text = " Use commands to interact with the world. ";
 
-    if (!is_in_game())
-        ;// in_game_text = "You are not in game. Wait for game to start. ";
+    //if (!is_in_game())
+    //    ;// in_game_text = "You are not in game. Wait for game to start. ";
 
 
     had_connection = true;
 
     //return SendContext(("You are playing Skyrim, an action RPG. " + in_game_text + "Try to have a fun adventure. ").c_str(),
-    return SendContext(("You are playing Skyrim, an action RPG. " + in_game_text + " Try to have a fun adventure. ").c_str(),
+    return SendContext(greet_phrase.c_str(),
         true) &&
         IsAlive();
 }
 
 
+
+bool neuro::NeuroSocket::SendGreeting()
+{
+    if (!IsAlive())
+    {
+        something_is_registered = false;
+        ever_registered = false;
+        had_connection = false;
+        return false;
+    }
+
+    return SendContext(greet_phrase.c_str(),
+        true) &&
+        IsAlive();
+}
 
 
 

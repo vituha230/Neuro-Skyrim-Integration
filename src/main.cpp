@@ -601,6 +601,8 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text)
     }
 }
 
+long long context_chars_sent = 0;
+
 
 void send_random_context(std::string context, bool silent)
 {
@@ -612,6 +614,9 @@ void send_random_context(std::string context, bool silent)
 
     if (Observer::not_informing_inventory() && context.find("Quest Items cannot be removed") != std::string::npos)
         return;
+
+
+    context_chars_sent += context.length();
 
     if (m_neuroSocket)
         m_neuroSocket->SendContext(context.c_str(), silent);
@@ -1828,6 +1833,13 @@ private:
 
                 send_delayed_messages(dtime);
                 ;
+
+
+                if (context_chars_sent > 99999999999999)
+                {
+                    context_chars_sent = 0;
+                    m_neuroSocket->SendGreeting();
+                }
             }
                 
         }

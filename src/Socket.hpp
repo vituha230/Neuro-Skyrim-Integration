@@ -511,6 +511,12 @@ namespace neuro {
      * \brief Provides communication between AI and game.
      */
 
+
+    
+
+
+
+
     struct NeuroSocket {
         // How many milliseconds can we poll until we should quit?
         static constexpr auto PollRateMs = 5;
@@ -565,6 +571,8 @@ namespace neuro {
          //    requires Red::Detail::IsClosure<L, void, const neurosdk_message_action_t&>
 
 
+
+        bool SendGreeting();
 
         bool Tick(float dtime); //const neurosdk_message_action_t& aClosure)
 
