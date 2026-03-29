@@ -10334,7 +10334,7 @@ namespace WalkerProcessor {
                                                     else
                                                         stable_target = 0;
 
-                                                    if (looking_mode || MiscThings::is_intro() || locking_failed || ((get_targeted_ref() == target_ref) && stable_target > 4) || lock_camera_onto_target(target_ref, dtime) || location_mode)
+                                                    if (looking_mode || MiscThings::is_intro() || locking_failed || ((get_targeted_ref() == target_ref) && stable_target > 2) || lock_camera_onto_target(target_ref, dtime) || location_mode)
                                                     {
                                                         auto result_target = get_targeted_ref();
 
