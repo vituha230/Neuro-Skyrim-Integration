@@ -780,7 +780,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
     if (make_delayed_poke)
     {
-        if (delayed_poke_time > 1.0f)
+        if (delayed_poke_time > 3.0f)
         {
             if (!have_any_menus_open && something_is_registered)
             {
