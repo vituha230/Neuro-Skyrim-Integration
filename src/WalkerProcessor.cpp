@@ -3140,11 +3140,18 @@ namespace WalkerProcessor {
 
             if (use_last_point_of_last_path)
             {
-                auto distance = last_point_of_last_path.GetDistance(player_pos);
+                auto pos_dif = last_point_of_last_path - player_pos;
+                
+
+                if (abs(last_point_of_last_path.z - player_pos.z) < 50.0f)
+                    pos_dif.z = 0.0f;
+
+                auto distance = pos_dif.Length();
+
                 if ((int)std::size(path) < 3)
                     result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
                 else
-                    result = distance < 90.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
