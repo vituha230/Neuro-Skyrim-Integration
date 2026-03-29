@@ -10773,6 +10773,14 @@ namespace WalkerProcessor {
                                                                     }
                                                                     else
                                                                     {
+
+                                                                        if (MiscThings::is_door_superlocked(target_ref))
+                                                                        {
+                                                                            send_random_context("The path is blocked by a locked door. Cannot lockpick this door. It requires a key", false);
+                                                                            reset_walker();
+                                                                            return;
+                                                                        }
+
                                                                         if (MiscThings::get_picks_amount_int() <= 0)
                                                                         {
                                                                             send_random_context("The path is blocked by a locked door and you dont have any lockpicks to open the lock", false);
@@ -11040,6 +11048,13 @@ namespace WalkerProcessor {
                                                     }
                                                     else
                                                     {
+
+                                                        if (MiscThings::is_door_superlocked(target_ref))
+                                                        {
+                                                            send_random_context("The path is blocked by a locked door. Cannot lockpick this door. It requires a key", false);
+                                                            reset_walker();
+                                                            return;
+                                                        }
 
                                                         if (MiscThings::get_picks_amount_int() <= 0)
                                                         {

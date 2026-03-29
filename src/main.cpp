@@ -2736,7 +2736,7 @@ class MyHook {
                         send_speech_context(speaker, subtitle_msg);
 
                         if (speaker == delphine && subtitle_msg.find("You can't go to a party at the Thalmor Embassy dressed like that.") != std::string::npos)
-                            send_random_context("[You must have both costume and shoes equipped for this quest to proceed. Check inventory (use get_inventory command to see valid items) and equip the clothes (using use_inventory_items action), if not equipped yet]", false);
+                            send_random_context("[You must have both costume and shoes equipped for this quest to proceed. Check inventory (use get_inventory action to get list if items you have) and equip the clothes (using use_inventory_items action), which are unequipped yet]", false);
 
                         if (autolook_at_speakers_on_afk)
                         {
