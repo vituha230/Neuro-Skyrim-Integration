@@ -3144,7 +3144,7 @@ namespace WalkerProcessor {
                 if ((int)std::size(path) < 3)
                     result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
                 else
-                    result = distance < 80.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < 90.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
@@ -5725,15 +5725,17 @@ namespace WalkerProcessor {
                                                     {
                                                         if (test_quest_ref_handle.get())
                                                         {
-                                                            auto test_quests_target_ref2 = test_quest_ref_handle.get().get();
+                                                            auto test_quest_target_ref2 = test_quest_ref_handle.get().get();
 
-                                                            if (test_quests_target_ref2)
+                                                            if (test_quest_target_ref2)
                                                             {
-                                                                std::string test_actual_target_name = test_quests_target_ref2->GetDisplayFullName();
+                                                                std::string test_actual_target_name = test_quest_target_ref2->GetDisplayFullName();
 
                                                                 if (test_actual_target_name != "")
                                                                 {
-                                                                    actual_target_name = test_actual_target_name;
+                                                                    auto base_obj = test_quest_target_ref2->GetBaseObject();
+                                                                    std::string category = MiscThings::get_object_category((RE::TESForm*)base_obj);
+                                                                    actual_target_name = category + " " + test_actual_target_name;
 
                                                                 }
                                                             }

@@ -382,7 +382,8 @@ namespace BookProcessor {
 			{
 				if (done)
 					if (!MiscThings::has_thrown_a_book())
-						send_random_context("[Took the " + last_book_type + "]", false);
+						add_delayed_message("[Took the " + last_book_type + "]");
+						//send_random_context("[Took the " + last_book_type + "]", false);
 
 				reset_menu();
 			}

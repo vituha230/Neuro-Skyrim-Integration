@@ -1514,7 +1514,9 @@ void processor(float dtime)
 
 							if (std::size(options) <= 2 && !is_possessions_chest())
 							{
-								send_random_context("[Container is empty. Closing container...]");
+								add_delayed_message("[Container is empty. Closing container...]");
+
+								//send_random_context("[Container is empty. Closing container...]");
 								//if (force_choice(get_items_options(), "You opened a container. It is empty. Send -1 to exit. ", force_type::container_item))
 								missing_item_detected = false;
 								last_cursor_move = 0;

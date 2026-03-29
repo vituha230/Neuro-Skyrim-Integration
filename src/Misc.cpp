@@ -4022,7 +4022,7 @@ namespace MiscThings {
     }
 
 
-    std::string get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object = nullptr)
+    std::string get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object)
     {
         std::string result = "";
 
