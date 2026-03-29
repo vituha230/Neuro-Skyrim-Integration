@@ -663,12 +663,31 @@ namespace MiscThings {
         auto barrow_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ103");
         auto golden_claw_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS13");
 
-        auto claw_stage = golden_claw_quest->GetCurrentStageID();
-
-        if (claw_stage == 35 && quest == barrow_quest)
+        if (golden_claw_quest)
         {
-            return true;
+            auto claw_stage = golden_claw_quest->GetCurrentStageID();
+
+            if (claw_stage == 35 && quest == barrow_quest)
+            {
+                return true;
+            }
         }
+
+
+
+        auto diplomatic_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ201");
+
+        if (diplomatic_quest)
+        {
+            auto diplomatic_stage = diplomatic_quest->GetCurrentStageID();
+
+            if (diplomatic_stage >= 100 && diplomatic_stage < 230 && quest != diplomatic_quest)
+            {
+                return true;
+            }
+        }
+        
+
 
         return false;
     }

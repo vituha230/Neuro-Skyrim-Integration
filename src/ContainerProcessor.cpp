@@ -132,6 +132,10 @@ bool is_possessions_chest()
 	RE::UI* ui = RE::UI::GetSingleton();
 	RE::GFxValue var1;
 
+
+	//thalmor embassy
+	auto embassy_container = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x39cf1);
+
 	if (ui)
 	{
 		auto menu = ui->GetMenu<RE::ContainerMenu>();
@@ -145,6 +149,9 @@ bool is_possessions_chest()
 			if (container_ref_ptr && container_ref_ptr.get())
 			{
 				auto container_ref = container_ref_ptr.get();
+
+				if (container_ref == embassy_container)
+					return true;
 
 				auto extra_list = &container_ref->extraList;
 
@@ -221,15 +228,16 @@ std::vector<MenuOption> get_items_options()
 
 
 
+	bool is_possessions = is_possessions_chest();
 
-	if (is_possessions_chest() && !is_pickpocketing())
+	if (is_possessions && !is_pickpocketing())
 	{
 		result.clear();
 		result.push_back({ -2, "[TAKE ALL]" });
 	}
 
-
-	result.push_back({ -1, "[STOP LOOTING]" });
+	if (!is_possessions || is_pickpocketing())
+		result.push_back({ -1, "[STOP LOOTING]" });
 	
 
 	return result;
