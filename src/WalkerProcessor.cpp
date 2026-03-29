@@ -5823,8 +5823,8 @@ namespace WalkerProcessor {
                                                 if (target_ref == player_ref)
                                                 {
                                                     reset_walker();
-                                                    result.first = true;
-                                                    result.second = "Error. Cannot follow this quest";
+                                                    result.first = false;
+                                                    result.second = "[This quest has no target to walk to... You need to investigate items in your inventory (maybe read some note or book?)]";
                                                     return result;
                                                 }
 
@@ -7696,7 +7696,7 @@ namespace WalkerProcessor {
                 {
                     if (MiscThings::is_door_superlocked(target_ref))
                     {
-                        send_random_context("Cannot lockpick this door", false);
+                        send_random_context("Cannot lockpick this door. It requires a key", false);
                         reset_walker();
                         return true;
                     }
@@ -10514,7 +10514,7 @@ namespace WalkerProcessor {
                                                                         {
                                                                             if (MiscThings::is_door_superlocked(target_ref))
                                                                             {
-                                                                                send_random_context("Cannot lockpick this door", false);
+                                                                                send_random_context("Cannot lockpick this door. It requires a key", false);
                                                                                 reset_walker();
                                                                                 return;
                                                                             }
