@@ -6419,6 +6419,9 @@ namespace MiscThings {
                                 if (object_name.find("Lockpick") != std::string::npos)
                                     result.second += " lockpicks are used automatically when you interact with closed objects, dont need to use them from inventory";
 
+                                if (object->IsKey())
+                                    result.second += " keys are used automatically when you interact with the correct door, dont need to use them from inventory";
+
                                 return result;
                             }
 
