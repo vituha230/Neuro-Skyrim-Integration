@@ -26,6 +26,9 @@ namespace WalkerProcessor {
     bool silly_walk_mode = false;
 
 
+    float just_teleported_timeout = 0.0f;
+
+
     bool multiple_paths_quest_choice_confirming = false;
     bool multiple_paths_quest_choice_confirmed = false;
     bool multiple_paths_quest_request_sent = false;
@@ -3563,6 +3566,9 @@ namespace WalkerProcessor {
         intro_look_timeout = 0.0f;
 
         custom_path_appended = false; 
+
+
+        just_teleported_timeout = 0.0f;
 
         if (using_custom_path)// && !ustengrev_get_ready_mode && !ustengrev_shout_mode)
         {
@@ -9707,6 +9713,20 @@ namespace WalkerProcessor {
                 }
 
 
+                if (just_teleported && !MiscThings::is_loading())
+                {
+                    just_teleported_timeout += dtime;
+
+                    if (just_teleported_timeout > 5.0f)
+                    {
+                        just_teleported_timeout = 0.0f;
+                        just_teleported = false;
+                    }
+                }
+                else
+                {
+                    just_teleported_timeout = 0.0f;
+                }
 
                 if (make_clairvoyance_cast)
                 {

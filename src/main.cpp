@@ -5,6 +5,11 @@
 
 
 
+//TODO hide all other quests during diplomatic quests while inside of embassy (or maybe even after we gave all our stuff to malborn)
+//TODO redirect quest targets inside of embassy to guide llm through the quest
+
+
+
 //TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 
 
@@ -677,7 +682,8 @@ public:
         {
             if (last_dialogue_message != RE::UI_MESSAGE_TYPE::kHide)
             {
-                send_random_context("[The dialogue ended]", false);
+                //send_random_context("[The dialogue ended]", false);
+                neuro::add_message_to_delayed_queue("[The dialogue ended]");
                 register_allowed_actions();
             }
             last_dialogue_message = a_message.type;
@@ -1022,7 +1028,7 @@ namespace Hooks {
                 }
                 else
                 {
-                    WalkerProcessor::clear_just_teleported();
+                    ;// WalkerProcessor::clear_just_teleported();
                 }
 
 
@@ -1058,7 +1064,7 @@ namespace Hooks {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS CLOSED");
 
 
-                
+                WalkerProcessor::clear_just_teleported();
 
                 in_game = true;
 
@@ -2730,7 +2736,7 @@ class MyHook {
                         send_speech_context(speaker, subtitle_msg);
 
                         if (speaker == delphine && subtitle_msg.find("You can't go to a party at the Thalmor Embassy dressed like that.") != std::string::npos)
-                            send_random_context("[You must have both costume and shoes equipped for this quest to proceed. Check inventory and equip it, if its not equipped yet]", false);
+                            send_random_context("[You must have both costume and shoes equipped for this quest to proceed. Check inventory (use get_inventory command to see valid items) and equip the clothes (using use_inventory_items action), if not equipped yet]", false);
 
                         if (autolook_at_speakers_on_afk)
                         {
