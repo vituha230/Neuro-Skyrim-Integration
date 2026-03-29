@@ -5697,14 +5697,58 @@ namespace WalkerProcessor {
                                     }
 
 
-
-
                                     if (conditions_met)
                                     {
                                         RE::ObjectRefHandle quest_ref_handle{};
                                         target->GetTrackingRef(quest_ref_handle, quest_entry.quest); //try tracked
                                         if (!quest_ref_handle)
+                                        {
                                             target->GetTargetRef(quest_ref_handle, false, quest_entry.quest); //no tracked - try actual target
+                                        }
+                                        else
+                                        {
+                                            if (quest_ref_handle.get())
+                                            {
+                                                auto test_quests_target_ref = quest_ref_handle.get().get();
+                                                if (test_quests_target_ref == player_ref)
+                                                {
+
+                                                    //it leads to player. try to give proper hint on what to do 
+
+                                                    std::string actual_target_name = "maybe read some note or book?";
+
+                                                    RE::ObjectRefHandle test_quest_ref_handle{};
+
+                                                    target->GetTargetRef(test_quest_ref_handle, false, quest_entry.quest); //it tracks to player. check target
+
+                                                    if (test_quest_ref_handle)
+                                                    {
+                                                        if (test_quest_ref_handle.get())
+                                                        {
+                                                            auto test_quests_target_ref2 = test_quest_ref_handle.get().get();
+
+                                                            if (test_quests_target_ref2)
+                                                            {
+                                                                std::string test_actual_target_name = test_quests_target_ref2->GetDisplayFullName();
+
+                                                                if (test_actual_target_name != "")
+                                                                {
+                                                                    actual_target_name = test_actual_target_name;
+
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    
+                                                    reset_walker();
+                                                    result.first = false;
+                                                    result.second = "[This quest has no target to walk to... You need to investigate items in your inventory (" + actual_target_name + ")]";
+                                                    return result;
+
+                                                }
+                                            }
+                                        }
+
 
                                         if (!ignore_specified_target && target != quest_entry.target)
                                             continue;
@@ -5820,13 +5864,7 @@ namespace WalkerProcessor {
                                                //MiscThings::insert_quest_into_list_and_get_info(quest);
 
 
-                                                if (target_ref == player_ref)
-                                                {
-                                                    reset_walker();
-                                                    result.first = false;
-                                                    result.second = "[This quest has no target to walk to... You need to investigate items in your inventory (maybe read some note or book?)]";
-                                                    return result;
-                                                }
+                                                
 
                                                 if (just_escaped_solitude_prison())
                                                 {
