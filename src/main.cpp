@@ -1131,10 +1131,35 @@ namespace Hooks {
                         
                         WalkerProcessor::invalidate_path(); //conditionless
 
+                        std::string advice = "";
+
+                        auto control_map = RE::ControlMap::GetSingleton();
+                        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+                        if (can_fight)
+                        {
+                            if (MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
+                            {
+                                advice = ". You dont have anything that can deal damage in your hands! Equip weapons or offensive spells to deal damage";
+                            }
+                            else
+                            {
+                                bool right_is_useless = !MiscThings::has_something_equipped(true) || (MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true)) || (WalkerProcessor::has_ranged_weapon_equipped(true) && WalkerProcessor::no_ammo());
+                                bool left_is_useless = !MiscThings::has_something_equipped(true) || (MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true));
+
+                                if (right_is_useless && left_is_useless && !MiscThings::is_serving_jail() && !MiscThings::is_intro() && !MiscThings::is_intro2())
+                                {
+                                    advice = ". You dont have any weapons equipped!";
+                                }
+
+                            }
+                        }
+                        
+
                         if (WalkerProcessor::walker_active())
-                            send_random_context("[Current location: " + location_name + "]");
+                            send_random_context("[Current location: " + location_name + advice + "]");
                         else
-                            neuro::add_message_to_delayed_queue("[Current location: " + location_name + ". Use commands to interact with the game. ]");
+                            neuro::add_message_to_delayed_queue("[Current location: " + location_name + ". Use commands to interact with the game" + advice + "]");
 
                         //send_random_context(, false);
                     }

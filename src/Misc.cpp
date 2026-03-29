@@ -5167,6 +5167,34 @@ namespace MiscThings {
     //}
 
 
+
+    bool has_something_equipped(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            auto left_hand = player->currentProcess->equippedObjects[0];
+            auto right_hand = player->currentProcess->equippedObjects[1];
+
+            if (right)
+            {
+                if (right_hand)
+                    result = true;
+            }
+            else
+            {
+                if (left_hand)
+                    result = true;
+            }
+
+        }
+        return result;
+    }
+
+
+
     bool has_spell_equipped(bool right)
     {
         bool result = false;

@@ -6579,30 +6579,7 @@ namespace WalkerProcessor {
 
 
 
-    bool has_something_equipped(bool right)
-    {
-        bool result = false;
-
-        auto player = RE::PlayerCharacter::GetSingleton();
-        if (player)
-        {
-            auto left_hand = player->currentProcess->equippedObjects[0];
-            auto right_hand = player->currentProcess->equippedObjects[1];
-
-            if (right)
-            {
-                if (right_hand)
-                    result = true;
-            }
-            else
-            {
-                if (left_hand)
-                    result = true;
-            }
-
-        }
-        return result;
-    }
+    
 
 
     bool left_is_block()
@@ -6998,7 +6975,7 @@ namespace WalkerProcessor {
 
                 bool dont_use_right = false;
 
-                dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true) && !left_is_useless);
+                dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless);
 
 
                 attack_action = dont_use_right;
@@ -7123,7 +7100,7 @@ namespace WalkerProcessor {
                             else
                                 right_attack();
 
-                            if (!has_something_equipped(true))
+                            if (!MiscThings::has_something_equipped(true))
                             {
                                 no_weapon = true;
                                 attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
@@ -7250,7 +7227,7 @@ namespace WalkerProcessor {
                         //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
                         //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
 
-                        dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true) && !left_is_useless);
+                        dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless);
 
 
                         if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
@@ -7357,7 +7334,7 @@ namespace WalkerProcessor {
                                 attack_spell_cast_timeout = 0.0f;
 
                                 left_attack();
-                                if (!has_something_equipped(false) && has_something_equipped(true) && is_melee_weapon(true))
+                                if (!MiscThings::has_something_equipped(false) && MiscThings::has_something_equipped(true) && is_melee_weapon(true))
                                 {
                                     attacking_info = "[You are blocking";
                                     if (player->GetDistance(target_ref, true) > 100.0f)
@@ -7365,7 +7342,7 @@ namespace WalkerProcessor {
                                 }
                                 else
                                 {
-                                    if (!has_something_equipped(false))
+                                    if (!MiscThings::has_something_equipped(false))
                                     {
                                         no_weapon = true;
                                         attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
@@ -7487,7 +7464,7 @@ namespace WalkerProcessor {
                             //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
                             //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
 
-                            dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (has_something_equipped(false) && !has_something_equipped(true) && !left_is_useless);
+                            dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless);
 
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
