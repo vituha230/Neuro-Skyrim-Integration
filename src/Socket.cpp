@@ -753,7 +753,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
     auto now = std::chrono::steady_clock::now().time_since_epoch().count();
     float delta_greet = (double)(now - timestamp_greet_sent) / 1000000000.0;
 
-    if (delta_greet > 6000.0f)
+    if (delta_greet > 600.0f)
     {
         SendGreeting();
     }
