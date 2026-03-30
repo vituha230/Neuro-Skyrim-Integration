@@ -3,10 +3,7 @@
 
 //crucial:
 
-
-
-//TODO hide all other quests during diplomatic quests while inside of embassy (or maybe even after we gave all our stuff to malborn)
-//TODO redirect quest targets inside of embassy to guide llm through the quest
+//TODO figure out a nice way to follow quest targets.. without talking to them, interrupting the walk (maybe just dont interact during follows)
 
 
 

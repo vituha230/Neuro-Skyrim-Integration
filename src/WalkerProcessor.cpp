@@ -15,6 +15,7 @@
 namespace WalkerProcessor {
 
 
+
     RE::TESObjectREFR* activate_refr_after_walker_is_done = nullptr;
     bool always_shift = false;
     bool karthspire_plates = false;
@@ -10560,7 +10561,32 @@ namespace WalkerProcessor {
                                                                                     lock_camera_onto_target(target_ref, dtime); //keep camera locked in until the walker is reset externally if no action specified
                                                                                     
                                                                                     if (quest_mode && result_target)
-                                                                                        interaction_after_walk = 1; //interact if there is something and it was quest
+                                                                                    {
+                                                                                        bool dont_autointerract = false;
+
+                                                                                        if (target_ref && target_ref->IsActor())
+                                                                                        {
+                                                                                            auto target_actor = (RE::Actor*)target_ref;
+
+                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage))
+                                                                                                dont_autointerract = true;
+                                                                                            
+                                                                                        }
+
+                                                                                        //attempts to not autointerract with npc's that want us to follow them. interaction will stop walking and start (probably useless) dialogue
+                                                                                        if (!dont_autointerract)
+                                                                                            interaction_after_walk = 1; //interact if there is something and it was quest
+                                                                                        else
+                                                                                        {
+                                                                                            //this also refreshes on walk_again so if we are actually following someone it will keep doing it
+                                                                                            backup_interaction_time += dtime;
+
+                                                                                            if (backup_interaction_time > 10.0f)
+                                                                                                reset_walker();
+                                                                                        }
+
+
+                                                                                    }
                                                                                     if (explore_mode)
                                                                                         explore_mode = false; //so we can explore again
                                                                                 }
