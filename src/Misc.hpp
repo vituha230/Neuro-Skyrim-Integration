@@ -6,7 +6,7 @@
 namespace MiscThings {
 
 
-    RE::TESObjectREFR* GetRaycastRef(RE::NiPoint3 from, RE::NiPoint3 aimVector, float distance);
+    RE::TESObjectREFR* GetRaycastRef(RE::NiPoint3 from, RE::NiPoint3 aimVector, float distance, RE::TESObjectREFR* target = nullptr);
 
     void set_time_of_death(long long timestamp);
     long long get_time_of_death();
@@ -200,6 +200,9 @@ namespace MiscThings {
 
     bool has_something_equipped(bool right);
     std::string get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object = nullptr);
+
+    void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos);
+
 
     bool is_inventory_item_in_the_list(RE::TESBoundObject* item);
     std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item);

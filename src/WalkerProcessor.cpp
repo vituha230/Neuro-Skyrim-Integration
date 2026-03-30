@@ -663,21 +663,7 @@ namespace WalkerProcessor {
     }
 
 
-    void myMoveTo_Impl(RE::TESObjectREFR* object, const RE::ObjectRefHandle& a_targetHandle, RE::TESObjectCELL* a_targetCell, RE::TESWorldSpace* a_selfWorldSpace, const RE::NiPoint3& a_position, const RE::NiPoint3& a_rotation)
-    {
-        using func_t = decltype(&myMoveTo_Impl);
-        static REL::Relocation<func_t> func{ RELOCATION_ID(56227, 56626) };
-        return func(object, a_targetHandle, a_targetCell, a_selfWorldSpace, a_position, a_rotation);
-    }
 
-    void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos)
-    {
-        assert(a_target);
-
-        auto handle = a_target->GetHandle();
-
-        myMoveTo_Impl(a_target, handle, a_target->GetParentCell(), a_target->GetWorldspace(), new_pos, a_target->data.angle);
-    }
 
 
 
@@ -706,9 +692,9 @@ namespace WalkerProcessor {
                 }
                 
                 if (using_custom_path)
-                    SetPosition_moveto(marker_ref, custom_path.at(0));
+                    MiscThings::SetPosition_moveto(marker_ref, custom_path.at(0));
                 else
-                    SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
+                    MiscThings::SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
 
                 //if (using_custom_path)
                 //    marker_ref->SetPosition(custom_path.at(0));
@@ -865,9 +851,9 @@ namespace WalkerProcessor {
                             }
 
                             if (using_custom_path)
-                                SetPosition_moveto(marker_ref, custom_path.at(0));
+                                MiscThings::SetPosition_moveto(marker_ref, custom_path.at(0));
                             else
-                                SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
+                                MiscThings::SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
 
 
 
@@ -2111,7 +2097,7 @@ namespace WalkerProcessor {
         auto camera_dir = camera->cameraRoot.get()->world.rotate;
         auto camera_pos = camera->pos;
 
-        auto targeted_ref = MiscThings::GetRaycastRef(camera_pos, camera_dir.GetVectorY(), 300.0f);
+        auto targeted_ref = MiscThings::GetRaycastRef(camera_pos, camera_dir.GetVectorY(), 300.0f, nullptr);
         if (targeted_ref && targeted_ref != ignore_ref)// && (targeted_ref != target_ref || quest_mode)) //not nice
         {
             std::string blocking_name = MiscThings::get_blocking_object_name2(targeted_ref);
@@ -2427,7 +2413,7 @@ namespace WalkerProcessor {
 
 
 
-    RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target)
+    RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target, bool sit_correction)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
@@ -2472,6 +2458,7 @@ namespace WalkerProcessor {
 
                         auto player_temp_pos = player->GetPosition();
 
+                        //if (sit_correction)
                         if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
                             lookat_location.z -= 30.0f;
 
@@ -4203,7 +4190,7 @@ namespace WalkerProcessor {
 
 
 
-                        auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range);
+                        auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range, target_ref);
 
                         //if (target_ref->IsActor() && target_ref->IsDead())
                         //    return true;

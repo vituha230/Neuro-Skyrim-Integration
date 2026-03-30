@@ -795,6 +795,30 @@ namespace MiscThings {
         return 0;
     }
 
+
+
+    void myMoveTo_Impl(RE::TESObjectREFR* object, const RE::ObjectRefHandle& a_targetHandle, RE::TESObjectCELL* a_targetCell, RE::TESWorldSpace* a_selfWorldSpace, const RE::NiPoint3& a_position, const RE::NiPoint3& a_rotation)
+    {
+        using func_t = decltype(&myMoveTo_Impl);
+        static REL::Relocation<func_t> func{ RELOCATION_ID(56227, 56626) };
+        return func(object, a_targetHandle, a_targetCell, a_selfWorldSpace, a_position, a_rotation);
+    }
+
+    void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos)
+    {
+        assert(a_target);
+
+        auto handle = a_target->GetHandle();
+
+        myMoveTo_Impl(a_target, handle, a_target->GetParentCell(), a_target->GetWorldspace(), new_pos, a_target->data.angle);
+    }
+
+
+
+
+
+
+
     bool raycastable(RE::TESObjectREFR* object, float range, bool only_forward)
     {
         auto camera = RE::PlayerCamera::GetSingleton();
@@ -805,10 +829,9 @@ namespace MiscThings {
         auto camera_dir = camera->cameraRoot.get()->world.rotate;
         auto camera_lookat = camera_dir.GetVectorY();
 
-        auto aim_pos = WalkerProcessor::get_estimate_aim_pos(object);
+        auto aim_pos = WalkerProcessor::get_estimate_aim_pos(object, false);
 
         auto delta_pos = aim_pos - camera_pos;
-
 
         auto delta_pos_noZ = delta_pos;
         auto camera_lookat_noZ = camera_lookat;
@@ -824,14 +847,14 @@ namespace MiscThings {
                 return false;
         }
 
-        auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range);
+        auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range, object);
 
         auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
 
         if (!only_forward && raycast_ref == player_ref)
         {
 
-            raycast_ref = MiscThings::GetRaycastRef(camera_pos - camera_lookat*15.0f, delta_pos, range);
+            raycast_ref = MiscThings::GetRaycastRef(camera_pos - camera_lookat*15.0f, delta_pos, range, object);
         }
             
 
@@ -1042,12 +1065,22 @@ namespace MiscThings {
     };
 
 
-    uint32_t my_filter1 = 0b10010000000000011110;
-    uint32_t my_filter2 = 0b10010000000000001110;
+    //from discord
+    //16-31  15      14          13   8-12   7    0-6
+    //group  linked  dontcollide idk  part#  idk  layer
+    //Things in the same group generally don't collide with each other unless bit 15 is set, in which case it uses the part# to determine whether to collide. That's used for ragdolls.
+    //The layer is in the first 7 bits and that's why filterInfo & 0x7f is the layer.
+    //    One of the bhkCollisionFilter funcs takes in 2 filter infos and returns whether they should collide or not if you want to see exactly how the two infos are compared
+
+    //                                      |15     |7     |0
+    uint32_t my_filter4 = 0b00000101011001110000000000011110; //whiterun guard
+    uint32_t my_filter0 = 0b00000101011010101000000000011110; //bjorlams filter (has bit 15 set)
+    uint32_t my_filter1 = 0b00000000000010010000000000011110; //player filter
+    uint32_t my_filter2 = 0b00000000000010010000000000001110; //filter without invisible zones, that doesnt work on bjorlam
 
 
     RayCastResult RayCast(RE::NiPoint3 rayStart, RE::NiPoint3 rayDir, float maxDist,
-        RE::Actor* actor) {
+        RE::Actor* actor, RE::TESObjectREFR* target) {
         RayCastResult result{};
         result.distance = maxDist;
 
@@ -1071,11 +1104,26 @@ namespace MiscThings {
         rayDir.Unitize();
         pickData.rayInput.to = (rayStart + rayDir * maxDist) * havokWorldScale;
 
-        RE::CFilter cFilter_info{};
 
-        actor->GetCollisionFilterInfo(cFilter_info);
 
-        pickData.rayInput.filterInfo = (RE::CFilter)my_filter2;// cFilter_info;
+        bool linked = false;
+
+        if (target && target->IsActor())
+        {
+            auto target_actor = (RE::Actor*)target;
+            RE::CFilter cFilter_info{};
+            target_actor->GetCollisionFilterInfo(cFilter_info);
+
+            if (cFilter_info.filter & (1 << 15))
+                linked = true;
+        }
+
+
+
+        if (linked)
+            pickData.rayInput.filterInfo = (RE::CFilter)my_filter1; //idk why but for sitting actors filter2 doesnt work
+        else
+            pickData.rayInput.filterInfo = (RE::CFilter)my_filter2;
 
         // static_cast<RE::CFilter>(cFilter.filter | static_cast<uint32_t>(layerMask));
 
@@ -1096,12 +1144,12 @@ namespace MiscThings {
 
 
     //excludes player
-    RE::TESObjectREFR* GetRaycastRef(RE::NiPoint3 from, RE::NiPoint3 aimVector, float distance)
+    RE::TESObjectREFR* GetRaycastRef(RE::NiPoint3 from, RE::NiPoint3 aimVector, float distance, RE::TESObjectREFR* target)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_actor = (RE::Actor*)player->AsReference();
 
-        auto raycast_result = RayCast(from, aimVector, distance, player_actor);
+        auto raycast_result = RayCast(from, aimVector, distance, player_actor, target);
 
         return raycast_result.hitObjectRef;
     }
