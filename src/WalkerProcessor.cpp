@@ -15,6 +15,10 @@
 namespace WalkerProcessor {
 
 
+    RE::TESObjectREFR* activate_refr_after_walker_is_done = nullptr;
+    bool always_shift = false;
+    bool karthspire_plates = false;
+
     float crouch_timeout = 0.0f;
 
     int stable_target = 0;
@@ -1179,7 +1183,27 @@ namespace WalkerProcessor {
 
     RE::NiPoint3 along_next_path_points_vector()
     {
+
         RE::NiPoint3 result{};
+
+
+        if (karthspire_plates)
+        {
+            auto camera = RE::PlayerCamera::GetSingleton();
+            auto camera_dir = camera->cameraRoot.get()->world.rotate;
+            auto camera_pos = camera->pos;
+
+            RE::NiPoint3 direction_vector{};
+
+            direction_vector = camera_dir.GetVectorY();
+
+            direction_vector.z = -0.6f;
+
+            return direction_vector;
+
+        }
+
+
         try {
             if (use_last_point_of_last_path)
             {
@@ -1648,7 +1672,7 @@ namespace WalkerProcessor {
                 turning_around = false;
                 //float height_dif = last_point_posZ - path[current_path_point].z;
 
-                if (is_about_to_fall())
+                if (always_shift || is_about_to_fall())
                 {
                     if (player->IsRunning() && !player->IsSneaking() && !was_slowwalking)
                     {
@@ -1660,14 +1684,14 @@ namespace WalkerProcessor {
                 else
                 {
 
-                    if (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking)
+                    if (!always_shift && (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking))
                     {
                         was_slowwalking = false;
                         unslow_walk();
                     }
                     else
                     {
-                        if (!player->IsRunning() && !player->IsSneaking() && !was_slowwalking && !turning_around)
+                        if (!player->IsRunning() && !player->IsSneaking() && !was_slowwalking && !turning_around && !always_shift)
                         {
                             //test if we are slowwalking for some reason
                             anti_slowwalk_timer += dtime_maybe_bad;
@@ -3204,7 +3228,11 @@ namespace WalkerProcessor {
                             player_pos.z = 0.0f;
                             distance = current_path_point_pos.GetDistance(player_pos);
 
-                            result = distance < 80.0f + 70.0f * MiscThings::is_player_swimming(); //100
+                            float base_threshold = 80.0f;
+                            if (karthspire_plates)
+                                base_threshold = 30.0f;
+
+                            result = distance < base_threshold + 70.0f * MiscThings::is_player_swimming(); //100
                         }
                         else
                             result = distance < (60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f*MiscThings::is_player_swimming()); //100
@@ -3448,6 +3476,19 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        if (activate_refr_after_walker_is_done)
+        {
+            auto refr_to_activate = activate_refr_after_walker_is_done;
+            activate_refr_after_walker_is_done = nullptr;
+            walk_to_object_by_refr(refr_to_activate, 1);
+            return;
+        }
+        
+        karthspire_plates = false;
+
+        always_shift = false;
+
         crouch_timeout = 0.0f;
 
         stable_target = 0;
@@ -5334,7 +5375,7 @@ namespace WalkerProcessor {
 
 
 
-    int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective = nullptr)
+    int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective)
     {
         int result = -1;
 
@@ -8165,6 +8206,17 @@ namespace WalkerProcessor {
                 if (quest_mode && (target_name == "")) //not guaranteed that insert_object will give us a name
                     target_name = "quest target point";
 
+                auto karthspire_pillars = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xad059);
+
+                if (karthspire_pillars)
+                {
+                    if (target_ref == karthspire_pillars)
+                    {
+                        target_name = "some unusual puzzle pillars... Looks like you need to turn all pillars to correct positions to proceed";
+                        walk_backward_a_little = true;
+                    }
+                }
+
                 result = "You walked up to " + target_name; //default
 
                 switch (interaction_after_walk)
@@ -8783,7 +8835,7 @@ namespace WalkerProcessor {
 
 
 
-    std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout)
+    std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout, RE::TESObjectREFR* refr_to_activate_when_done)
     {
         std::pair<bool, std::string> result{};
 
@@ -8796,6 +8848,7 @@ namespace WalkerProcessor {
             gate_shout = is_gate_shout;
             shout_mode = true;
             shout_to_use = shout;
+            activate_refr_after_walker_is_done = refr_to_activate_when_done;
             return walk_to_object_by_refr(target, 3);
         }
         else
@@ -8836,6 +8889,43 @@ namespace WalkerProcessor {
         left_attack_cancel();
 
     }
+
+
+
+
+    void walk_karthspire_plates()
+    {
+        if (have_target_to_walk)
+        {
+            Observer::reset_threats();
+            reset_walker();
+        }
+
+
+        unregister_all_actions();
+        using_custom_path = true;
+        custom_path = CustomWalkerPaths::karthspire_plates;
+        path_valid = true;
+        path = CustomWalkerPaths::karthspire_plates;
+
+
+
+        target_ref = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x511a4); //chain
+
+        activate_refr_after_walker_is_done = target_ref;
+
+        reset_after_walk = true;
+        have_target_to_walk = true;
+        //interaction_after_walk = 1;
+        always_shift = true;
+        karthspire_plates = true;
+
+        right_attack_cancel();
+        left_attack_cancel();
+
+    }
+
+
 
 
     std::pair<bool, std::string> escape_prison()
@@ -9512,8 +9602,8 @@ namespace WalkerProcessor {
 
                             
 
-
-                            send_random_context(result_header + ". Choose next action to do. " + advice + "]", false);
+                            if (!shout_mode)
+                                send_random_context(result_header + ". Choose next action to do. " + advice + "]", false);
                         }
                         else
                             search_next_target_timer += dtime;
@@ -9896,7 +9986,7 @@ namespace WalkerProcessor {
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_actor = (RE::Actor*)player->AsReference();
 
-                    if (player_actor && (player_actor->IsWeaponDrawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3 && !input_wants_to_cast())
+                    if (player_actor && (!shout_mode && player_actor->IsWeaponDrawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3 && !input_wants_to_cast())
                     {
                         if (!tried_to_draw_weapon1 || draw_weapon_check_time1 > 2.0f)
                         {
@@ -9913,7 +10003,7 @@ namespace WalkerProcessor {
                         draw_weapon_check_time1 = 0.0f;
                     }
 
-                    if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk == 3)
+                    if (!shout_mode && player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk == 3)
                     {
                         if (!tried_to_draw_weapon2 || draw_weapon_check_time2 > 2.0f)
                         {

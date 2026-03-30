@@ -43,6 +43,7 @@ namespace MiscThings {
 
 
     bool player_inside_of_ustengrev_gate_puzzle();
+    bool player_inside_of_karthspire_plate_puzzle();
 
 
     bool is_on_horse();

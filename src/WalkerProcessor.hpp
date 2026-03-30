@@ -115,7 +115,8 @@ namespace WalkerProcessor {
 
 	float get_attack_time(bool right);
 
-	
+	int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective = nullptr);
+
 	std::pair<bool, std::string> make_spins(int amount, int speed);
 
 	bool ustengrev_puzzle_get_ready(int mode);
@@ -132,6 +133,9 @@ namespace WalkerProcessor {
 	float get_walker_inactive_time();
 	void reset_inactive_timer();
 
-	std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout = false);
+	void walk_karthspire_plates();
+
+
+	std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout = false, RE::TESObjectREFR* refr_to_activate_when_done = nullptr);
 
 }

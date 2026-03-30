@@ -151,60 +151,55 @@ namespace Observer {
 		}
 		else
 		{
+
+
+
+			int min_range = 1;
+			int max_range = 3;
+
+
+
+
+
+
 			switch (active_puzzle)
 			{
 			case 1:
 			case 2:
 			{
-				if (id >= 1 && id <= 5)
-				{
-					puzzle_choice = id;
-					puzzle_choice_valid = true;
-					result.first = true;
-					result.second = "[Processing...]";
-				}
-				else
-				{
-					result.first = false;
-					result.second = "Invalid choice ID";
-				}
-
+				min_range = 1;
+				max_range = 5;
 				break;
 			}
 
 			case 3:
 			{
-				if (id >= 1 && id <= 4)
+
+				min_range = 1;
+				max_range = 4;
+				break;
+			}
+
+			case 5:
+			{
+
+				min_range = 1;
+				max_range = 4;
+
+				auto player = RE::PlayerCharacter::GetSingleton();
+				if (player)
 				{
-					puzzle_choice = id;
-					puzzle_choice_valid = true;
-					result.first = true;
-					result.second = "[Processing...]";
-				}
-				else
-				{
-					result.first = false;
-					result.second = "Invalid choice ID";
+					if (player->GetPosition().x < 132600.0f)
+						max_range = 3;
 				}
 
 				break;
 			}
 
-
 			case 4:
 			{
-				if (id >= 1 && id <= 6)
-				{
-					puzzle_choice = id;
-					puzzle_choice_valid = true;
-					result.first = true;
-					result.second = "[Processing...]";
-				}
-				else
-				{
-					result.first = false;
-					result.second = "Invalid choice ID";
-				}
+				min_range = 1;
+				max_range = 6;
 
 				break;
 			}
@@ -217,6 +212,24 @@ namespace Observer {
 				break;
 			}
 			}
+
+
+			if (id >= min_range && id <= max_range)
+			{
+				puzzle_choice = id;
+				puzzle_choice_valid = true;
+				result.first = true;
+				result.second = "[Processing...]";
+			}
+			else
+			{
+				result.first = false;
+				result.second = "Invalid choice ID";
+			}
+
+
+
+			
 
 		}
 
@@ -239,9 +252,20 @@ namespace Observer {
 
 		if (pause_puzzle_scan_time <= 0.0f)
 		{
-			auto finish_trigger = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x52477);
+			auto ustengrev_finish_trigger = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x52477);
 
-			if (active_puzzle == -1 && finish_trigger && !finish_trigger->IsDisabled() && MiscThings::player_inside_of_ustengrev_gate_puzzle())
+
+			if (active_puzzle == -1 && MiscThings::player_inside_of_karthspire_plate_puzzle())
+			{
+				//no time delay, its a sharp turn without threats + it will be threat if we step on the plates
+				WalkerProcessor::reset_walker();
+				RE::TESObjectREFR* chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x511a4);
+
+				WalkerProcessor::look_at_object_by_refr(chain);
+				active_puzzle = 5;
+			}
+
+			if (active_puzzle == -1 && ustengrev_finish_trigger && !ustengrev_finish_trigger->IsDisabled() && MiscThings::player_inside_of_ustengrev_gate_puzzle())
 			{
 				if (!WalkerProcessor::processing_ustengrev())
 					not_processing_ustengrev_time += dtime;
@@ -255,7 +279,11 @@ namespace Observer {
 				not_processing_ustengrev_time = 0.0f;
 		}
 		else
-			pause_puzzle_scan_time -= dtime;
+		{
+			if (!WalkerProcessor::is_walking_important_path())
+				pause_puzzle_scan_time -= dtime;
+		}
+			
 
 
 
@@ -642,6 +670,108 @@ namespace Observer {
 				break;
 			}
 
+
+
+			case 5:
+			{
+				if (!puzzle_request_was_sent)
+				{
+					std::vector<MenuOption> options{};
+					//options.push_back({ 1, "Run around a keystone" });
+					options.push_back({ 1, "Run towards the exit, ignoring the puzzle" });
+					options.push_back({ 2, "Simply walk to the chain and pull it" });
+					options.push_back({ 3, "Use Whirlwind Sprint shout to fly to the chain, then pull it" });
+
+					auto player = RE::PlayerCharacter::GetSingleton();
+					if (player)
+					{
+						if (player->GetPosition().x > 132600.0f)
+							options.push_back({ 4, "Walk carefully to the chain, only stepping on the pressure plates with the Dragonborn symbol on them" });
+					}
+					
+
+					if (force_choice(options, "You stop and see another puzzle. Suspicious pressure plates cover entire floor of this room, they have different symbols on them. There is a pulling chain across the room, and exit cave on the right. What will you do?", force_type::timed_quest_puzzle))
+					{
+						puzzle_request_was_sent = true;
+
+						//if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+						//{
+						//	puzzle_request_was_sent = true;
+						//	puzzle_pause_was_made = true;
+						//	MiscThings::pause_game();
+						//}
+					}
+				}
+				else
+				{
+					if (puzzle_choice_valid)
+					{
+						if (false && puzzle_pause_was_made)
+						{
+							if (MiscThings::is_game_paused())
+							{
+								MiscThings::unpause_game();
+							}
+							//set_universal_block(0.5f);
+							puzzle_pause_was_made = false;
+							return;
+
+						}
+
+						pause_puzzle_scan_time = 5.0f;
+
+						switch (puzzle_choice)
+						{
+							//case 1:
+							//{
+							//	reset_quest_puzzles();
+							//	break;
+							//}
+						case 1:
+						{
+							auto our_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ203");
+							WalkerProcessor::walk_to_quest_by_index(WalkerProcessor::get_quest_id_by_refr(our_quest), false);
+							pause_puzzle_scan_time = 10.0f;
+							reset_quest_puzzles();
+							break;
+						}
+						case 2:
+						{
+							RE::TESObjectREFR* chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x511a4);
+							WalkerProcessor::walk_to_object_by_refr(chain, 1);
+							pause_puzzle_scan_time = 10.0f;
+							reset_quest_puzzles();
+							break;
+						}
+						case 3:
+						{
+							RE::TESObjectREFR* chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x511a4);
+							auto shout_form = (RE::TESShout*)RE::TESForm::LookupByID(0x2f7ba);
+							WalkerProcessor::shout_at_target(chain, shout_form, false, chain);
+							pause_puzzle_scan_time = 10.0f;
+							reset_quest_puzzles();
+							break;
+						}
+						case 4:
+						{
+							WalkerProcessor::walk_karthspire_plates();
+							pause_puzzle_scan_time = 10.0f;
+							reset_quest_puzzles();
+							break;
+						}
+
+						default:
+						{
+							reset_quest_puzzles();
+							break;
+						}
+						}
+					}
+				}
+
+
+				break;
+			}
 
 
 
@@ -1234,12 +1364,30 @@ namespace Observer {
 
 									if (base_type == RE::FormType::Door)
 									{
-										if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_all || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance)))
+										if (!MiscThings::is_object_in_the_list(a_ref))
 										{
-											std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
-											if (info != "")
-												interesting_buffer.insert_or_assign(a_ref, info);
+											auto door = (RE::TESObjectDOOR*)base_obj;
+											std::string model = door->GetModel();
+											if (model.find("LoadMarker") != std::string::npos)
+											{
+												if (distance < 1000.0f)
+												{
+													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+													if (info != "")
+														interesting_buffer.insert_or_assign(a_ref, info);
+												}
+											}
+											else
+											{
+												if (jail_condition_all || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance))
+												{
+													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+													if (info != "")
+														interesting_buffer.insert_or_assign(a_ref, info);
+												}
+											}
 										}
+										
 									}
 
 
@@ -2205,6 +2353,32 @@ namespace Observer {
 															if (activation == 1)
 																result.push_back("[ " + name + " opened]");
 														}
+
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "SkyHavenRetractableBridge01")
+														{
+															std::string name = MiscThings::insert_object_into_list_custom_name("Stone bridge", a_ref);
+
+
+
+
+															if (activation == 0)
+																result.push_back("[ " + name + " closed]");
+
+															if (activation == 1)
+															{
+																RE::TESObjectREFR* karthspire_bridge1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4efba);
+																RE::TESObjectREFR* karthspire_bridge2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e862);
+
+																if (a_ref == karthspire_bridge1 || a_ref == karthspire_bridge2)
+																	quicksave();
+
+
+																result.push_back("[ " + name + " opened]");
+															}
+																
+														}
+
 
 														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorSecRmSmDoorSm01")
 														{

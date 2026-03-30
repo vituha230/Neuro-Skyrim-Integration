@@ -1078,6 +1078,38 @@ namespace MiscThings {
     }
 
 
+    bool player_inside_of_karthspire_plate_puzzle()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+
+        auto player_worldspace = player->GetWorldspace();
+        RE::TESObjectREFR* second_bridge = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e862);
+        if (player_worldspace && player_worldspace->formID == 218777 && MiscThings::two_state_activator_state(second_bridge) == 0)
+        {
+            RE::NiPoint2 a = { 132945.125, -4114.51172 };//, -1103.65869
+            RE::NiPoint2 b = { 131872.359, -4103.85986 };// , -1095.44202
+            RE::NiPoint2 c = { 131746.062, -2716.95947 };// , -1113.10095
+            RE::NiPoint2 d = { 132914.531, -2947.98657 };// , -1104.09680
+
+            float z = 2560.0f;
+
+            if (abs(player_pos.z - z) < 150.0f)
+            {
+                RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                if (is_inside_of_rectangle(p, a, b, c, d))
+                {
+                    //player inside
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
 
 
 
@@ -1816,6 +1848,17 @@ namespace MiscThings {
                 result = "[Is in correct position]";
         }
 
+
+        object_p = General::Script::GetObject(pillar, "dunKarthspirePillarPuzzle");
+
+        if (object_p)
+        {
+            if (get_pillar_face_name(pillar) == 2)
+                result = "[Is in correct position]";
+        }
+
+
+
         return result;
     }
 
@@ -1851,6 +1894,15 @@ namespace MiscThings {
                             result = " [position Whale]";
                     }
 
+                    if (project_name == "SkyHavenPuzzlePillar01")
+                    {
+                        if (code == 1)
+                            result = " [position King]";
+                        if (code == 2)
+                            result = " [position Dragonborn]";
+                        if (code == 3)
+                            result = " [position Warrior]";
+                    }
 
                     if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel02") != std::string::npos)
                     {
@@ -1911,6 +1963,24 @@ namespace MiscThings {
                                 }
                             }
                         }
+
+                        if (project_name == "SkyHavenPuzzlePillar01")
+                        {
+                            if (graph_ptr->behaviorGraph)
+                            {
+                                auto active_nodes = graph_ptr->behaviorGraph->activeNodes;
+                                if (active_nodes)
+                                {
+                                    auto node_info = active_nodes->data();
+                                    if (node_info && node_info->nodeTemplate)
+                                    {
+                                        int node_id = node_info->nodeTemplate->id;
+                                        result = node_id;
+                                    }
+                                }
+                            }
+                        }
+
 
                         if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel02") != std::string::npos)
                         {
@@ -2691,8 +2761,19 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("LoadMarker") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 1.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
                         if (result == RE::NiPoint3::Zero())
                         {
+
+
+
+
                             auto player = RE::PlayerCharacter::GetSingleton();
 
                             auto player_pos = player->GetPosition();
