@@ -632,6 +632,45 @@ namespace MiscThings {
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
     {
+        auto riften_bad_door1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x53057); //house door
+        auto riften_bad_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x42286); //south big gate
+        auto riften_good_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x42284); //north big gate
+
+        if (riften_good_door)
+        {
+            if (riften_bad_door1)
+            {
+                if (target == riften_bad_door1)
+                {
+                    auto base_obj = riften_bad_door1->GetBaseObject();
+                    if (base_obj && base_obj->GetFormType() == RE::FormType::Door)
+                    {
+                        if (riften_bad_door1->IsLocked())
+                        {
+                            return riften_good_door;
+                        }
+                    }
+                }
+            }
+
+            if (riften_bad_door2)
+            {
+                if (target == riften_bad_door2)
+                {
+                    auto base_obj = riften_bad_door2->GetBaseObject();
+                    if (base_obj && base_obj->GetFormType() == RE::FormType::Door)
+                    {
+                        if (riften_bad_door2->IsLocked())
+                        {
+                            return riften_good_door;
+                        }
+                    }
+                }
+            }
+        }
+
+
+
         auto golden_claw_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS13");
 
         if (quest == golden_claw_quest)
