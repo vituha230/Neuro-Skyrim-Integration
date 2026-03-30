@@ -949,6 +949,12 @@ void input_processor(float dtime)
             
     }
 
+
+
+    
+
+
+
     if (do_cast)
     {
         if (MiscThings::is_player_swimming() || make_long_cast_spell_hand(right_hand_cast, dtime))

@@ -690,6 +690,45 @@ namespace MiscThings {
             }
         }
 
+
+        auto parthurnax_walk_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ204");
+        
+        if (quest == parthurnax_walk_quest)
+        {
+            auto stage = parthurnax_walk_quest->GetCurrentStageID();
+            auto parthurnax_target2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3c57d);
+
+            if (stage < 95 && target == parthurnax_target2)
+            {
+                //parthurnax is disabled in the air - redirect to something
+                auto wall = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9413e);
+
+                return wall;
+            }
+        }
+
+
+        auto elder_scroll_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ205");
+
+        if (quest == elder_scroll_quest)
+        {
+            auto stage = elder_scroll_quest->GetCurrentStageID();
+            auto faralda = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1a5);
+            auto gates = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x37a7d);
+            auto urag = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1b4);
+
+            if (stage >= 50 && target == urag)
+            {
+                bool gates_are_locked = false;
+
+                if (gates && gates->IsLocked())
+                {
+                    return faralda;
+                }
+            }
+        }
+
+
         return target;
     }
 
@@ -1044,6 +1083,33 @@ namespace MiscThings {
         return rectangle_area >= point_area*0.99f;
     }
 
+
+
+
+    RE::TESObjectREFR* get_linked_ref_children(RE::TESObjectREFR* object, int index)
+    {
+        if (object)
+        {
+            auto extra = object->extraList.GetByType(RE::ExtraDataType::kLinkedRefChildren);
+
+            if (extra)
+            {
+                auto extra_linked = (RE::ExtraLinkedRefChildren*)extra;
+
+                int id = 0;
+                for (auto linked_ref : extra_linked->linkedChildren)
+                {
+                    if (id == index && linked_ref.refr && linked_ref.refr.get() && linked_ref.refr.get().get())
+                    {
+                        return linked_ref.refr.get().get();
+                    }
+                    id++;
+                }
+            }
+        }
+
+        return nullptr;
+    }
 
 
 

@@ -2503,27 +2503,55 @@ namespace WalkerProcessor {
             {
                 auto target_actor = (RE::Actor*)target;
 
-                if (target_actor->currentProcess)
-                    if (target_actor->currentProcess->middleHigh)
-                        if (target_actor->currentProcess->middleHigh->headNode)
-                        {
-                            auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
+                if (MiscThings::is_enemy_to_actor(target))
+                {
+                    if (target_actor->currentProcess)
+                        if (target_actor->currentProcess->middleHigh)
+                            if (target_actor->currentProcess->middleHigh->headNode)
+                            {
+                                auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
 
-                            auto lookat_location = torso_pos;
+                                auto lookat_location = torso_pos;
 
-                            if (MiscThings::is_dragon(target))
-                                torso_pos.z += 100.0f;
+                                if (MiscThings::is_dragon(target))
+                                    torso_pos.z += 100.0f;
 
 
-                            auto player_temp_pos = player->GetPosition();
+                                auto player_temp_pos = player->GetPosition();
 
-                            target_center = lookat_location;
-                            height = 0.0f;
-                            specific_shift = RE::NiPoint3::Zero();
+                                target_center = lookat_location;
+                                height = 0.0f;
+                                specific_shift = RE::NiPoint3::Zero();
 
-                            lookat_used = true;
-                        }
+                                lookat_used = true;
+                            }
+                }
+                else
+                {
+                    //if they are friendly - try head.. surely they have head..
+                    if (target_actor->currentProcess)
+                        if (target_actor->currentProcess->middleHigh)
+                            if (target_actor->currentProcess->middleHigh->headNode)
+                            {
+                                auto head_pos = target_actor->currentProcess->middleHigh->headNode->world.translate;
 
+                                auto lookat_location = head_pos;
+
+                                auto player_temp_pos = player->GetPosition();
+
+                                //if (sit_correction)
+                                if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
+                                    lookat_location.z -= 30.0f;
+
+                                target_center = lookat_location;
+
+
+                                height = 0.0f;
+                                specific_shift = RE::NiPoint3::Zero();
+
+                                lookat_used = true;
+                            }
+                }
             }
         }
 
@@ -2727,27 +2755,49 @@ namespace WalkerProcessor {
             {
                 auto target_actor = (RE::Actor*)target;
 
-                if (target_actor->currentProcess)
-                    if (target_actor->currentProcess->middleHigh)
-                        if (target_actor->currentProcess->middleHigh->headNode)
-                        {
-                            auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
+                if (MiscThings::is_enemy_to_actor(target))
+                {
+                    if (target_actor->currentProcess)
+                        if (target_actor->currentProcess->middleHigh)
+                            if (target_actor->currentProcess->middleHigh->headNode)
+                            {
+                                auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
 
-                            auto lookat_location = torso_pos;
+                                auto lookat_location = torso_pos;
 
-                            if (MiscThings::is_dragon(target))
-                                torso_pos.z += 100.0f;
+                                if (MiscThings::is_dragon(target))
+                                    torso_pos.z += 100.0f;
 
 
-                            auto player_temp_pos = player->GetPosition();
+                                auto player_temp_pos = player->GetPosition();
 
-                            target_center = lookat_location;
-                            height = 0.0f;
-                            specific_shift = RE::NiPoint3::Zero();
+                                target_center = lookat_location;
+                                height = 0.0f;
+                                specific_shift = RE::NiPoint3::Zero();
 
-                            lookat_used = true;
-                        }
+                                lookat_used = true;
+                            }
+                }
+                else
+                {
+                    if (target_actor->currentProcess->middleHigh->headNode)
+                    {
+                        auto head_pos = target_actor->currentProcess->middleHigh->headNode->world.translate;
 
+                        auto lookat_location = head_pos;
+
+                        auto player_temp_pos = player->GetPosition();
+
+                        if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
+                            lookat_location.z -= 30.0f;
+
+                        target_center = lookat_location;
+                        height = 0.0f;
+                        specific_shift = RE::NiPoint3::Zero();
+
+                        lookat_used = true;
+                    }
+                }
             }
         }
         
@@ -4335,6 +4385,12 @@ namespace WalkerProcessor {
 
                     if (quest_mode)
                     {
+
+                        if (target_ref && target_ref->IsActor() && !target_ref->IsDead())
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 50.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
+                                return true;
+
+
                         if (distance.Length() < 110.0f * (1 + MiscThings::is_on_horse() * 3.0f))
                             return true;
                     }
@@ -9862,6 +9918,85 @@ namespace WalkerProcessor {
 
                 if (have_target_to_walk)
                 {
+
+                    auto parthurnax_walk_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ204");
+
+                    auto parthurnax_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x34e03);
+                    auto parthurnax_target2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3c57d);
+                    auto parthurnax_target3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9413e);
+
+                    if (parthurnax_walk_quest)
+                    {
+                        auto parthurnax_walk_quest_stage = parthurnax_walk_quest->GetCurrentStageID();
+
+                        if (quest_mode && (target_ref == parthurnax_target || target_ref == parthurnax_target2 || target_ref == parthurnax_target3) && !shout_mode && (parthurnax_walk_quest_stage == 86 || parthurnax_walk_quest_stage == 90))
+                        {
+                            auto hazard_0 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x105375);
+                            auto hazard_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x105965);
+                            auto hazard_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10f764);
+
+                            auto player = RE::PlayerCharacter::GetSingleton();
+
+                            if (player)
+                            {
+                                auto player_pos = player->GetPosition();
+                                auto clear_skies_shout = (RE::TESShout*)RE::TESForm::LookupByID(0x3CD34);
+
+                                if (MiscThings::player_has_spell((RE::SpellItem*)clear_skies_shout))
+                                {
+
+                                    if (hazard_0)
+                                    {
+                                        auto hazard_0_pos = hazard_0->GetPosition();
+                                        auto hazard_0_blizzard = MiscThings::get_linked_ref_children(hazard_0, 0);
+
+                                        if (hazard_0_blizzard && !hazard_0_blizzard->IsDisabled())
+                                        {
+                                            if (player_pos.GetDistance(hazard_0_pos) < 1200.0f)
+                                            {
+                                                WalkerProcessor::shout_at_target(hazard_0_blizzard, clear_skies_shout);
+                                            }
+                                        }
+                                    }
+
+                                    if (hazard_1)
+                                    {
+                                        auto hazard_1_pos = hazard_1->GetPosition();
+                                        //auto hazard_1_blizzard = MiscThings::get_linked_ref_children(hazard_1, 0);
+
+                                        if (!hazard_1->IsDisabled())
+                                        {
+                                            if (player_pos.GetDistance(hazard_1_pos) < 1200.0f)
+                                            {
+                                                WalkerProcessor::shout_at_target(hazard_1, clear_skies_shout);
+                                            }
+                                        }
+                                    }
+
+                                    if (hazard_2)
+                                    {
+                                        auto hazard_2_pos = hazard_2->GetPosition();
+                                        //auto hazard_2_blizzard = MiscThings::get_linked_ref_children(hazard_2, 0);
+
+                                        if (!hazard_2->IsDisabled())
+                                        {
+                                            if (player_pos.GetDistance(hazard_2_pos) < 1200.0f)
+                                            {
+                                                WalkerProcessor::shout_at_target(hazard_2, clear_skies_shout);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+
+
+
+
+
+
                     if (interaction_after_walk > 1 && interaction_after_walk <= 3)
                         walker_inactive_time = 0.0f;
                     else
