@@ -716,15 +716,31 @@ namespace MiscThings {
             auto faralda = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1a5);
             auto gates = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x37a7d);
             auto urag = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1b4);
+            auto door_to_urag = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x177f9);
+            auto book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x32787);
+            auto book2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x32786); //wrong book
 
-            if (stage >= 50 && target == urag)
+            if (stage >= 50 && (target == urag || target == door_to_urag))
             {
+
+                auto septimus_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA04");
+                if (septimus_quest)
+                {
+                    auto septimus_stage = septimus_quest->GetCurrentStageID();
+
+                    if (septimus_stage == 5)
+                        return urag;
+                }
+                
+
                 bool gates_are_locked = false;
 
                 if (gates && gates->IsLocked())
-                {
-                    return faralda;
-                }
+                 return faralda;
+
+
+                if (book && !book->IsDisabled())
+                    return book;
             }
         }
 
@@ -1113,6 +1129,33 @@ namespace MiscThings {
 
 
 
+
+    bool player_inside_of_alftand_goodbox()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            auto player_pos = player->GetPosition();
+
+            RE::NiPoint2 a = { 77113.9219, 78285.6953 }; //-5733.7241
+            RE::NiPoint2 b = { 78506.6953, 76860.0625 }; //-5633.2554
+            RE::NiPoint2 c = { 78288.2188, 76661.2422 }; //-5640.6494
+            RE::NiPoint2 d = { 76897.3906, 78095.0078 }; //-5724.9077
+
+            float z = -5780.0f;
+
+            if (abs(player_pos.z - z) < 150.0f)
+            {
+                RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                    return true;
+            }
+        }
+
+
+        return false;
+    }
+
     bool player_inside_of_ustengrev_gate_puzzle()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -1486,6 +1529,10 @@ namespace MiscThings {
                 }
                 //NorSecRmSmDoorSm01
 
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePole06")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal pole gate", a_ref);
+                }
 
             }
         }
@@ -2833,6 +2880,9 @@ namespace MiscThings {
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+
+                        //Architecture\Winterhold\WinterholdLDoor01.nif
+
 
                         if (result == RE::NiPoint3::Zero())
                         {

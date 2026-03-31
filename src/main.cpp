@@ -3,9 +3,8 @@
 
 //crucial:
 
-//TODO figure out a nice way to follow quest targets.. without talking to them, interrupting the walk (maybe just dont interact during follows)
 
-
+//TODO test solitude prison custom path walk, might be broken
 
 //TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 

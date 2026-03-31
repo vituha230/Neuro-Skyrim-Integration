@@ -14,7 +14,8 @@
 
 namespace WalkerProcessor {
 
-
+    int alftand_counter = 0;
+    bool dont_check_quest_target_change = false;
 
     RE::TESObjectREFR* activate_refr_after_walker_is_done = nullptr;
     bool always_shift = false;
@@ -833,6 +834,9 @@ namespace WalkerProcessor {
                             }
 
                         }
+
+
+
 
 
                         //auto target_cell = target_ref->GetParentCell();
@@ -3527,6 +3531,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        
+
 
         if (activate_refr_after_walker_is_done)
         {
@@ -3536,6 +3542,11 @@ namespace WalkerProcessor {
             return;
         }
         
+
+        alftand_counter = 0;
+        dont_check_quest_target_change = false;
+
+
         karthspire_plates = false;
 
         always_shift = false;
@@ -6086,6 +6097,9 @@ namespace WalkerProcessor {
 
     bool detect_quest_target_changed_and_walk()
     {
+        if (dont_check_quest_target_change)
+            return false;
+
         if (using_custom_path && std::size(path) > 0 && current_path_point < (std::size(path) - 1))
             return false;
 
@@ -9814,6 +9828,61 @@ namespace WalkerProcessor {
 
                 if (target_ref && (!my_handle || !my_handle.get() || !my_handle.get().get()))
                     reset_walker();
+
+
+
+                //700af26 - cut sphere
+                //700af27 - xmarker
+                //15d48 - door
+
+                //RE::TESObjectREFR* cut_sphere = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15d48); //lets leave it on forever for now
+
+                RE::TESObjectREFR* alftand_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15d48);
+                RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700af27);
+
+                if (target_ref == alftand_door)
+                {
+                    //doing some redirections 
+
+                    if (!MiscThings::player_inside_of_alftand_goodbox())
+                    {
+                        if (alftand_counter == 5)
+                        {
+                            dont_check_quest_target_change = true;
+                            target_ref = redirect_marker;
+                            walk_again();
+                            return;
+                        }
+                        else
+                            alftand_counter++;
+
+                    }
+                }
+                else
+                {
+                    if (target_ref == redirect_marker)
+                    {
+                        if (MiscThings::player_inside_of_alftand_goodbox())
+                        {
+                            if (alftand_counter == 0)
+                            {
+                                reset_walker();
+                                unregister_all_actions();
+                                target_ref = alftand_door;
+                                have_target_to_walk = true;
+                                using_custom_path = true;
+                                walk_again_when_finished = true;
+                                custom_path = { player->GetPosition(), alftand_door->GetPosition()};
+                                return;
+                            }
+                            else
+                                alftand_counter--;
+                        }
+                            
+                    }
+                }
+                
+
 
 
 

@@ -41,6 +41,9 @@ namespace MiscThings {
         std::string custom_name = "";
     };
 
+    float is_inside_of_rectangle(RE::NiPoint2 p, RE::NiPoint2 a, RE::NiPoint2 b, RE::NiPoint2 c, RE::NiPoint2 d);
+    bool player_inside_of_alftand_goodbox();
+
 
     bool player_inside_of_ustengrev_gate_puzzle();
     bool player_inside_of_karthspire_plate_puzzle();
