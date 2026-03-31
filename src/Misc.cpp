@@ -1535,6 +1535,12 @@ namespace MiscThings {
                     result = name;
                 }
 
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePoleDwemer01")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Wide dwemer metal pole gate", a_ref);
+                    result = name;
+                }
+
             }
         }
 
@@ -2727,6 +2733,13 @@ namespace MiscThings {
                         }
 
                         if (model.find("NorLever01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 1.0f, 1.0f, 1.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("DweLever01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { 1.0f, 1.0f, 1.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
