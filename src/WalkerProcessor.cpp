@@ -14,8 +14,11 @@
 
 namespace WalkerProcessor {
 
+    bool dont_quicksave_after_custom_path = false;
 
+    bool dont_shift = false;
 
+    bool custom_with_close_enough_confirm = false; //dont use this TODO REMOVE THIS
 
 
     int alftand_counter = 0;
@@ -311,6 +314,8 @@ namespace WalkerProcessor {
 
 
     bool walk_again_when_finished = false;
+    bool lock_and_interact_when_finished = false;
+
 
     bool reset_after_walk = false;
 
@@ -855,7 +860,7 @@ namespace WalkerProcessor {
                             marker_ref->MoveTo(target_ref);
 
 
-                            auto shift = MiscThings::get_looking_point_shift(target_ref, false);
+                            auto shift = MiscThings::get_looking_point_shift(target_ref, false) + MiscThings::get_walking_point_shift(target_ref);
                             auto pickpocket_shift = RE::NiPoint3::Zero();
 
                             if (interaction_after_walk == 2 && target_ref && target_ref->IsHumanoid())
@@ -1681,7 +1686,7 @@ namespace WalkerProcessor {
                 turning_around = false;
                 //float height_dif = last_point_posZ - path[current_path_point].z;
 
-                if (always_shift || is_about_to_fall())
+                if (!dont_shift && (always_shift || is_about_to_fall()))
                 {
                     if (player->IsRunning() && !player->IsSneaking() && !was_slowwalking)
                     {
@@ -3546,10 +3551,12 @@ namespace WalkerProcessor {
             return;
         }
         
-
+        lock_and_interact_when_finished = false;
+        custom_with_close_enough_confirm = false;
         alftand_counter = 0;
         dont_check_quest_target_change = false;
 
+        dont_shift = false;
 
         karthspire_plates = false;
 
@@ -3674,9 +3681,12 @@ namespace WalkerProcessor {
         if (using_custom_path)// && !ustengrev_get_ready_mode && !ustengrev_shout_mode)
         {
             register_allowed_actions();
-            quicksave();
+
+            if (!dont_quicksave_after_custom_path)
+                quicksave();
         }
-            
+
+        dont_quicksave_after_custom_path = false;
 
         if (!backup_input_cancel)
         {
@@ -3932,6 +3942,14 @@ namespace WalkerProcessor {
 
             if (was_charging_ranged)
                 cancel_charge_weapon();
+
+
+            
+            
+
+            
+            
+
 
 
 
@@ -4935,6 +4953,8 @@ namespace WalkerProcessor {
                     using_custom_path = true;
                     walk_again_when_finished = true;
                     custom_path = CustomWalkerPaths::solitude_prison_exit;
+                    dont_shift = true;
+
                 }
 
 
@@ -5247,6 +5267,7 @@ namespace WalkerProcessor {
                         using_custom_path = true;
                         walk_again_when_finished = true;
                         custom_path = CustomWalkerPaths::solitude_prison_exit;
+                        dont_shift = true;
                     }
 
 
@@ -5322,6 +5343,7 @@ namespace WalkerProcessor {
                     using_custom_path = true;
                     walk_again_when_finished = true;
                     custom_path = CustomWalkerPaths::solitude_prison_exit;
+                    dont_shift = true;
                 }
                 
                 reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
@@ -5403,6 +5425,7 @@ namespace WalkerProcessor {
                     using_custom_path = true;
                     walk_again_when_finished = true;
                     custom_path = CustomWalkerPaths::solitude_prison_exit;
+                    dont_shift = true;
                 }
 
                 location_mode = true;
@@ -5982,6 +6005,7 @@ namespace WalkerProcessor {
                                                     using_custom_path = true;
                                                     walk_again_when_finished = true;
                                                     custom_path = CustomWalkerPaths::solitude_prison_exit;
+                                                    dont_shift = true;
                                                 }
 
 
@@ -6233,7 +6257,8 @@ namespace WalkerProcessor {
                                                     if (using_custom_path)
                                                     {
                                                         register_allowed_actions();
-                                                        quicksave();
+                                                        if (!dont_quicksave_after_custom_path)
+                                                            quicksave();
                                                     }
                                                         
 
@@ -6248,6 +6273,7 @@ namespace WalkerProcessor {
                                                     using_custom_path = true;
                                                     walk_again_when_finished = true;
                                                     custom_path = CustomWalkerPaths::solitude_prison_exit;
+                                                    dont_shift = true;
                                                 }
 
 
@@ -6348,6 +6374,7 @@ namespace WalkerProcessor {
                 using_custom_path = true;
                 walk_again_when_finished = true;
                 custom_path = CustomWalkerPaths::solitude_prison_exit;
+                dont_shift = true;
             }
 
 
@@ -6469,6 +6496,7 @@ namespace WalkerProcessor {
                 using_custom_path = true;
                 walk_again_when_finished = true;
                 custom_path = CustomWalkerPaths::solitude_prison_exit;
+                dont_shift = true;
             }
 
 
@@ -9876,6 +9904,7 @@ namespace WalkerProcessor {
                                 target_ref = alftand_door;
                                 have_target_to_walk = true;
                                 using_custom_path = true;
+                                dont_quicksave_after_custom_path = true;
                                 walk_again_when_finished = true;
                                 custom_path = { player->GetPosition(), alftand_door->GetPosition()};
                                 return;
@@ -9886,6 +9915,74 @@ namespace WalkerProcessor {
                             
                     }
                 }
+
+
+                if (target_ref && !using_custom_path)
+                {
+                    auto player = RE::PlayerCharacter::GetSingleton();
+                    auto player_pos = player->GetPosition();
+                    auto target_ref_pos = target_ref->GetPosition();
+
+                    auto blackreach_lab_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xEEDEE); //for some reason pathfinding doesnt work here
+                    if (blackreach_lab_door && target_ref == blackreach_lab_door)
+                    {
+                        float distance = player_pos.GetDistance(target_ref_pos);
+
+                        if (distance < 500.0f && get_targeted_ref() != blackreach_lab_door)
+                        {
+                            auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = target_to_remember;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { player_pos, target_ref_pos };
+                            //walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
+                        }
+                    }
+
+                    auto base_obj = target_ref->GetBaseObject();
+                    if (base_obj)
+                    {
+                        auto base_type = base_obj->GetFormType();
+
+                        if (base_type == RE::FormType::Door)
+                        {
+                            auto activator = (RE::TESObjectDOOR*)base_obj;
+                            std::string model = activator->GetModel();
+
+                            if (model.find("DweFacadeLiftLeverLoad") != std::string::npos)
+                            {
+                                float distance = player_pos.GetDistance(target_ref_pos);
+                                if (distance < 1000.0f && distance > 200.0f)
+                                {
+                                    auto target_to_remember = target_ref;
+                                    reset_walker();
+                                    target_ref = target_to_remember;
+                                    have_target_to_walk = true;
+                                    using_custom_path = true;
+                                    custom_path = { player_pos, target_ref_pos };
+                                    //walk_again_when_finished = true;
+                                    lock_and_interact_when_finished = true;
+                                    interaction_after_walk = 1;
+                                    path = custom_path;
+                                    path_valid = true;
+                                    dont_quicksave_after_custom_path = true;
+                                    //custom_with_close_enough_confirm = true;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+
+
                 
 
 
@@ -10365,7 +10462,7 @@ namespace WalkerProcessor {
                         else
                         {
 
-                            if (looking_mode || path_valid || use_last_point_of_last_path)
+                            if (looking_mode || path_valid || use_last_point_of_last_path || close_enough())
                             {
                                 if (!use_last_point_of_last_path && (current_path_point == -1))
                                 {
@@ -10529,7 +10626,7 @@ namespace WalkerProcessor {
                                     else
                                     {
                                         //if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path) || MiscThings::is_intro())
-                                        if (looking_mode || MiscThings::is_intro() || use_last_point_of_last_path || (std::size(path) == 0) || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path && (current_path_point > (int)std::size(path) - 5)))
+                                        if (looking_mode || MiscThings::is_intro() || use_last_point_of_last_path || (std::size(path) == 0) || current_path_point >= (int)std::size(path) || (close_enough() && (!using_custom_path || custom_with_close_enough_confirm) && (current_path_point > (int)std::size(path) - 5)))
                                         {
                                             dead_point_time = 0.0f;
                                             if (reset_after_walk)
@@ -10619,6 +10716,7 @@ namespace WalkerProcessor {
                                                         register_allowed_actions();
                                                         quicksave();
                                                         walk_again();
+                                                        return; //REMOVE IF BROKE
                                                     }
                                                 }
                                             }

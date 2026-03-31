@@ -745,6 +745,13 @@ namespace MiscThings {
         }
 
 
+        auto blackreach_tower_mzark_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xef7cd);
+        auto blackreach_tower_mzark_elevator = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2872a);
+
+        if (target == blackreach_tower_mzark_door)
+            target = blackreach_tower_mzark_elevator;
+
+
         return target;
     }
 
@@ -2742,6 +2749,38 @@ namespace MiscThings {
 
 
 
+    //pathfinding goes crazy
+    RE::NiPoint3 get_walking_point_shift(RE::TESObjectREFR* object)
+    {
+        RE::NiPoint3 result{};
+
+        if (object)
+        {
+            auto base_obj = object->GetBaseObject();
+            if (base_obj)
+            {
+                if (base_obj->GetFormType() == RE::FormType::Door)
+                {
+
+                    auto furniture = (RE::TESObjectDOOR*)base_obj;
+                    RE::NiPoint3 object_angles = object->data.angle;
+
+                    std::string model = furniture->GetModel();
+                    if (model.find("DweFacadeLiftLeverLoad") != std::string::npos)
+                    {
+                        RE::NiPoint3 base_shift_vector = { 0.0f, -600.0f, 60.0f };
+                        RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                        result = rotated_shift_vector;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+
     RE::NiPoint3 get_looking_point_shift(RE::TESObjectREFR* object, bool pickpocket_mode)
     {
         RE::NiPoint3 result{};
@@ -3098,16 +3137,26 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
-                        if (model.find("DwemerLargeDoorLoad01") != std::string::npos)
+                        //if (model.find("DwemerLargeDoorLoad01") != std::string::npos)
+                        if (model.find("DwemerLargeDoor") != std::string::npos)
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 120.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
 
-                        if (model.find("DwemerSmallDoorLoad01") != std::string::npos)
+                        //if (model.find("DwemerSmallDoorLoad01") != std::string::npos)
+                        if (model.find("DwemerSmallDoor") != std::string::npos)
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 120.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        //if (model.find("DweFacadeLiftLeverLoadUp01") != std::string::npos)
+                        if (model.find("DweFacadeLiftLeverLoad") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 1.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
@@ -6683,6 +6732,7 @@ namespace MiscThings {
                 std::string object_name = object->GetName();
 
                 object_name = replace_aliases_all_quests(object_name);
+                auto actor_equip = RE::ActorEquipManager::GetSingleton();
 
                 switch (action_id)
                 {
@@ -6690,7 +6740,7 @@ namespace MiscThings {
                 {
                     if (is_equippable(object))
                     {
-                        auto actor_equip = RE::ActorEquipManager::GetSingleton();
+                        
                         if (is_equipped(object))
                         {
                             result.first = actor_equip->UnequipObject((RE::Actor*)player_ref, object);
@@ -6771,20 +6821,47 @@ namespace MiscThings {
 
                                 //auto actor_equip = RE::ActorEquipManager::GetSingleton();
                                 //actor_equip->EquipObject((RE::Actor*)player_ref, object);
+                                std::string name = book_book->GetFullName();
 
-                                if (book_book->TeachesSpell())
+                                //
+                                if (name.find("Elder Scroll (") != std::string::npos)
                                 {
-                                    book_book->Read(player_ref);
+                                    auto slot = get_free_slot();
+
+                                    bool left_hand = false;
+                                    std::string equip_hand = "";
+
+                                    if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
+                                        equip_hand = " in right hand";
+
+                                    if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
+                                    {
+                                        left_hand = true;
+                                        equip_hand = " in left hand";
+                                    }
+
+                                    actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot);
+
+
+                                    //actor_equip->EquipObject((RE::Actor*)player_ref, object);
                                 }
                                 else
                                 {
-                                    //book_book->Read(player_ref);
-                                    auto book_book = object->As<RE::TESObjectBOOK>();
-                                    auto world_book_handle = player_actor->DropObject(object, nullptr, 1);
-                                    auto book_refr = world_book_handle.get().get();
-                                    book_book->Activate(book_refr, player_ref, 0, object, 1);
-                                    threw_a_book_out_to_read = true;
+                                    if (book_book->TeachesSpell())
+                                    {
+                                        book_book->Read(player_ref);
+                                    }
+                                    else
+                                    {
+                                        //book_book->Read(player_ref);
+                                        auto book_book = object->As<RE::TESObjectBOOK>();
+                                        auto world_book_handle = player_actor->DropObject(object, nullptr, 1);
+                                        auto book_refr = world_book_handle.get().get();
+                                        book_book->Activate(book_refr, player_ref, 0, object, 1);
+                                        threw_a_book_out_to_read = true;
+                                    }
                                 }
+
 
 
 

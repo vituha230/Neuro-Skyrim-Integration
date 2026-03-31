@@ -64,6 +64,7 @@ namespace MiscThings {
     void clear_object_list();
     RE::NiPoint3 get_looking_point_shift(RE::TESObjectREFR* object, bool pickpocket_mode);
     RE::NiPoint3 rotate_vector_by_angles(RE::NiPoint3 v, RE::NiPoint3 object_angles);
+    RE::NiPoint3 get_walking_point_shift(RE::TESObjectREFR* object);
 
     void reset_misc();
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id);
