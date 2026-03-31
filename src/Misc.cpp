@@ -1532,6 +1532,7 @@ namespace MiscThings {
                 if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePole06")
                 {
                     std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal pole gate", a_ref);
+                    result = name;
                 }
 
             }

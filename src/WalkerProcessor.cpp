@@ -9654,6 +9654,7 @@ namespace WalkerProcessor {
                             if (was_already_dead || (target_ref && !target_ref->IsActor()))
                                 result_header = "[You finished attacking " + reminder_target_name;
 
+                            Observer::reset_threats();
 
                             reset_walker();
                             std::string advice = "";
