@@ -1583,6 +1583,202 @@ namespace MiscThings {
         return result;
     }
 
+
+    void check_unseen_levers_if_no_levers(float range, RE::TESObjectREFR* ignore_ref)
+    {
+        //intended to be called after we have detected blocking object, in case there are no activators currently in the list
+        //maybe its behind the corner or something
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_ref = player->AsReference();
+
+
+        //first - check if we have activators in the list
+
+        if (MiscThings::is_objects_around_valid())
+        {
+            auto p_objects_around = MiscThings::get_p_objects_around();
+
+            if (p_objects_around)
+            {
+                for (auto object_around : *p_objects_around)
+                {
+                    if (is_object_valid(object_around.second.object))
+                    {
+                        auto base_obj = object_around.second.object->GetBaseObject();
+                        if (base_obj)
+                        {
+                            auto base_type = base_obj->GetFormType();
+
+                            if (base_type == RE::FormType::Furniture) //pullchains/levers
+                            {
+                                auto furniture = (RE::TESFurniture*)base_obj;
+                                auto workbenchtype = furniture->workBenchData.benchType;
+                                if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                                {
+                                    if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
+                                    {
+                                        return; //we have some lever or chain. not interesting anymore
+                                    }
+                                }
+                            }
+
+                            if (base_type == RE::FormType::Activator) //pullchains/levers
+                            {
+                                auto activator = (RE::TESObjectACTI*)base_obj;
+
+                                std::string model = activator->GetModel();
+
+                                if (model.find("Lever") != std::string::npos || model.find("Chain") != std::string::npos)
+                                    return; //we have some lever or chain. not interesting anymore
+                            }
+
+                        }
+                    }
+                    
+                }
+            }
+        }
+
+        //if we got here - no levers/pullchains
+
+        //now find the blocking object
+
+        RE::TESObjectREFR* blocking_object = nullptr;
+
+        if (player_ref)
+        {
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, range,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref == ignore_ref)
+                        return RE::BSContainer::ForEachResult::kContinue;
+
+                    if (!MiscThings::is_object_valid(a_ref))
+                        return RE::BSContainer::ForEachResult::kContinue;
+
+
+                    std::string blocking_name = get_blocking_object_name(a_ref);
+
+                    if (blocking_name != "")
+                    {
+                        blocking_object = a_ref; //blocker found
+                        return RE::BSContainer::ForEachResult::kStop;
+                    }
+                        
+
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+        }
+
+
+        
+        if (blocking_object)
+        {
+            std::vector<RE::TESObjectREFR*> levers{};
+
+            RE::TES::GetSingleton()->ForEachReferenceInRange(blocking_object, 3000.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref == ignore_ref)
+                        return RE::BSContainer::ForEachResult::kContinue;
+
+                    if (!MiscThings::is_object_valid(a_ref))
+                        return RE::BSContainer::ForEachResult::kContinue;
+
+
+                    auto base_obj = a_ref->GetBaseObject();
+                    if (base_obj)
+                    {
+                        auto base_type = base_obj->GetFormType();
+
+                        if (base_type == RE::FormType::Furniture) //pullchains/levers
+                        {
+                            auto furniture = (RE::TESFurniture*)base_obj;
+                            auto workbenchtype = furniture->workBenchData.benchType;
+                            if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                            {
+                                if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
+                                {
+                                    //already checked for being valid above
+                                    levers.push_back(a_ref);
+                                }
+                            }
+                        }
+
+
+                        if (base_type == RE::FormType::Activator) //pullchains/levers
+                        {
+                            auto activator = (RE::TESObjectACTI*)base_obj;
+
+                            std::string model = activator->GetModel();
+
+                            if (model.find("Lever") != std::string::npos || model.find("Chain") != std::string::npos)
+                                levers.push_back(a_ref);
+                        }
+                    }
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+
+
+            if (std::size(levers) > 0)
+            {
+                //something is found... sort by distance from blocking object. if more than 1 - get 2nd (closest one is probably backside lever)
+
+                std::sort(levers.begin(), levers.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
+
+                    if (left->data.objectReference && right->data.objectReference)
+                        return left->GetDistance(blocking_object) < right->GetDistance(blocking_object); //switch > to < for inversed order. this is last->closest
+                    else
+                        return false;
+                    });
+
+
+                std::vector<RE::TESObjectREFR*> best_candidates{};
+
+                if (std::size(levers) > 1)
+                {
+                    auto closest_candidate = levers.at(0);
+                    float closest_distance = closest_candidate->GetDistance(blocking_object);
+
+                    if (closest_distance > 700.0f)
+                        best_candidates.push_back(closest_candidate); //add even closest if he is far enough
+                
+                    for (auto i = 1; i < std::size(levers); i++)
+                    {
+                        best_candidates.push_back(levers.at(i));
+                    }
+                }
+                else
+                {
+                    auto closest_candidate = levers.at(0);
+                    float closest_distance = closest_candidate->GetDistance(blocking_object);
+
+                    best_candidates.push_back(closest_candidate);
+                }
+
+                
+                    
+                std::string info = "";
+                for (auto best_candidate : best_candidates)
+                {
+                    info += MiscThings::insert_object_into_list_and_get_info(best_candidate) + "; ";
+                }
+
+                if (info != "")
+                {
+                    send_random_context("You see: " + info);
+                }
+            }
+        }
+    }
+
+
+
+
     int get_destructible_state(RE::TESObjectREFR* web)
     {
         int result = 0;
@@ -2895,8 +3091,26 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
-                        //Architecture\Winterhold\WinterholdLDoor01.nif
+                        if (model.find("WinterholdLDoor01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 120.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
+                        if (model.find("DwemerLargeDoorLoad01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 120.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("DwemerSmallDoorLoad01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 120.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (result == RE::NiPoint3::Zero())
                         {

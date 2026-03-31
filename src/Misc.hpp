@@ -44,6 +44,9 @@ namespace MiscThings {
     float is_inside_of_rectangle(RE::NiPoint2 p, RE::NiPoint2 a, RE::NiPoint2 b, RE::NiPoint2 c, RE::NiPoint2 d);
     bool player_inside_of_alftand_goodbox();
 
+    void check_unseen_levers_if_no_levers(float range = 1400.0f, RE::TESObjectREFR* ignore_ref = nullptr);
+
+
 
     bool player_inside_of_ustengrev_gate_puzzle();
     bool player_inside_of_karthspire_plate_puzzle();

@@ -3,6 +3,7 @@
 
 //crucial:
 
+//TODO shift on dwemer mechanism on entrance to blackreach
 
 //TODO test solitude prison custom path walk, might be broken
 

@@ -14,6 +14,10 @@
 
 namespace WalkerProcessor {
 
+
+
+
+
     int alftand_counter = 0;
     bool dont_check_quest_target_change = false;
 
@@ -1961,7 +1965,7 @@ namespace WalkerProcessor {
 
         if (player_ref)
         {
-            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 500.0f,
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 800.0f,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
 
@@ -10441,7 +10445,11 @@ namespace WalkerProcessor {
                                                         if (potential_block.find("estructib") != std::string::npos)
                                                             fail_text += "You can try attacking it to destroy it]";
                                                         else
+                                                        {
                                                             fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                            MiscThings::check_unseen_levers_if_no_levers(2000.0f);
+                                                        }
+                                                            
                                                     }
                                                     else
                                                     {
@@ -11042,7 +11050,7 @@ namespace WalkerProcessor {
                                                 {
                                                     //maybe its a location switch door?
 
-                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.1f && (have_doors_nearby() || MiscThings::get_potential_blocking_object(400.0f, target_ref) != "")) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
+                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.1f && (have_doors_nearby() || MiscThings::get_potential_blocking_object(800.0f, target_ref) != "")) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
                                                     {
                                                         if (!test_about_to_be_blocked_by_door(dtime))
                                                         {
@@ -11059,7 +11067,10 @@ namespace WalkerProcessor {
                                                                 if (blocking_name.find("estructib") != std::string::npos)
                                                                     fail_text += "You can try attacking it to destroy it]";
                                                                 else
+                                                                {
                                                                     fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                                    MiscThings::check_unseen_levers_if_no_levers(2000.0f);
+                                                                }
 
                                                                 
                                                                 send_random_context(fail_text, false);
@@ -11232,7 +11243,10 @@ namespace WalkerProcessor {
                                                                 if (potential_block.find("estructib") != std::string::npos)
                                                                     fail_text += "You can try attacking it to destroy it]";
                                                                 else
+                                                                {
                                                                     fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                                    MiscThings::check_unseen_levers_if_no_levers(2000.0f);
+                                                                }
                                                             }
                                                             else
                                                             {
@@ -11262,7 +11276,10 @@ namespace WalkerProcessor {
                                                     if (potential_block.find("estructib") != std::string::npos)
                                                         fail_text += "You can try attacking it to destroy it]";
                                                     else
+                                                    {
                                                         fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                        MiscThings::check_unseen_levers_if_no_levers(2000.0f);
+                                                    }
                                                 }
                                                 else
                                                 {
@@ -11298,7 +11315,10 @@ namespace WalkerProcessor {
                                                     if (blocking_name.find("estructib") != std::string::npos)
                                                         fail_text += "You can try attacking it to destroy it]";
                                                     else
+                                                    {
                                                         fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                        MiscThings::check_unseen_levers_if_no_levers(2000.0f);
+                                                    }
 
                                                     send_random_context(fail_text, false);
 
@@ -11333,7 +11353,10 @@ namespace WalkerProcessor {
                                                         if (potential_block.find("estructib") != std::string::npos)
                                                             fail_text += "You can try attacking it to destroy it]";
                                                         else
+                                                        {
                                                             fail_text += "Maybe you need to interact with something nearby to go past it]";
+                                                            MiscThings::check_unseen_levers_if_no_levers(2000.0f);
+                                                        }
                                                     }
                                                     else
                                                     {
