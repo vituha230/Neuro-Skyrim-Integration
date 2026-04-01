@@ -3150,12 +3150,20 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
-                        if (model.find("DweLever01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        if (model.find("DweLever01") != std::string::npos)
                         {
                             RE::NiPoint3 base_shift_vector = { 1.0f, 1.0f, 1.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+
+                        if (model.find("DweLever02") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 15.0f, 7.5f, 90.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
 
                         if (model.find("WindCallerTomb01") != std::string::npos || model.find("WindcallerHornPlacement") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
