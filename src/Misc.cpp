@@ -6689,6 +6689,11 @@ namespace MiscThings {
 
 
 
+
+
+
+
+
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
     {
         std::pair<bool, std::string> result{};
@@ -6826,6 +6831,36 @@ namespace MiscThings {
                                 //
                                 if (name.find("Elder Scroll (") != std::string::npos)
                                 {
+
+                                    auto entry = inventory.find(object);
+
+                                    if (entry != inventory.end() && entry->second.second.get())
+                                    {
+
+                                        RE::InventoryEntryData* entry_entry = entry->second.second.get();
+
+                                        const RE::ExtraDataList* extra = nullptr;
+                                        if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
+                                        {
+                                            extra = *entry_entry->extraLists->begin();
+                                        }
+                                        //     a_description, a_extraList, a_ref, a_book, a_pos, a_rot, a_scale, a_useDefaultPos);
+                                        //OpenMenu_Impl(desc, nullptr, nullptr, a_book, NiPoint3(), rot, 1.0f, true);
+                                        RE::NiMatrix3 rot{};
+                                        rot.SetEulerAnglesXYZ(-0.05f, -0.05f, 1.50f);
+
+                                        RE::BookMenu::OpenMenuFromBaseForm(book_book, extra, { 0,0,0 }, rot, 1.0f, true);
+
+
+                                        //RE::InventoryEntryData* entry_entry = entry->second.second.get();
+
+                                        //RE::BookMenu::OpenMenuFromBaseForm(book_book);
+
+                                        //entry_entry->SetWorn(true, false);//crashes
+
+                                        //bool stop_here = false;
+                                    }
+                                    /*
                                     auto slot = get_free_slot();
 
                                     bool left_hand = false;
@@ -6841,7 +6876,7 @@ namespace MiscThings {
                                     }
 
                                     actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot);
-
+                                    */
 
                                     //actor_equip->EquipObject((RE::Actor*)player_ref, object);
                                 }
@@ -6855,10 +6890,37 @@ namespace MiscThings {
                                     {
                                         //book_book->Read(player_ref);
                                         auto book_book = object->As<RE::TESObjectBOOK>();
+
+                                        auto entry = inventory.find(object);
+
+                                        if (entry != inventory.end() && entry->second.second.get())
+                                        {
+                                            RE::InventoryEntryData* entry_entry = entry->second.second.get();
+
+
+
+                                            //
+
+                                            const RE::ExtraDataList* extra = nullptr;
+                                            if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
+                                            {
+                                                extra = *entry_entry->extraLists->begin();
+                                            }
+                                            //     a_description, a_extraList, a_ref, a_book, a_pos, a_rot, a_scale, a_useDefaultPos);
+                                            //OpenMenu_Impl(desc, nullptr, nullptr, a_book, NiPoint3(), rot, 1.0f, true);
+                                            RE::NiMatrix3 rot{};
+                                            rot.SetEulerAnglesXYZ(-0.05f, -0.05f, 1.50f);
+
+                                            RE::BookMenu::OpenMenuFromBaseForm(book_book, extra, { 0,0,0 }, rot, 1.0f, true);
+                                        }
+                                        /*
+                                        auto book_book = object->As<RE::TESObjectBOOK>();
                                         auto world_book_handle = player_actor->DropObject(object, nullptr, 1);
                                         auto book_refr = world_book_handle.get().get();
                                         book_book->Activate(book_refr, player_ref, 0, object, 1);
                                         threw_a_book_out_to_read = true;
+                                        */
+                                        
                                     }
                                 }
 
@@ -7036,6 +7098,28 @@ namespace MiscThings {
                     }
 
                     if (object->IsKey())
+                        cant_drop = true;
+
+
+                    auto entry = inventory.find(object);
+
+                    if (entry != inventory.end() && entry->second.second.get())
+                    {
+                        RE::InventoryEntryData* entry_entry = entry->second.second.get();
+
+                        if (entry_entry)
+                        {
+                            if (entry_entry->IsQuestObject())
+                            {
+                                result.first = false;
+                                result.second = "Cant drop [id " + std::to_string(item_id) + "] " + object_name + ", its a quest object]";
+                                return result;
+                            }
+                        }
+                        else
+                            cant_drop = true;
+                    }
+                    else
                         cant_drop = true;
 
 

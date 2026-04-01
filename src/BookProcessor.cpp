@@ -324,6 +324,25 @@ namespace BookProcessor {
 			in_book_time += dtime;
 
 
+		//TODO remove this after tests
+
+		if (in_book)
+		{
+			auto extra = menu->GetExtraList();
+			auto book_form = menu->GetTargetForm();
+			auto book_ref = menu->GetTargetReference();
+			auto extra_display = menu->GetDisplayData();
+
+			bool stop_here = false;
+
+		}
+
+
+		//////////////////////////////////
+
+
+
+
 		if (book_processor_timer > 0.01f )
 		{
 			book_processor_timer = 0.0f;

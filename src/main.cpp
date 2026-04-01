@@ -3,6 +3,9 @@
 
 //crucial:
 
+
+//TODO elder scroll reading
+
 //TODO shift on dwemer mechanism on entrance to blackreach
 
 //TODO test solitude prison custom path walk, might be broken
@@ -782,6 +785,32 @@ private:
 
 
 namespace Hooks {
+
+    struct InventoryProcessMessage {
+        static RE::UI_MESSAGE_RESULTS thunk(RE::InventoryMenu* menu, RE::UIMessage& a_message) {
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
+                RE::ConsoleLog::GetSingleton()->Print("INVENTORY MENU WAS OPENED");
+
+                bool stop_here = false;
+            }
+            else
+                if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
+
+                    bool stop_here = false;
+                }
+                else
+                {
+                    if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kScaleformEvent) {
+
+                        bool stop_here = false;
+                    }
+                }
+
+            return originalFunction(menu, a_message);
+        }
+        static inline REL::Relocation<decltype(thunk)> originalFunction;
+        static inline void Install() { originalFunction = REL::Relocation<std::uintptr_t>(RE::VTABLE_InventoryMenu[0]).write_vfunc(0x4, thunk); }
+    };
 
 
     struct SleepWaitProcessMessage {
@@ -2965,6 +2994,7 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
     Hooks::BookProcessMessage::Install();
     Hooks::RaceSexMenuProcessMessage::Install();
 
+    Hooks::InventoryProcessMessage::Install();
 
 
     WalkerProcessor::install_hook();
