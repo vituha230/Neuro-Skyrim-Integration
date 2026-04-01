@@ -443,55 +443,75 @@ namespace MiscThings {
 
                 RE::ObjectRefHandle quest_ref_handle{};
                 target->GetTargetRef(quest_ref_handle, false, quest);
-                
+                //target->GetTrackingRef(quest_ref_handle, quest);
+
+
                 RE::TESObjectREFR* quest_target_ref = nullptr;
 
                 if (quest_ref_handle)
                     if (quest_ref_handle.get())
                         quest_target_ref = quest_ref_handle.get().get();
 
+                RE::TESWorldSpace* quest_target_ref_worldspace = nullptr;
 
+                if (quest_target_ref)
+                    quest_target_ref_worldspace = quest_target_ref->GetWorldspace();
 
                 bool shortcut_used = false;
 
-                for (auto teleport : target->teleportPath.teleportRefs)
+
+                bool same_worldspace = player_worldspace == quest_target_ref_worldspace;
+
+                if (!same_worldspace)
                 {
-                    if (teleport.ref)
+                    for (auto teleport : target->teleportPath.teleportRefs)
                     {
-                        auto teleport_pos = teleport.ref->GetPosition(); //from where it teleports
-
-                        auto teleport_worldspace = teleport.ref->GetWorldspace();
-
-                        if (teleport_worldspace == player_worldspace && !shortcut_used)
+                        if (teleport.ref)
                         {
-                            shortcut_used = true;
-                            result = 0.0f;
-                            result += player_pos.GetDistance(teleport_pos);
-                            last_teleport_pos_end = teleport.teleportLocation;
-                        }
-                        else
-                        {
-                            if (last_teleport_pos_end == RE::NiPoint3::Zero())
+                            auto teleport_pos = teleport.ref->GetPosition(); //from where it teleports
+
+                            auto teleport_worldspace = teleport.ref->GetWorldspace();
+
+                            if (teleport_worldspace == player_worldspace && !shortcut_used)
                             {
+                                shortcut_used = true;
+                                result = 0.0f;
                                 result += player_pos.GetDistance(teleport_pos);
+                                last_teleport_pos_end = teleport.teleportLocation;
                             }
                             else
-                                result += teleport_pos.GetDistance(last_teleport_pos_end);
+                            {
+                                if (last_teleport_pos_end == RE::NiPoint3::Zero())
+                                {
+                                    result += player_pos.GetDistance(teleport_pos);
+                                }
+                                else
+                                    result += teleport_pos.GetDistance(last_teleport_pos_end);
 
-                            last_teleport_pos_end = teleport.teleportLocation; //where it teleports
+                                last_teleport_pos_end = teleport.teleportLocation; //where it teleports
+                            }
+
                         }
 
                     }
 
+                    if (quest_target_ref)
+                    {
+                        auto quest_target_ref_pos = quest_target_ref->GetPosition();
+                        if (last_teleport_pos_end != RE::NiPoint3::Zero())
+                            result += quest_target_ref_pos.GetDistance(last_teleport_pos_end);
+                        else
+                            result += quest_target_ref_pos.GetDistance(player_pos);
+                    }
                 }
-
-                if (quest_target_ref)
+                else
                 {
-                    auto quest_target_ref_pos = quest_target_ref->GetPosition();
-                    if (last_teleport_pos_end != RE::NiPoint3::Zero())
-                        result += quest_target_ref_pos.GetDistance(last_teleport_pos_end);
-                    else
-                        result += quest_target_ref_pos.GetDistance(player_pos);
+                    //if same worldspace - we can take direct distance
+                    if (quest_target_ref)
+                    {
+                        auto quest_target_ref_pos = quest_target_ref->GetPosition();
+                        result = quest_target_ref_pos.GetDistance(player_pos);
+                    }
                 }
 
 
@@ -708,11 +728,20 @@ namespace MiscThings {
         }
 
 
-        auto elder_scroll_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ205");
 
-        if (quest == elder_scroll_quest)
+
+        bool check_elder_scroll_zone_dwemer_mechanism = false;
+
+        auto elder_scroll_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ205");
+        auto elder_lexicon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA04");
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        bool player_in_tower_of_mzark = player && player->GetParentCell() == RE::TESForm::LookupByID(0x2d4e3);
+
+        if (elder_scroll_quest && (quest == elder_scroll_quest))
         {
-            auto stage = elder_scroll_quest->GetCurrentStageID();
+            auto elder_scroll_quest_stage = elder_scroll_quest->GetCurrentStageID();
             auto faralda = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1a5);
             auto gates = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x37a7d);
             auto urag = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1b4);
@@ -720,7 +749,7 @@ namespace MiscThings {
             auto book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x32787);
             auto book2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x32786); //wrong book
 
-            if (stage >= 50 && (target == urag || target == door_to_urag))
+            if (elder_scroll_quest_stage >= 50 && (target == urag || target == door_to_urag))
             {
 
                 auto septimus_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA04");
@@ -731,18 +760,118 @@ namespace MiscThings {
                     if (septimus_stage == 5)
                         return urag;
                 }
-                
+
 
                 bool gates_are_locked = false;
 
                 if (gates && gates->IsLocked())
-                 return faralda;
+                    return faralda;
 
 
                 if (book && !book->IsDisabled())
                     return book;
             }
+
+            if (elder_scroll_quest_stage == 80 && player_in_tower_of_mzark)
+            {
+                check_elder_scroll_zone_dwemer_mechanism = true;
+            }
         }
+
+
+        if (elder_lexicon_quest && (quest == elder_lexicon_quest) && player_in_tower_of_mzark)
+        {
+            auto elder_lexicon_quest_stage = elder_lexicon_quest->GetCurrentStageID();
+            if (elder_lexicon_quest_stage == 20 || elder_lexicon_quest_stage == 30)
+                check_elder_scroll_zone_dwemer_mechanism = true;
+
+        }
+
+
+
+        if (check_elder_scroll_zone_dwemer_mechanism)
+        {
+            auto elder_scroll = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2d4f1);
+            auto elder_scroll_pickup = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x88268);
+            auto elder_scroll_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd3149);
+            auto empty_stand = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1ba5f);
+            auto full_stand = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x88269);
+
+            auto button0 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1ba5b);
+            auto button1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1ba5d);
+            auto button2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1ba5c);
+            auto button3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1ba5e);
+
+            auto object_p_0 = MiscThings::General::Script::GetObject(button0, "DA04ButtonScript");
+            std::string state_0 = object_p_0->currentState.c_str();
+            bool button_0_opened = state_0 == "opened" || state_0 == "busy";
+
+            auto object_p_1 = MiscThings::General::Script::GetObject(button1, "DA04ButtonScript");
+            std::string state_1 = object_p_1->currentState.c_str();
+            bool button_1_opened = state_1 == "opened" || state_1 == "busy";
+
+            auto object_p_2 = MiscThings::General::Script::GetObject(button2, "DA04ButtonScript");
+            std::string state_2 = object_p_2->currentState.c_str();
+            bool button_2_opened = state_2 == "opened" || state_2 == "busy";
+
+            auto object_p_3 = MiscThings::General::Script::GetObject(button3, "DA04ButtonScript");
+            std::string state_3 = object_p_3->currentState.c_str();
+            bool button_3_opened = state_3 == "opened" || state_3 == "busy";
+
+            auto full_cube_item = RE::TESForm::LookupByID(0x3a3dd);
+            auto elder_scroll_item = RE::TESForm::LookupByID(0x2d513);
+
+
+
+            bool player_has_full_cube = false;
+            bool player_has_elder_scroll = false;
+
+            if (player)
+            {
+                player_has_full_cube = player->GetItemCount((RE::TESBoundObject*)full_cube_item) > 0;
+                player_has_elder_scroll = player->GetItemCount((RE::TESBoundObject*)elder_scroll_item) > 0;
+            }
+
+            if (!player_has_full_cube || !player_has_elder_scroll)
+            {
+                bool prefer_button_0 = false;
+
+                auto armillary = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa0332);
+                if (armillary)
+                {
+                    int armillary_pos = MiscThings::two_state_activator_state(armillary);
+
+                    if (armillary_pos > 5)
+                        prefer_button_0 = true;
+                }
+
+                if (!player_has_full_cube && !full_stand->IsDisabled())
+                    return full_stand;
+
+                if (!elder_scroll_pickup->IsDisabled())
+                    return elder_scroll_pickup;
+
+
+                if (button_3_opened)
+                    return button3;
+
+                if (button_2_opened)
+                    return button2;
+
+                if (button_1_opened)
+                {
+                    if (prefer_button_0)
+                        return button0;
+                    else
+                        return button1;
+                }
+                    
+
+                return empty_stand;
+
+            }
+        }
+
 
 
         auto blackreach_tower_mzark_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xef7cd);
@@ -1492,6 +1621,12 @@ namespace MiscThings {
                 std::string name = MiscThings::insert_object_into_list_custom_name("[Secret door] Stone wall door", a_ref);
                 result = name;
             }
+
+            if (model.find("DwePtnDoor01") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal gate", a_ref);
+                result = name;
+            }
         }
 
 
@@ -1867,6 +2002,47 @@ namespace MiscThings {
                     result = 1;
 
             }
+
+
+
+
+        object_p = General::Script::GetObject(activator, "DA04HubScript");
+        if (object_p)
+        {
+            if (object_p->currentState == "opened")
+                return 20; //done
+
+            if (object_p->currentState == "busy")
+                return 10; //"started moving" or some shit
+
+            RE::BSFixedString prop_name = "currentPos";
+            int current_pos = General::Script::GetVariable<int>(object_p, prop_name);
+            result = current_pos;
+        }
+
+        object_p = General::Script::GetObject(activator, "DA04ArmillaryScript");
+        if (object_p)
+        {
+            if (object_p->currentState == "busy")
+                return 10;
+
+            RE::BSFixedString prop_name = "::currentPos_var";
+            int current_pos = General::Script::GetVariable<int>(object_p, prop_name);
+            result = current_pos;
+        }
+
+        object_p = General::Script::GetObject(activator, "DA04ButtonScript");
+        if (object_p)
+        {
+            if (object_p->currentState == "opened")
+                return 0; 
+
+            if (object_p->currentState == "Closed")
+                return 1;
+
+            if (object_p->currentState == "busy")
+                return -1;
+        }
 
 
 
@@ -3007,6 +3183,29 @@ namespace MiscThings {
                         if (model.find("NorSecRmSmDoorSm01") != std::string::npos)
                         {
                             RE::NiPoint3 base_shift_vector = { -100.0f, 0.0f, 120.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+                        if (model.find("DweLexiconStand") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 70.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+                        if (model.find("DweButton01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 70.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("DweAstrolabeHub01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 550.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }

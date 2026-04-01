@@ -5105,7 +5105,7 @@ namespace WalkerProcessor {
     }
 
 
-    std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object)
+    std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch)
     {
 
         std::pair<bool, std::string> result{};
@@ -5171,6 +5171,8 @@ namespace WalkerProcessor {
                 interaction_after_walk = -1;
 
                 looking_mode = true;
+
+                stop_sneaking = no_crouch;
 
                 result.first = true;
                 if (!MiscThings::is_intro())
@@ -6131,10 +6133,14 @@ namespace WalkerProcessor {
         if (using_custom_path && std::size(path) > 0 && current_path_point < (std::size(path) - 1))
             return false;
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+        bool player_in_tower_of_mzark = player && player->GetParentCell() == RE::TESForm::LookupByID(0x2d4e3);
+
+        if (player_in_tower_of_mzark)
+            return false;
+
 
         bool result = false;
-
-        auto player = RE::PlayerCharacter::GetSingleton();
 
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
@@ -9978,6 +9984,35 @@ namespace WalkerProcessor {
                                     return;
                                 }
                             }
+                        }
+                    }
+
+
+                    auto elder_scroll_pickup = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x88268);
+                    auto elder_scroll_pickup_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700b9f5);
+
+                    if (elder_scroll_pickup_redirect_marker && elder_scroll_pickup && target_ref == elder_scroll_pickup)
+                    {
+                        auto elder_scroll_pickup_redirect_marker_pos = elder_scroll_pickup_redirect_marker->GetPosition();
+
+                        float distance = player_pos.GetDistance(elder_scroll_pickup_redirect_marker_pos);
+
+                        if (distance < 120.0f)
+                        {
+                            auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = target_to_remember;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { player_pos, target_ref_pos };
+                            //walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
                         }
                     }
                 }

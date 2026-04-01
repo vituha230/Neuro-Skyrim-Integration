@@ -1407,9 +1407,13 @@ namespace Observer {
 
 											if (jail_condition_all || local_ignore_raycast || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance, false))
 											{
+
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "" && MiscThings::is_object_valid(a_ref))
+												{
 													interesting_buffer.insert_or_assign(a_ref, info);
+												}
+													
 											}
 
 											scan_distance = scan_distance_norm;
@@ -1716,12 +1720,17 @@ namespace Observer {
 				std::string last_name = "";
 				bool has_last = false;
 
+				bool mzark_special = false;
+
 				for (auto result_entry : sortable_copy)
 				{
 					if (result_entry.first && result_entry.first->data.objectReference)
 					{
 						auto this_object = result_entry.first->data.objectReference;
 						auto distance = player_ref->GetDistance(result_entry.first);
+
+						if (result_entry.first == RE::TESObjectREFR::LookupByID(0x1ba5f))
+							mzark_special = true;
 
 						if (this_object && result_entry.second != "")
 						{
@@ -1813,6 +1822,18 @@ namespace Observer {
 				{
 					info_string = "[You see objects around you: \n" + info_string;
 					send_random_context(info_string);
+
+
+					if (mzark_special)
+					{
+						auto astrolabe = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa0334);
+
+						if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
+						{
+							WalkerProcessor::look_at_object_by_refr(astrolabe);
+							send_random_context("You walk into some spherical room, there is a large dwemer mechanism in the middle. A huge armillary, and some astrolabe with green crystal lenses above it...", false);
+						}
+					}
 				}
 
 				interesting_buffer.clear();
@@ -2295,18 +2316,36 @@ namespace Observer {
 											{
 												std::string name = MiscThings::insert_object_into_list_custom_name("Secret stone wall door", a_ref);
 
-												if (activation == 0)
-													result.push_back("[ " + name + " opened]");
+												if (old_state.action_flags == 2)
+													if (activation == 0)
+														result.push_back("[ " + name + " opened]");
 
-												if (activation == 1)
-													result.push_back("[ " + name + " closed]");
+												if (old_state.action_flags == 3)
+													if (activation == 1)
+														result.push_back("[ " + name + " closed]");
 
-												if (activation == 2)
-													result.push_back("[ " + name + " is opening...]");
+												if (old_state.action_flags == 1)
+													if (activation == 2)
+														result.push_back("[ " + name + " is opening...]");
 
-												if (activation == 3)
-													result.push_back("[ " + name + " is closing...]");
+												if (old_state.action_flags == 0)
+													if (activation == 3)
+														result.push_back("[ " + name + " is closing...]");
 											}
+
+											if (model.find("DwePtnDoor01") != std::string::npos)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal gate", a_ref);
+
+												if (old_state.action_flags == 3)
+													if (activation == 1)
+														result.push_back("[ " + name + " closed]");
+
+												if (old_state.action_flags == 2)
+													if (activation == 0)
+														result.push_back("[ " + name + " opened]");
+											}
+
 
 
 											if (model.find("WRPrisonCellFloorGrate01Door") != std::string::npos)
@@ -2353,6 +2392,83 @@ namespace Observer {
 															if (activation == 1)
 																result.push_back("[ " + name + " opened]");
 														}
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweLexiconStandBlank01")
+														{
+															std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+															if (activation == 1)
+																result.push_back("[You insert Blank Lexicon Cube into " + name + " stand...]");
+
+															if (activation == -1)
+																result.push_back("[You take Blank Lexicon Cube out of " + name + " stand...]");
+
+														}
+
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweLexiconStandRunes01")
+														{
+															std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+															//if (activation == 1)
+															//	result.push_back("[You insert Blank Lexicon Cube into " + name + " stand...]");
+
+															if (activation == -1)
+																result.push_back("[You take Enscribed Lexicon Cube out of " + name + " stand...]");
+
+														}
+
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweAstrolabeArmillary01")
+														{
+															std::string name = "Dwemer armillary mechanism";
+
+															if (activation == 10)
+															{
+																result.push_back("[" + name + " started rotating...]");
+																WalkerProcessor::look_at_object_by_refr(a_ref);
+															}
+															else
+																result.push_back("[" + name + " stopped rotating, now it is in a new position]");
+
+														}
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweAstrolabeHub01")
+														{
+															std::string name = "Dwemer astrolabe mechanism";
+
+															if (activation == 10)
+															{
+																result.push_back("[" + name + " started rotating...]");
+																WalkerProcessor::look_at_object_by_refr(a_ref);
+															}
+															else
+																if (activation == 20)
+																{
+																	result.push_back("[" + name + " stopped moving... the mechanism lowered some big crystal capsule from the ceiling. The capsule opens... and you see some shining scroll inside]");
+																	auto elder_scroll_pickup = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x88268);
+																	WalkerProcessor::look_at_object_by_refr(elder_scroll_pickup);
+																}
+																else
+																	result.push_back("[" + name + " stopped rotating, now it is in a new position]");
+
+														}
+
+														//
+
+
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweButton01")
+														{
+															std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+															if (old_state.action_flags == 1)
+																result.push_back("[" + name + " opened, now it can be pressed]");
+
+															if (activation == 1)
+																result.push_back("[" + name + " closed, now it cannot be pressed]");
+
+														}
+
 
 
 														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "SkyHavenRetractableBridge01")
