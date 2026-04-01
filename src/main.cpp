@@ -955,6 +955,7 @@ namespace Hooks {
                 RE::ConsoleLog::GetSingleton()->Print("BOOK MENU WAS OPENED");
 
                 //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
+                //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::BookMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 
                 unregister_all_actions();
 
@@ -2958,6 +2959,7 @@ void MessageListener(SKSE::MessagingInterface::Message* message) {
         SKSE::AllocTrampoline(14);
         OnUpdateHook::Install();
 
+        MiscThings::EventSink::GetSingleton()->Init();
         Observer::EventSink::GetSingleton()->Init();
         Observer::attatch_hitmap();
 

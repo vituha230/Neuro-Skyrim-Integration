@@ -293,6 +293,8 @@ namespace MiscThings {
             return policy->GetHandleForObject(a_form->GetFormType(), a_form);
         }
 
+
+        //DOESNT WORK
         inline void ForEachScript(RE::TESForm* a_form, RE::BSScript::IForEachScriptObjectFunctor* a_functor)
         {
             auto vm = InternalVM::GetSingleton();
@@ -311,6 +313,8 @@ namespace MiscThings {
 
             ObjectPtr object = nullptr;
             bool found = vm->FindBoundObject(handle, a_class, object);
+
+
             if (!found && a_create) {
                 vm->CreateObject2(a_class, object);
                 vm->BindObject(object, handle, false);
@@ -360,6 +364,32 @@ namespace MiscThings {
         }
     }
 
+
+
+
+
+    class EventSink :
+        public REX::TSingleton<EventSink>,
+        public RE::BSTEventSink<RE::TESEquipEvent>
+    {
+
+    public:
+        void Init()
+        {
+            RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink<RE::TESEquipEvent>(this);
+        }
+
+        virtual RE::BSEventNotifyControl ProcessEvent(const RE::TESEquipEvent* a_event, RE::BSTEventSource<RE::TESEquipEvent>*) override
+        {
+            if (a_event)
+            {
+                auto player = RE::PlayerCharacter::GetSingleton();
+                auto player_ref = player->AsReference();
+            }
+            return RE::BSEventNotifyControl::kContinue;
+
+        }
+    };
 
 
 }

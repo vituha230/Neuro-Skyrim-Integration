@@ -6685,12 +6685,15 @@ namespace MiscThings {
     }
 
 
+    //this trash doesnt work
+    //using ObjectPtr = RE::BSTSmartPointer<RE::BSScript::Object>;
 
+    //RE::BSContainer::ForEachResult my_functor (ObjectPtr object) {
 
+    //    bool we_are_here = false;
 
-
-
-
+    //    return RE::BSContainer::ForEachResult::kContinue;
+    //}
 
 
 
@@ -6818,17 +6821,8 @@ namespace MiscThings {
                             {
                                 auto book_book = object->As<RE::TESObjectBOOK>();
 
-                                auto book_book2 = (RE::TESObjectBOOK*)object;
-                                auto book_book3 = object->As<RE::TESObjectBOOK>();
-
-                                //activate_inventory_object_by_index(item_id, -2);
-                                //unregister_all_actions();
-
-                                //auto actor_equip = RE::ActorEquipManager::GetSingleton();
-                                //actor_equip->EquipObject((RE::Actor*)player_ref, object);
                                 std::string name = book_book->GetFullName();
 
-                                //
                                 if (name.find("Elder Scroll (") != std::string::npos)
                                 {
 
@@ -6839,46 +6833,16 @@ namespace MiscThings {
 
                                         RE::InventoryEntryData* entry_entry = entry->second.second.get();
 
-                                        const RE::ExtraDataList* extra = nullptr;
+                                        RE::ExtraDataList* extra = nullptr;
+
                                         if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
                                         {
                                             extra = *entry_entry->extraLists->begin();
+                                            actor_equip->EquipObject((RE::Actor*)player_ref, object, extra);
+
                                         }
-                                        //     a_description, a_extraList, a_ref, a_book, a_pos, a_rot, a_scale, a_useDefaultPos);
-                                        //OpenMenu_Impl(desc, nullptr, nullptr, a_book, NiPoint3(), rot, 1.0f, true);
-                                        RE::NiMatrix3 rot{};
-                                        rot.SetEulerAnglesXYZ(-0.05f, -0.05f, 1.50f);
-
-                                        RE::BookMenu::OpenMenuFromBaseForm(book_book, extra, { 0,0,0 }, rot, 1.0f, true);
-
-
-                                        //RE::InventoryEntryData* entry_entry = entry->second.second.get();
-
-                                        //RE::BookMenu::OpenMenuFromBaseForm(book_book);
-
-                                        //entry_entry->SetWorn(true, false);//crashes
-
-                                        //bool stop_here = false;
                                     }
-                                    /*
-                                    auto slot = get_free_slot();
-
-                                    bool left_hand = false;
-                                    std::string equip_hand = "";
-
-                                    if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
-                                        equip_hand = " in right hand";
-
-                                    if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
-                                    {
-                                        left_hand = true;
-                                        equip_hand = " in left hand";
-                                    }
-
-                                    actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot);
-                                    */
-
-                                    //actor_equip->EquipObject((RE::Actor*)player_ref, object);
+                                   
                                 }
                                 else
                                 {
@@ -6897,10 +6861,6 @@ namespace MiscThings {
                                         {
                                             RE::InventoryEntryData* entry_entry = entry->second.second.get();
 
-
-
-                                            //
-
                                             const RE::ExtraDataList* extra = nullptr;
                                             if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
                                             {
@@ -6912,38 +6872,13 @@ namespace MiscThings {
                                             rot.SetEulerAnglesXYZ(-0.05f, -0.05f, 1.50f);
 
                                             RE::BookMenu::OpenMenuFromBaseForm(book_book, extra, { 0,0,0 }, rot, 1.0f, true);
-                                        }
-                                        /*
-                                        auto book_book = object->As<RE::TESObjectBOOK>();
-                                        auto world_book_handle = player_actor->DropObject(object, nullptr, 1);
-                                        auto book_refr = world_book_handle.get().get();
-                                        book_book->Activate(book_refr, player_ref, 0, object, 1);
-                                        threw_a_book_out_to_read = true;
-                                        */
-                                        
+
+                                        }                           
                                     }
                                 }
 
-
-
-
-
-
-                                //WalkerProcessor::walk_to_object_by_refr(book_refr, 1);
-
-                                //delayed_activate_book(book_book);
-
-
-
-                                //actor_equip->EquipObject((RE::Actor*)player_ref, object);
-
-
-
-
                                 result.first = true;
                                 result.second = "[Reading [id " + std::to_string(item_id) + "] " + object_name + "...]";
-
-                                
 
                                 return result;
                             }
