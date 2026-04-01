@@ -8599,7 +8599,7 @@ namespace MiscThings {
                     {
                         if (slot_id == 0x00025BEE) //voice
                         {
-                            if (player_actor->GetVoiceRecoveryTime() < 0.01)
+                            if (player_actor->GetVoiceRecoveryTime() <= 0.0f)
                             {
                                 int unlocked_words = 0;
 

@@ -3970,6 +3970,13 @@ namespace WalkerProcessor {
 
         if (walk_unstuck_time < 0.6f && player)
         {
+            walk_unstuck_time += dtime;
+
+            if (target_ref)
+                if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                    return false; //just wait its pointless there is no path
+
+
             /*
             RE::NiPoint3 current_path_point_pos = path.at(current_path_point);
             RE::NiPoint3 next_point_pos = path.at(std::min(((int)std::size(path) - 1), current_path_point + 2));
@@ -4017,7 +4024,7 @@ namespace WalkerProcessor {
                 cursor_up();
             }
 
-            walk_unstuck_time += dtime;
+            
         }
         else
         {
@@ -4135,9 +4142,9 @@ namespace WalkerProcessor {
             if (target_ref->IsActor())
             {
                 auto actor_refr = (RE::Actor*)target_ref;
-                if (actor_refr->race->fullName == "Dragon Race")
+                if (actor_refr->race->fullName == "Dragon Race" && MiscThings::is_flying(target_ref))
                 {
-                    horizontal_max_distance = 4000.0f;
+                    horizontal_max_distance = 8000.0f;
                 }
             }
             
@@ -4303,7 +4310,14 @@ namespace WalkerProcessor {
                         float range = get_weapon_range(get_current_active_hand());
 
                         if (shout_mode)
-                            range = 1200.0f;
+                        {
+                            auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
+                            if (shout_to_use == dragonrend)
+                                range = 20000.0f;
+                            else
+                                range = 2000.0f;
+                        }
+                            
 
                         if (start_attacking)
                             range = range * 1.25;
@@ -4311,7 +4325,7 @@ namespace WalkerProcessor {
 
                         //this is for melee
                         if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
-                            range = 10000.0f;
+                            range = 20000.0f;
 
 
 
@@ -7085,6 +7099,12 @@ namespace WalkerProcessor {
         }
 
 
+        bool result = false;
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_ref = player->AsReference();
+        auto player_actor = (RE::Actor*)player_ref;
+
+
 
         if (shout_mode)
         {
@@ -7094,9 +7114,23 @@ namespace WalkerProcessor {
                 {
                     if (!gate_shout || (gate_shout && gate_shout_condition()))
                     {
-                        send_random_context("You are using the shout...");
-                        MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
-                        return true;
+                        if (player_actor->GetVoiceRecoveryTime() <= 0.0f)
+                        {
+                            send_random_context("You are using the shout...");
+                            MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
+
+                            //reset shout
+                            auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
+                            if (!ustengrev_shout_mode)
+                            {
+                                shout_mode = false;
+                                shout_to_use = nullptr;
+                            }
+
+
+                            return true;
+                        }
+
                     }
                 }
             }
@@ -7109,12 +7143,23 @@ namespace WalkerProcessor {
             return false;
         }
 
+
+
         lock_camera_onto_target(target_ref, dtime);
 
-        bool result = false;
-        auto player = RE::PlayerCharacter::GetSingleton();
-        auto player_ref = player->AsReference();
-        auto player_actor = (RE::Actor*)player_ref;
+
+
+        if (MiscThings::is_dragon(target_ref))
+        {
+            auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
+
+            if (MiscThings::player_has_spell((RE::SpellItem*)dragonrend) && player_actor->GetVoiceRecoveryTime() <= 0.0f)
+            {
+                WalkerProcessor::shout_at_target(target_ref, dragonrend);
+                return false;
+            }
+        }
+
 
         if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && !target_ref->IsDead())// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)) && !target_ref->IsDead())
         {
@@ -10508,7 +10553,9 @@ namespace WalkerProcessor {
                                     }
                                     else
                                     {
-                                        if (!looking_mode && (int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
+                                        bool its_a_flying_dragon = MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed();
+
+                                        if (!its_a_flying_dragon && !looking_mode && (int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
                                         {
                                             wiggle_body_then_walk_again = true;
 
@@ -10613,7 +10660,9 @@ namespace WalkerProcessor {
                                         }
                                         else
                                         {
-                                            if ((int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
+                                            bool its_a_flying_dragon = MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed();
+
+                                            if (!its_a_flying_dragon && (int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
                                             {
                                                 wiggle_body_then_walk_again = true;
 
