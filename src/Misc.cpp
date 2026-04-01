@@ -7045,7 +7045,131 @@ namespace MiscThings {
                                         if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
                                         {
                                             extra = *entry_entry->extraLists->begin();
+
+                                            //TimeWoundTrigger.IsTriggerReady() && !MQ206.GetStageDone(20) && akActor.GetSitState() == 0
+
+                                            // 
+
+                                            
+                                            auto timewound_trig = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x64769);
+
+                                            if (timewound_trig)
+                                            {
+                                                auto object_p = MiscThings::General::Script::GetObject(timewound_trig, "MQ206TimeWoundTriggerScript");
+                                                
+                                                bool trigger_active = false;
+
+
+                                                float radius = 1346.3203f / 2.0f;
+
+                                                auto player_cell = player->GetParentCell();
+                                                auto timewound_cell = timewound_trig->GetParentCell();
+
+                                                auto player_pos = player->GetPosition();
+                                                auto timewound_pos = timewound_trig->GetPosition();
+
+
+                                                trigger_active = (player_cell == timewound_cell) && (player_pos.GetDistance(timewound_pos) <= radius);
+
+
+                                                /*
+                                                //i hate this shit
+                                                if (object_p)
+                                                {
+                                                    //RE::BSFixedString prop_name = "bIsActive";
+                                                    //trigger_active = General::Script::GetVariable<bool>(object_p, prop_name);
+
+                                                    //DefaultSetStageOnEnter
+
+                                                    auto object_parent = MiscThings::General::Script::GetObject(timewound_trig, "DefaultSetStageOnEnter");
+
+                                                    //auto object_parent = object_p->GetTypeInfo()->GetParent();
+
+                                                    if (object_parent)
+                                                    {
+                                                       // object_parent
+
+                                                        RE::BSFixedString prop_name = "targetCountCurrent";
+                                                        int target_count_current = General::Script::GetVariable<int>(object_parent, prop_name);
+
+                                                        prop_name = "targetCountTotal";
+                                                        int target_count_total = General::Script::GetVariable<int>(object_parent, prop_name);
+
+
+                                                        trigger_active = target_count_total > 0;
+
+                                                    }
+
+                                                    
+                                                    auto no_arg = RE::MakeFunctionArguments();
+
+                                                    //trigger_active = General::Script::DispatchMethodCall<>(object_p, "IsTriggerReady", nullptr, no_arg);
+
+                                                    using InternalVM = RE::BSScript::Internal::VirtualMachine;
+
+                                                    auto vm = InternalVM::GetSingleton();
+                                                    auto args = RE::MakeFunctionArguments<>();
+
+
+
+
+                                                    //using CallbackPtr = RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor>;
+                                                    
+                                                    bool trigger_result = false;
+
+                                                    RE::BSScript::Variable my_var;
+                                                    //RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> callback(my_var);
+
+                                                    //auto result2 = (RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor>)(&trigger_result);
+
+                                                    //vm->DispatchMethodCall(object_p, "IsTriggerReady", args, callback);
+
+                                                    
+
+                                                    bool stop_here = false;
+                                                    
+                                                }
+                                            */
+                                                bool stage_not_done = false;
+
+                                                auto mq206 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ206");
+                                                if (mq206 && mq206->GetCurrentStageID() < 20)
+                                                    stage_not_done = true;
+
+
+                                                bool sitstate_zero = false;
+
+                                                if (player_actor)
+                                                {
+                                                    sitstate_zero = player_actor->GetSitSleepState() == RE::SIT_SLEEP_STATE::kNormal;
+                                                }
+
+                                                if (trigger_active && stage_not_done && sitstate_zero)
+                                                {
+                                                    result.first = true;
+                                                    result.second = "[You unfurl The Elder Scroll and look into it... you see a vision...]";
+                                                }
+                                                else
+                                                {
+                                                    result.first = true;
+                                                    result.second = "[You unfurl The Elder Scroll and look into it... it blinds you for several seconds!]";
+                                                }
+
+
+                                            }
+                                            
+
+
                                             actor_equip->EquipObject((RE::Actor*)player_ref, object, extra);
+
+                                            if (result.second == "")
+                                            {
+                                                result.first = true;
+                                                result.second = "[Reading [id " + std::to_string(item_id) + "] " + object_name + "...]";
+                                            }
+
+
+                                            return result;
 
                                         }
                                     }
@@ -7086,7 +7210,6 @@ namespace MiscThings {
 
                                 result.first = true;
                                 result.second = "[Reading [id " + std::to_string(item_id) + "] " + object_name + "...]";
-
                                 return result;
                             }
                             else
