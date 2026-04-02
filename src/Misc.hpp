@@ -11,6 +11,7 @@ namespace MiscThings {
     void set_time_of_death(long long timestamp);
     long long get_time_of_death();
 
+    bool is_in_third_person();
 
 
     struct quest {

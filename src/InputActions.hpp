@@ -52,6 +52,8 @@ void unsprint();
 
 void confirm_fast();
 
+void press_f();
+
 void make_launch_sprint();
 bool launching_sprint();
 

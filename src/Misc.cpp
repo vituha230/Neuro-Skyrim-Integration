@@ -26,6 +26,23 @@ namespace MiscThings {
 
 
     
+    bool is_in_third_person()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            auto current = player->GetCurrent3D();
+            auto person3 = player->Get3D1(false);
+
+            if (current == person3)
+                return true;
+        }
+
+        return false;
+    }
+
+
+
     bool dont_interact_with(RE::TESObjectREFR* target)
     {
         auto greybeard_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x886b4);
@@ -354,8 +371,9 @@ namespace MiscThings {
 
                 auto fly_state = actor_refr->actorState1.flyState;
 
+                return fly_state != RE::FLY_STATE::kNone && fly_state != RE::FLY_STATE::kTakeOff;
 
-                return fly_state == RE::FLY_STATE::kCruising || fly_state == RE::FLY_STATE::kHovering;
+                //return fly_state == RE::FLY_STATE::kCruising || fly_state == RE::FLY_STATE::kHovering;
             }
         }
         
@@ -933,7 +951,46 @@ namespace MiscThings {
             {
                 return true; //hide dragon quest until we have the peace
             }
+
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player)
+            {
+                auto player_cell = player->GetParentCell();
+                auto hrothgar_interior_cell = RE::TESForm::LookupByID(0x87764);
+
+                if (player_cell == hrothgar_interior_cell)
+                {
+                    if (peace_quest_stage >= 40 && peace_quest_stage < 320)
+                    {
+                        if (quest != peace_quest && quest != capture_dragon_quest)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+            }
+
         }
+
+
+        auto skuldafn_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ303");
+
+        if (skuldafn_quest)
+        {
+            auto stage = skuldafn_quest->GetCurrentStageID();
+
+            if (stage >= 100 && stage < 300)
+            {
+                if (quest != skuldafn_quest)
+                    return true;
+            }
+        }
+
+        
+
 
 
         return false;
@@ -3011,6 +3068,43 @@ namespace MiscThings {
 
                 }
                 */
+
+
+
+                auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
+
+                if (odawing_marker && object == odawing_marker)
+                {
+                    auto base_obj = object->GetBaseObject();
+                    if (base_obj && base_obj->GetFormType() == RE::FormType::Static)
+                    {
+                        auto marker_static = (RE::TESObjectSTAT*)base_obj;
+                        RE::NiPoint3 object_angles = object->data.angle;
+                        RE::NiPoint3 base_shift_vector = { 0.0f, -500.0f, 100.0f };
+                        RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                        result = rotated_shift_vector;
+                        return result;
+                    }
+
+                }
+
+
+                if (object->IsActor() && is_dragon(object) && !is_enemy_to_actor(object))
+                {
+                    auto target_actor = (RE::Actor*)object;
+                    if (target_actor->currentProcess)
+                        if (target_actor->currentProcess->middleHigh)
+                            if (target_actor->currentProcess->middleHigh->headNode)
+                            {
+                                auto target_pos = object->GetPosition();
+                                auto head_pos = target_actor->currentProcess->middleHigh->headNode->world.translate;
+                                auto lookat_location = head_pos;
+                                return lookat_location - target_pos;
+                            }
+                }
+
+
+
 
                 auto base_obj = object->GetBaseObject();
                 if (base_obj)

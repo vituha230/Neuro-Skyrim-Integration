@@ -20,6 +20,7 @@ namespace WalkerProcessor {
 
     bool custom_with_close_enough_confirm = false; //dont use this TODO REMOVE THIS
 
+    float third_person_timer = 0.0f;
 
     int alftand_counter = 0;
     bool dont_check_quest_target_change = false;
@@ -2574,7 +2575,9 @@ namespace WalkerProcessor {
 
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            dont_use_bounds_for_close_enough = true;
+            if (!(MiscThings::is_dragon(target_ref) && is_fighting()))
+                dont_use_bounds_for_close_enough = true;
+
             target_center += specific_shift;
         }
 
@@ -2821,7 +2824,9 @@ namespace WalkerProcessor {
         
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            dont_use_bounds_for_close_enough = true;
+            if (!(MiscThings::is_dragon(target_ref) && is_fighting()))
+                dont_use_bounds_for_close_enough = true;
+
             target_center += specific_shift;
         }
         
@@ -3542,6 +3547,7 @@ namespace WalkerProcessor {
     {
         
 
+        third_person_timer = 0.0f;
 
         if (activate_refr_after_walker_is_done)
         {
@@ -4165,6 +4171,22 @@ namespace WalkerProcessor {
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
+        auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
+
+        if (player && odawing_marker && target_ref == odawing_marker)
+        {
+            auto shift = MiscThings::get_looking_point_shift(target_ref, false);
+            auto marker_pos = odawing_marker->GetPosition();
+            auto player_pos = player->GetPosition();
+            marker_pos += shift;
+
+            auto distance = player_pos.GetDistance(marker_pos);
+            if (distance < 300.0f)
+                bool stop_here = false;
+
+            return distance < 200.0f;
+        }
+
 
         if (location_mode)
         {
@@ -4259,10 +4281,17 @@ namespace WalkerProcessor {
             else
             {
                 //auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos; //experimenting
+               
                 auto distance = target_pos - player_pos;
 
+                //if (MiscThings::is_dragon(target_ref))
+                //{
+                //    target_pos += MiscThings::get_looking_point_shift(target_ref, false);
+                 //   distance = target_pos - player_pos;
+                //    distance.z = 0.0f;
+                //}
 
-                   
+                
 
                 if (interaction_after_walk == 3)
                 {
@@ -4430,11 +4459,29 @@ namespace WalkerProcessor {
                         bound_dif = RE::NiPoint3::Zero();
                     }
 
+                    if (MiscThings::is_dragon(target_ref))
+                    {
+                        bound_dif *= 0.9f;
+                        auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
+                        auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
+                        if (capture_dragon_quest && target_ref == odahviing)
+                            if (capture_dragon_quest->GetCurrentStageID() >= 200 && capture_dragon_quest->GetCurrentStageID() < 220)
+                                bound_dif *= 0.7f;
+                    }
+                        
+
+                    
+
                     if (quest_mode)
                     {
 
+                        float threshold = 50.0f;
+
+                        if (MiscThings::is_dragon(target_ref))
+                            threshold = 200.0f;
+
                         if (target_ref && target_ref->IsActor() && !target_ref->IsDead())
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 50.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f)))
                                 return true;
 
 
@@ -9973,6 +10020,7 @@ namespace WalkerProcessor {
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_pos = player->GetPosition();
                     auto target_ref_pos = target_ref->GetPosition();
+                    auto player_actor = (RE::Actor*)player_ref;
 
                     auto blackreach_lab_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xEEDEE); //for some reason pathfinding doesnt work here
                     if (blackreach_lab_door && target_ref == blackreach_lab_door)
@@ -10058,6 +10106,105 @@ namespace WalkerProcessor {
                             dont_quicksave_after_custom_path = true;
                             //custom_with_close_enough_confirm = true;
                             return;
+                        }
+                    }
+
+
+                    auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
+                    auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10828C);
+                    
+                    auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
+
+                    if (capture_dragon_quest)
+                    {
+                        if (capture_dragon_quest->GetCurrentStageID() < 200)
+                        {
+                            if (odahviing && redirect_marker)
+                            {
+                                auto odahviing_actor = (RE::Actor*)odahviing;
+
+                                if (target_ref == redirect_marker)
+                                {
+                                    auto redirect_marker_pos = redirect_marker->GetPosition();
+
+                                    if (redirect_marker_pos.GetDistance(player_pos) < 300.0f)
+                                    {
+
+
+                                        bool dragonrent = false;
+
+                                        for (auto effect : *odahviing_actor->GetActiveEffectList())
+                                        {
+                                            if (effect->spell == RE::TESForm::LookupByID(0x28345))
+                                            {
+                                                dragonrent = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!dragonrent && !shout_mode)
+                                        {
+                                            auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
+
+                                            if (MiscThings::player_has_spell((RE::SpellItem*)dragonrend) && player_actor->GetVoiceRecoveryTime() <= 0.0f)
+                                            {
+                                                WalkerProcessor::shout_at_target(odahviing, dragonrend);
+                                                return;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (dragonrent)
+                                            {
+                                                lock_camera_onto_target(odahviing, 0.016, false);
+                                                return;
+                                            }
+                                            else
+                                                bool stop_here = false;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (target_ref == odahviing)
+                                    {
+                                        if (!MiscThings::is_flying(odahviing))
+                                        {
+
+
+                                            bool dragonrent = false;
+
+                                            for (auto effect : *odahviing_actor->GetActiveEffectList())
+                                            {
+                                                if (effect->spell == RE::TESForm::LookupByID(0x28345))
+                                                {
+                                                    dragonrent = true;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (dragonrent)
+                                            {
+                                                target_ref = redirect_marker;
+                                                interaction_after_walk = 3;
+                                            }
+
+
+                                            //odahviing_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::ca)
+                                            bool stop_here = false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (target_ref == redirect_marker)
+                            {
+                                reset_walker();
+                                return;
+                            }
+                                
                         }
                     }
                 }
@@ -10246,6 +10393,20 @@ namespace WalkerProcessor {
 
 
 
+                    if (MiscThings::is_in_third_person())
+                    {
+                        if (third_person_timer > 3.0f)
+                        {
+                            third_person_timer = 0.0f;
+                            press_f();
+                        }
+                        else
+                            third_person_timer += dtime;
+                    }
+                    else
+                        third_person_timer = 0.0f;
+
+
 
 
                     if (interaction_after_walk > 1 && interaction_after_walk <= 3)
@@ -10347,7 +10508,9 @@ namespace WalkerProcessor {
                     {
                         if (target_is_too_high())
                         {
-                            lock_camera_onto_target(target_ref, dtime);
+                            if (MiscThings::raycastable(target_ref, 20000.0f, false))
+                                lock_camera_onto_target(target_ref, dtime);
+
                             return;
                         }
                         else
@@ -10581,7 +10744,7 @@ namespace WalkerProcessor {
 
                                 
                                 //if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
-                                if (looking_mode || MiscThings::is_intro() || path_point_reached(dtime) || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3))
+                                if (looking_mode || MiscThings::is_intro() || path_point_reached(dtime) || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough()))// && interaction_after_walk == 3))
                                 {
                                     path_point_reached_timeout = 0.0f;
                                     //time_stuck = 0.0f;
@@ -10962,8 +11125,9 @@ namespace WalkerProcessor {
                                                                                         if (target_ref && target_ref->IsActor())
                                                                                         {
                                                                                             auto target_actor = (RE::Actor*)target_ref;
+                                                                                            auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
 
-                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage))
+                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing)
                                                                                                 dont_autointerract = true;
                                                                                             
                                                                                         }
