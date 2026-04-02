@@ -462,7 +462,7 @@ namespace MiscThings {
 
                 bool same_worldspace = player_worldspace == quest_target_ref_worldspace;
 
-                if (!same_worldspace)
+                if (!same_worldspace || player_worldspace == nullptr)
                 {
                     for (auto teleport : target->teleportPath.teleportRefs)
                     {
