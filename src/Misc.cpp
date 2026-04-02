@@ -918,6 +918,23 @@ namespace MiscThings {
         }
         
 
+        auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
+        auto peace_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ302");
+
+
+        if (capture_dragon_quest && peace_quest)
+        {
+            auto capture_dragon_quest_stage = capture_dragon_quest->GetCurrentStageID();
+            auto peace_quest_stage = peace_quest->GetCurrentStageID();
+
+            bool peace_quest_present = (peace_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || peace_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !peace_quest->data.flags.all(RE::QuestFlag::kCompleted);
+            
+            if (peace_quest_present && quest == capture_dragon_quest)
+            {
+                return true; //hide dragon quest until we have the peace
+            }
+        }
+
 
         return false;
     }
