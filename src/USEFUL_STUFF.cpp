@@ -2,6 +2,71 @@
 /* useful stuff
 
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//GET SCRIPT FROM SCRIPT
+
+
+                                    using InternalVM = RE::BSScript::Internal::VirtualMachine;
+                                    auto vm = InternalVM::GetSingleton();
+
+                                    RE::BSFixedString prop_name = "myLinkedRef";
+                                    const auto* property = General::Script::GetVariable2(object_p_skuldafn2, prop_name);
+                                    if (!property) {
+                                        return "";
+                                    }
+
+                                    const auto sourceObject = property->GetObject();
+                                    if (!sourceObject) {
+                                        return "";
+                                    }
+
+                                    auto sourceObjectTypeInfo = RE::BSTSmartPointer<RE::BSScript::ObjectTypeInfo>();
+                                    if (!vm->GetScriptObjectType1(RE::BSFixedString("dunSkuldafnPuzzleControlSCRIPT"), sourceObjectTypeInfo) || !sourceObjectTypeInfo) {
+                                        return "";
+                                    }
+
+                                    auto targetObject = RE::BSTSmartPointer<RE::BSScript::Object>();
+                                    if (!vm->CastObject(sourceObject, sourceObjectTypeInfo, targetObject) || !targetObject) {
+                                        return "";
+                                    }
+
+                                    RE::BSFixedString prop_name2 = "::altSolution_var";
+                                    bool altmode = General::Script::GetVariable<bool>(targetObject, prop_name2);
+
+
+                                    bool stop_here = false;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         M/Main.h has some game state info (active/paused/blabla)
         M/MenuControls.h has something interesting regarding Menus.
         T/TES.h is another important root file

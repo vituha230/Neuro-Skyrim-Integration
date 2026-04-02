@@ -3227,7 +3227,7 @@ namespace WalkerProcessor {
                 auto pos_dif = last_point_of_last_path - player_pos;
                 
 
-                if (abs(last_point_of_last_path.z - player_pos.z) < 50.0f)
+                if (abs(last_point_of_last_path.z - player_pos.z) <= 200.0f)
                     pos_dif.z = 0.0f;
 
                 auto distance = pos_dif.Length();
@@ -4671,12 +4671,12 @@ namespace WalkerProcessor {
             return result;
         }
 
+        if (!internal_call)
+            Observer::reset_threats();
+
 
         if (have_target_to_walk)
         {
-            if (!internal_call)
-                Observer::reset_threats();
-
             if (target_ref != random_target)
             {
                 if (internal_call && explore_mode_notified)
@@ -4923,11 +4923,10 @@ namespace WalkerProcessor {
 
 
 
+                Observer::reset_threats();
 
                 if (have_target_to_walk)
                 {
-                    Observer::reset_threats();
-
                     if (target_ref != object->second.object || interaction != interaction_after_walk)
                         reset_walker();
                     else
@@ -5117,10 +5116,11 @@ namespace WalkerProcessor {
             if (object != objects_around->end())
             {
                 
+                Observer::reset_threats();
 
                 if (have_target_to_walk)
                 {
-                    Observer::reset_threats();
+                    
                     if (target_ref != object->second.object)
                         reset_walker();
                     else
@@ -5204,10 +5204,11 @@ namespace WalkerProcessor {
 
             if (object)
             {
+                Observer::reset_threats();
 
                 if (have_target_to_walk)
                 {
-                    Observer::reset_threats();
+                    
                     if (target_ref != object)
                         reset_walker();
                     else
@@ -6026,12 +6027,10 @@ namespace WalkerProcessor {
 
 
 
-
+                                                Observer::reset_threats();
 
                                                 if (have_target_to_walk)
                                                 {
-                                                    Observer::reset_threats();
-
                                                     if (target_ref != quests_target_ref || backup_interaction_made)
                                                         reset_walker();
                                                     else

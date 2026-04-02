@@ -2502,15 +2502,7 @@ namespace MiscThings {
                             
                             if (lever)
                             {
-                                //auto object_p_skuldafn2 = General::Script::GetObject(pillar, "dunSkuldafnPuzzlePillarTwoStage");//
-
-                                //RE::BSFixedString prop_name = "altMode";
-                                //auto alternative = General::Script::GetVariable<bool>(object_p_skuldafn2, prop_name);
-
-                                //if (alternative)
-                                    solved = get_pillar_face_name(pillar) == 2;
-                                //else
-                                //    solved = get_pillar_face_name(pillar) == 1;
+                                solved = get_pillar_face_name(pillar) == 2;
                             }
 
                         }
