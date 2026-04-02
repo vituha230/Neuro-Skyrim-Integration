@@ -899,6 +899,40 @@ namespace MiscThings {
             target = blackreach_tower_mzark_elevator;
 
 
+
+
+        RE::TESObjectREFR* skuldafn_inner_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa73f7);
+        RE::TESObjectREFR* skuldafn_web = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab25b);
+
+        if (target == skuldafn_inner_door && skuldafn_inner_door && skuldafn_web)
+        {
+            if (MiscThings::get_destructible_state(skuldafn_web) == 0) //not destroyed
+            {
+                return skuldafn_web;
+            }
+        }
+
+
+
+        auto skuldafn_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ303");
+
+        if (skuldafn_quest)
+        {
+            auto stage = skuldafn_quest->GetCurrentStageID();
+        }
+
+
+        auto sovngarde_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe2d48);
+        auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700bf58);
+
+        if (target == sovngarde_portal)
+            return redirect_marker;
+
+
+
+
+
+
         return target;
     }
 
@@ -989,7 +1023,44 @@ namespace MiscThings {
             }
         }
 
-        
+        auto sovngarde_quest1 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ304");
+        auto sovngarde_quest2 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ305");
+        auto sovngarde_quest3 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ306");
+
+        if (sovngarde_quest1)
+        {
+            auto stage = sovngarde_quest1->GetCurrentStageID();
+
+            if (stage > 0 && stage < 200)
+            {
+                if (quest != sovngarde_quest1)
+                    return true;
+            }
+        }
+
+
+        if (sovngarde_quest2)
+        {
+            auto stage = sovngarde_quest2->GetCurrentStageID();
+
+            if (stage > 0 && stage < 200)
+            {
+                if (quest != sovngarde_quest2)
+                    return true;
+            }
+        }
+
+
+        if (sovngarde_quest3)
+        {
+            auto stage = sovngarde_quest3->GetCurrentStageID();
+
+            if (stage > 0 && stage < 60)
+            {
+                if (quest != sovngarde_quest3)
+                    return true;
+            }
+        }
 
 
 
@@ -1677,7 +1748,7 @@ namespace MiscThings {
                 result = name;
             }
 
-            if (model.find("PuzzleDoorKeyHole01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+            if (model.find("PuzzleDoorKeyHole") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
             {
                 std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
                 result = name;
@@ -2138,7 +2209,7 @@ namespace MiscThings {
                 bool wtf_is_this = true;
 
 
-            if (object_p->currentState == "done")
+            if (object_p->currentState == "done" || object_p->currentState == "Done")
             {
                 //RE::BSFixedString prop_name = "::doorOpened_var";
 
@@ -2149,7 +2220,7 @@ namespace MiscThings {
             }
             else
             {
-                if (object_p->currentState == "busy")
+                if (object_p->currentState == "busy" || object_p->currentState == "Busy")
                 {
                     //RE::BSFixedString prop_name = "::puzzleSolved_var";
 
@@ -2396,14 +2467,62 @@ namespace MiscThings {
     {
         std::string result = "[Is in incorrect position]";
 
+
         auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
+        auto object_p_skuldafn = General::Script::GetObject(pillar, "dunSkuldafnPuzzlePillar01SCRIPT");
+        auto object_p_skuldafn2 = General::Script::GetObject(pillar, "dunSkuldafnPuzzlePillarTwoStage");//
+        auto object_p_skuldafn3 = General::Script::GetObject(pillar, "defaultPuzzlePillarNoFurn");//
+        //defaultPuzzlePillarNoFurn
         bool solved = false;
 
-        if (object_p)
+        if (object_p || object_p_skuldafn || object_p_skuldafn2 || object_p_skuldafn3)
         {
             RE::BSFixedString prop_name = "pillarSolved";
 
-            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+            if (object_p)
+                solved = General::Script::GetVariable<bool>(object_p, prop_name);
+            else
+                if (object_p_skuldafn)
+                {
+                    auto special_pillar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab223);
+                    if (pillar == special_pillar)
+                        solved = get_pillar_face_name(pillar) == 2;
+                    else
+                        solved = General::Script::GetVariable<bool>(object_p_skuldafn, prop_name);
+                }       
+                else
+                    if (object_p_skuldafn2)
+                    {
+                        auto special_pillar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab223);
+                        if (pillar == special_pillar)
+                        {
+                            using ObjectPtr = RE::BSTSmartPointer<RE::BSScript::Object>;
+
+                            auto lever = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab22b);
+                            
+                            if (lever)
+                            {
+                                //auto object_p_skuldafn2 = General::Script::GetObject(pillar, "dunSkuldafnPuzzlePillarTwoStage");//
+
+                                //RE::BSFixedString prop_name = "altMode";
+                                //auto alternative = General::Script::GetVariable<bool>(object_p_skuldafn2, prop_name);
+
+                                //if (alternative)
+                                    solved = get_pillar_face_name(pillar) == 2;
+                                //else
+                                //    solved = get_pillar_face_name(pillar) == 1;
+                            }
+
+                        }
+                        else
+                            solved = General::Script::GetVariable<bool>(object_p_skuldafn2, prop_name);
+                    }
+                    else
+                        if (object_p_skuldafn3)
+                        {
+                            solved = General::Script::GetVariable<bool>(object_p_skuldafn3, prop_name);
+                        }
+
 
             if (solved)
                 result = "[Is in correct position]";
@@ -2483,6 +2602,16 @@ namespace MiscThings {
                             result = " [position Owl]";
                         if (code == 2)
                             result = " [position Bear]";
+                        if (code == 3)
+                            result = " [position Moth]";
+                    }
+
+                    if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel03") != std::string::npos)
+                    {
+                        if (code == 1)
+                            result = " [position Dragon]";
+                        if (code == 2)
+                            result = " [position Fox]";
                         if (code == 3)
                             result = " [position Moth]";
                     }
@@ -2571,6 +2700,25 @@ namespace MiscThings {
                                 }
                             }
                         }
+
+
+
+                        if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel03") != std::string::npos)
+                        {
+                            if (graph_ptr->behaviorGraph)
+                            {
+                                auto active_nodes = graph_ptr->behaviorGraph->activeNodes;
+                                if (active_nodes)
+                                {
+                                    auto node_info = active_nodes->data();
+                                    if (node_info && node_info->nodeTemplate)
+                                    {
+                                        int node_id = node_info->nodeTemplate->id;
+                                        result = node_id;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2627,12 +2775,21 @@ namespace MiscThings {
 
                                 if (var_string.find("STARTED: ") == 0)
                                 {
+                                    if (var_string.find("SOVNGARDE") != std::string::npos)
+                                        WalkerProcessor::look_up();
+
+
                                     var_string = "Quest started: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
                                     WalkerProcessor::test_new_very_close_quest();
+
+
                                 }
                                     
                                 if (var_string.find("COMPLETED: ") == 0)
                                 {
+                                    if (var_string.find("DRAGONSLAYER") != std::string::npos)
+                                        WalkerProcessor::look_up();
+
                                     var_string = "Quest completed: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
                                     WalkerProcessor::test_new_very_close_quest();
                                 }
@@ -3216,28 +3373,28 @@ namespace MiscThings {
                         //PuzzleDoorMediumWheel02
                         //PuzzleDoorLargeWheel02
 
-                        if (model.find("PuzzleDoorSmallWheel02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        if (model.find("PuzzleDoorSmallWheel") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { -10.0f, 0.0f, 107.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
 
-                        if (model.find("PuzzleDoorMediumWheel02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        if (model.find("PuzzleDoorMediumWheel") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { -10.0f, 0.0f, 127.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
 
-                        if (model.find("PuzzleDoorLargeWheel02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        if (model.find("PuzzleDoorLargeWheel") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { -10.0f, 0.0f, 153.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
 
-                        if (model.find("PuzzleDoorKeyHole01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        if (model.find("PuzzleDoorKeyHole") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { -10.0f, 0.0f, 80.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
@@ -3478,6 +3635,21 @@ namespace MiscThings {
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+
+                        if (model.find("SOVDoorShort") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, -200.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("SOVDoorTall") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, -200.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
 
                         if (result == RE::NiPoint3::Zero())
                         {
@@ -5822,7 +5994,7 @@ namespace MiscThings {
                     result = name;
                 }
 
-                if (model.find("PuzzleDoorKeyHole01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                if (model.find("PuzzleDoorKeyHole") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                 {
                     std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", refr);
                     result = name;

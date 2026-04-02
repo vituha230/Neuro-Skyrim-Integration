@@ -2690,7 +2690,7 @@ namespace WalkerProcessor {
             auto test2 = target_actor->Get3D();
             auto test3 = target_actor->GetFaceNode();
 
-            
+            RE::TESObjectREFR* tsun = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4f829);
 
             if (target_actor->currentProcess)
                 if (target_actor->currentProcess->middleHigh)
@@ -2726,6 +2726,10 @@ namespace WalkerProcessor {
 
                             if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
                                 lookat_location.z -= 30.0f;
+
+                            if (target_ref == tsun)
+                                lookat_location.z -= 20.0f;
+
 
                             target_center = lookat_location;
                             height = 0.0f;
@@ -9349,6 +9353,29 @@ namespace WalkerProcessor {
 
 
 
+    void look_up()
+    {
+        auto dummy_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee);
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (dummy_target && player)
+        {
+            dummy_target->MoveTo(player->AsReference());
+            auto new_pos = player->GetPosition();
+            new_pos.z += 2000.0f;
+            MiscThings::SetPosition_moveto(dummy_target, new_pos);
+
+            look_at_object_by_refr(dummy_target, true);
+
+            
+        }
+
+    }
+
+
+
+
     std::pair<bool, std::string> set_multiple_path_quest_choice(int id)
     {
         std::pair<bool, std::string> result{};
@@ -9970,6 +9997,7 @@ namespace WalkerProcessor {
 
                 RE::TESObjectREFR* alftand_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15d48);
                 RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700af27);
+                
 
                 if (target_ref == alftand_door)
                 {
@@ -10207,10 +10235,37 @@ namespace WalkerProcessor {
                                 
                         }
                     }
+
+
+                    auto sovngarde_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe2d48);
+                    auto redirect_marker_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700bf58);
+
+                    if (sovngarde_portal && redirect_marker_portal && target_ref == redirect_marker_portal)
+                    {
+                        auto redirect_marker_pos = redirect_marker_portal->GetPosition();
+                        float distance = player_pos.GetDistance(redirect_marker_pos);
+                        auto sovngarde_portal_pos = sovngarde_portal->GetPosition();
+
+                        if (distance < 120.0f)
+                        {
+                            //auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = sovngarde_portal;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { redirect_marker_pos, sovngarde_portal_pos };
+                            //walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
+                        }
+                    }
+
                 }
-
-
-                
 
 
 
@@ -11126,8 +11181,10 @@ namespace WalkerProcessor {
                                                                                         {
                                                                                             auto target_actor = (RE::Actor*)target_ref;
                                                                                             auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
+                                                                                            RE::TESObjectREFR* tsun = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4f829);
 
-                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing)
+
+                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun)
                                                                                                 dont_autointerract = true;
                                                                                             
                                                                                         }
@@ -11364,7 +11421,7 @@ namespace WalkerProcessor {
                                             else
                                             {
 
-                                                if (target_is_too_high())
+                                                if (target_is_too_high() && get_targeted_ref() != target_ref && target_ref)
                                                 {
                                                     if (!too_high_notified)
                                                     {

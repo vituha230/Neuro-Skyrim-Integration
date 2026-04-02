@@ -2576,7 +2576,7 @@ namespace Observer {
 														}
 
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PuzzleDoorKeyHole01")
+														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PuzzleDoorKeyHole")
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
 

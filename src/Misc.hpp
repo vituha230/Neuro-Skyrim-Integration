@@ -331,6 +331,12 @@ namespace MiscThings {
             return RE::BSScript::UnpackValue<T>(var);
         }
 
+        inline RE::BSScript::Variable* GetVariable2(ObjectPtr a_obj, RE::BSFixedString a_prop)
+        {
+            auto var = a_obj->GetVariable(a_prop);
+            return var;
+        }
+
         template <class T>
         inline T GetProperty(ObjectPtr a_obj, RE::BSFixedString a_prop)
         {

@@ -93,6 +93,7 @@ namespace WalkerProcessor {
 
 	std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch = true);
 
+	void look_up();
 
 
 	bool is_exploring();
