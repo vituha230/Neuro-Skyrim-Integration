@@ -569,7 +569,12 @@ namespace MiscThings {
         RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
 
 
-        if (is_interior_cell())
+        auto blackreach_worldspace = RE::TESForm::LookupByID(0x1ee62);
+        auto player_worldspace = player->GetWorldspace();
+
+
+
+        if (is_interior_cell() || player_worldspace == blackreach_worldspace)
             return "";
 
         float min_distance = FLT_MAX;
