@@ -658,35 +658,35 @@ namespace MapProcessor {
 					bool camera_posY_ok = true;
 
 
-					if (marker_posY > 0.53)
+					if (marker_posY > 0.55)
 						camera_posY_ok = false;
 
-					if (marker_posY < 0.47)
+					if (marker_posY < 0.45)
 						camera_posY_ok = false;
 
-					if (marker_posX > 0.52)
+					if (marker_posX > 0.55)
 						camera_posX_ok = false;
 
-					if (marker_posX < 0.48)
+					if (marker_posX < 0.45)
 						camera_posX_ok = false;
 
 
 					if (!camera_posX_ok)
 					{
-						if (marker_posX > 0.52)
+						if (marker_posX > 0.55)
 							right();
 
-						if (marker_posX < 0.48)
+						if (marker_posX < 0.45)
 							left();
 					}
 					else
 					{
 						if (!camera_posY_ok)
 						{
-							if (marker_posY > 0.53)
+							if (marker_posY > 0.55)
 								cursor_down();
 
-							if (marker_posY < 0.47)
+							if (marker_posY < 0.45)
 								cursor_up();
 						}
 					}

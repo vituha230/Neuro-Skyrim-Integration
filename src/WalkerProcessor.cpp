@@ -5127,6 +5127,20 @@ namespace WalkerProcessor {
                 else
                     result.second = "Cannot walk right now. Looking at target instead";
 
+
+                RE::TESObjectREFR* timewound = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x430a3);
+                RE::TESObjectREFR* timewound2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbf4dd);
+
+                if (target_ref && (target_ref == timewound || target_ref == timewound2))
+                {
+                    auto player_pos = player->GetPosition();
+                    auto target_pos = target_ref->GetPosition();
+
+                    if (target_pos.GetDistance(player_pos) < 200.0f)
+                        result.second = "[You touch the timewound, but nothing happens... You feel like you should read the Elder Scroll (activate it from your inventory)]";
+                }
+
+
                 return result;
             }
             else
@@ -8554,6 +8568,8 @@ namespace WalkerProcessor {
                     }
                 }
 
+
+
                 result = "You walked up to " + target_name; //default
 
                 switch (interaction_after_walk)
@@ -8602,6 +8618,22 @@ namespace WalkerProcessor {
 
             }
         }
+
+
+        RE::TESObjectREFR* timewound = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x430a3);
+        RE::TESObjectREFR* timewound2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbf4dd);
+
+        if (target_ref && (target_ref == timewound || target_ref == timewound2))
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_pos = player->GetPosition();
+            auto target_pos = target_ref->GetPosition();
+
+            if (target_pos.GetDistance(player_pos) < 200.0f)
+                result = "[You touch the timewound, but nothing happens... You feel like you should read the Elder Scroll (activate it from your inventory)]";
+        }
+
+
 
         if (result != "")
             result = "[" + result + "]";
@@ -9909,7 +9941,7 @@ namespace WalkerProcessor {
                 return;
             }
 
-
+            
             if (!RE::UI::GetSingleton()->IsMenuOpen(RE::TweenMenu::MENU_NAME) && !RE::UI::GetSingleton()->IsMenuOpen(RE::LevelUpMenu::MENU_NAME) && !RE::UI::GetSingleton()->IsMenuOpen(RE::StatsMenu::MENU_NAME) && (init_delay || true))
             {
                 //path_valid = true;
@@ -10129,6 +10161,7 @@ namespace WalkerProcessor {
 
                 RE::TESObjectREFR* alftand_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15d48);
                 RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700af27);
+
                 
 
                 if (target_ref && !using_custom_path)

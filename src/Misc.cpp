@@ -361,8 +361,32 @@ namespace MiscThings {
     }
 
 
+
+
+    bool is_sitting(RE::TESObjectREFR* refr)
+    {
+        if (refr)
+        {
+            if (refr->IsActor())
+            {
+                auto actor_refr = (RE::Actor*)refr;
+
+                auto sit_state = actor_refr->actorState1.sitSleepState;
+
+                return sit_state == RE::SIT_SLEEP_STATE::kIsSitting;
+            }
+        }
+
+        return false;
+
+    }
+
+
     bool is_flying(RE::TESObjectREFR* refr)
     {
+        if (is_sitting(refr))
+            return false;
+
         if (refr)
         {
             if (refr->IsActor())
@@ -380,6 +404,9 @@ namespace MiscThings {
         return false;
         
     }
+
+
+
 
 
 
