@@ -1111,7 +1111,7 @@ namespace MiscThings {
         {
             auto stage = sovngarde_quest1->GetCurrentStageID();
 
-            if (stage > 0 && stage < 200)
+            if (stage > 5 && stage < 200)
             {
                 if (quest != sovngarde_quest1)
                     return true;
@@ -1178,9 +1178,70 @@ namespace MiscThings {
         auto object_p = General::Script::GetObject(lever, "defaultPillarPuzzleLever");
 
         if (!object_p)
-            return "";
+        {
+            object_p = General::Script::GetObject(lever, "dunSkuldafnPuzzleControlSCRIPT");
+            if (!object_p)
+            {
+                object_p = General::Script::GetObject(lever, "defaultPillarPuzzleLeverNoFurn");
+                if (!object_p)
+                    return "";
+                else
+                {
+                    goto normal_pillar;
+                }
+            }
+            else
+            {
+                RE::BSFixedString prop_name = "puzzleSolved";
+                bool puzzle_solved = General::Script::GetProperty<bool>(object_p, prop_name);
+
+                RE::BSFixedString prop_name2 = "altSolution";
+                bool alt_solution = General::Script::GetProperty<bool>(object_p, prop_name2);
+
+                RE::BSFixedString prop_name3 = "numPillarsSolved";
+                int pillars_solved = General::Script::GetProperty<int>(object_p, prop_name3);
+
+                RE::BSFixedString prop_name4 = "doorOpened";
+                bool door_opened = General::Script::GetProperty<bool>(object_p, prop_name4);
+
+
+                std::string advice = "Check surroundings to see if there is something linked to the lever that needs to be fixed";
+
+                std::string pillar_check = check_very_interesting_objects();
+                if (pillar_check.find("Pillar"))
+                    advice = "There are puzzle pillars nearby, interact with them until they are all in correct positions so lever opens the path";
+
+
+                if (pillars_solved < 2 || !(alt_solution || puzzle_solved))
+                    return " Something is wrong. The lever did not do anything..." + advice;
+                else
+                {
+                    if (pillars_solved == 2)
+                    {
+                        if (alt_solution)
+                        {
+                            if (!door_opened)
+                                return " Something is wrong. The lever opened a gate, but the passage behind that gate is blocked... you need to open another gate" + advice;
+                            else
+                                return " The lever closed some gate...";
+                        }
+                        else
+                            if (puzzle_solved)
+                                if (!door_opened)
+                                    return " Looks like the lever opened the correct gate... you can probably continue with your quest now";
+                                else
+                                    return " The lever closed some gate...";
+                            else
+                                return " Something is wrong. The lever did not do anything..." + advice;
+                    }
+                    else
+                        return " Something is wrong. The lever did not do anything..." + advice;
+                }
+            }
+        }
         else
         {
+        normal_pillar:
 
             RE::BSFixedString prop_name = "numPillarsSolved";
             int pillars_solved = General::Script::GetProperty<int>(object_p, prop_name);
@@ -1196,7 +1257,7 @@ namespace MiscThings {
 
 
             if (pillars_solved < pillars_need)
-                return " Something is incorrect. The lever activated a trap instead of opening the door. " + advice;
+                return " Something is wrong. The lever activated a trap instead of opening the door. " + advice;
             else
                 return " Looks like the lever opened something...";
         }
@@ -2548,6 +2609,35 @@ namespace MiscThings {
                 return true;
         }
 
+        
+
+
+        object_p = General::Script::GetObject(pillar, "dunSkuldafnPuzzlePillar01SCRIPT");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "pillarSolved";
+
+            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (solved)
+                return true;
+        }
+
+
+        object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarNoFurn");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "pillarSolved";
+
+            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (solved)
+                return true;
+        }
+
+
         object_p = General::Script::GetObject(pillar, "HallofStoriesDiskScript");
 
         if (object_p)
@@ -2568,7 +2658,7 @@ namespace MiscThings {
 
     std::string get_pillar_solved_text(RE::TESObjectREFR* pillar)
     {
-        std::string result = "[Is in incorrect position]";
+        std::string result = "[Is in wrong position]";
 
 
         auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
@@ -3061,6 +3151,13 @@ namespace MiscThings {
 
                                                             if (result_string.find("Critical Strike on") != std::string::npos)
                                                                 silent = true;
+
+
+                                                            if (result_string.find("You need the Diamond Claw to activate the keyhole") != std::string::npos)
+                                                            {
+                                                                result_string += " You see something shiny in the pockets of that draugr neaby...";
+                                                            }
+
 
                                                             send_random_context("[" + result_string + "]", silent);
                                                         }
@@ -9018,7 +9115,7 @@ namespace MiscThings {
                                     auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
                                     if (capture_dragon_quest && capture_dragon_quest->GetCurrentStageID() == 150)
                                     {
-                                        auto call_dragon = (RE::TESShout*)RE::TESForm::LookupByID(0x46B85);
+                                        auto call_dragon = (RE::TESShout*)RE::TESForm::LookupByID(0x46B8c);
                                         if (shout == call_dragon)
                                         {
                                             result.first = false;

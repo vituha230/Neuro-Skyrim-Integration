@@ -10943,7 +10943,7 @@ namespace WalkerProcessor {
                     {
                         if (target_is_too_high())
                         {
-                            if (MiscThings::raycastable(target_ref, 20000.0f, false))
+                            if (MiscThings::raycastable(target_ref, 50000.0f, false))
                                 lock_camera_onto_target(target_ref, dtime);
 
                             return;
@@ -11068,10 +11068,16 @@ namespace WalkerProcessor {
                                                                     if (subvar.IsString())
                                                                     {
                                                                         std::string result_string = subvar.GetString();
-                                                                        if (result_string.find("You are out of lockpicks") || result_string.find("This lock cannot be picked")) //no lockpicks or no key //TODO: GET FULL MESSAGES
+                                                                        if (result_string.find("You are out of lockpicks") != std::string::npos || result_string.find("This lock cannot be picked") != std::string::npos) //no lockpicks or no key //TODO: GET FULL MESSAGES
                                                                         {
                                                                             if (result_string != "")
                                                                                 MiscThings::update_old_topleft_nofification(result_string);
+
+                                                                            if (result_string.find("You need the Diamond Claw to activate the keyhole") != std::string::npos)
+                                                                            {
+                                                                                result_string += " You see something shiny in the pockets of that draugr neaby...";
+                                                                            }
+
 
                                                                             register_allowed_actions();
                                                                             send_random_context("[" + result_string + "]", false);

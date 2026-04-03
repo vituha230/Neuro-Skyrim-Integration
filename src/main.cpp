@@ -3,6 +3,12 @@
 
 //crucial:
 
+//TODO test sovngarde
+//TODO add proper location name in context for sovngarde (it says Tamriel currently)
+//TODO sovngarde portal point camera lower while walking so the portal is visible
+
+
+
 //TODO filter dwemer metal poles 
 
 //TODO shift on dwemer mechanism on entrance to blackreach

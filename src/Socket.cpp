@@ -560,7 +560,11 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                             actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
                         }
 
-                        if (!MiscThings::is_interior_cell() && can_fight) //refreshed automatically when we switch location
+
+                        auto player_worldspace = player->GetWorldspace();
+                        auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+                        if (!MiscThings::is_interior_cell() && can_fight && player_worldspace == tamriel_worldspace) //refreshed automatically when we switch location
                         {
                             actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
                             if (!MiscThings::have_any_quests())

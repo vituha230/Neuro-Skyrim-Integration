@@ -2513,8 +2513,9 @@ namespace Observer {
 																
 														}
 
+														std::string anim_name = extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName.c_str();
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorSecRmSmDoorSm01")
+														if (anim_name == "NorSecRmSmDoorSm01")
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("Secret cave wall door", a_ref);
 
@@ -2525,7 +2526,7 @@ namespace Observer {
 																result.push_back("[ " + name + " opened]");
 														}
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ImpPortcullisSmall01")
+														if (anim_name == "ImpPortcullisSmall01")
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("Heavy wooden gate", a_ref);
 
@@ -2538,7 +2539,7 @@ namespace Observer {
 
 														//
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorPortcullisGate01")
+														if (anim_name == "NorPortcullisGate01")
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("Small metal gate", a_ref);
 
@@ -2550,7 +2551,7 @@ namespace Observer {
 														}
 
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortcullisLarge01")
+														if (anim_name == "PortcullisLarge01")
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("Metal gate", a_ref);
 
@@ -2561,7 +2562,7 @@ namespace Observer {
 																result.push_back("[ " + name + " closed]");
 														}
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "SarcophagusTopOpen")
+														if (anim_name == "SarcophagusTopOpen")
 														{
 															std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 															if (activation == 1)
@@ -2570,7 +2571,7 @@ namespace Observer {
 														}
 
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePole06")
+														if (anim_name == "PortGatePole06")
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal pole gate", a_ref);
 
@@ -2582,7 +2583,7 @@ namespace Observer {
 														}
 
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePoleDwemer01")
+														if (anim_name == "PortGatePoleDwemer01")
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal pole gate", a_ref);
 
@@ -2594,7 +2595,7 @@ namespace Observer {
 														}
 
 
-														if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PuzzleDoorKeyHole")
+														if (anim_name.find("PuzzleDoorKeyHole") != std::string::npos)
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
 
@@ -2934,7 +2935,12 @@ namespace Observer {
 
 	void detect_locations(float dtime)
 	{
-		if (observers_green_light && !MiscThings::have_force_only_menu_open())
+		auto player = RE::PlayerCharacter::GetSingleton();
+		auto player_worldspace = player->GetWorldspace();
+		auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+
+		if (observers_green_light && !MiscThings::have_force_only_menu_open() && player_worldspace == tamriel_worldspace)
 		{
 			if (detect_locations_timer > 30.0f && !(MiscThings::is_intro() || MiscThings::is_intro2()))
 			{
