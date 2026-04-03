@@ -3245,6 +3245,21 @@ namespace MiscThings {
                     if (actor_obj->IsWalking() || actor_obj->IsRunning())
                         base_shift_vector = { 0.0f, -50.0f, 0.0f };
 
+                    RE::TESObjectREFR* madesi = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19ddc);
+                    auto madesi_ring_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG00");
+
+                    if (madesi_ring_quest && madesi && object == madesi)
+                    {
+                        auto stage2 = madesi_ring_quest->GetCurrentStageID();
+                        if (stage2 >= 10 && stage2 < 35)
+                            if (actor_obj->GetSitSleepState() == RE::SIT_SLEEP_STATE::kIsSitting)
+                            {
+                                base_shift_vector = { 70.0f, -100.0f, 0.0f };
+                            }
+                    }
+
+
+
                     RE::NiPoint3 object_angles = object->data.angle;
                     RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                     result = rotated_shift_vector;

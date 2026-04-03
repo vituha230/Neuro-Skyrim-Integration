@@ -11,6 +11,11 @@
 namespace ContainerProcessor {
 
 
+bool madesi_mode = false;
+bool madesi_ring_found = false;
+int madesi_ring_id = -1;
+bool madesi_done = false;
+
 
 bool in_container = false;
 int last_cursor_move = 0;
@@ -189,6 +194,49 @@ std::vector<MenuOption> get_items_options()
 {
 	std::vector<MenuOption> result{};
 
+	RE::TESObjectREFR* brandshei = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19ddc);
+
+
+	RE::UI* ui = RE::UI::GetSingleton();
+	RE::GFxValue var1;
+	if (ui)
+	{
+		auto menu = ui->GetMenu<RE::ContainerMenu>();
+
+		if (menu)
+		{
+			auto container_ref_handle = menu->GetTargetRefHandle();
+
+			auto container_ref_ptr = RE::TESObjectREFR::LookupByHandle(container_ref_handle);
+
+			if (container_ref_ptr && container_ref_ptr.get())
+			{
+				auto container_ref = container_ref_ptr.get();
+
+				if (container_ref == brandshei)
+				{
+					auto player = RE::PlayerCharacter::GetSingleton();
+
+					auto ring = (RE::TESBoundObject*)RE::TESBoundObject::LookupByID(0x76f12);
+					if (ring && player)
+					{
+						if (player->GetItemCount(ring) > 0)
+						{
+							madesi_mode = true;
+							refresh_items_list = true;
+							result.push_back({ 1, "[PLANT MADESI RING]" });
+							result.push_back({ -1, "[STOP LOOTING]" });
+							return result;
+						}
+					}
+					
+				}
+			}
+		}
+	}
+
+
+
 	if (!is_pickpocketing())
 		result.push_back({ -2, "[TAKE ALL]" });
 
@@ -237,7 +285,10 @@ std::vector<MenuOption> get_items_options()
 	}
 
 	if (!is_possessions || is_pickpocketing())
+	{
 		result.push_back({ -1, "[STOP LOOTING]" });
+	}
+		
 	
 
 	return result;
@@ -486,6 +537,15 @@ void update_items_list()
 									{
 										if (result.id == get_item_selected_index())
 										{
+											if (madesi_mode && !madesi_ring_found)
+											{
+												if (name.find("Madesi's") != std::string::npos && name.find("Ring") != std::string::npos)
+												{
+													madesi_ring_found = true;
+													madesi_ring_id = result.id;
+												}
+											}
+
 											item_data data{};
 											data.name = name;
 											data.price = price;
@@ -867,6 +927,11 @@ void reset_pickpocketing()
 
 void reset_container()
 {
+	madesi_mode = false;
+	madesi_ring_found = false;
+	madesi_ring_id = -1;
+	madesi_done = false;
+
 	close_empty_container = false;
 
 	in_container = false;
@@ -1087,9 +1152,9 @@ std::pair<bool, std::string> set_item_choice(int id)
 	}
 	else
 	{
-		if (items_list_valid)
+		if (items_list_valid || madesi_mode)
 		{
-			if (items_list.find(id) == items_list.end())
+			if (!madesi_mode && items_list.find(id) == items_list.end())
 			{
 				result.first = false;
 				result.second = "Invalid item ID";
@@ -1364,7 +1429,6 @@ float container_processor_timer = 0.0f;
 
 void processor(float dtime)
 {
-	//return;
 	RE::UI* ui = RE::UI::GetSingleton();
 
 	//std::string test = "";
@@ -1413,6 +1477,9 @@ void processor(float dtime)
 				Observer::set_dont_inform_inventory();
 				category_choice = 11;
 			}
+
+			if (madesi_mode)
+				category_choice = 2;
 
 			if (get_category_selected_index() != category_choice)
 			{
@@ -1468,6 +1535,12 @@ void processor(float dtime)
 
 					else
 					{
+						if (madesi_mode && !madesi_ring_found)
+						{
+							quit_menu();
+							return;
+						}
+
 						move_cursor_timeout1 = 0.0f;
 						filling_items = false;
 						if (!check_results)
@@ -1570,6 +1643,18 @@ void processor(float dtime)
 						{
 							if (is_malborn() || item_choice_valid)
 							{
+								if (madesi_mode)
+								{
+									if (!madesi_ring_found)
+										return;
+									else
+										item_choice = madesi_ring_id;
+								}
+
+
+
+
+
 								int selected_index = get_item_selected_index();
 								if (!is_malborn() && (selected_index != item_choice) && !check_results)
 								{
@@ -1643,7 +1728,16 @@ void processor(float dtime)
 												
 										}
 										else
-											confirm();
+										{
+											if (madesi_mode)
+											{
+												close_empty_container = true;
+												ready_weapon();
+											}
+											else
+												confirm();
+										}
+											
 
 										if (!is_malborn())
 											set_universal_block(0.3f);
