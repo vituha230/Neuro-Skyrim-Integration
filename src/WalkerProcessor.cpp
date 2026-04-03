@@ -4266,7 +4266,7 @@ namespace WalkerProcessor {
         auto player_pos = player->GetPosition();
         auto target_pos = target_ref->GetPosition();
 
-        if (MiscThings::is_dragon(target_ref) && player_pos.GetDistance(target_pos) > 30000.0f)
+        if (MiscThings::is_dragon(target_ref) && player_pos.GetDistance(target_pos) > 30000.0f && !quest_mode)
         {
             reset_walker();
             return false;
