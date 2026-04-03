@@ -3001,9 +3001,13 @@ namespace MiscThings {
 
                                                                     result_string += bonus;
                                                                 }
-                                                                    
+                                                                   
+                                                            bool silent = false;
 
-                                                            send_random_context("[" + result_string + "]", false);
+                                                            if (result_string.find("Critical Strike on") != std::string::npos)
+                                                                silent = true;
+
+                                                            send_random_context("[" + result_string + "]", silent);
                                                         }
                                                     }
                                                 }
