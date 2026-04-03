@@ -3752,8 +3752,10 @@ namespace Observer {
 
 					old_time_text = time_text;
 					
+					auto blackreach_worldspace = RE::TESForm::LookupByID(0x1ee62);
+					auto player_worldspace = player->GetWorldspace();
 
-					if (!MiscThings::is_interior_cell())
+					if (!MiscThings::is_interior_cell() && player_worldspace != blackreach_worldspace)
 					{
 						auto weather = sky->currentWeather;
 
