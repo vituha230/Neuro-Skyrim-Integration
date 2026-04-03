@@ -10349,6 +10349,40 @@ namespace WalkerProcessor {
                         }
                     }
 
+
+
+                    //riften ratway bridge
+
+                    //{x=371.079285 y=-4858.40820 z=27.6426697 } - stuck point. if close to it and bridge is up and target is door to outside - redirect to lever
+
+                    //a1ced - lever
+                    //a1cb3 - bridge
+                    //a3de1 - door to outside
+                    //3b698 - ratway cell
+
+
+                    auto ratway_door_to_outside = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa3de1);
+                    
+                    if (target_ref == ratway_door_to_outside)
+                    {
+                        if (player_pos.GetDistance({ 371.079285, -4858.40820, 27.6426697 }) < 200.0f)
+                        {
+                            auto ratway_bridge = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa1cb3);
+                            if (ratway_bridge && MiscThings::two_state_activator_state(ratway_bridge) == 0)
+                            {
+                                auto ratway_lever = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa1ced);
+                                if (ratway_lever)
+                                {
+                                    dont_check_quest_target_change = true;
+                                    target_ref = ratway_lever;
+                                    interaction_after_walk = 1;
+                                    walk_again();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
                 }
 
 
@@ -11439,6 +11473,16 @@ namespace WalkerProcessor {
                                                                     {
                                                                         opening_door_attempts++;
                                                                         confirm(); //open the door
+
+                                                                        auto bad_ratway_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9fb92);
+                                                                        if (get_targeted_ref() == bad_ratway_door)
+                                                                        {
+                                                                            //must wiggle back-right 
+                                                                            wiggle_body_then_walk_again = true;
+                                                                            unstuck_direction = 1;
+                                                                            return;
+                                                                        }
+
                                                                         set_universal_block(1.5f);
                                                                     }  
                                                                     else
@@ -11653,7 +11697,17 @@ namespace WalkerProcessor {
                                                                 ignore_closed_doors_time = 3.0f;
                                                                 if (is_targeted_door_closed())
                                                                 {
+                                                                    
                                                                     confirm(); //just unlock it
+
+                                                                    auto bad_ratway_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9fb92);
+                                                                    if (get_targeted_ref() == bad_ratway_door)
+                                                                    {
+                                                                        //must wiggle back-right 
+                                                                        wiggle_body_then_walk_again = true;
+                                                                        unstuck_direction = 1;
+                                                                        return;
+                                                                    }
 
                                                                     if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode))
                                                                         just_teleported = true;
@@ -12005,6 +12059,16 @@ namespace WalkerProcessor {
                                                 if (is_targeted_door_closed())
                                                 {
                                                     confirm(); //just unlock it
+
+                                                    auto bad_ratway_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9fb92);
+                                                    if (get_targeted_ref() == bad_ratway_door)
+                                                    {
+                                                        //must wiggle back-right 
+                                                        wiggle_body_then_walk_again = true;
+                                                        unstuck_direction = 1;
+                                                        return;
+                                                    }
+
                                                     if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode))
                                                         just_teleported = true;
                                                 }
