@@ -16,6 +16,12 @@ bool madesi_ring_found = false;
 int madesi_ring_id = -1;
 bool madesi_done = false;
 
+bool klimmek_mode = false;
+bool klimmek_supplies_found = false;
+int klimmek_supplies_id = -1;
+bool klimmek_done = false;
+
+
 
 bool in_container = false;
 int last_cursor_move = 0;
@@ -195,7 +201,7 @@ std::vector<MenuOption> get_items_options()
 	std::vector<MenuOption> result{};
 
 	RE::TESObjectREFR* brandshei = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19ddc);
-
+	RE::TESObjectREFR* klimmek_chest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9c614);
 
 	RE::UI* ui = RE::UI::GetSingleton();
 	RE::GFxValue var1;
@@ -213,11 +219,13 @@ std::vector<MenuOption> get_items_options()
 			{
 				auto container_ref = container_ref_ptr.get();
 
+				auto player = RE::PlayerCharacter::GetSingleton();
+
 				if (container_ref == brandshei)
 				{
-					auto player = RE::PlayerCharacter::GetSingleton();
-
 					auto ring = (RE::TESBoundObject*)RE::TESBoundObject::LookupByID(0x76f12);
+					
+
 					if (ring && player)
 					{
 						if (player->GetItemCount(ring) > 0)
@@ -229,13 +237,38 @@ std::vector<MenuOption> get_items_options()
 							return result;
 						}
 					}
-					
+				}
+
+
+
+				if (container_ref == klimmek_chest)
+				{
+					auto klimmek_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("FreeformIvarstead04");
+					if (klimmek_quest)
+					{
+						auto klimmek_stage = klimmek_quest->GetCurrentStageID();
+
+						if (klimmek_stage == 20)
+						{
+							auto supplies = (RE::TESBoundObject*)RE::TESBoundObject::LookupByID(0xdab04);
+
+							if (supplies && player)
+							{
+								if (player->GetItemCount(supplies) > 0)
+								{
+									klimmek_mode = true;
+									refresh_items_list = true;
+									result.push_back({ 1, "[PUT SUPPLIES INTO THE CHEST]" });
+									result.push_back({ -1, "[STOP LOOTING]" });
+									return result;
+								}
+							}
+						}
+					}
 				}
 			}
 		}
 	}
-
-
 
 	if (!is_pickpocketing())
 		result.push_back({ -2, "[TAKE ALL]" });
@@ -545,6 +578,16 @@ void update_items_list()
 													madesi_ring_id = result.id;
 												}
 											}
+
+											if (klimmek_mode && !klimmek_supplies_found)
+											{
+												if (name.find("Klimmek's Supplies") != std::string::npos)
+												{
+													klimmek_supplies_found = true;
+													klimmek_supplies_id = result.id;
+												}
+											}
+
 
 											item_data data{};
 											data.name = name;
@@ -932,6 +975,13 @@ void reset_container()
 	madesi_ring_id = -1;
 	madesi_done = false;
 
+
+	klimmek_mode = false;
+	klimmek_supplies_found = false;
+	klimmek_supplies_id = -1;
+	klimmek_done = false;
+
+
 	close_empty_container = false;
 
 	in_container = false;
@@ -981,6 +1031,8 @@ void reset_container()
 	item_names_to_skip.clear();
 
 	bad_pos_time = 0.0f;
+
+
 }
 
 
@@ -1152,9 +1204,9 @@ std::pair<bool, std::string> set_item_choice(int id)
 	}
 	else
 	{
-		if (items_list_valid || madesi_mode)
+		if (items_list_valid || madesi_mode || klimmek_mode)
 		{
-			if (!madesi_mode && items_list.find(id) == items_list.end())
+			if (!madesi_mode && !klimmek_mode && items_list.find(id) == items_list.end())
 			{
 				result.first = false;
 				result.second = "Invalid item ID";
@@ -1481,6 +1533,10 @@ void processor(float dtime)
 			if (madesi_mode)
 				category_choice = 2;
 
+			if (klimmek_mode)
+				category_choice = 2;
+
+
 			if (get_category_selected_index() != category_choice)
 			{
 				if (!missing_category_detected)
@@ -1535,7 +1591,7 @@ void processor(float dtime)
 
 					else
 					{
-						if (madesi_mode && !madesi_ring_found)
+						if ((madesi_mode && !madesi_ring_found) || (klimmek_mode && !klimmek_supplies_found))
 						{
 							quit_menu();
 							return;
@@ -1589,7 +1645,7 @@ void processor(float dtime)
 							if (is_pickpocketing())
 								minimum = 1;
 
-							if (std::size(options) <= minimum && !is_possessions_chest())
+							if (!madesi_mode && !klimmek_mode && std::size(options) <= minimum && !is_possessions_chest())
 							{
 								add_delayed_message("[Container is empty. Closing container...]");
 
@@ -1651,7 +1707,13 @@ void processor(float dtime)
 										item_choice = madesi_ring_id;
 								}
 
-
+								if (klimmek_mode)
+								{
+									if (!klimmek_supplies_found)
+										return;
+									else
+										item_choice = klimmek_supplies_id;
+								}
 
 
 
@@ -1729,7 +1791,7 @@ void processor(float dtime)
 										}
 										else
 										{
-											if (madesi_mode)
+											if (madesi_mode || klimmek_mode)
 											{
 												close_empty_container = true;
 												ready_weapon();

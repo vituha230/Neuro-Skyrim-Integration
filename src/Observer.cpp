@@ -1454,11 +1454,22 @@ namespace Observer {
 												{
 													if (info.find("Large Treasure") != std::string::npos)
 													{
-														//if (a_ref->data.objectReference)
-														//{
-														//	RE::TESContainer* container = (RE::TESContainer*)((RE::TESObjectCONT*)(a_ref->data.objectReference));
-														//	if (container->numContainerObjects > 0)
-														//	{
+														RE::TESObjectREFR* klimmek_chest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9c614);
+
+														if (klimmek_chest == a_ref)
+														{
+															auto klimmek_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("FreeformIvarstead04");
+															if (klimmek_quest)
+															{
+																auto klimmek_stage = klimmek_quest->GetCurrentStageID();
+
+																if (klimmek_stage != 20)
+																	return RE::BSContainer::ForEachResult::kContinue;
+															}
+														}
+
+
+
 														if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path() && !MiscThings::is_container_empty(a_ref))
 														{
 															WalkerProcessor::look_at_object_by_refr(a_ref);
