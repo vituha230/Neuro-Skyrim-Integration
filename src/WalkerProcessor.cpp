@@ -2592,7 +2592,7 @@ namespace WalkerProcessor {
 
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && !is_fighting()))
+            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && is_fighting()))
                 dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
@@ -2849,7 +2849,7 @@ namespace WalkerProcessor {
         
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && !is_fighting()))
+            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && is_fighting()))
                 dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
@@ -5141,6 +5141,16 @@ namespace WalkerProcessor {
                 }
 
 
+                auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
+                if (target_ref && target_ref == odawing_marker)
+                {
+                    auto player_pos = player->GetPosition();
+                    auto target_pos = target_ref->GetPosition();
+
+                    if (target_pos.GetDistance(player_pos) < 700.0f)
+                        result.second = "[You are in position. You need to use correct shout to call the dragon]";
+                }
+
                 return result;
             }
             else
@@ -6118,6 +6128,35 @@ namespace WalkerProcessor {
                                                     {
                                                         result.first = true;
                                                         result.second = "You keep following quest...";
+
+
+                                                        RE::TESObjectREFR* timewound = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x430a3);
+                                                        RE::TESObjectREFR* timewound2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbf4dd);
+
+                                                        auto player = RE::PlayerCharacter::GetSingleton();
+
+                                                        if (target_ref && (target_ref == timewound || target_ref == timewound2))
+                                                        {
+                                                            auto player_pos = player->GetPosition();
+                                                            auto target_pos = target_ref->GetPosition();
+
+                                                            //if (target_pos.GetDistance(player_pos) < 200.0f)
+                                                            result.second = "You touch the timewound, but nothing happens... You feel like you should read the Elder Scroll (activate it from your inventory)";
+                                                        }
+
+
+                                                        auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
+                                                        if (target_ref && target_ref == odawing_marker)
+                                                        {
+                                                            auto player_pos = player->GetPosition();
+                                                            auto target_pos = target_ref->GetPosition();
+
+                                                            //if (target_pos.GetDistance(player_pos) < 200.0f)
+                                                            result.second = "You are in position. You need to use correct shout to call the dragon";
+                                                        }
+
+
+
                                                         return result;
                                                     }
                                                 }
@@ -8623,14 +8662,26 @@ namespace WalkerProcessor {
         RE::TESObjectREFR* timewound = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x430a3);
         RE::TESObjectREFR* timewound2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbf4dd);
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
         if (target_ref && (target_ref == timewound || target_ref == timewound2))
         {
-            auto player = RE::PlayerCharacter::GetSingleton();
             auto player_pos = player->GetPosition();
             auto target_pos = target_ref->GetPosition();
 
-            if (target_pos.GetDistance(player_pos) < 200.0f)
-                result = "[You touch the timewound, but nothing happens... You feel like you should read the Elder Scroll (activate it from your inventory)]";
+            //if (target_pos.GetDistance(player_pos) < 200.0f)
+                result = "You touch the timewound, but nothing happens... You feel like you should read the Elder Scroll (activate it from your inventory)";
+        }
+
+
+        auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
+        if (target_ref && target_ref == odawing_marker)
+        {
+            auto player_pos = player->GetPosition();
+            auto target_pos = target_ref->GetPosition();
+
+            //if (target_pos.GetDistance(player_pos) < 200.0f)
+                result = "You are in position. You need to use correct shout to call the dragon";
         }
 
 
