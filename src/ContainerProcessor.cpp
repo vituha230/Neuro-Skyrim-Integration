@@ -1512,7 +1512,11 @@ void processor(float dtime)
 
 							auto options = get_items_options();
 
-							if (std::size(options) <= 2 && !is_possessions_chest())
+							int minimum = 2;
+							if (is_pickpocketing())
+								minimum = 1;
+
+							if (std::size(options) <= minimum && !is_possessions_chest())
 							{
 								add_delayed_message("[Container is empty. Closing container...]");
 

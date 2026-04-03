@@ -14,6 +14,7 @@
 
 namespace WalkerProcessor {
 
+    bool must_use_bounds = false;
 
     RE::TESObjectREFR* door_to_remember = nullptr;
     float door_refocus_timeout = 0.0f;
@@ -473,7 +474,7 @@ namespace WalkerProcessor {
     {
         RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FAFB);
         RE::TESObjectREFR* trigger = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FB02);
-
+        
         if (gate && trigger)
         {
 
@@ -2238,7 +2239,7 @@ namespace WalkerProcessor {
         if (avoidsphere_form)
         {
             auto avoidsphere_refr = avoidsphere_form->AsReference();
-            if (avoidsphere_refr)
+            if (avoidsphere_refr && target)
             {
                 
                 //avoidsphere_refr->SetScale(1.0f);
@@ -2580,7 +2581,7 @@ namespace WalkerProcessor {
 
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            if (!(MiscThings::is_dragon(target_ref) && is_fighting()))
+            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && is_fighting()))
                 dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
@@ -2833,7 +2834,7 @@ namespace WalkerProcessor {
         
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            if (!(MiscThings::is_dragon(target_ref) && is_fighting()))
+            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && is_fighting()))
                 dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
@@ -3555,6 +3556,7 @@ namespace WalkerProcessor {
     void reset_walker()
     {
         
+        must_use_bounds = false;
 
 
         door_to_remember = nullptr;
@@ -4495,14 +4497,19 @@ namespace WalkerProcessor {
 
                         if (MiscThings::is_dragon(target_ref))
                             threshold = 200.0f;
+                        
+                        if (!dont_use_bounds_for_close_enough)
+                        {
+                            if (must_use_bounds)
+                                threshold = 0.0f;
 
-                        if (target_ref && target_ref->IsActor() && !target_ref->IsDead())
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f)))
+                            if (target_ref)// && target_ref->IsActor() && !target_ref->IsDead())
+                                if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f)))
+                                    return true;
+                        }
+                        else
+                            if (distance.Length() < 110.0f * (1 + MiscThings::is_on_horse() * 3.0f))
                                 return true;
-
-
-                        if (distance.Length() < 110.0f * (1 + MiscThings::is_on_horse() * 3.0f))
-                            return true;
                     }
                     else
                     {
@@ -6090,6 +6097,13 @@ namespace WalkerProcessor {
                                                 have_target_to_walk = true;
                                                 interaction_after_walk = -1;
                                                 
+
+                                                RE::TESObjectREFR* madesi = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19ddc);
+                                                auto madesi_ring_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG00");
+
+                                                if (target_ref == madesi && madesi && quest_entry.quest == madesi_ring_quest)
+                                                    interaction_after_walk = 2;
+
                                                 auto base_obj = quests_target_ref->GetBaseObject();
 
                                                 if (base_obj && base_obj->GetFormType() == RE::FormType::Container)
@@ -11261,7 +11275,10 @@ namespace WalkerProcessor {
 
                                                                                         //attempts to not autointerract with npc's that want us to follow them. interaction will stop walking and start (probably useless) dialogue
                                                                                         if (!dont_autointerract)
-                                                                                            interaction_after_walk = 1; //interact if there is something and it was quest
+                                                                                        {
+                                                                                            if (interaction_after_walk < 1 || interaction_after_walk > 3)
+                                                                                                interaction_after_walk = 1; //interact if there is something and it was quest
+                                                                                        }
                                                                                         else
                                                                                         {
                                                                                             //this also refreshes on walk_again so if we are actually following someone it will keep doing it
@@ -11491,6 +11508,14 @@ namespace WalkerProcessor {
                                                                                                                                                             //TODO: figure out that its a wall and the thing is behind the corner, walk around it
                                                                                 locking_failed = true;
                                                                                 //check if we caught it
+
+                                                                                if (!must_use_bounds && dont_use_bounds_for_close_enough)
+                                                                                {
+                                                                                    dont_use_bounds_for_close_enough = false;
+                                                                                    must_use_bounds = true;
+                                                                                    return;
+                                                                                }
+
 
                                                                                 if (wiggle_camera(dtime)) //OTHERWISE WE WILL CATCH IT ABOVE
                                                                                 {
