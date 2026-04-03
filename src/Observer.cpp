@@ -3135,6 +3135,8 @@ namespace Observer {
 
 
 		
+		//700c4bc - huge cutter
+		//700ca1f - huge cutter2
 
 
 		if (last_saved_time > 180.0f && !WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1 && MiscThings::player_hp_more_than(0.3f))

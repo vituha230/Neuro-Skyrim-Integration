@@ -14,6 +14,9 @@
 
 namespace WalkerProcessor {
 
+
+    RE::TESObjectREFR* target_before_markarth_redirect = nullptr;
+
     bool must_use_bounds = false;
 
     RE::TESObjectREFR* door_to_remember = nullptr;
@@ -3555,7 +3558,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
-        
+        target_before_markarth_redirect = nullptr;
+
         must_use_bounds = false;
 
 
@@ -10382,6 +10386,82 @@ namespace WalkerProcessor {
                             }
                         }
                     }
+
+
+                    auto player_cell = player->GetParentCell();
+                    auto player_worldspace = player->GetWorldspace();
+
+                    auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+                    auto redirect_marker_markarth_area = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700ca22); //22 original 
+
+                    if (redirect_marker_markarth_area && player_worldspace == tamriel_worldspace)
+                    {
+                        auto player_pos_noZ = player_pos;
+                        player_pos_noZ.z = 0.0f;
+
+                        RE::NiPoint3 ban_root = { -91201.2891f, 27304.0020f, 0.0f };
+                        RE::NiPoint3 ban_edge = { -116173.117f, 41768.2500f, 0.0f };
+
+                        auto radius = (ban_root - ban_edge).Length();
+
+                        if (player_pos_noZ.GetDistance(ban_root) < radius)
+                        {
+                            RE::NiPoint3 corner = { -123944.070f, 19016.9492f, 0.0f };
+                            if (target_ref != redirect_marker_markarth_area)
+                            {
+
+                                if (target_ref_pos.x < corner.x && target_ref_pos.y < corner.y)
+                                {
+
+                                    //fix bad pathfinding
+                                    dont_check_quest_target_change = true;
+                                    target_before_markarth_redirect = target_ref;
+                                    target_ref = redirect_marker_markarth_area;
+                                    walk_again();
+                                    return;
+                                }
+                                else
+                                {
+                                    if (target_ref == redirect_marker_markarth_area)
+                                    {
+                                        target_ref = target_before_markarth_redirect;
+                                        walk_again();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (target_ref == redirect_marker_markarth_area)
+                            {
+                                target_ref = target_before_markarth_redirect;
+
+                                if (!target_before_markarth_redirect)
+                                {
+                                    reset_walker();
+                                    return;
+                                }
+
+                                walk_again();
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (target_ref == redirect_marker_markarth_area)
+                        {
+                            target_ref = target_before_markarth_redirect;
+                            walk_again();
+                            return;
+                        }
+                    }
+
+
+
+
 
                 }
 
