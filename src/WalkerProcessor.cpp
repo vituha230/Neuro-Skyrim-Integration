@@ -14,6 +14,11 @@
 
 namespace WalkerProcessor {
 
+
+    RE::TESObjectREFR* door_to_remember = nullptr;
+    float door_refocus_timeout = 0.0f;
+
+
     bool dont_quicksave_after_custom_path = false;
 
     bool dont_shift = false;
@@ -3551,6 +3556,12 @@ namespace WalkerProcessor {
     {
         
 
+
+        door_to_remember = nullptr;
+        door_refocus_timeout = 0.0f;
+
+
+
         third_person_timer = 0.0f;
 
         if (activate_refr_after_walker_is_done)
@@ -3897,6 +3908,7 @@ namespace WalkerProcessor {
     {
         //if (!using_custom_path)
         {
+            door_refocus_timeout = 0.0f; 
 
             stable_target = 0;
 
@@ -7929,6 +7941,63 @@ namespace WalkerProcessor {
                 {
                     if (door_is_closed_choice)
                     {
+
+                        if (!stop_sneaking)
+                        {
+                            if (MiscThings::is_stealing(target_ref) != "")
+                            {
+                                if ((crouch_timeout < 5.0f) && (player && !player->IsSneaking()))
+                                {
+                                    crouch();
+                                    pause_pre_stealing = true;
+                                    pause_pre_stealing_time = 0.0f;
+                                    //set_universal_block(0.5f);
+                                    crouch_timeout += dtime;
+                                    return false;
+                                }
+
+                                if (player && player->IsSneaking())
+                                    crouch_timeout = 0.0f;
+
+                                auto player_actor = (RE::Actor*)player_ref;
+
+                                if (!MiscThings::is_player_hidden())
+                                {
+                                    if (stealing_timer > 4.0f)
+                                    {
+                                        if (!stealing_confirmed)
+                                        {
+                                            confirm_stealing = true;
+                                            return false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        stealing_timer += dtime;
+                                        return false;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (player && player->IsSneaking() && get_targeted_ref() && get_targeted_ref()->IsActor())
+                                {
+                                    crouch(); //uncrouch
+                                    set_universal_block(0.5f);
+                                    stop_sneaking = true;
+                                    return false;
+                                }
+                            }
+                        }
+
+                        if (result_target != target_ref && door_refocus_timeout < 2.0f)
+                        {
+                            door_refocus_timeout += dtime;
+                            lock_camera_onto_target(target_ref, 0.016, false);
+                            return false;
+                        }
+
+
                         confirm(); //lockpick it
 
                         //then lockpicking could fail or succeed...
@@ -7981,6 +8050,8 @@ namespace WalkerProcessor {
                         else
                         {
                             unregister_all_actions();
+
+                            door_to_remember = target_ref;
 
                             if (is_door(target_ref))
                             {
@@ -11061,7 +11132,7 @@ namespace WalkerProcessor {
 
                                                         //
 
-                                                        if (looking_mode || MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive())//(quest_mode && !target_is_interactive()))
+                                                        if (!confirming_closed_door_interaction && (looking_mode || MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive()))//(quest_mode && !target_is_interactive()))
                                                         {
                                                             //all good
 
@@ -11227,6 +11298,64 @@ namespace WalkerProcessor {
                                                                 {
                                                                     if (door_is_closed_choice)
                                                                     {
+
+                                                                        if (!stop_sneaking)
+                                                                        {
+                                                                            if (MiscThings::is_stealing(target_ref) != "")
+                                                                            {
+                                                                                if ((crouch_timeout < 5.0f) && (player && !player->IsSneaking()))
+                                                                                {
+                                                                                    crouch();
+                                                                                    pause_pre_stealing = true;
+                                                                                    pause_pre_stealing_time = 0.0f;
+                                                                                    //set_universal_block(0.5f);
+                                                                                    crouch_timeout += dtime;
+                                                                                    return;
+                                                                                }
+
+                                                                                if (player && player->IsSneaking())
+                                                                                    crouch_timeout = 0.0f;
+
+                                                                                auto player_actor = (RE::Actor*)player_ref;
+
+                                                                                if (!MiscThings::is_player_hidden())
+                                                                                {
+                                                                                    if (stealing_timer > 4.0f)
+                                                                                    {
+                                                                                        if (!stealing_confirmed)
+                                                                                        {
+                                                                                            confirm_stealing = true;
+                                                                                            return;
+                                                                                        }
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        stealing_timer += dtime;
+                                                                                        return;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (player && player->IsSneaking() && get_targeted_ref() && get_targeted_ref()->IsActor())
+                                                                                {
+                                                                                    crouch(); //uncrouch
+                                                                                    set_universal_block(0.5f);
+                                                                                    stop_sneaking = true;
+                                                                                    return;
+                                                                                }
+                                                                            }
+                                                                        }
+
+
+                                                                        if (result_target != door_to_remember && door_refocus_timeout < 2.0f)
+                                                                        {
+                                                                            door_refocus_timeout += dtime;
+                                                                            lock_camera_onto_target(door_to_remember, 0.016, false);
+                                                                            return;
+                                                                        }
+
+
                                                                         confirm(); //lockpick it
                                                                         catch_door_result = true;
                                                                         //set_universal_block(1.5f); //wait a little. then it should lock again and maybe it will lead to success.
@@ -11271,6 +11400,8 @@ namespace WalkerProcessor {
                                                                                 reset_walker();
                                                                                 return;
                                                                             }
+
+                                                                            door_to_remember = result_target;
 
                                                                             unregister_all_actions();
                                                                             if (is_door(result_target))
@@ -11452,7 +11583,7 @@ namespace WalkerProcessor {
                                                 {
                                                     //maybe its a location switch door?
 
-                                                    if (!MiscThings::is_intro2() && walk_timeout < 1.1f && (have_doors_nearby() || MiscThings::get_potential_blocking_object(800.0f, target_ref) != "")) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
+                                                    if (!door_is_closed_request_sent && (!MiscThings::is_intro2() && walk_timeout < 1.1f && (have_doors_nearby() || MiscThings::get_potential_blocking_object(800.0f, target_ref) != ""))) //test if its a door for 1 sec, "cant walk there" and reset if no doors in sight
                                                     {
                                                         if (!test_about_to_be_blocked_by_door(dtime))
                                                         {
@@ -11492,7 +11623,7 @@ namespace WalkerProcessor {
                                                         {
                                                             //blocking door detected. if door is unlocked - just open it. if locked - force ask if we want to lockpick it
 
-                                                            if (!is_targeted_door_locked())
+                                                            if (!door_is_closed_request_sent && !is_targeted_door_locked())
                                                             {
                                                                 ignore_closed_doors_time = 3.0f;
                                                                 if (is_targeted_door_closed())
@@ -11519,7 +11650,7 @@ namespace WalkerProcessor {
                                                                     else
                                                                     {
 
-                                                                        if (MiscThings::is_door_superlocked(target_ref))
+                                                                        if (MiscThings::is_door_superlocked(get_targeted_ref()))
                                                                         {
                                                                             send_random_context("The path is blocked by a locked door. Cannot lockpick this door. It requires a key", false);
                                                                             reset_walker();
@@ -11530,12 +11661,15 @@ namespace WalkerProcessor {
                                                                         {
                                                                             send_random_context("The path is blocked by a locked door and you dont have any lockpicks to open the lock", false);
 
-                                                                            if (is_door(target_ref))
+                                                                            if (is_door(get_targeted_ref()))
                                                                                 cut_navmesh_on_target(get_targeted_ref());
 
                                                                             reset_walker();
                                                                             return;
                                                                         }
+
+
+                                                                        door_to_remember = get_targeted_ref();
 
                                                                         unregister_all_actions();
                                                                         if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
@@ -11550,6 +11684,66 @@ namespace WalkerProcessor {
                                                                     {
                                                                         if (door_is_closed_choice)
                                                                         {
+                                                                            if (!stop_sneaking)
+                                                                            {
+                                                                                if (MiscThings::is_stealing(target_ref) != "")
+                                                                                {
+                                                                                    if ((crouch_timeout < 5.0f) && (player && !player->IsSneaking()))
+                                                                                    {
+                                                                                        crouch();
+                                                                                        pause_pre_stealing = true;
+                                                                                        pause_pre_stealing_time = 0.0f;
+                                                                                        //set_universal_block(0.5f);
+                                                                                        crouch_timeout += dtime;
+                                                                                        return;
+                                                                                    }
+
+                                                                                    if (player && player->IsSneaking())
+                                                                                        crouch_timeout = 0.0f;
+
+                                                                                    auto player_actor = (RE::Actor*)player_ref;
+
+                                                                                    if (!MiscThings::is_player_hidden())
+                                                                                    {
+                                                                                        if (stealing_timer > 4.0f)
+                                                                                        {
+                                                                                            if (!stealing_confirmed)
+                                                                                            {
+                                                                                                confirm_stealing = true;
+                                                                                                return;
+                                                                                            }
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            stealing_timer += dtime;
+                                                                                            return;
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    if (player && player->IsSneaking() && get_targeted_ref() && get_targeted_ref()->IsActor())
+                                                                                    {
+                                                                                        crouch(); //uncrouch
+                                                                                        set_universal_block(0.5f);
+                                                                                        stop_sneaking = true;
+                                                                                        return;
+                                                                                    }
+                                                                                }
+                                                                            }
+
+                                                                            auto result_target = get_targeted_ref();
+
+
+
+                                                                            if (result_target != door_to_remember && door_refocus_timeout < 2.0f)
+                                                                            {
+                                                                                door_refocus_timeout += dtime;
+                                                                                lock_camera_onto_target(door_to_remember, 0.016, false);
+                                                                                return;
+                                                                            }
+
+
                                                                             confirm(); //lockpick it
 
                                                                             catch_door_result = true; //this will reset after its done 
@@ -11703,7 +11897,7 @@ namespace WalkerProcessor {
                                     dead_point_time = 0.0f;
                                     if (true)//walk_timeout < 30.0f) //TODO: maybe remove later. idk if 30 seconds is good or bad
                                     {
-                                        if (!test_about_to_be_blocked_by_door(dtime))
+                                        if (!door_is_closed_request_sent && !test_about_to_be_blocked_by_door(dtime))
                                         {
                                             if (!detect_stuck(dtime))
                                             {
@@ -11780,7 +11974,7 @@ namespace WalkerProcessor {
                                         {
                                             //blocking door detected. if door is unlocked - just open it. if locked - force ask if we want to lockpick it
 
-                                            if (!is_targeted_door_locked())
+                                            if (!door_is_closed_request_sent && !is_targeted_door_locked())
                                             {
                                                 ignore_closed_doors_time = 3.0f;
                                                 if (is_targeted_door_closed())
@@ -11806,7 +12000,7 @@ namespace WalkerProcessor {
                                                     else
                                                     {
 
-                                                        if (MiscThings::is_door_superlocked(target_ref))
+                                                        if (MiscThings::is_door_superlocked(get_targeted_ref()))
                                                         {
                                                             send_random_context("The path is blocked by a locked door. Cannot lockpick this door. It requires a key", false);
                                                             reset_walker();
@@ -11817,12 +12011,14 @@ namespace WalkerProcessor {
                                                         {
                                                             send_random_context("The path is blocked by a locked door and you dont have any lockpicks to open the lock", false);
 
-                                                            if (is_door(target_ref))
+                                                            if (is_door(get_targeted_ref()))
                                                                 cut_navmesh_on_target(get_targeted_ref());
 
                                                             reset_walker();
                                                             return;
                                                         }
+
+                                                        door_to_remember = get_targeted_ref();
 
                                                         unregister_all_actions();
                                                         if (force_choice({ {0, "No"}, {1, "Yes"} }, get_locked_door_force_message(get_targeted_ref()), force_type::closed_door_choice))
@@ -11835,6 +12031,62 @@ namespace WalkerProcessor {
                                                     {
                                                         if (door_is_closed_choice)
                                                         {
+
+                                                            if (!stop_sneaking)
+                                                            {
+                                                                if (MiscThings::is_stealing(target_ref) != "")
+                                                                {
+                                                                    if ((crouch_timeout < 5.0f) && (player && !player->IsSneaking()))
+                                                                    {
+                                                                        crouch();
+                                                                        pause_pre_stealing = true;
+                                                                        pause_pre_stealing_time = 0.0f;
+                                                                        //set_universal_block(0.5f);
+                                                                        crouch_timeout += dtime;
+                                                                        return;
+                                                                    }
+
+                                                                    if (player && player->IsSneaking())
+                                                                        crouch_timeout = 0.0f;
+
+                                                                    auto player_actor = (RE::Actor*)player_ref;
+
+                                                                    if (!MiscThings::is_player_hidden())
+                                                                    {
+                                                                        if (stealing_timer > 4.0f)
+                                                                        {
+                                                                            if (!stealing_confirmed)
+                                                                            {
+                                                                                confirm_stealing = true;
+                                                                                return;
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            stealing_timer += dtime;
+                                                                            return;
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (player && player->IsSneaking() && get_targeted_ref() && get_targeted_ref()->IsActor())
+                                                                    {
+                                                                        crouch(); //uncrouch
+                                                                        set_universal_block(0.5f);
+                                                                        stop_sneaking = true;
+                                                                        return;
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            if (get_targeted_ref() != door_to_remember && door_refocus_timeout < 2.0f)
+                                                            {
+                                                                door_refocus_timeout += dtime;
+                                                                lock_camera_onto_target(door_to_remember, 0.016, false);
+                                                                return;
+                                                            }
+
                                                             confirm(); //lockpick it
 
                                                             catch_door_result = true; //this will reset after its done 

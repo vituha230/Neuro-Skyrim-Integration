@@ -708,6 +708,34 @@ namespace MiscThings {
         }
 
 
+        //cc530 madesi door
+        //76f14 madesi safe
+
+        auto madesi_ring_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG00");
+
+        if (quest == madesi_ring_quest)
+        {
+            auto madesi_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xcc530);
+            auto madesi_safe = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x76f14);
+
+            if (madesi_door && madesi_safe)
+            {
+                if (target == madesi_safe)
+                {
+                    auto base_obj = madesi_door->GetBaseObject();
+
+                    if (base_obj && base_obj->GetFormType() == RE::FormType::Door)
+                    {
+                        auto base_door = (RE::TESObjectDOOR*)base_obj;
+                        if (base_door->GetOpenState(madesi_door) == RE::BGSOpenCloseForm::OPEN_STATE::kClosed)
+                            return madesi_door;
+                    }
+                }
+            }
+        }
+
+
+
 
         auto golden_claw_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS13");
 
@@ -968,6 +996,26 @@ namespace MiscThings {
                 return true;
             }
         }
+
+
+
+        auto find_esbern_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ202");
+        auto madesi_ring_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG00");
+
+        if (find_esbern_quest && madesi_ring_quest)
+        {
+            auto stage1 = find_esbern_quest->GetCurrentStageID();
+            auto stage2 = madesi_ring_quest->GetCurrentStageID();
+
+
+            if (stage1 < 20 && stage2 >= 10 && stage2 < 35 && quest == find_esbern_quest)
+            {
+                return true;
+            }
+        }
+
+
+
         
 
         auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
@@ -3642,6 +3690,12 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("MarketStallDoor") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, -40.0f, 25.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (result == RE::NiPoint3::Zero())
                         {

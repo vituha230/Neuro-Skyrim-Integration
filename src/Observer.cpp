@@ -2916,7 +2916,7 @@ namespace Observer {
 
 	void detect_locations(float dtime)
 	{
-		if (observers_green_light)
+		if (observers_green_light && !MiscThings::have_force_only_menu_open())
 		{
 			if (detect_locations_timer > 30.0f && !(MiscThings::is_intro() || MiscThings::is_intro2()))
 			{
