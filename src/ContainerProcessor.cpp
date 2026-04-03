@@ -1059,6 +1059,25 @@ void process_next_item()
 			return;
 		}
 
+
+
+		if (madesi_mode || klimmek_mode)
+		{
+			if (item_choice == 1)
+			{
+				item_choice_valid = true;
+				return;
+			}
+			else
+			{
+				reset_container();
+				return;
+			}
+		}
+
+
+
+
 		if (item_choice == -2 && is_pickpocketing())
 		{
 			item_choice_valid = false;
@@ -1127,7 +1146,6 @@ std::pair<bool, std::string> set_item_choice_array(std::vector<int> ids)
 			return result;
 		}
 	}
-
 
 	if (std::size(ids) <= 0)
 	{

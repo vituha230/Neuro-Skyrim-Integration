@@ -1463,7 +1463,7 @@ namespace Observer {
 															{
 																auto klimmek_stage = klimmek_quest->GetCurrentStageID();
 
-																if (klimmek_stage != 20)
+																if (klimmek_stage != 20 || !MiscThings::is_container_empty(a_ref))
 																	return RE::BSContainer::ForEachResult::kContinue;
 															}
 														}
