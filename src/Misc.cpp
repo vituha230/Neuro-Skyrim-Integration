@@ -8355,6 +8355,7 @@ namespace MiscThings {
         auto player = RE::PlayerCharacter::GetSingleton();
         std::string result_text = "List of spells available to use: \n";
 
+        spells.clear();
 
         player->GetCurrent3D();
 

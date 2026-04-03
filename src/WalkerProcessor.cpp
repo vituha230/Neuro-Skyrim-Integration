@@ -15,6 +15,9 @@
 namespace WalkerProcessor {
 
 
+    bool ignore_raycast = false;
+
+
     RE::TESObjectREFR* target_before_markarth_redirect = nullptr;
 
     bool must_use_bounds = false;
@@ -2580,11 +2583,16 @@ namespace WalkerProcessor {
 
         
 
+        if (lookat_used)
+        {
+            if (MiscThings::is_dragon(target_ref) && !is_fighting())
+                dont_use_bounds_for_close_enough = true;
+        }
 
 
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && is_fighting()))
+            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && !is_fighting()))
                 dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
@@ -2832,12 +2840,16 @@ namespace WalkerProcessor {
         
 
 
-
+        if (lookat_used)
+        {
+            if (MiscThings::is_dragon(target_ref) && !is_fighting())
+                dont_use_bounds_for_close_enough = true;
+        }
 
         
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && is_fighting()))
+            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && !is_fighting()))
                 dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
@@ -3562,6 +3574,7 @@ namespace WalkerProcessor {
 
         must_use_bounds = false;
 
+        ignore_raycast = false;
 
         door_to_remember = nullptr;
         door_refocus_timeout = 0.0f;
@@ -4387,7 +4400,7 @@ namespace WalkerProcessor {
 
                         auto raycast_test = raycast_ref == target_ref;
                         bool target_visible = false;
-                        if (raycast_test)
+                        if (raycast_test || ignore_raycast)
                         {
                             if (successful_raycast_time > 0.4f)
                                 target_visible = true;
@@ -4498,9 +4511,14 @@ namespace WalkerProcessor {
                     {
 
                         float threshold = 50.0f;
+                        float threshold2 = 110.0f;
 
-                        if (MiscThings::is_dragon(target_ref))
+                        if (MiscThings::is_dragon(target_ref) && !is_fighting())
+                        {
+                            threshold2 = 200.0f;
                             threshold = 200.0f;
+                        }
+                            
                         
                         if (!dont_use_bounds_for_close_enough)
                         {
@@ -4512,14 +4530,24 @@ namespace WalkerProcessor {
                                     return true;
                         }
                         else
-                            if (distance.Length() < 110.0f * (1 + MiscThings::is_on_horse() * 3.0f))
+                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f))
                                 return true;
                     }
                     else
                     {
+
+                        float threshold = 50.0f;
+                        float threshold2 = 150.0f;
+
+                        if (MiscThings::is_dragon(target_ref) && !is_fighting())
+                        {
+                            threshold2 = 200.0f;
+                            threshold = 200.0f;
+                        }
+
                         if (!is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
                         {
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 50.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f)))
                                 return true;
                         }
                         else
@@ -10087,48 +10115,55 @@ namespace WalkerProcessor {
                 RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700af27);
                 
 
-                if (target_ref == alftand_door)
+                if (target_ref && !using_custom_path)
                 {
-                    //doing some redirections 
-
-                    if (!MiscThings::player_inside_of_alftand_goodbox())
+                    if (target_ref == alftand_door)
                     {
-                        if (alftand_counter == 5)
-                        {
-                            dont_check_quest_target_change = true;
-                            target_ref = redirect_marker;
-                            walk_again();
-                            return;
-                        }
-                        else
-                            alftand_counter++;
+                        //doing some redirections 
 
-                    }
-                }
-                else
-                {
-                    if (target_ref == redirect_marker)
-                    {
-                        if (MiscThings::player_inside_of_alftand_goodbox())
+                        if (!MiscThings::player_inside_of_alftand_goodbox())
                         {
-                            if (alftand_counter == 0)
+                            if (alftand_counter == 5)
                             {
-                                reset_walker();
-                                unregister_all_actions();
-                                target_ref = alftand_door;
-                                have_target_to_walk = true;
-                                using_custom_path = true;
-                                dont_quicksave_after_custom_path = true;
-                                walk_again_when_finished = true;
-                                custom_path = { player->GetPosition(), alftand_door->GetPosition()};
+                                dont_check_quest_target_change = true;
+                                target_ref = redirect_marker;
+                                walk_again();
                                 return;
                             }
                             else
-                                alftand_counter--;
+                                alftand_counter++;
+
                         }
-                            
+                    }
+                    else
+                    {
+                        if (target_ref == redirect_marker)
+                        {
+                            if (MiscThings::player_inside_of_alftand_goodbox())
+                            {
+                                if (alftand_counter == 0)
+                                {
+                                    reset_walker();
+                                    unregister_all_actions();
+                                    target_ref = alftand_door;
+                                    have_target_to_walk = true;
+                                    using_custom_path = true;
+                                    dont_quicksave_after_custom_path = true;
+                                    dont_use_bounds_for_close_enough = true;
+                                    walk_again_when_finished = true;
+                                    path = custom_path;
+                                    path_valid = true;
+                                    custom_path = { player->GetPosition(), alftand_door->GetPosition() };
+                                    return;
+                                }
+                                else
+                                    alftand_counter--;
+                            }
+
+                        }
                     }
                 }
+                
 
 
                 if (target_ref && !using_custom_path)
@@ -10605,7 +10640,8 @@ namespace WalkerProcessor {
                                         {
                                             if (player_pos.GetDistance(hazard_0_pos) < 1200.0f)
                                             {
-                                                WalkerProcessor::shout_at_target(hazard_0_blizzard, clear_skies_shout);
+                                                WalkerProcessor::shout_at_target(parthurnax_target, clear_skies_shout);
+                                                ignore_raycast = true;
                                             }
                                         }
                                     }
@@ -10617,9 +10653,10 @@ namespace WalkerProcessor {
 
                                         if (!hazard_1->IsDisabled())
                                         {
-                                            if (player_pos.GetDistance(hazard_1_pos) < 1200.0f)
+                                            if (player_pos.GetDistance(hazard_1_pos) < 700.0f)
                                             {
                                                 WalkerProcessor::shout_at_target(hazard_1, clear_skies_shout);
+                                                ignore_raycast = true;
                                             }
                                         }
                                     }
@@ -10631,8 +10668,9 @@ namespace WalkerProcessor {
 
                                         if (!hazard_2->IsDisabled())
                                         {
-                                            if (player_pos.GetDistance(hazard_2_pos) < 1200.0f)
+                                            if (player_pos.GetDistance(hazard_2_pos) < 800.0f)
                                             {
+                                                ignore_raycast = true;
                                                 WalkerProcessor::shout_at_target(hazard_2, clear_skies_shout);
                                             }
                                         }
