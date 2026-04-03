@@ -7943,10 +7943,41 @@ namespace WalkerProcessor {
 
                         if (MiscThings::is_immortal(target_actor))
                         {
-                                send_random_context("Attacking doesnt work... They are not dying. You can try to run away or ignore the fight instead.", false);
-                                Observer::reset_threats(); //so it can actually offer choice to run or ignore
-                                reset_walker();
-                                return true;
+
+                            auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
+                            auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10828C);
+
+                            auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
+
+                            if (capture_dragon_quest)
+                            {
+                                if (capture_dragon_quest->GetCurrentStageID() < 200)
+                                {
+                                    if (odahviing && redirect_marker)
+                                    {
+                                        auto odahviing_actor = (RE::Actor*)odahviing;
+
+                                        if (target_ref == odahviing)
+                                        {
+                                            if (!MiscThings::is_flying(odahviing))
+                                            {
+                                                target_ref = redirect_marker;
+                                                interaction_after_walk = 3;
+                                                return false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+
+
+
+
+                            send_random_context("Attacking doesnt work... They are not dying. You can try to run away or ignore the fight instead.", false);
+                            Observer::reset_threats(); //so it can actually offer choice to run or ignore
+                            reset_walker();
+                            return true;
                         }
 
                         std::string message = "You keep attacking...";

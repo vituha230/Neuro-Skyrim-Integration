@@ -9014,6 +9014,21 @@ namespace MiscThings {
                                 }
                                 if (unlocked_words > 0)
                                 {
+
+                                    auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
+                                    if (capture_dragon_quest && capture_dragon_quest->GetCurrentStageID() == 150)
+                                    {
+                                        auto call_dragon = (RE::TESShout*)RE::TESForm::LookupByID(0x46B85);
+                                        if (shout == call_dragon)
+                                        {
+                                            result.first = false;
+                                            result.second = "You already called the dragon. No need to do it again yet";
+                                            return result;
+                                        }
+                                    }
+
+
+
                                     equip_manager->EquipShout(player_actor, shout);
                                     //use_ult();
                                     right_attack_cancel();
