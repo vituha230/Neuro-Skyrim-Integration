@@ -3239,7 +3239,17 @@ namespace WalkerProcessor {
 
         bool result = false;
 
-        auto player_pos = RE::PlayerCharacter::GetSingleton()->GetPosition();
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+        auto blackreach_worldspace = RE::TESForm::LookupByID(0x1ee62);
+        auto player_worldspace = player->GetWorldspace();
+
+        bool blackreach_mode = false;
+
+        if (player_worldspace == blackreach_worldspace)
+            blackreach_mode = true; //navmesh in blackreach is very bad. clips through the floor. looks like they changed terrain without remaking navmesh
+
+
 
         try {
 
@@ -3247,6 +3257,11 @@ namespace WalkerProcessor {
             {
                 auto pos_dif = last_point_of_last_path - player_pos;
                 
+
+
+                if (blackreach_mode)
+                    pos_dif.z = 0.0f;
+
 
                 if (abs(last_point_of_last_path.z - player_pos.z) <= 200.0f)
                     pos_dif.z = 0.0f;
@@ -3300,12 +3315,13 @@ namespace WalkerProcessor {
                             result = true; //we either fell or pathfinding glitched. point is too high
 
                         /////////////////// EXPERIMENTAL /////////////////
-                        if (!is_about_to_fall())
+                        if (!is_about_to_fall() || blackreach_mode)
                         {
                             current_path_point_pos.z = 0.0f;
                             player_pos.z = 0.0f;
                         }
                         ///////////////////////////////////////////////////
+
 
                         auto distance = current_path_point_pos.GetDistance(player_pos);
 
@@ -10427,7 +10443,7 @@ namespace WalkerProcessor {
                     auto player_worldspace = player->GetWorldspace();
 
                     auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
-
+                    
                     auto redirect_marker_markarth_area = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700ca22); //22 original 
 
                     if (redirect_marker_markarth_area && player_worldspace == tamriel_worldspace)

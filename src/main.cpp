@@ -3,8 +3,7 @@
 
 //crucial:
 
-
-//TODO elder scroll reading
+//TODO filter dwemer metal poles 
 
 //TODO shift on dwemer mechanism on entrance to blackreach
 
