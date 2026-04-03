@@ -1149,6 +1149,29 @@ namespace MiscThings {
 
 
 
+    bool get_peace_quest_state()
+    {
+        auto peace_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ302");
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (peace_quest && player)
+        {
+            auto stage = peace_quest->GetCurrentStageID();
+            auto player_cell = player->GetParentCell();
+            auto hrothgar_interior_cell = RE::TESForm::LookupByID(0x87764);
+            auto player_sit_state = player->GetSitSleepState();
+
+
+            if (player_cell == hrothgar_interior_cell && hrothgar_interior_cell && stage == 55 && player_sit_state == RE::SIT_SLEEP_STATE::kIsSitting)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
 
     std::string lever_interaction_advice(RE::TESObjectREFR* lever)
     {

@@ -277,6 +277,11 @@ namespace MiscThings {
 
     bool is_container_empty(RE::TESObjectREFR* object);
 
+    bool get_peace_quest_state();
+
+
+
+
     std::pair<bool, std::string> activate_array_of_inventory_objects(std::vector<int> ids);
 
     namespace General::Script

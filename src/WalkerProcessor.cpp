@@ -10447,7 +10447,7 @@ namespace WalkerProcessor {
                     //a1cb3 - bridge
                     //a3de1 - door to outside
                     //3b698 - ratway cell
-
+                    
 
                     auto ratway_door_to_outside = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa3de1);
                     
@@ -10544,6 +10544,19 @@ namespace WalkerProcessor {
                     }
 
 
+
+
+
+                    auto hrothgar_chair = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x28e36);
+
+                    if (target_ref == hrothgar_chair && hrothgar_chair)
+                    {
+                        if (MiscThings::get_peace_quest_state())
+                        {
+                            reset_walker();
+                            return;
+                        }
+                    }
 
 
 

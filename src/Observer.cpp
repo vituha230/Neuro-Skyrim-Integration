@@ -50,6 +50,10 @@ namespace Observer {
 	bool old_can_fight = false;
 
 
+	bool old_peace_quest_state = false;
+
+
+
 	float detect_locations_timer = 0.0f;
 
 	float last_saved_time = 0.0f;
@@ -856,6 +860,9 @@ namespace Observer {
 		last_saved_time = 0.0f;
 
 		detect_locations_timer = 0.0f;
+
+		old_peace_quest_state = false;
+
 
 		old_can_interact = false;
 		old_unbound_quest_stage = 0;
@@ -3097,6 +3104,8 @@ namespace Observer {
 
 		}
 	}
+
+
 
 
 
