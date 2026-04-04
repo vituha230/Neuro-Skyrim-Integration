@@ -4,7 +4,6 @@
 //crucial:
 
 //TODO test sovngarde
-//TODO add proper location name in context for sovngarde (it says Tamriel currently)
 //TODO sovngarde portal point camera lower while walking so the portal is visible
 
 
@@ -1121,7 +1120,12 @@ namespace Hooks {
                         std::string cell_name1 = cell->GetFullName();
                         std::string cell_name2 = cell->GetName();
 
-                        std::string location_name = "Tamriel";
+                        auto player_worldspace = player->GetWorldspace();
+
+                        std::string location_name = player_worldspace->GetFullName();
+
+                        if (location_name == "")
+                            location_name = "Tamriel";
 
                         if (cell_name1 != "")
                             location_name = cell_name1;

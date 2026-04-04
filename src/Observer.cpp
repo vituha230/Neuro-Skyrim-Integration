@@ -265,7 +265,7 @@ namespace Observer {
 				WalkerProcessor::reset_walker();
 				RE::TESObjectREFR* chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x511a4);
 
-				WalkerProcessor::look_at_object_by_refr(chain);
+				WalkerProcessor::look_at_object_by_refr(chain, true, 1.0f);
 				active_puzzle = 5;
 			}
 
@@ -1479,7 +1479,7 @@ namespace Observer {
 
 														if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path() && !MiscThings::is_container_empty(a_ref))
 														{
-															WalkerProcessor::look_at_object_by_refr(a_ref);
+															WalkerProcessor::look_at_object_by_refr(a_ref, true, 1.0f);
 															send_random_context("You see: " + info, false); //large chests are not silent and immidiate 
 														}
 														else
@@ -1848,7 +1848,7 @@ namespace Observer {
 
 						if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
 						{
-							WalkerProcessor::look_at_object_by_refr(astrolabe);
+							WalkerProcessor::look_at_object_by_refr(astrolabe, true, 0.25f);
 							send_random_context("You walk into some spherical room, there is a large dwemer mechanism in the middle. A huge armillary, and some astrolabe with green crystal lenses above it...", false);
 						}
 					}
@@ -2444,7 +2444,7 @@ namespace Observer {
 															if (activation == 10)
 															{
 																result.push_back("[" + name + " started rotating...]");
-																WalkerProcessor::look_at_object_by_refr(a_ref);
+																WalkerProcessor::look_at_object_by_refr(a_ref, true, 0.25f);
 															}
 															else
 																result.push_back("[" + name + " stopped rotating, now it is in a new position]");

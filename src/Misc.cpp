@@ -2961,7 +2961,7 @@ namespace MiscThings {
                                 if (var_string.find("STARTED: ") == 0)
                                 {
                                     if (var_string.find("SOVNGARDE") != std::string::npos)
-                                        WalkerProcessor::look_up();
+                                        WalkerProcessor::look_up(0.05f);
 
 
                                     var_string = "Quest started: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
@@ -2973,7 +2973,7 @@ namespace MiscThings {
                                 if (var_string.find("COMPLETED: ") == 0)
                                 {
                                     if (var_string.find("DRAGONSLAYER") != std::string::npos)
-                                        WalkerProcessor::look_up();
+                                        WalkerProcessor::look_up(0.05f);
 
                                     var_string = "Quest completed: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
                                     WalkerProcessor::test_new_very_close_quest();

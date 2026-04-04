@@ -633,10 +633,19 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
     std::string delayed_context = "";
 
+    std::string last_message = "";
+
     for (auto delayed_message : delayed_socket_messages)
     {
+        if (delayed_message == last_message)
+            continue;
+
+        last_message = delayed_message;
+
         if (delayed_context != "")
             delayed_context += "; ";
+
+        
 
         delayed_context += delayed_message;
     }

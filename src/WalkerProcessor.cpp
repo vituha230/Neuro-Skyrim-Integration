@@ -15,6 +15,9 @@
 namespace WalkerProcessor {
 
 
+    float special_look_speed_koef = 1.0f;
+
+
     bool ignore_raycast = false;
 
 
@@ -1229,6 +1232,25 @@ namespace WalkerProcessor {
             return direction_vector;
 
         }
+
+        auto sovngarde_portal_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700bf58);
+
+        if (target_ref == sovngarde_portal_redirect)
+        {
+            auto camera = RE::PlayerCamera::GetSingleton();
+            auto camera_dir = camera->cameraRoot.get()->world.rotate;
+            auto camera_pos = camera->pos;
+
+            RE::NiPoint3 direction_vector{};
+
+            direction_vector = camera_dir.GetVectorY();
+
+            direction_vector.z = -0.3f;
+
+            return direction_vector;
+
+        }
+
 
 
         try {
@@ -2665,8 +2687,16 @@ namespace WalkerProcessor {
     int debug_mode_cam = 0;
 
 
-    bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, bool slow)
+    bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, float speed_koef)
     {
+        if (looking_mode)
+            speed_koef = special_look_speed_koef;
+                
+
+        if (speed_koef <= 0.0f)
+            speed_koef = 1.0f;
+
+
         auto player = RE::PlayerCharacter::GetSingleton();
 
         if (!target || !player)
@@ -3091,8 +3121,7 @@ namespace WalkerProcessor {
 
         float coef = 400.0f;
 
-        if (slow)
-            coef = 100.0f;
+        coef *= speed_koef;
 
         if (MiscThings::is_intro())
         {
@@ -3187,8 +3216,15 @@ namespace WalkerProcessor {
                     return true;
             }
             else
-                if (abs(mouse_x) < 5.0f && abs(mouse_y) < 5.0f)
+            {
+                float threshold = 5.0f;
+
+                threshold = std::min(1.0f, 5.0f * speed_koef);
+
+                if (abs(mouse_x) < threshold && abs(mouse_y) < threshold)
                     return true;
+            }
+
         }
 
 
@@ -3586,6 +3622,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        special_look_speed_koef = 1.0f;
+
         target_before_markarth_redirect = nullptr;
 
         must_use_bounds = false;
@@ -5261,7 +5299,7 @@ namespace WalkerProcessor {
     }
 
 
-    std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch)
+    std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch, float look_speed_koef)
     {
 
         std::pair<bool, std::string> result{};
@@ -5330,6 +5368,8 @@ namespace WalkerProcessor {
                 looking_mode = true;
 
                 stop_sneaking = no_crouch;
+
+                special_look_speed_koef = look_speed_koef;
 
                 result.first = true;
                 if (!MiscThings::is_intro())
@@ -6329,6 +6369,15 @@ namespace WalkerProcessor {
 
         if (player_in_tower_of_mzark)
             return false;
+
+
+        auto skuldafn_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ303");
+        if (skuldafn_quest && last_quest == skuldafn_quest)
+        {
+            if (skuldafn_quest->GetCurrentStageID() > 150)
+                return false;
+        }
+
 
 
         bool result = false;
@@ -8139,7 +8188,7 @@ namespace WalkerProcessor {
                         if (result_target != target_ref && door_refocus_timeout < 2.0f)
                         {
                             door_refocus_timeout += dtime;
-                            lock_camera_onto_target(target_ref, 0.016, false);
+                            lock_camera_onto_target(target_ref, 0.016);
                             return false;
                         }
 
@@ -8300,6 +8349,7 @@ namespace WalkerProcessor {
                                 }
                                 */
 
+                                
                                 
 
                                 if (!backup_pickup)
@@ -8482,6 +8532,10 @@ namespace WalkerProcessor {
                             just_teleported = true;
 
                         confirm();
+
+                        RE::TESObjectREFR* skuldafn_seal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe6c68);
+                        if (target_ref == skuldafn_seal)
+                            reset_walker();
                     }
                         
 
@@ -9599,7 +9653,7 @@ namespace WalkerProcessor {
 
 
 
-    void look_up()
+    void look_up(float speed_koef)
     {
         auto dummy_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee);
 
@@ -9612,7 +9666,7 @@ namespace WalkerProcessor {
             new_pos.z += 2000.0f;
             MiscThings::SetPosition_moveto(dummy_target, new_pos);
 
-            look_at_object_by_refr(dummy_target, true);
+            look_at_object_by_refr(dummy_target, true, speed_koef);
 
             
         }
@@ -10438,7 +10492,7 @@ namespace WalkerProcessor {
                                         {
                                             if (dragonrent)
                                             {
-                                                lock_camera_onto_target(odahviing, 0.016, false);
+                                                lock_camera_onto_target(odahviing, 0.016);
                                                 return;
                                             }
                                             else
@@ -10851,13 +10905,17 @@ namespace WalkerProcessor {
 
                     if (MiscThings::is_intro() || looking_mode)
                     {
-                        if (lock_camera_onto_target(target_ref, dtime, true))
+                        if (lock_camera_onto_target(target_ref, dtime, 0.25f))
                         {
                             reset_walker();
                         }
                         else
                         {
-                            if (intro_look_timeout > 2.0f)
+                            float threshold = 6.0f;
+                            if (MiscThings::is_intro())
+                                threshold = 3.0f;
+
+                            if (intro_look_timeout > threshold)
                             {
                                 reset_walker();
                             }
@@ -11497,7 +11555,7 @@ namespace WalkerProcessor {
                                                                                     if (backup_interaction_time > 10.0f)
                                                                                         reset_walker();
 
-                                                                                    lock_camera_onto_target(target_ref, dtime, true);
+                                                                                    lock_camera_onto_target(target_ref, dtime, 0.25f);
 
                                                                                 }
                                                                                     
@@ -11670,7 +11728,7 @@ namespace WalkerProcessor {
                                                                         if (result_target != door_to_remember && door_refocus_timeout < 2.0f)
                                                                         {
                                                                             door_refocus_timeout += dtime;
-                                                                            lock_camera_onto_target(door_to_remember, 0.016, false);
+                                                                            lock_camera_onto_target(door_to_remember, 0.016, 0.25f);
                                                                             return;
                                                                         }
 
@@ -12086,7 +12144,7 @@ namespace WalkerProcessor {
                                                                             if (result_target != door_to_remember && door_refocus_timeout < 2.0f)
                                                                             {
                                                                                 door_refocus_timeout += dtime;
-                                                                                lock_camera_onto_target(door_to_remember, 0.016, false);
+                                                                                lock_camera_onto_target(door_to_remember, 0.016, 0.25f);
                                                                                 return;
                                                                             }
 
@@ -12440,7 +12498,7 @@ namespace WalkerProcessor {
                                                             if (get_targeted_ref() != door_to_remember && door_refocus_timeout < 2.0f)
                                                             {
                                                                 door_refocus_timeout += dtime;
-                                                                lock_camera_onto_target(door_to_remember, 0.016, false);
+                                                                lock_camera_onto_target(door_to_remember, 0.016, 0.25f);
                                                                 return;
                                                             }
 
