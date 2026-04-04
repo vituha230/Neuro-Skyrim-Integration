@@ -4,8 +4,8 @@
 //crucial:
 
 
-//TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 
+//TODO maybe autouse heal/mana potions when needed.
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
@@ -19,10 +19,10 @@
 
 //TODO complex actions like "go to trader, collect ingredients nearby, go to the carriage driver and ride to some city", maybe make explore action give interesting places in the town
 
-
+//TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 
 //arbitrary:
-//TODO maybe autouse heal/mana potions when needed.
+
 //TODO put things into container/gift menu (i think for followers its give not take)
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 //TODO hand equip info (both spells and inventory. spells in the inventory will require insert_spell_into_list_and_get_info function)
