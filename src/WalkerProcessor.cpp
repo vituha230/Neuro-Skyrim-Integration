@@ -1773,7 +1773,7 @@ namespace WalkerProcessor {
                             //test if we are slowwalking for some reason
                             anti_slowwalk_timer += dtime_maybe_bad;
 
-                            if (anti_slowwalk_timer > 3.0f)
+                            if (anti_slowwalk_timer > 1.5f)
                             {
                                 unslow_walk();
                                 anti_slowwalk_timer = 0.0f;
