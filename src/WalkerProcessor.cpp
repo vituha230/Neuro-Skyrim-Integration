@@ -3119,7 +3119,8 @@ namespace WalkerProcessor {
         }
 
 
-        float coef = 400.0f;
+        //float coef = 400.0f;
+        float coef = 300.0f;
 
         coef *= speed_koef;
 
@@ -3219,7 +3220,7 @@ namespace WalkerProcessor {
             {
                 float threshold = 5.0f;
 
-                threshold = std::min(1.0f, 5.0f * speed_koef);
+                threshold = std::max(1.0f, 5.0f * speed_koef);
 
                 if (abs(mouse_x) < threshold && abs(mouse_y) < threshold)
                     return true;
