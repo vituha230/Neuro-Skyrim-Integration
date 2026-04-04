@@ -3161,7 +3161,7 @@ namespace WalkerProcessor {
         }
 
 
-        float coef = 400.0f;
+        float coef = 200.0f;
         //float coef = 300.0f;
 
         coef *= speed_koef;
@@ -10948,7 +10948,7 @@ namespace WalkerProcessor {
 
                     if (MiscThings::is_intro() || looking_mode)
                     {
-                        if (lock_camera_onto_target(target_ref, dtime, 0.25f))
+                        if (lock_camera_onto_target(target_ref, dtime, 0.5f))
                         {
                             reset_walker();
                         }
@@ -11598,7 +11598,7 @@ namespace WalkerProcessor {
                                                                                     if (backup_interaction_time > 10.0f)
                                                                                         reset_walker();
 
-                                                                                    lock_camera_onto_target(target_ref, dtime, 0.25f);
+                                                                                    lock_camera_onto_target(target_ref, dtime, 0.5f);
 
                                                                                 }
                                                                                     
@@ -11771,7 +11771,7 @@ namespace WalkerProcessor {
                                                                         if (result_target != door_to_remember && door_refocus_timeout < 2.0f)
                                                                         {
                                                                             door_refocus_timeout += dtime;
-                                                                            lock_camera_onto_target(door_to_remember, 0.016, 0.25f);
+                                                                            lock_camera_onto_target(door_to_remember, 0.016, 0.5f);
                                                                             return;
                                                                         }
 
@@ -12187,7 +12187,7 @@ namespace WalkerProcessor {
                                                                             if (result_target != door_to_remember && door_refocus_timeout < 2.0f)
                                                                             {
                                                                                 door_refocus_timeout += dtime;
-                                                                                lock_camera_onto_target(door_to_remember, 0.016, 0.25f);
+                                                                                lock_camera_onto_target(door_to_remember, 0.016, 0.5f);
                                                                                 return;
                                                                             }
 
@@ -12541,7 +12541,7 @@ namespace WalkerProcessor {
                                                             if (get_targeted_ref() != door_to_remember && door_refocus_timeout < 2.0f)
                                                             {
                                                                 door_refocus_timeout += dtime;
-                                                                lock_camera_onto_target(door_to_remember, 0.016, 0.25f);
+                                                                lock_camera_onto_target(door_to_remember, 0.016, 0.5f);
                                                                 return;
                                                             }
 

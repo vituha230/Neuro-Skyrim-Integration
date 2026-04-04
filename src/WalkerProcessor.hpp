@@ -91,9 +91,9 @@ namespace WalkerProcessor {
 	bool target_is_too_high();
 
 
-	std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch = false, float look_speed_koef = 0.25f);
+	std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch = false, float look_speed_koef = 0.5f);
 
-	void look_up(float speed_koef = 0.25f);
+	void look_up(float speed_koef = 0.5f);
 
 
 	bool is_exploring();
