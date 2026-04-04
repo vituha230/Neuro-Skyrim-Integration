@@ -3128,8 +3128,8 @@ namespace WalkerProcessor {
         }
 
 
-        //float coef = 400.0f;
-        float coef = 300.0f;
+        float coef = 400.0f;
+        //float coef = 300.0f;
 
         coef *= speed_koef;
 
@@ -4607,6 +4607,7 @@ namespace WalkerProcessor {
                         {
                             threshold2 = 200.0f;
                             threshold = 200.0f;
+                            distance.z = 0.0f;
                         }
 
                         if (!is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
@@ -7996,7 +7997,7 @@ namespace WalkerProcessor {
                     send_random_context(message_text);
                     */
 
-                    clear_input_queue();
+                    //clear_input_queue();
                     right_attack_cancel();
                     left_attack_cancel();
                     
@@ -9690,7 +9691,7 @@ namespace WalkerProcessor {
 
     void look_up(float speed_koef)
     {
-        auto dummy_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee);
+        auto dummy_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7002dbf);
 
         auto player = RE::PlayerCharacter::GetSingleton();
 

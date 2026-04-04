@@ -577,7 +577,7 @@ void send_delayed_messages(float dtime)
 
 
 //maybe add some info about speaker too (his job or bio)
-void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text)
+void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text, bool force_display)
 {
     //THIS IS NPC'S RESPONSE SENT AS CONTEXT.
                                //"Dialogue: [Type \(lineDataDeref.type)] \(localizedSpeakerName) says \"\(line)\"";
@@ -588,8 +588,10 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text)
 
     if (speaker_name[0] == '\0')
     {
-        speaker_name = "unknown speaker";
-        return;//it gave subtitles to things that appear very far across the map and are not actually visible yet
+        speaker_name = "...";
+            
+        if (!force_display)
+            return;//it gave subtitles to things that appear very far across the map and are not actually visible yet
     }
         
 
@@ -1084,7 +1086,7 @@ namespace Hooks {
                 set_active_force(-1);
 
                 reset_input_processor();
-                clear_input_queue();
+                //clear_input_queue();
 
                 exit_dungeon_was_registered = false;
 
@@ -2764,9 +2766,10 @@ class MyHook {
                     subtitle_speaker = sub_manager->currentSpeaker.get()->GetName();
                 }
 
-                subtitle_msg = sub_manager->subtitles.data()->subtitle;
+                std::string subtitle_msg = sub_manager->subtitles.data()->subtitle.c_str();
                 //subtitle_msg = subtitle_speaker + subtitle_msg;
 
+                auto the_subtitle_data = sub_manager->subtitles.data();
 
 
                 //std::string current_context = topic_manager->dialogueLis
@@ -2794,10 +2797,10 @@ class MyHook {
                             Observer::set_quest_puzzle_type(4);
                             unregister_all_actions();
                         }
-                            
 
 
-                        send_speech_context(speaker, subtitle_msg);
+
+                        send_speech_context(speaker, subtitle_msg, the_subtitle_data->forceDisplay);
 
                         if (speaker == delphine && subtitle_msg.find("You can't go to a party at the Thalmor Embassy dressed like that.") != std::string::npos)
                             send_random_context("[You must have both costume and shoes equipped for this quest to proceed. Check inventory (use get_inventory action to get list if items you have) and equip the clothes (using use_inventory_items action), which are unequipped yet]", false);
@@ -2817,7 +2820,7 @@ class MyHook {
 
                         int subtitle_msg_old_vector_max = 3;
 
-                        
+
                         for (int i = 0; i < (subtitle_msg_old_vector_max - 1); i++)
                         {
                             if (std::size(subtitle_msg_old_vector) < subtitle_msg_old_vector_max)
@@ -2837,6 +2840,12 @@ class MyHook {
                             subtitle_msg_old_vector.push_back(subtitle_msg);
 
                     }
+                    else
+                    {
+                        if (subtitle_msg != "")
+                            bool stop_here = false; //no speaker?
+                    }
+                        
 
                 }
 
