@@ -463,7 +463,7 @@ namespace WalkerProcessor {
 
     bool is_fighting()
     {
-        return ((interaction_after_walk == 3) && target_ref);
+        return ((interaction_after_walk == 3) && target_ref) || runaway_mode;
     }
 
 
@@ -2630,6 +2630,9 @@ namespace WalkerProcessor {
         }
 
 
+        if (MiscThings::is_inventory_object(target_ref) && !must_use_bounds)
+            dont_use_bounds_for_close_enough = true;
+
         auto path_point_pos = target_center;
 
 
@@ -2652,7 +2655,8 @@ namespace WalkerProcessor {
                         //for dead bodies add nothing. there is something wrong with height
                     }
                     else
-                        target_center.z += height * 0.5f;
+                        if (!MiscThings::is_inventory_object(target))
+                            target_center.z += height * 0.5f;
 
 
                     if (player)
@@ -2661,7 +2665,8 @@ namespace WalkerProcessor {
                         if (target_center.z > player->GetHeight() * 1.5 + player->GetPosition().z)
                         {
                             //if (get_targeted_ref() == target_ref)
-                            target_center.z -= player->GetHeight() * 0.5;// return true; //in case its some very tall but thin object and moving camera too high will ruin the focus
+                            if (!MiscThings::is_inventory_object(target))
+                                target_center.z -= player->GetHeight() * 0.5;// return true; //in case its some very tall but thin object and moving camera too high will ruin the focus
                         }
 
                     }
@@ -2877,7 +2882,8 @@ namespace WalkerProcessor {
             }
         }
         
-
+        if (MiscThings::is_inventory_object(target_ref) && !must_use_bounds)
+            dont_use_bounds_for_close_enough = true;
 
         if (lookat_used)
         {
@@ -3033,7 +3039,11 @@ namespace WalkerProcessor {
                         //for dead bodies add nothing. there is something wrong with height
                     }
                     else
-                        target_center.z += height * 0.5f;
+                    {
+                        if (!MiscThings::is_inventory_object(target))
+                            target_center.z += height * 0.5f;
+                    }
+                        
 
 
                     if (player)
@@ -3051,7 +3061,8 @@ namespace WalkerProcessor {
                         if (target_center.z > player->GetHeight() * 1.5 + player->GetPosition().z)
                         {
                             //if (get_targeted_ref() == target_ref)
-                            target_center.z -= player->GetHeight() * 0.5;// return true; //in case its some very tall but thin object and moving camera too high will ruin the focus
+                            if (!MiscThings::is_inventory_object(target))
+                                target_center.z -= player->GetHeight() * 0.5;// return true; //in case its some very tall but thin object and moving camera too high will ruin the focus
                         }
 
                     }
@@ -3115,7 +3126,9 @@ namespace WalkerProcessor {
 
             if (mulY < 0)
             {
-                mulZ = 0.0f;// -mulZ;
+                if (!looking_mode)
+                    mulZ = 0.0f;// -mulZ;
+
                 if (mulX < 0.0f)
                     mulX = -0.3f + mulX;
                 else
@@ -5229,8 +5242,16 @@ namespace WalkerProcessor {
 
     std::pair<bool, std::string> look_at_object_by_index(int index)
     {
-
         std::pair<bool, std::string> result{};
+
+        if (is_fishing())
+        {
+            result.first = true;
+            result.second = "Fishing..."; //...
+            return result;
+        }
+
+
 
         auto cant_walk_reason = get_cant_walk_reason();
 

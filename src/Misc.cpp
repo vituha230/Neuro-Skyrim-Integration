@@ -9,8 +9,6 @@
 namespace MiscThings {
 
 
-
-
     bool threw_a_book_out_to_read = false;
 
     long long gave_interesting_notification_timestamp = 0;
@@ -23,6 +21,22 @@ namespace MiscThings {
 
         return false;
     }
+
+
+    bool is_inventory_object(RE::TESObjectREFR* target)
+    {
+        if (target)
+        {
+            auto base_obj = target->GetBaseObject();
+            if (base_obj && base_obj->IsInventoryObject())
+                return true;
+        }
+
+
+        return false;
+    }
+
+
 
 
     

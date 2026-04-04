@@ -1293,7 +1293,10 @@ namespace Observer {
 								std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
 
-
+								if (name == "Fishing Supplies")
+								{
+									bool stop_here = false;
+								}
 
 								if (!MiscThings::is_object_valid(a_ref))
 									return RE::BSContainer::ForEachResult::kContinue;
@@ -1414,11 +1417,19 @@ namespace Observer {
 
 											if (jail_condition_all || local_ignore_raycast || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance, false))
 											{
-
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+												
 												if (info != "" && MiscThings::is_object_valid(a_ref))
 												{
-													interesting_buffer.insert_or_assign(a_ref, info);
+													if (name.find("Fishing Supplies") != std::string::npos && !WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
+													{
+														WalkerProcessor::look_at_object_by_refr(a_ref, true, 1.0f);
+														send_random_context("You see: " + info, false); 
+													}
+													else
+														interesting_buffer.insert_or_assign(a_ref, info);
+
 												}
 													
 											}

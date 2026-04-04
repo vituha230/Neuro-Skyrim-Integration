@@ -267,6 +267,8 @@ namespace MiscThings {
 
     bool player_brawling();
 
+    bool is_inventory_object(RE::TESObjectREFR* target);
+
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target);
 
     bool is_offensive_spell(bool right);
