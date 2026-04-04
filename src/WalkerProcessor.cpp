@@ -1730,7 +1730,26 @@ namespace WalkerProcessor {
                 turning_around = false;
                 //float height_dif = last_point_posZ - path[current_path_point].z;
 
-                if (!dont_shift && (always_shift || is_about_to_fall()))
+
+                bool target_is_slowwalking = false;
+                if (target_ref && target_ref->IsActor())
+                {
+                    auto target_actor = (RE::Actor*)target_ref;
+
+                    if (player->GetDistance(target_ref) < 150.0f)
+                    {
+                        if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage))
+                        {
+                            if (target_actor->currentProcess && target_actor->currentProcess->currentPackage.preferredSpeed == 2)
+                                target_is_slowwalking = true;
+                        }
+                    }
+                }
+
+
+
+
+                if (!dont_shift && (always_shift || is_about_to_fall() || target_is_slowwalking))
                 {
                     if (player->IsRunning() && !player->IsSneaking() && !was_slowwalking)
                     {

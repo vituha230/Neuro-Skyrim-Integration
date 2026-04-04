@@ -1644,7 +1644,7 @@ namespace Observer {
 														{
 															int quest_stage = ghost_shouting_quest->GetCurrentStageID();
 
-															if (quest_stage == 85)
+															if (quest_stage == 85 || quest_stage == 80)
 															{
 																active_puzzle = 1;
 																puzzle_target = a_ref;

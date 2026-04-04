@@ -9,16 +9,11 @@
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
-//TODO test high hrothgar part1 more
-
 //TODO oxygen control
 
 //TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
-//TODO dwemer mechanisms/traps
 //TODO slaughterfish fights
 //TODO test all spells
-//TODO: check all menus after force/choice merge
-//TODO catch animation events on all objects
 //TODO letter aliases for locations (foreachscript scanner)
 
 
@@ -33,22 +28,9 @@
 //TODO hand equip info (both spells and inventory. spells in the inventory will require insert_spell_into_list_and_get_info function)
 
 
-
-//TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME container menu bugged, after taking 1st item it doesnt force and looks like the scan is broken in this case
-//TODO MAYBE FIXED. REMOVE IF NOT ENCOUNTERED FOR LONG TIME if attack ralof, sometimes it holds block forever (looks like when target got too far away while we were blocking - the block isnt interrupted)
-
-
 //mega arbitrary, probably will not do before someone plays the mod
 //TODO sneaking
 //TODO coop
-
-
-
-//TODO potentially worth looking into:
-//  button events like in race menu for text. maybe can finally use perfect key up/down events?
-// it will probably require disabling actual inputs because it polls real devices which have all keys up.
-
-
 
 
 //#include <string>
