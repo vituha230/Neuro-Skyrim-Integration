@@ -1122,8 +1122,11 @@ namespace Hooks {
 
                         auto player_worldspace = player->GetWorldspace();
 
-                        std::string location_name = player_worldspace->GetFullName();
-
+                        std::string location_name = "";
+                            
+                        if (player_worldspace)
+                            location_name = player_worldspace->GetFullName();
+              
                         if (location_name == "")
                             location_name = "Tamriel";
 
