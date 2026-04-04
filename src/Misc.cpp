@@ -1123,14 +1123,14 @@ namespace MiscThings {
         {
             auto stage = sovngarde_quest2->GetCurrentStageID();
 
-            if (stage > 0 && stage < 200)
+            if (stage > 0 && stage < 300)
             {
                 if (quest != sovngarde_quest2)
                     return true;
             }
         }
 
-
+        /*
         if (sovngarde_quest3)
         {
             auto stage = sovngarde_quest3->GetCurrentStageID();
@@ -1141,7 +1141,7 @@ namespace MiscThings {
                     return true;
             }
         }
-
+        */
 
 
         return false;
