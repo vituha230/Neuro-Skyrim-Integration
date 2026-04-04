@@ -1447,6 +1447,9 @@ namespace WalkerProcessor {
 
     bool may_sprint()
     {
+        if (runaway_mode)
+            return true;
+
         //return true;
         bool result = false;
         try {
@@ -2148,12 +2151,14 @@ namespace WalkerProcessor {
                     return false;
                 }
 
-                if (runaway_mode && !turning_around)
-                    return true; //runaway mode has a bit problematic pathfinding because it doesnt place target on teleport doors (unlike normal quests)
+                float threshold = 0.3f;
+
+                if ((runaway_mode || MiscThings::player_escaping_jail()) && !turning_around)
+                    threshold = 0.05f; //runaway mode has a bit problematic pathfinding because it doesnt place target on teleport doors (unlike normal quests)
 
                 if (last_targeted_ref == targeted_ref)
                 {
-                    if (have_door_targeted_time > 0.3f)//0.15f)
+                    if (have_door_targeted_time > threshold)//0.15f)
                     {
                         //have_door_targeted_time = 0.0f;
                         //last_targeted_ref = nullptr;

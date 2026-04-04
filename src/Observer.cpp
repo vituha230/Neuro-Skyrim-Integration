@@ -1546,20 +1546,41 @@ namespace Observer {
 											{
 												if (!MiscThings::is_object_in_the_list(a_ref))
 												{
-													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
-													if (info != "")
-													{
-														if (MiscThings::get_player_gold() < 100 && info.find("Coin Purse") != std::string::npos)
-														{
-															if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
-																WalkerProcessor::reset_walker();
+													std::string temp_name = a_ref->GetDisplayFullName();
 
-															send_random_context("You see: " + info, false); //coin purses are not silent when we are broke so they dont end up with 0 gold for too long
+													if (temp_name.find("Coin Purse") != std::string::npos)
+													{
+														if (ignore_raycast || MiscThings::raycastable(a_ref, 3000.0f, false))
+														{
+															std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+															if (info != "")
+															{
+																if (MiscThings::get_player_gold() < 100)
+																{
+																	if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
+																		WalkerProcessor::reset_walker();
+
+																	send_random_context("You see: " + info, false); //coin purses are not silent when we are broke so they dont end up with 0 gold for too long
+																}
+																else
+																{
+																	interesting_buffer.insert_or_assign(a_ref, info);
+
+																}
+															}
 														}
-														else
+													}
+													else
+													{
+														std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+														if (info != "")
+														{
 															interesting_buffer.insert_or_assign(a_ref, info);
+														}
 													}
 														
+
+
 												}
 											}
 										}
