@@ -1293,7 +1293,7 @@ namespace Observer {
 								std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
 
-								if (name == "Fishing Supplies")
+								if (name.find("Crumbling") != std::string::npos)
 								{
 									bool stop_here = false;
 								}
@@ -1503,7 +1503,7 @@ namespace Observer {
 											}
 										}
 
-										if (base_obj)
+										if (base_obj && !MiscThings::is_serving_jail())
 										{
 											bool is_harvestable = false;
 
@@ -1549,7 +1549,7 @@ namespace Observer {
 													std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 													if (info != "")
 													{
-														if (!MiscThings::is_serving_jail() && MiscThings::get_player_gold() < 100 && info.find("Coin Purse") != std::string::npos)
+														if (MiscThings::get_player_gold() < 100 && info.find("Coin Purse") != std::string::npos)
 														{
 															if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
 																WalkerProcessor::reset_walker();
@@ -2366,13 +2366,16 @@ namespace Observer {
 											{
 												std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal gate", a_ref);
 
-												if (old_state.action_flags == 3)
-													if (activation == 1)
-														result.push_back("[ " + name + " closed]");
+												if (std::size(result) == 0 || result.at(std::size(result) - 1).find("Dwemer metal gate") == std::string::npos)
+												{
+													if (old_state.action_flags == 3)
+														if (activation == 1)
+															result.push_back("[ " + name + " closed]");
 
-												if (old_state.action_flags == 2)
-													if (activation == 0)
-														result.push_back("[ " + name + " opened]");
+													if (old_state.action_flags == 2)
+														if (activation == 0)
+															result.push_back("[ " + name + " opened]");
+												}
 											}
 
 
@@ -2469,14 +2472,14 @@ namespace Observer {
 															if (activation == 10)
 															{
 																result.push_back("[" + name + " started rotating...]");
-																WalkerProcessor::look_at_object_by_refr(a_ref);
+																WalkerProcessor::look_at_object_by_refr(a_ref, true);
 															}
 															else
 																if (activation == 20)
 																{
 																	result.push_back("[" + name + " stopped moving... the mechanism lowered some big crystal capsule from the ceiling. The capsule opens... and you see some shining scroll inside]");
 																	auto elder_scroll_pickup = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x88268);
-																	WalkerProcessor::look_at_object_by_refr(elder_scroll_pickup);
+																	WalkerProcessor::look_at_object_by_refr(elder_scroll_pickup, true);
 																}
 																else
 																	result.push_back("[" + name + " stopped rotating, now it is in a new position]");

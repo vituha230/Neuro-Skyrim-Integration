@@ -2129,7 +2129,8 @@ namespace WalkerProcessor {
                     return false;
                 }
 
-
+                if (runaway_mode && !turning_around)
+                    return true; //runaway mode has a bit problematic pathfinding because it doesnt place target on teleport doors (unlike normal quests)
 
                 if (last_targeted_ref == targeted_ref)
                 {
@@ -4335,12 +4336,21 @@ namespace WalkerProcessor {
 
         if (using_custom_path)
         {
-            if (custom_path_appended)
-                return true;
-            else
+            //if (custom_path_appended)
+            //    return true;
+           // else
             {
                 if (!custom_path.empty())
-                    return player_pos.GetDistance(custom_path.at(std::size(custom_path) - 1)) < 200.0f;
+                {
+                    auto custom_path_last_pos = custom_path.at(std::size(custom_path) - 1);
+                    if (abs(custom_path_last_pos.z - player_pos.z) < 300.0f)
+                    {
+                        player_pos.z = 0.0f;
+                        custom_path_last_pos.z = 0.0f;
+                    }
+
+                    return player_pos.GetDistance(custom_path_last_pos) < 100.0f;
+                }
                 else
                     return true; //super error
             }
@@ -4854,6 +4864,26 @@ namespace WalkerProcessor {
 
 
 
+
+    void solitude_prison_out_of_bounds_check()
+    {
+        if (just_escaped_solitude_prison())
+        {
+            //solitude_prison_exit
+            unregister_all_actions();
+            using_custom_path = true;
+            walk_again_when_finished = true;
+            custom_path = CustomWalkerPaths::solitude_prison_exit;
+            path = custom_path;
+            path_valid = true;
+            dont_shift = true;
+        }
+    }
+
+
+
+
+
     int attacked_already_dead_in_a_row = 0;
 
 
@@ -5139,16 +5169,7 @@ namespace WalkerProcessor {
 
                 have_target_to_walk = true;
 
-                if (just_escaped_solitude_prison())
-                {
-                    //solitude_prison_exit
-                    unregister_all_actions();
-                    using_custom_path = true;
-                    walk_again_when_finished = true;
-                    custom_path = CustomWalkerPaths::solitude_prison_exit;
-                    dont_shift = true;
-
-                }
+                solitude_prison_out_of_bounds_check();
 
 
                 reminder_start_pos = player->GetPosition();
@@ -5503,15 +5524,7 @@ namespace WalkerProcessor {
                     }
                         
 
-                    if (just_escaped_solitude_prison())
-                    {
-                        //solitude_prison_exit
-                        unregister_all_actions();
-                        using_custom_path = true;
-                        walk_again_when_finished = true;
-                        custom_path = CustomWalkerPaths::solitude_prison_exit;
-                        dont_shift = true;
-                    }
+                    solitude_prison_out_of_bounds_check();
 
 
                     location_mode = true;
@@ -5579,15 +5592,7 @@ namespace WalkerProcessor {
                     reset_walker();
 
 
-                if (just_escaped_solitude_prison())
-                {
-                    //solitude_prison_exit
-                    unregister_all_actions();
-                    using_custom_path = true;
-                    walk_again_when_finished = true;
-                    custom_path = CustomWalkerPaths::solitude_prison_exit;
-                    dont_shift = true;
-                }
+                solitude_prison_out_of_bounds_check();
                 
                 reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
                 reminder_start_pos = player->GetPosition();
@@ -5661,15 +5666,7 @@ namespace WalkerProcessor {
                 Observer::reset_threats();
 
 
-                if (just_escaped_solitude_prison())
-                {
-                    //solitude_prison_exit
-                    unregister_all_actions();
-                    using_custom_path = true;
-                    walk_again_when_finished = true;
-                    custom_path = CustomWalkerPaths::solitude_prison_exit;
-                    dont_shift = true;
-                }
+                solitude_prison_out_of_bounds_check();
 
                 location_mode = true;
                 target_ref = location;
@@ -6278,15 +6275,7 @@ namespace WalkerProcessor {
 
                                                 
 
-                                                if (just_escaped_solitude_prison())
-                                                {
-                                                    //solitude_prison_exit
-                                                    unregister_all_actions();
-                                                    using_custom_path = true;
-                                                    walk_again_when_finished = true;
-                                                    custom_path = CustomWalkerPaths::solitude_prison_exit;
-                                                    dont_shift = true;
-                                                }
+                                                solitude_prison_out_of_bounds_check();
 
 
                                                 have_target_to_walk = true;
@@ -6566,15 +6555,7 @@ namespace WalkerProcessor {
                                                 }
                                                     
 
-                                                if (just_escaped_solitude_prison())
-                                                {
-                                                    //solitude_prison_exit
-                                                    unregister_all_actions();
-                                                    using_custom_path = true;
-                                                    walk_again_when_finished = true;
-                                                    custom_path = CustomWalkerPaths::solitude_prison_exit;
-                                                    dont_shift = true;
-                                                }
+                                                solitude_prison_out_of_bounds_check();
 
 
                                                 if (quests_target_ref == RE::TESObjectREFR::LookupByID(0x3FAFB)) //greybeard gate
@@ -6667,15 +6648,7 @@ namespace WalkerProcessor {
                 surrender_mode = true;
 
 
-            if (just_escaped_solitude_prison())
-            {
-                //solitude_prison_exit
-                unregister_all_actions();
-                using_custom_path = true;
-                walk_again_when_finished = true;
-                custom_path = CustomWalkerPaths::solitude_prison_exit;
-                dont_shift = true;
-            }
+            solitude_prison_out_of_bounds_check();
 
 
 
@@ -6776,7 +6749,9 @@ namespace WalkerProcessor {
 
         if (prefer_solitude_prison_escape_route())
         {
-            return escape_prison();
+            auto temp_result = escape_prison();
+            runaway_mode = true;
+            return temp_result;
         }
 
         if (target)
@@ -6789,15 +6764,7 @@ namespace WalkerProcessor {
             location_mode = true;
 
 
-            if (just_escaped_solitude_prison())
-            {
-                //solitude_prison_exit
-                unregister_all_actions();
-                using_custom_path = true;
-                walk_again_when_finished = true;
-                custom_path = CustomWalkerPaths::solitude_prison_exit;
-                dont_shift = true;
-            }
+            solitude_prison_out_of_bounds_check();
 
 
             target_ref = target;
@@ -9109,7 +9076,7 @@ namespace WalkerProcessor {
 
             using_custom_path = true;
             walk_again_when_finished = true;
-            custom_path = CustomWalkerPaths::ustengrev_off_the_cliff;
+            custom_path = CustomWalkerPaths::ustengrev_off_the_cliff;   
 
             ustengrev_cliff_mode = true;
 
@@ -10393,9 +10360,9 @@ namespace WalkerProcessor {
                                     dont_quicksave_after_custom_path = true;
                                     dont_use_bounds_for_close_enough = true;
                                     walk_again_when_finished = true;
+                                    custom_path = { redirect_marker->GetPosition(), alftand_door->GetPosition() };
                                     path = custom_path;
                                     path_valid = true;
-                                    custom_path = { player->GetPosition(), alftand_door->GetPosition() };
                                     return;
                                 }
                                 else

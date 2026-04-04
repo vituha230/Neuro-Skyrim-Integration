@@ -3,16 +3,6 @@
 
 //crucial:
 
-//TODO test sovngarde
-//TODO sovngarde portal point camera lower while walking so the portal is visible
-
-
-
-//TODO filter dwemer metal poles 
-
-//TODO shift on dwemer mechanism on entrance to blackreach
-
-//TODO test solitude prison custom path walk, might be broken
 
 //TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 
