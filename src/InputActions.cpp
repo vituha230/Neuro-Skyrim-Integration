@@ -994,11 +994,11 @@ void input_processor(float dtime)
 
     if (!MiscThings::is_player_swimming() && long_cast_ult)
     {
-        set_universal_block(0.5f);
+        //set_universal_block(0.5f);
         if (!canceled_inputs)
         {
             canceled_inputs = true;
-            clear_input_queue();
+            //clear_input_queue();
         }
         else
         {

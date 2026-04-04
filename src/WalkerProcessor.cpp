@@ -691,6 +691,15 @@ namespace WalkerProcessor {
     {
         attack_pause_time = 0.0f;
         attack_paused = false;
+
+        //reset shout
+        auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
+        if (!ustengrev_shout_mode && shout_mode)
+        {
+            shout_mode = false;
+            shout_to_use = nullptr;
+        }
+
     }
 
 
@@ -5190,6 +5199,18 @@ namespace WalkerProcessor {
                         result.second = "[You are in position. You need to use correct shout to call the dragon]";
                 }
 
+                auto sovngarde_clearskies = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700bf59);
+                if (target_ref && target_ref == sovngarde_clearskies)
+                {
+                    auto player_pos = player->GetPosition();
+                    auto target_pos = target_ref->GetPosition();
+
+                    if (target_pos.GetDistance(player_pos) < 700.0f)
+                    result.second = "You are in position. You need to use Clear Skies shout to clear Alduin's mist";
+                }
+
+
+
                 return result;
             }
             else
@@ -6192,8 +6213,18 @@ namespace WalkerProcessor {
                                                             auto player_pos = player->GetPosition();
                                                             auto target_pos = target_ref->GetPosition();
 
-                                                            //if (target_pos.GetDistance(player_pos) < 200.0f)
-                                                            result.second = "You are in position. You need to use correct shout to call the dragon";
+                                                            if (target_pos.GetDistance(player_pos) < 700.0f)
+                                                                result.second = "You are in position. You need to use correct shout to call the dragon";
+                                                        }
+
+                                                        auto sovngarde_clearskies = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700bf59);
+                                                        if (target_ref && target_ref == sovngarde_clearskies)
+                                                        {
+                                                            auto player_pos = player->GetPosition();
+                                                            auto target_pos = target_ref->GetPosition();
+
+                                                            if (target_pos.GetDistance(player_pos) < 700.0f)
+                                                                result.second = "You are in position. You need to use Clear Skies shout to clear Alduin's mist";
                                                         }
 
 
@@ -7346,13 +7377,7 @@ namespace WalkerProcessor {
                             send_random_context("You are using the shout...");
                             MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
 
-                            //reset shout
-                            auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
-                            if (!ustengrev_shout_mode)
-                            {
-                                shout_mode = false;
-                                shout_to_use = nullptr;
-                            }
+
 
 
                             return true;
@@ -8770,6 +8795,15 @@ namespace WalkerProcessor {
                 result = "You are in position. You need to use correct shout to call the dragon";
         }
 
+        auto sovngarde_clearskies = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700bf59);
+        if (target_ref && target_ref == sovngarde_clearskies)
+        {
+            auto player_pos = player->GetPosition();
+            auto target_pos = target_ref->GetPosition();
+
+            //if (target_pos.GetDistance(player_pos) < 200.0f)
+            result = "You are in position. You need to use Clear Skies shout to clear Alduin's mist";
+        }
 
 
         if (result != "")
@@ -10788,7 +10822,7 @@ namespace WalkerProcessor {
 
                 if (attack_paused)
                 {
-                    if (start_attacking)
+                    if (start_attacking || (shout_mode && target_ref && target_ref->IsActor()))
                     {
                         lock_camera_onto_target(target_ref, dtime);
                     }

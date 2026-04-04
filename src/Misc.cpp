@@ -3323,7 +3323,7 @@ namespace MiscThings {
         //mouse_mouse_x_y(0, 0);
         mouse_look(0, 0);
 
-        clear_input_queue();
+        //clear_input_queue();
     }
 
 
