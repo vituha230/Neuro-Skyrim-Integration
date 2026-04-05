@@ -3,14 +3,18 @@
 
 //crucial:
 
+//TODO bleak falls gate pathfinding fix
 
-//TODO maybe autouse heal/mana potions when needed.
+//TODO figure out how to make them put on good armor
+
+//TODO maybe autouse heal/mana potions when needed. charge weapons with soulgems too.
+
+//TODO staff and scroll usage
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
 //TODO oxygen control
 
-//TODO more puzzles (different kind of pillars, check metal spike traps, lifting floor trap)
 //TODO slaughterfish fights
 //TODO test all spells
 //TODO letter aliases for locations (foreachscript scanner)
@@ -20,14 +24,11 @@
 
 //TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 
-//arbitrary:
+//for later:
 
 //TODO put things into container/gift menu (i think for followers its give not take)
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 //TODO hand equip info (both spells and inventory. spells in the inventory will require insert_spell_into_list_and_get_info function)
-
-
-//mega arbitrary, probably will not do before someone plays the mod
 //TODO sneaking
 //TODO coop
 
@@ -200,7 +201,7 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
             MiscThings::clean_controls_from_string(&message);
             set_universal_block(1.0f);
             std::string json{};
-            //bool result = !glz::write_json(options, json);
+            bool result = !glz::write_json(options, json);
 
             bool ephemeral = true;
 

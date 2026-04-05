@@ -6875,7 +6875,7 @@ namespace MiscThings {
         return threw_a_book_out_to_read;
     }
 
-
+    //replaced with proper reading
     void book_reader(float dtime)
     {
         if (threw_a_book_out_to_read)
@@ -7414,6 +7414,9 @@ namespace MiscThings {
     }
 
 
+
+    bool has_read_book_this_activation = false;
+
     std::pair<bool, std::string> activate_array_of_inventory_objects(std::vector<int> ids)
     {
         std::pair<bool, std::string> result{};
@@ -7424,6 +7427,7 @@ namespace MiscThings {
 
         std::string full_result = "";
 
+        has_read_book_this_activation = false;
 
         for (auto id : ids)
         {
@@ -7437,6 +7441,8 @@ namespace MiscThings {
             full_result += temp_result.second + "; ";
 
         }
+
+        has_read_book_this_activation = false;
 
         std::string result_message = "";
 
@@ -7844,9 +7850,17 @@ namespace MiscThings {
 
                                             }
                                             
-
+                                            if (has_read_book_this_activation)
+                                            {
+                                                result.first = false;
+                                                result.second = "[Cannot read multiple books at once]";
+                                                return result;
+                                            }
 
                                             actor_equip->EquipObject((RE::Actor*)player_ref, object, extra);
+
+                                            has_read_book_this_activation = true;
+
 
                                             if (result.second == "")
                                             {
@@ -7878,7 +7892,7 @@ namespace MiscThings {
                                         {
                                             RE::InventoryEntryData* entry_entry = entry->second.second.get();
 
-                                            const RE::ExtraDataList* extra = nullptr;
+                                            RE::ExtraDataList* extra = nullptr;
                                             if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
                                             {
                                                 extra = *entry_entry->extraLists->begin();
@@ -7888,7 +7902,17 @@ namespace MiscThings {
                                             RE::NiMatrix3 rot{};
                                             rot.SetEulerAnglesXYZ(-0.05f, -0.05f, 1.50f);
 
+                                            if (has_read_book_this_activation)
+                                            {
+                                                result.first = false;
+                                                result.second = "[Cannot read multiple books at once]";
+                                                return result;
+                                            }
+
+                                            actor_equip->EquipObject((RE::Actor*)player_ref, object, extra);
                                             RE::BookMenu::OpenMenuFromBaseForm(book_book, extra, { 0,0,0 }, rot, 1.0f, true);
+
+                                            has_read_book_this_activation = true;
 
                                         }                           
                                     }
@@ -8760,7 +8784,7 @@ namespace MiscThings {
                                         equip_info = "[Equipped in both hands]";
 
 
-                            *active_spells += "[id " + std::to_string(i) + "] " + name + " - " + description + equip_info + "\n";
+                            *active_spells += "[id " + std::to_string(i) + "]" + equip_info + " " + name + " - " + description + "\n";
                             spells.insert({ i, {a_spell, nullptr } });
                             i++;
                             *max_id = i;

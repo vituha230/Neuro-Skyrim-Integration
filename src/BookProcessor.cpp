@@ -137,6 +137,12 @@ namespace BookProcessor {
 		RE::UI* ui = RE::UI::GetSingleton();
 		if (ui)
 			if (const auto menu = ui->GetMenu<RE::BookMenu>(); menu)
+			{
+				auto refr = menu->GetTargetReference();
+
+				if (!refr || !refr.get())
+					return "";
+
 				if (menu->uiMovie)
 					if (menu->uiMovie->GetVariable(&var1, "_root.BottomBar.TakeButton._label"))
 						if (!var1.IsNull() && var1.IsString())
@@ -145,6 +151,8 @@ namespace BookProcessor {
 							if (var1_string.length() > 0)
 								result = var1_string.substr(1, var1_string.length() - 1);
 						}
+			}
+				
 		return result;
 	}
 
@@ -168,11 +176,11 @@ namespace BookProcessor {
 	{
 		std::vector<MenuOption> options{};
 
-		if (MiscThings::has_thrown_a_book())
+		//if (MiscThings::has_thrown_a_book())
 		{
-			options.push_back({ 1, "Stop reading" }); //fake take
+		//	options.push_back({ 1, "Stop reading" }); //fake take
 		}
-		else
+		//else
 		{
 			std::string bonus = get_take_steal_text();
 
@@ -207,7 +215,11 @@ namespace BookProcessor {
 			return result;
 		}
 
-		if (choice == 1)
+
+		std::string bonus = get_take_steal_text();
+
+
+		if (bonus != "" && choice == 1)
 		{
 			book_choice = choice;
 			book_choice_valid = true;
@@ -282,12 +294,16 @@ namespace BookProcessor {
 			{
 				if (!sent_quit_force)
 				{
-					
-					std::vector<MenuOption> quit_option = { {-1, "Stop reading" } };
+					quit_menu();
 
-					if (force_choice(quit_option, "[Failed to take the " + book_type() + "]", force_type::book))
+					sent_quit_force = true;
+
+					//std::vector<MenuOption> quit_option = { {-1, "Stop reading" } };
+
+					//if (force_choice(quit_option, "[Failed to take the " + book_type() + "]", force_type::book))
 					{
-						sent_quit_force = true;
+					//	sent_quit_force = true;
+					//	quit_menu();
 					}
 				}
 			}
