@@ -3279,6 +3279,20 @@ namespace MiscThings {
     }
 
 
+    RE::TESObjectREFR::InventoryItemMap get_filtered_inventory()
+    {
+        RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
+            {
+                if (a_object.IsKey())
+                    return false;
+
+
+                return true;// a_object.IsObject();
+            });
+
+        return inventory;
+    }
+
 
 
 
@@ -6367,16 +6381,6 @@ namespace MiscThings {
 
     bool inventory_valid = false;
 
-    //RE::TESObjectREFR::InventoryItemMap inventory{};
-    
-    /*
-            RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
-            {
-                return true;// a_object.IsObject();
-            });
-     */
-
-
 
     std::map<int, item_data> inventory_items_list{};
 
@@ -7454,10 +7458,7 @@ namespace MiscThings {
             auto object = inventory_items_list.find(item_id)->second.object;
 
             //check if item is still there
-            RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
-                {
-                    return true;// a_object.IsObject();
-                });
+            RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
 
 
             if (player_ref && inventory.find(object) != inventory.end())
@@ -7962,10 +7963,7 @@ namespace MiscThings {
         std::string result = "";
 
 
-        RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
-            {
-                return true;// a_object.IsObject();
-            });
+        RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
 
             //auto item = entry->object;
 
@@ -8036,10 +8034,7 @@ namespace MiscThings {
         std::string actions = "";
 
         /*
-        RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
-            {
-                return true;// a_object.IsObject();
-            });
+        RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
 
 
         if (inventory.find(item) == inventory.end())
@@ -8232,10 +8227,7 @@ namespace MiscThings {
         }
 
 
-        RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
-            {
-                return true;// a_object.IsObject();
-            });
+        RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
 
 
         if (inventory.find(item) == inventory.end())
@@ -8313,10 +8305,7 @@ namespace MiscThings {
 
         std::string inventory_contents = "Your inventory contents:\n";
 
-        RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
-            {
-                return true;// a_object.IsObject();
-            });
+        RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
 
 
         for (auto& [item, data] : inventory)

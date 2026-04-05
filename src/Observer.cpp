@@ -3069,10 +3069,7 @@ namespace Observer {
 				/////// ITEMS ADDED
 				std::string new_info = "";
 
-				RE::TESObjectREFR::InventoryItemMap inventory = RE::PlayerCharacter::GetSingleton()->GetInventory([](RE::TESBoundObject& a_object)
-					{
-						return true;// a_object.IsObject();
-					});
+				RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
 
 				for (auto& [item, data] : inventory)
 				{

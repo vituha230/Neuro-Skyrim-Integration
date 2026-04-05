@@ -282,6 +282,8 @@ namespace MiscThings {
     bool get_peace_quest_state();
 
 
+    RE::TESObjectREFR::InventoryItemMap get_filtered_inventory();
+
 
 
     std::pair<bool, std::string> activate_array_of_inventory_objects(std::vector<int> ids);

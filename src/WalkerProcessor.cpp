@@ -12619,18 +12619,6 @@ namespace WalkerProcessor {
 			walker_processor_timer += dtime;
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 
