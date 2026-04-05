@@ -4,7 +4,6 @@
 //crucial:
 
 
-
 //TODO maybe autouse heal/mana potions when needed.
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open

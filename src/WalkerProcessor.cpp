@@ -2121,6 +2121,22 @@ namespace WalkerProcessor {
         }
 
 
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+    
+        if (!can_fight)
+        {
+            if (player && player->GetParentCell() == RE::TESForm::LookupByID(0x5de24))
+            {
+                //there will be no crosshair data - just raycast
+                auto camera = RE::PlayerCamera::GetSingleton();
+                auto camera_dir = camera->cameraRoot.get()->world.rotate;
+                auto camera_pos = camera->pos;
+                auto targeted_ref = MiscThings::GetRaycastRef(camera_pos, camera_dir.GetVectorY(), 300.0f, nullptr);
+
+                return targeted_ref;
+            }
+        }
 
         return nullptr;
 
@@ -2289,8 +2305,12 @@ namespace WalkerProcessor {
     {
         std::vector<RE::TESObjectREFR*> dont_cut_list =
         {
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee)
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee), //idk
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b0a5) //helgen door
         };
+
+        if (MiscThings::get_door_teleport(target) != "")
+            return;
 
         for (auto dont_cut : dont_cut_list)
         {
@@ -4387,7 +4407,13 @@ namespace WalkerProcessor {
                 
         }
 
-        if (MiscThings::is_intro2())
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+        bool helgen_keep_condition = false;
+        if (!can_fight && player && player->GetParentCell() == RE::TESForm::LookupByID(0x5de24))
+            helgen_keep_condition = true;
+
+        if (MiscThings::is_intro2() || helgen_keep_condition)
         {
             auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos;
 

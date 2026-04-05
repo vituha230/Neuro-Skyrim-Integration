@@ -1003,9 +1003,92 @@ namespace MiscThings {
             return redirect_marker;
 
 
+        //if door open - no redirect
+        // if gate2 closed - redirect to barrel
+        // if gate1 closed - redirect to torch (only if hadvar exists
+        // if door closed 
+
+        //ralof route:
+        //if door closed - redirect to barrel
+
+        //hadvar route:
+        //if gate1 closed - redirect to torch
+        //if door closed - redirect to barrel
+
+        //
 
 
+        auto helgen_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
 
+        if (player && quest == helgen_quest && helgen_quest)
+        {
+            auto helgen_escape_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2636a);
+            
+            if (target == helgen_escape_target)
+            {
+
+                auto stage = helgen_quest->GetCurrentStageID();
+
+                auto helgen_hadvar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2bfa2);
+                auto helgen_ralof = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2bf9e);
+
+                bool ralof_mode = helgen_ralof && MiscThings::is_object_valid(helgen_ralof);
+
+
+                if (stage == 250)
+                {
+                    if (ralof_mode)
+                        return helgen_ralof;
+                    else
+                        return helgen_hadvar;
+                }
+
+                auto helgen_keyed_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b0a5);
+                auto helgen_redirect_barrel = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xb7e61);
+
+                if (helgen_keyed_door)
+                {
+                    if (ralof_mode)
+                    {
+                        //ralof route
+                        if (is_door_locked(helgen_keyed_door))
+                        {
+                            if (helgen_redirect_barrel)
+                                return helgen_redirect_barrel;
+                        }
+                    }
+                    else
+                    {
+                        //hadvar route
+                        auto helgen_gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x90a05);
+                        auto helgen_gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xb35af);
+                        auto helgen_redirect_torch = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xb6bca);
+
+                        if (two_state_activator_state(helgen_gate1) == 1)
+                        {
+                            if (helgen_redirect_torch)
+                                return helgen_redirect_torch;
+                        }
+                        else
+                        {
+                            if (two_state_activator_state(helgen_gate2) == 1)
+                            {
+                                if (helgen_keyed_door)
+                                    return helgen_keyed_door;
+                            }
+                            else
+                            {
+                                if (is_door_locked(helgen_keyed_door))
+                                {
+                                    if (helgen_redirect_barrel)
+                                        return helgen_redirect_barrel;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         return target;
     }
