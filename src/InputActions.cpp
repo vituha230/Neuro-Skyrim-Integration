@@ -111,6 +111,16 @@ void right_attack_bow()
 }
 
 
+void left_attack_bow()
+{
+
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->leftAttack, RE::INPUT_DEVICES::kMouse);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0f, 100000000.0f);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kMouse, my_key, 1.0, 0.0);
+    set_allowed_events(2);
+}
+
+
 void right_attack_spell()
 {
     were_casting_something_right = true;

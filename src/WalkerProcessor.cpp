@@ -17,6 +17,8 @@ namespace WalkerProcessor {
 
     float special_look_speed_koef = 1.0f;
 
+    bool try_power_attack = false;
+
 
     bool ignore_raycast = false;
 
@@ -3670,6 +3672,10 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        try_power_attack = false;
+
+
         special_look_speed_koef = 1.0f;
 
         target_before_markarth_redirect = nullptr;
@@ -7477,6 +7483,10 @@ namespace WalkerProcessor {
                 
             
 
+            float stamina_state = MiscThings::get_player_stamina() / MiscThings::get_player_max_stamina();
+
+           
+
             if (MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
             {
                 //cannpt attack. notify
@@ -7525,6 +7535,11 @@ namespace WalkerProcessor {
 
                         //return false;
                     }
+
+
+
+                    
+
 
                     if (attack_action_time0 < get_attack_time(true) && !(MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
                     {
@@ -7585,14 +7600,23 @@ namespace WalkerProcessor {
                         {
                             attack_spell_cast_timeout = 0.0f;
 
+                            bool can_power_attack = !MiscThings::has_spell_equipped(true) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f;
+
                             if (has_ranged_weapon_equipped(true))
                             {
                                 if (attack_action_time0 > 0.9f);
-                                    was_charging_ranged = true;
+                                was_charging_ranged = true;
                                 right_attack_bow();
                             }
                             else
-                                right_attack();
+                            {
+
+
+                                if (can_power_attack && try_power_attack)
+                                    right_attack_bow();
+                                else
+                                    right_attack();
+                            }
 
                             if (!MiscThings::has_something_equipped(true))
                             {
@@ -7614,6 +7638,7 @@ namespace WalkerProcessor {
                                 if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
                                     cursor_up();
                             }
+
                         }
 
                         if (!gave_attacking_info)
@@ -7683,54 +7708,63 @@ namespace WalkerProcessor {
                     }
                     else
                     {
-                        //end of attack
-                        attack_spell_cast_timeout = 0.0f;
-
-                        gave_attacking_info = false;
-                        was_charging_ranged = false;
-                        right_attack_cancel();
-
-                        attack_action_time0 = 0.0f;
-
-                        float choose_next_action = (float)std::rand() / RAND_MAX;
-
-
-                        bool dont_use_left = false;
-
-                        if (target_ref->IsActor() && target_ref->IsDead())
+                        //if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kNone && player_actor->actorState2.recoil == 0 && player_actor->actorState2.staggered == 0 && !player->animationObjectAction.any(RE::DEFAULT_OBJECTS::DEFAULT_OBJECT::kActionRightAttack))
                         {
-                            auto target_actor = (RE::Actor*)target_ref;
-                            auto target_combat_controller = target_actor->combatController;
+                            //end of attack
+                            attack_spell_cast_timeout = 0.0f;
 
-                            if (target_combat_controller)
-                                dont_use_left = (target_combat_controller->IsFleeing() || target_combat_controller->ignoringCombat || !target_combat_controller->startedCombat || target_combat_controller->stoppedCombat) && left_is_block();
+                            gave_attacking_info = false;
+                            was_charging_ranged = false;
+                            right_attack_cancel();
+
+                            attack_action_time0 = 0.0f;
+
+                            float choose_next_action = (float)std::rand() / RAND_MAX;
+
+
+                            bool dont_use_left = false;
+
+                            float power_attack_chance = (float)std::rand() / RAND_MAX;
+                            if (power_attack_chance > 0.7)
+                                try_power_attack = true;
+
+                            if (target_ref->IsActor() && target_ref->IsDead())
+                            {
+                                auto target_actor = (RE::Actor*)target_ref;
+                                auto target_combat_controller = target_actor->combatController;
+
+                                if (target_combat_controller)
+                                    dont_use_left = (target_combat_controller->IsFleeing() || target_combat_controller->ignoringCombat || !target_combat_controller->startedCombat || target_combat_controller->stoppedCombat) && left_is_block();
+                            }
+                            else
+                            {
+                                ;// dont_use_left |= left_is_block();
+                            }
+
+
+                            bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+                            bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+
+                            bool dont_use_right = false;
+
+
+                            dont_use_left |= has_ranged_weapon_equipped(true) && !no_ammo();
+                            //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
+                            //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
+
+                            dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless);
+
+
+                            if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
+                                attack_action = 1;
+                            else
+                                attack_action = 0;
+
+
+                            //set_universal_block(0.2f);
                         }
-                        else
-                        {
-                            ;// dont_use_left |= left_is_block();
-                        }
 
-
-                        bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
-                        bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
-
-                        bool dont_use_right = false;
-
-
-                        dont_use_left |= has_ranged_weapon_equipped(true) && !no_ammo();
-                        //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
-                        //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
-
-                        dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless);
-
-
-                        if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
-                            attack_action = 1;
-                        else
-                            attack_action = 0;
-
-
-                        //set_universal_block(0.2f);
+                        
                     }
                 }
                 else
@@ -7827,7 +7861,17 @@ namespace WalkerProcessor {
                             {
                                 attack_spell_cast_timeout = 0.0f;
 
-                                left_attack();
+
+                                bool can_power_attack = !MiscThings::has_spell_equipped(false) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f && !left_is_block();
+
+                                if (can_power_attack && try_power_attack)
+                                    left_attack_bow();
+                                else
+                                    left_attack();
+
+                                
+
+
                                 if (!MiscThings::has_something_equipped(false) && MiscThings::has_something_equipped(true) && is_melee_weapon(true))
                                 {
                                     attacking_info = "[You are blocking";
@@ -7952,6 +7996,11 @@ namespace WalkerProcessor {
                             bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
 
                             bool dont_use_right = false;
+
+
+                            float power_attack_chance = (float)std::rand() / RAND_MAX;
+                            if (power_attack_chance > 0.7)
+                                try_power_attack = true;
 
 
                             dont_use_left |= has_ranged_weapon_equipped(true) && !no_ammo();
