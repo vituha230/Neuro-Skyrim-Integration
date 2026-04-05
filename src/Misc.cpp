@@ -2668,6 +2668,7 @@ namespace MiscThings {
         }
 
 
+
         object_p = General::Script::GetObject(trap, "TrapTriggerHinge");
         if (object_p)
         {
@@ -2682,6 +2683,16 @@ namespace MiscThings {
             }
 
         }
+
+        object_p = General::Script::GetObject(trap, "BatteringTrap");
+        if (object_p)
+        {
+            if (object_p->currentState == "doOnce")
+            {
+                result = 16; //battering ram log
+            }
+        }
+
 
 
         return result;
@@ -2755,59 +2766,67 @@ namespace MiscThings {
 
     std::string get_pillar_solved_text(RE::TESObjectREFR* pillar)
     {
-        std::string result = "[Is in wrong position]";
+        std::string result = "";
 
 
         auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
+        auto object_p2 = General::Script::GetObject(pillar, "defaultPuzzlePillarPullBarNoFurn");
         auto object_p_skuldafn = General::Script::GetObject(pillar, "dunSkuldafnPuzzlePillar01SCRIPT");
         auto object_p_skuldafn2 = General::Script::GetObject(pillar, "dunSkuldafnPuzzlePillarTwoStage");//
         auto object_p_skuldafn3 = General::Script::GetObject(pillar, "defaultPuzzlePillarNoFurn");//
         //defaultPuzzlePillarNoFurn
         bool solved = false;
 
-        if (object_p || object_p_skuldafn || object_p_skuldafn2 || object_p_skuldafn3)
+        if (object_p || object_p2 || object_p_skuldafn || object_p_skuldafn2 || object_p_skuldafn3)
         {
             RE::BSFixedString prop_name = "pillarSolved";
 
             if (object_p)
                 solved = General::Script::GetVariable<bool>(object_p, prop_name);
             else
-                if (object_p_skuldafn)
+                if (object_p2)
                 {
-                    auto special_pillar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab223);
-                    if (pillar == special_pillar)
-                        solved = get_pillar_face_name(pillar) == 2;
-                    else
-                        solved = General::Script::GetVariable<bool>(object_p_skuldafn, prop_name);
-                }       
+                    solved = General::Script::GetVariable<bool>(object_p2, prop_name);
+                }
                 else
-                    if (object_p_skuldafn2)
+                    if (object_p_skuldafn)
                     {
                         auto special_pillar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab223);
                         if (pillar == special_pillar)
+                            solved = get_pillar_face_name(pillar) == 2;
+                        else
+                            solved = General::Script::GetVariable<bool>(object_p_skuldafn, prop_name);
+                    }       
+                    else
+                        if (object_p_skuldafn2)
                         {
-                            using ObjectPtr = RE::BSTSmartPointer<RE::BSScript::Object>;
-
-                            auto lever = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab22b);
-                            
-                            if (lever)
+                            auto special_pillar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab223);
+                            if (pillar == special_pillar)
                             {
-                                solved = get_pillar_face_name(pillar) == 2;
-                            }
+                                using ObjectPtr = RE::BSTSmartPointer<RE::BSScript::Object>;
 
+                                auto lever = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab22b);
+                            
+                                if (lever)
+                                {
+                                    solved = get_pillar_face_name(pillar) == 2;
+                                }
+
+                            }
+                            else
+                                solved = General::Script::GetVariable<bool>(object_p_skuldafn2, prop_name);
                         }
                         else
-                            solved = General::Script::GetVariable<bool>(object_p_skuldafn2, prop_name);
-                    }
-                    else
-                        if (object_p_skuldafn3)
-                        {
-                            solved = General::Script::GetVariable<bool>(object_p_skuldafn3, prop_name);
-                        }
+                            if (object_p_skuldafn3)
+                            {
+                                solved = General::Script::GetVariable<bool>(object_p_skuldafn3, prop_name);
+                            }
 
 
             if (solved)
-                result = "[Is in correct position]";
+                result = "[Is correct position]";
+            else
+                result = "[Is wrong position]";
         }
 
         object_p = General::Script::GetObject(pillar, "HallofStoriesDiskScript");
@@ -2819,7 +2838,10 @@ namespace MiscThings {
             solved = General::Script::GetVariable<bool>(object_p, prop_name);
 
             if (solved)
-                result = "[Is in correct position]";
+                result = "[Is correct position]";
+            else
+                result = "[Is wrong position]";
+                
         }
 
 
@@ -2828,9 +2850,13 @@ namespace MiscThings {
         if (object_p)
         {
             if (get_pillar_face_name(pillar) == 2)
-                result = "[Is in correct position]";
+                result = "[Is correct position]";
+            else
+                result = "[Is wrong position]";
         }
 
+
+        
 
 
         return result;
@@ -2878,6 +2904,16 @@ namespace MiscThings {
                             result = " [position Warrior]";
                     }
 
+                    if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel01") != std::string::npos)
+                    {
+                        if (code == 1)
+                            result = " [position Hawk]";
+                        if (code == 2)
+                            result = " [position Whale]";
+                        if (code == 3)
+                            result = " [position Snake]";
+                    }
+
                     if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel02") != std::string::npos)
                     {
                         if (code == 1)
@@ -2896,6 +2932,16 @@ namespace MiscThings {
                             result = " [position Fox]";
                         if (code == 3)
                             result = " [position Moth]";
+                    }
+
+                    if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel04") != std::string::npos)
+                    {
+                        if (code == 1)
+                            result = " [position Dragon]";
+                        if (code == 2)
+                            result = " [position Wolf]";
+                        if (code == 3)
+                            result = " [position Hawk]";
                     }
 
                     if (result != "")
@@ -2966,7 +3012,7 @@ namespace MiscThings {
                         }
 
 
-                        if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel02") != std::string::npos)
+                        if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel") != std::string::npos)
                         {
                             if (graph_ptr->behaviorGraph)
                             {
@@ -2984,7 +3030,7 @@ namespace MiscThings {
                         }
 
 
-
+                        /*
                         if (project_name.find("PuzzleDoor") != std::string::npos && project_name.find("Wheel03") != std::string::npos)
                         {
                             if (graph_ptr->behaviorGraph)
@@ -3001,6 +3047,7 @@ namespace MiscThings {
                                 }
                             }
                         }
+                        */
                     }
                 }
             }
@@ -3453,9 +3500,36 @@ namespace MiscThings {
         RE::NiPoint3 axisZ = { 0.0f, 0.0f, 1.0f };
 
 
-        result = result * cos(angleX) + result.Cross(axisX) * sin(angleX) + axisX * (axisX * result) * (1 - cos(angleX));
-        result = result * cos(angleY) + result.Cross(axisY) * sin(angleY) + axisY * (axisY * result) * (1 - cos(angleY));
+        //result = result * cos(angleX) + result.Cross(axisX) * sin(angleX) + axisX * (axisX * result) * (1 - cos(angleX));
+        //result = result * cos(angleY) + result.Cross(axisY) * sin(angleY) + axisY * (axisY * result) * (1 - cos(angleY));
+        //result = result * cos(angleZ) + result.Cross(axisZ) * sin(angleZ) + axisZ * (axisZ * result) * (1 - cos(angleZ));
+
+        //has to be like this
         result = result * cos(angleZ) + result.Cross(axisZ) * sin(angleZ) + axisZ * (axisZ * result) * (1 - cos(angleZ));
+        result = result * cos(angleY) + result.Cross(axisY) * sin(angleY) + axisY * (axisY * result) * (1 - cos(angleY));
+        result = result * cos(angleX) + result.Cross(axisX) * sin(angleX) + axisX * (axisX * result) * (1 - cos(angleX));
+
+        return result;
+    }
+
+
+    RE::NiPoint3 rotate_vector_by_angles2(RE::NiPoint3 v, RE::NiPoint3 object_angles)
+    {
+        RE::NiPoint3 result = v;
+
+        float angleX = object_angles.x;
+        float angleY = object_angles.y;
+        float angleZ = object_angles.z;
+
+        RE::NiPoint3 axisX = { 1.0f, 0.0f, 0.0f };
+        RE::NiPoint3 axisY = { 0.0f, 1.0f, 0.0f };
+        RE::NiPoint3 axisZ = { 0.0f, 0.0f, 1.0f };
+
+        result = result * cos(angleZ) + result.Cross(axisZ) * sin(angleZ) + axisZ * (axisZ * result) * (1 - cos(angleZ));
+        result = result * cos(angleY) + result.Cross(axisY) * sin(angleY) + axisY * (axisY * result) * (1 - cos(angleY));
+        result = result * cos(angleX) + result.Cross(axisX) * sin(angleX) + axisX * (axisX * result) * (1 - cos(angleX));
+        
+        
 
 
         return result;
@@ -3722,6 +3796,14 @@ namespace MiscThings {
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+
+                        if (model.find("PuzzleDoorKeyHoleIvory") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { -10.0f, 0.0f, 80.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
 
                         //NorPullBar01
 
@@ -6328,7 +6410,7 @@ namespace MiscThings {
                     result = name;
                 }
 
-                if (model.find("PuzzleDoorKeyHole") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                if (model.find("PuzzleDoorKeyHole") != std::string::npos && model.find("PuzzleDoorKeyHoleIvory") == std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                 {
                     std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", refr);
                     result = name;

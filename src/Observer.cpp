@@ -2400,6 +2400,17 @@ namespace Observer {
 											}
 
 
+											if (model.find("TrapDoorALT01") != std::string::npos)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal floor gate", a_ref);
+
+												if (activation == 1)
+													result.push_back("[ " + name + " closed]");
+
+												if (activation == 0)
+													result.push_back("[ " + name + " opened]");
+											}
+
 
 											if (model.find("WRPrisonCellFloorGrate01Door") != std::string::npos)
 											{
@@ -2630,7 +2641,7 @@ namespace Observer {
 														}
 
 
-														if (anim_name.find("PuzzleDoorKeyHole") != std::string::npos)
+														if (anim_name.find("PuzzleDoorKeyHole") != std::string::npos && anim_name.find("PuzzleDoorKeyHoleIvory") == std::string::npos)
 														{
 															std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
 
@@ -2828,7 +2839,10 @@ namespace Observer {
 											result.push_back("[ " + name + " was disarmed]");
 										}
 
-
+										if (new_state.trap_firing == 16)
+										{
+											result.push_back("[Battering ram log swings from the ceiling!]");
+										}
 										//only when close.
 
 
