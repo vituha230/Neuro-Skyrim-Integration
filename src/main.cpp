@@ -200,7 +200,7 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
             MiscThings::clean_controls_from_string(&message);
             set_universal_block(1.0f);
             std::string json{};
-            bool result = !glz::write_json(options, json);
+            //bool result = !glz::write_json(options, json);
 
             bool ephemeral = true;
 
@@ -768,20 +768,8 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("INVENTORY MENU WAS OPENED");
 
-                bool stop_here = false;
             }
-            else
-                if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
-
-                    bool stop_here = false;
-                }
-                else
-                {
-                    if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kScaleformEvent) {
-
-                        bool stop_here = false;
-                    }
-                }
+            
 
             return originalFunction(menu, a_message);
         }
@@ -1232,30 +1220,7 @@ namespace Hooks {
                 register_allowed_actions();
             }
 
-            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kChatterEvent)
-            {
-                bool test_123 = false;
-            }
-
-            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kScaleformEvent)
-            {
-                auto msg = (RE::BSUIScaleformData*)(a_message.data);
-                auto key_event = (RE::GFxKeyEvent*)(msg->scaleformEvent);
-
-
-
-
-                bool test_123 = false;
-            }
-                
-
-            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kUserEvent)
-            {
-                auto msg = (RE::BSUIMessageData*)(a_message.data);
-
-                bool test_123 = false;
-                
-            }
+              
 
             return originalFunction(menu, a_message);
         }
@@ -1270,28 +1235,6 @@ namespace Hooks {
         static RE::UI_MESSAGE_RESULTS thunk(RE::CursorMenu* menu, RE::UIMessage& a_message) {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("MAP MENU WAS OPENED");
-                //RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); //OKAY this shit just autocloses tutorial menus
-
-                //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->cancel, RE::INPUT_DEVICES::kKeyboard);
-                //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
-                //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
-                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor); //works
-                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kAssignCursorToRenderer);
-
-                //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUpdateUsesCursor); //works
-
-               // auto submenu = &menu->localMapMenu;
-
-
-                auto test_new_input3 = RE::ControlMap::GetSingleton();
-
-                for (int i = 0; i < 20; i++)
-                {
-                    auto ii = static_cast<RE::UserEvents::INPUT_CONTEXT_ID>(i);
-
-                    //test_new_input3->PopInputContext(ii);
-                }
-                //test_new_input3->PushInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kMap);
 
             }
             else
@@ -1308,7 +1251,6 @@ namespace Hooks {
                             else
                                 ;//dialogue_choice_reset();
 
-                        RE::UI* ui = RE::UI::GetSingleton();
                         //if (ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
                         //    if (event && event->type == RE::GFxEvent::EventType::kMouseMove) //always let button ups
                         //        ;// return RE::UI_MESSAGE_RESULTS::kHandled; //works
@@ -1414,8 +1356,8 @@ namespace Hooks {
                                 else
                                     ;//dialogue_choice_reset();
 
-                            if (event && event->type == RE::GFxEvent::EventType::kMouseMove) //always let button ups
-                                ;// return RE::UI_MESSAGE_RESULTS::kHandled; //works
+                            //if (event && event->type == RE::GFxEvent::EventType::kMouseMove) //always let button ups
+                           //     ;// return RE::UI_MESSAGE_RESULTS::kHandled; //works
                         }
                     }
                 }
@@ -1492,7 +1434,7 @@ namespace Hooks {
                     MessageBoxData
                     */
 
-                    auto test1 = (RE::BSUIScaleformData*)a_message.data;
+                    //auto test1 = (RE::BSUIScaleformData*)a_message.data;
 
 
                     //we want kUserEvent message which has "Cancel"

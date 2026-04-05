@@ -400,7 +400,6 @@ namespace MiscThings {
             if (a_event)
             {
                 auto player = RE::PlayerCharacter::GetSingleton();
-                auto player_ref = player->AsReference();
             }
             return RE::BSEventNotifyControl::kContinue;
 
