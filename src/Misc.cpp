@@ -820,7 +820,7 @@ namespace MiscThings {
         }
 
 
-
+        
 
         bool check_elder_scroll_zone_dwemer_mechanism = false;
 
@@ -1089,6 +1089,26 @@ namespace MiscThings {
                 }
             }
         }
+
+
+        auto bleak_falls_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x38dfb);
+
+        if (target == bleak_falls_door)
+        {
+            auto bleak_falls_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2ad21);
+            if (bleak_falls_gate && two_state_activator_state(bleak_falls_gate) == 1)
+            {
+                if (player->GetDistance(bleak_falls_gate) < 700.0f)
+                {
+                    //gate closed, we are close to gate, target is temple door. it will point us into the wall, redirect to ore vein behind the gate
+                    auto redirect_candle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x395f3);
+                    if (redirect_candle)
+                        return redirect_candle;
+                }
+            }
+        }
+
+
 
         return target;
     }

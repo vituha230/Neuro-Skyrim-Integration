@@ -3,8 +3,6 @@
 
 //crucial:
 
-//TODO bleak falls gate pathfinding fix
-
 //TODO figure out how to make them put on good armor
 
 //TODO maybe autouse heal/mana potions when needed. charge weapons with soulgems too.
