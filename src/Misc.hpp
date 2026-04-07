@@ -14,6 +14,8 @@ namespace MiscThings {
     bool is_in_third_person();
 
 
+    std::pair<bool, std::string> activate_inventory_object_by_refr(RE::TESBoundObject* item);
+
     struct quest {
         int id;
         RE::TESQuest* quest;
@@ -282,6 +284,11 @@ namespace MiscThings {
     bool is_container_empty(RE::TESObjectREFR* object);
 
     bool get_peace_quest_state();
+
+    bool is_consumable(RE::TESBoundObject* object);
+
+
+    int get_restore_value(RE::TESBoundObject* object, RE::ActorValue av);
 
 
     RE::TESObjectREFR::InventoryItemMap get_filtered_inventory();

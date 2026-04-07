@@ -3711,19 +3711,19 @@ namespace Observer {
 
 					bool send_info = false;
 
-					if (abs(health_dif) > 10.0f)
+					if (abs(health_dif) > 0.1f*max_health)
 					{
 						last_health_value = health;
 						send_info = true;
 					}
 
-					if (abs(stamina_dif) > 50.0f)
+					if (abs(stamina_dif) > 0.5f*max_stamina)
 					{
 						last_stamina_value = stamina;
 						//send_info = true;
 					}
 
-					if (abs(mana_dif) > 50.0f)
+					if (abs(mana_dif) > 0.5f*max_mana)
 					{
 						last_mana_value = mana;
 						send_info = true;
@@ -3760,8 +3760,6 @@ namespace Observer {
 
 						if (right_healing || left_healing)
 						{
-
-
 							if (right_healing)
 								try_casting_hand(true);
 							else
@@ -3778,6 +3776,36 @@ namespace Observer {
 						else
 							tried_to_heal_time += dtime;
 					}
+
+
+					//potions/food
+					bool want_health = MiscThings::player_hp_less_than(30) && WalkerProcessor::is_fighting();
+					bool want_mana = (float)mana / (float)max_mana < 0.4f && WalkerProcessor::is_fighting();
+
+					if (want_health || want_mana)
+					{
+						auto inventory = MiscThings::get_filtered_inventory();
+
+						for (auto& [item, data] : inventory)
+						{
+							if (want_health && MiscThings::get_restore_value(item, RE::ActorValue::kHealth) > 0)
+							{
+								MiscThings::activate_inventory_object_by_refr(item);
+							}
+
+							if (want_mana && MiscThings::get_restore_value(item, RE::ActorValue::kMagicka) > 0)
+							{
+								MiscThings::activate_inventory_object_by_refr(item);
+							}
+
+						}
+					}
+
+
+
+
+
+
 
 
 					auto sky = RE::Sky::GetSingleton();

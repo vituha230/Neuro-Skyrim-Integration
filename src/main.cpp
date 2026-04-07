@@ -3,9 +3,9 @@
 
 //crucial:
 
-//TODO figure out how to make them put on good armor
+//TODO automatically charge weapons with soulgems
 
-//TODO maybe autouse heal/mana potions when needed. charge weapons with soulgems too.
+//TODO figure out how to make them put on good armor
 
 //TODO staff and scroll usage
 

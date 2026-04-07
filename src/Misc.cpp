@@ -1290,6 +1290,37 @@ namespace MiscThings {
 
 
 
+
+    int get_restore_value(RE::TESBoundObject* object,  RE::ActorValue av)
+    {
+        if (object)
+        {
+            if (object->GetFormType() == RE::FormType::AlchemyItem)
+            {
+                auto alch_item = (RE::AlchemyItem*)object;
+
+                if (!alch_item->IsPoison())
+                {
+                    auto magic_item = object->As<RE::MagicItem>();
+
+                    if (magic_item)
+                    {
+                        for (auto effect : magic_item->effects)
+                        {
+                            if (effect->baseEffect->data.primaryAV == av)
+                            {
+                                return effect->GetMagnitude();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+
+
     std::string lever_interaction_advice(RE::TESObjectREFR* lever)
     {
         auto object_p = General::Script::GetObject(lever, "defaultPillarPuzzleLever");
@@ -1624,6 +1655,8 @@ namespace MiscThings {
         return cur_health < max_health * val_percent / 100.0f;
 
     }
+
+
 
 
     long long time_of_death = 0;
@@ -7619,6 +7652,9 @@ namespace MiscThings {
 
 
 
+
+
+
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
     {
         std::pair<bool, std::string> result{};
@@ -8167,6 +8203,37 @@ namespace MiscThings {
 
 
 
+
+    std::pair<bool, std::string> activate_inventory_object_by_refr(RE::TESBoundObject* item)
+    {
+        std::pair<bool, std::string> result{};
+        if (!inventory_valid)
+        {
+            auto temp_result = GetInventory();
+
+            if (!inventory_valid)
+                return result;
+        }
+
+        auto p_inventory = get_p_inventory_items_list();
+
+       
+        for (auto inventory_entry : *p_inventory)
+        {
+            if (inventory_entry.second.object == item)
+            {
+                return activate_inventory_object_by_index(inventory_entry.first, 1);
+            }
+        }
+
+
+        return result;
+
+    }
+
+
+
+
     std::string get_enchantment_info(RE::TESBoundObject* item)
     {
         std::string result = "";
@@ -8526,6 +8593,9 @@ namespace MiscThings {
 
             inventory_contents += info + " x" + std::to_string(data.first);
             inventory_contents += "\n";
+
+
+            auto test = get_restore_value(item, RE::ActorValue::kHealth);
         }
 
         auto player = RE::PlayerCharacter::GetSingleton();
