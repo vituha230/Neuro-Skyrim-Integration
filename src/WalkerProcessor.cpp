@@ -5152,7 +5152,7 @@ namespace WalkerProcessor {
 
                         if (interaction_after_walk == 3)
                         {
-                            if (player_actor->GetVoiceRecoveryTime() <= 0.0f)
+                            if (!MiscThings::player_brawling() && player_actor->GetVoiceRecoveryTime() <= 0.0f)
                                 MiscThings::use_random_offensive_shout(target_ref);
                         }
 

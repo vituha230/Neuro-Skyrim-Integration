@@ -9530,7 +9530,20 @@ namespace MiscThings {
 
         std::vector<RE::TESShout*> shouts_available{};
 
-        auto shout1 = (RE::TESShout*)RE::TESForm::LookupByID(0x13e07); //unrelenting force
+        std::vector<RE::TESShout*> offensive_shouts{};
+
+
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x13e07)); //unrelenting force
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x70981)); // disarm
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x2395a)); // dismay
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x32921)); // elemental fury
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x3f9ea)); // fire breath
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x5d16b)); // frost breath
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x70980)); // ice form
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x7097c)); // marked for death
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x48ac9)); // slow time
+        offensive_shouts.push_back((RE::TESShout*)RE::TESForm::LookupByID(0x7097d)); // storm call
+
 
         auto temp = get_available_spells(); //just refresh
 
@@ -9538,17 +9551,21 @@ namespace MiscThings {
         {
             if (spell.second.shout)
             {
-                if (spell.second.shout == shout1)
+                for (auto offensive_shout : offensive_shouts)
                 {
-                    int unlocked_words = 0;
-                    for (auto variation : spell.second.shout->variations)
+                    if (spell.second.shout == offensive_shout)
                     {
-                        if ((variation.word->formFlags & 65600) == 65600)
-                            unlocked_words++;
+                        int unlocked_words = 0;
+                        for (auto variation : spell.second.shout->variations)
+                        {
+                            if ((variation.word->formFlags & 65600) == 65600)
+                                unlocked_words++;
+                        }
+                        if (unlocked_words > 0)
+                            shouts_available.push_back(spell.second.shout);
                     }
-                    if (unlocked_words > 0)
-                        shouts_available.push_back(spell.second.shout);
                 }
+                
             }
         }
 
