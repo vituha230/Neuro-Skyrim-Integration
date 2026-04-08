@@ -11350,23 +11350,27 @@ namespace WalkerProcessor {
 
                                         if (!its_a_flying_dragon && !looking_mode && (int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
                                         {
-                                            wiggle_body_then_walk_again = true;
-
-                                            if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                                            if (!close_enough())
                                             {
-                                                if (walk_retries > 2)
+                                                wiggle_body_then_walk_again = true;
+
+                                                if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
                                                 {
-                                                    send_random_context("You keep following the dragon...", false); 
-                                                    walk_retries = 0;
+                                                    if (walk_retries > 2)
+                                                    {
+                                                        send_random_context("You keep following the dragon...", false);
+                                                        walk_retries = 0;
+                                                    }
+
                                                 }
-                                                
+
+
+                                                walk_retries++;
+                                                //walk_again();
+
+                                                return;
                                             }
-                                                
 
-                                            walk_retries++;
-                                            //walk_again();
-
-                                            return;
                                         }
                                     }
                                 }
@@ -11438,7 +11442,7 @@ namespace WalkerProcessor {
 
                                     }
 
-                                    if (!use_last_point_of_last_path && (current_path_point < (int)std::size(path)))
+                                    if (!close_enough() && !use_last_point_of_last_path && (current_path_point < (int)std::size(path)))
                                     {
                                         if (current_path_point >= 0 && std::size(path) > 0)
                                         {
