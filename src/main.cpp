@@ -3,8 +3,6 @@
 
 //crucial:
 
-//TODO automatically charge weapons with soulgems
-
 //TODO figure out how to make them put on good armor
 
 //TODO staff and scroll usage

@@ -16,6 +16,9 @@ namespace MiscThings {
 
     std::pair<bool, std::string> activate_inventory_object_by_refr(RE::TESBoundObject* item);
 
+    std::pair<bool, std::string> use_random_soulgem();
+
+
     struct quest {
         int id;
         RE::TESQuest* quest;

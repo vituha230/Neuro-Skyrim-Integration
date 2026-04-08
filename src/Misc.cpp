@@ -3324,7 +3324,15 @@ namespace MiscThings {
                                                         if (result_string != "Autosaving..." && result_string != "Quicksaving..." && result_string != "Quickloading..." && result_string.find("is too powerful") == std::string::npos)
                                                         {
                                                             if (result_string.find("item has insufficient charge") != std::string::npos)
-                                                                result_string = "Weapon's enchantment charge depleted. Use soulgems to charge it";
+                                                            {
+                                                                auto temp_tesult = MiscThings::use_random_soulgem();
+
+                                                                if (temp_tesult.first)
+                                                                    send_random_context(temp_tesult.second);
+
+                                                                return;
+                                                            }
+                                                                //result_string = "Weapon's enchantment charge depleted. Use soulgems to charge it";
 
                                                             if (result_string.find("has already caught you") != std::string::npos)
                                                                 WalkerProcessor::reset_walker();
@@ -7655,6 +7663,8 @@ namespace MiscThings {
 
 
 
+
+
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
     {
         std::pair<bool, std::string> result{};
@@ -8230,6 +8240,31 @@ namespace MiscThings {
         return result;
 
     }
+
+
+
+    std::pair<bool, std::string> use_random_soulgem()
+    {
+        std::pair<bool, std::string> result{};
+
+        auto inventory = MiscThings::get_filtered_inventory();
+
+        for (auto& [item, data] : inventory)
+        {
+            if (item && item->GetFormType() == RE::FormType::SoulGem)
+            {
+                auto soulgem = (RE::TESSoulGem*)item;
+
+                auto soul = soulgem->currentSoul;
+
+                if (get_soul_charge_value(soul) > 0)
+                    return MiscThings::activate_inventory_object_by_refr(item);
+            }
+        }
+
+        return result;
+    }
+
 
 
 
