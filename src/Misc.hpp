@@ -18,6 +18,8 @@ namespace MiscThings {
 
     std::pair<bool, std::string> use_random_soulgem();
 
+    void use_random_offensive_shout(RE::TESObjectREFR* target);
+
 
     struct quest {
         int id;

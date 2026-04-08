@@ -702,6 +702,8 @@ namespace WalkerProcessor {
             shout_to_use = nullptr;
         }
 
+        start_attacking = false; //so it restarts attack properly
+
     }
 
 
@@ -5112,7 +5114,7 @@ namespace WalkerProcessor {
 
                     if (object->second.object->IsActor() && !MiscThings::is_enemy_to_actor(object->second.object))
                     {
-                        reason = ". This object is your ally";
+                        reason = ". This object is not an enemy";
                     }
 
                     result.first = false;
@@ -5146,6 +5148,14 @@ namespace WalkerProcessor {
                         reset_walker();
                     else
                     {
+                        //same target, same interaction
+
+                        if (interaction_after_walk == 3)
+                        {
+                            if (player_actor->GetVoiceRecoveryTime() <= 0.0f)
+                                MiscThings::use_random_offensive_shout(target_ref);
+                        }
+
                         result.first = true;
                         result.second = "You keep walking...";
                         return result;
@@ -7419,12 +7429,10 @@ namespace WalkerProcessor {
                     {
                         if (player_actor->GetVoiceRecoveryTime() <= 0.0f)
                         {
-                            send_random_context("You are using the shout...");
+                            std::string shout_name = shout_to_use->GetFullName();;
+
+                            send_random_context("You are using the shout: " + shout_name);
                             MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
-
-
-
-
                             return true;
                         }
 

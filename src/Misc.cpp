@@ -7659,7 +7659,21 @@ namespace MiscThings {
     //}
 
 
+    int random_int_from_range(int min, int max)
+    {
+        if (min > max)
+            return 0;
 
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> distr(min, max);
+        int random_num = distr(gen);
+
+        return random_num;
+    }
+
+
+    
 
 
 
@@ -9504,6 +9518,59 @@ namespace MiscThings {
     }
 
 
+
+
+
+    void use_random_offensive_shout(RE::TESObjectREFR* target)
+    {
+        if (!target)
+            return;
+
+        //13e07 - unrelenting force
+
+        std::vector<RE::TESShout*> shouts_available{};
+
+        auto shout1 = (RE::TESShout*)RE::TESForm::LookupByID(0x13e07); //unrelenting force
+
+        auto temp = get_available_spells(); //just refresh
+
+        for (auto spell : spells)
+        {
+            if (spell.second.shout)
+            {
+                if (spell.second.shout == shout1)
+                {
+                    int unlocked_words = 0;
+                    for (auto variation : spell.second.shout->variations)
+                    {
+                        if ((variation.word->formFlags & 65600) == 65600)
+                            unlocked_words++;
+                    }
+                    if (unlocked_words > 0)
+                        shouts_available.push_back(spell.second.shout);
+                }
+            }
+        }
+
+        auto amount_of_shouts = std::size(shouts_available);
+
+        if (amount_of_shouts > 0)
+        {
+            int picked = random_int_from_range(0, amount_of_shouts - 1);
+
+            WalkerProcessor::shout_at_target(target, shouts_available.at(picked));
+        }
+
+    }
+
+
+
+
+
+
+
+
+
     bool player_has_spell(RE::SpellItem* spell)
     {
         
@@ -9727,7 +9794,7 @@ namespace MiscThings {
                     {
                         if (slot_id == 0x00025BEE) //voice
                         {
-                            if (player_actor->GetVoiceRecoveryTime() < 0.01)
+                            if (player_actor->GetVoiceRecoveryTime() <= 0)
                             {
                                 int unlocked_words = 0;
 
