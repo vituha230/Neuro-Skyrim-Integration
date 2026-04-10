@@ -7750,6 +7750,7 @@ namespace WalkerProcessor {
                         {
                             //end of attack
                             attack_spell_cast_timeout = 0.0f;
+                            try_power_attack = false;
 
                             gave_attacking_info = false;
                             was_charging_ranged = false;
@@ -8007,6 +8008,7 @@ namespace WalkerProcessor {
                         }
                         else
                         {
+                            try_power_attack = false;
                             gave_attacking_info = false;
                             attack_spell_cast_timeout = 0.0f;
                             was_charging_ranged = false;
