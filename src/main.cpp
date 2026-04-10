@@ -15,9 +15,6 @@
 //TODO test all spells
 //TODO letter aliases for locations (foreachscript scanner)
 
-
-//TODO complex actions like "go to trader, collect ingredients nearby, go to the carriage driver and ride to some city", maybe make explore action give interesting places in the town
-
 //TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 
 //for later:
@@ -1031,6 +1028,7 @@ namespace Hooks {
 
                 //MiscThings::clear_object_list(); //now cleared on menu close only if cell changed
 
+                MiscThings::reset_settlement();
                 
                 Observer::reset_observer();
                 Observer::clear_objects_to_track();
@@ -1151,6 +1149,10 @@ namespace Hooks {
 
                             }
                         }
+
+
+                        if (MiscThings::is_in_settlement())
+                            advice += ". You are in settlement, you can use check_interesting_places action to visit trader, alchemist, or other useful NPC if you want";
                         
 
                         if (WalkerProcessor::walker_active())
@@ -1819,6 +1821,7 @@ private:
                 RaceProcessor::processor(dtime);
 
                 MiscThings::notifications();
+                MiscThings::settlement_places_processor(dtime);
 
                 SleepWaitProcessor::processor(dtime);
                 BookProcessor::processor(dtime);

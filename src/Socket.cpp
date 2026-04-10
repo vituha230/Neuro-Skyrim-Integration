@@ -36,6 +36,8 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::ExitDungeon::Action,
                                     Capabilities::SurrenderToGuards::Action,
                                     Capabilities::EscapePrison::Action,
+                                    Capabilities::InterestingPlaces::Action,
+
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -80,6 +82,7 @@ neurosdk_action ActionsListNoForces[] = {
                                     Capabilities::ExitDungeon::Action,
                                     Capabilities::SurrenderToGuards::Action,
                                     Capabilities::EscapePrison::Action,
+                                    Capabilities::InterestingPlaces::Action,
 
                                     Capabilities::GetCurrentQuests::Action,
                                     Capabilities::FollowQuest::Action,
@@ -499,6 +502,10 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         else
                         {
                             actions_to_register[action_pos] = Capabilities::WalkToObject::Action; action_pos++;
+                            if (MiscThings::is_in_settlement())
+                            {
+                                actions_to_register[action_pos] = Capabilities::InterestingPlaces::Action; action_pos++;
+                            }
                         }
                         
                         actions_to_register[action_pos] = Capabilities::GetObjectsAround::Action; action_pos++;
@@ -1019,6 +1026,8 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                         case force_type::confirm_attack_friend:
                             command_result = WalkerProcessor::set_attack_friend_choice(json.id); break;
 
+                        case force_type::visit_places:
+                            command_result = MiscThings::visit_interesting_place_by_index(json.id); break;
 
 
                         default:
@@ -1460,6 +1469,13 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                 {
                                     command_result = MapProcessor::open_menu();
                                 }
+
+
+                                if (name == Capabilities::InterestingPlaces::Name)
+                                {
+                                    command_result = MiscThings::check_interesting_places();
+                                }
+
                             }
                         }
                     }

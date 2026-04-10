@@ -13,6 +13,567 @@ namespace MiscThings {
 
     long long gave_interesting_notification_timestamp = 0;
 
+
+
+
+
+    //form is settlement/cell. for worlds check if player is inside, for cells check if player is within some range
+    std::map<RE::TESForm*, interesting_places> settlements{};
+
+    
+    //RE::TESObjectREFR* trader;
+    //RE::TESObjectREFR* tavern;
+    //RE::TESObjectREFR* alchemist;
+    //RE::TESObjectREFR* blacksmith;
+    //RE::TESObjectREFR* jarl;
+    //RE::TESObjectREFR* court_wizard;
+    //RE::TESObjectREFR* church;
+
+
+
+    void fill_settlements()
+    {
+        settlements =
+        {
+            //winterhold
+        {
+            RE::TESForm::LookupByID(0x8ea2),
+            {
+                "Winterhold",
+                (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c18c), //trader
+                (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c18d), //tavern //FIX THIS
+                nullptr, //alchemist
+                nullptr, //blacksmith
+                (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1b5), //jarl
+                nullptr, //wizard
+                nullptr //church
+            }
+        },
+
+            //windhelm
+            {
+                RE::TESForm::LookupByID(0x1691d),
+                {
+                    "Windhelm",
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b11c), //trader
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b118), //tavern
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b115), //alchemist
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b135), //blacksmith
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b131), //jarl
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b132), //wizard
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16962), //church
+                }
+            },
+
+            //riften
+    {
+        RE::TESForm::LookupByID(0x16bb4),
+        {
+            "Riften",
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e0b3), //trader
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dc8), //tavern
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dfc), //alchemist
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df1), //blacksmith
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dea), //jarl
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df0), //wizard
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4227b), //church
+        }
+    },
+
+            //riverwood
+            {
+                RE::TESForm::LookupByID(0x9731),
+                {
+                    "Riverwood",
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13487), //trader
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13486), //tavern
+                    nullptr, //alchemist
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13482), //blacksmith
+                    nullptr, //jarl
+                    nullptr, //wizard
+                    nullptr, //church
+                }
+            },
+
+            //falkreath
+            {
+                RE::TESForm::LookupByID(0x9c80),
+                {
+                    "Falkreath",
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1981e), //trader
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a198), //tavern
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a19b), //alchemist
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a19f), //blacksmith
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19822), //jarl
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b132), //wizard
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x17766), //church
+                }
+            },
+
+            //markarth
+            {
+                RE::TESForm::LookupByID(0x16d71),
+                {
+                    "Markarth",
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ea), //trader
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ec), //tavern
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198f7), //alchemist
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19906), //blacksmith
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19903), //jarl
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19908), //wizard
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16e3e), //church
+                }
+            },
+
+            //solitude
+            {
+                RE::TESForm::LookupByID(0x37edf),
+                {
+                    "Solitude",
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c9), //trader
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198a0), //tavern
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198d2), //alchemist
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198d8), //blacksmith
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c1), //jarl
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c5), //wizard
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x37f3e), //church
+                }
+            },
+
+            //morthal
+            {
+                RE::TESForm::LookupByID(0x939d),
+                {
+                    "Morthal",
+                    nullptr, //trader
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa62), //tavern
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa61), //alchemist
+                    nullptr, //blacksmith
+                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa66), //jarl
+                    nullptr, //wizard
+                    nullptr, //church
+                }
+            },
+
+            //dawnstar
+                    {
+                        RE::TESForm::LookupByID(0x8eb5),
+                        {
+                            "Dawnstar",
+                            nullptr, //trader
+                            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c8), //tavern
+                            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6b5), //alchemist
+                            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6be), //blacksmith
+                            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c0), //jarl
+                            nullptr, //wizard
+                            nullptr, //church
+                        }
+                    },
+
+
+            //whiterun
+    {
+        RE::TESForm::LookupByID(0x1a26f),
+        {
+            "Whiterun",
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a672), //trader
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66e), //tavern
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66d), //alchemist
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67c), //blacksmith
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a677), //jarl
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67e), //wizard
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a700), //church
+        }
+    },
+
+        };
+    }
+
+
+
+
+
+
+
+
+    RE::TESForm* get_closest_settlement()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_worldspace = player->GetWorldspace();
+        auto player_cell = player->GetParentCell();
+        auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+        
+        //if (std::size(settlements) < 2)
+
+        fill_settlements();
+
+        if (tamriel_worldspace && player_worldspace == tamriel_worldspace)
+        {
+            //check cells
+
+            float min_dist = FLT_MAX;
+            RE::TESForm* best_key = nullptr;
+
+            for (auto settlement : settlements)
+            {
+                if (settlement.first)
+                {
+                    auto key_type = settlement.first->GetFormType();
+                    auto key = (RE::TESObjectCELL*)settlement.first;
+                    if (key_type == RE::FormType::Cell)
+                    {
+                        if (player_cell)
+                        {
+                            auto distX = abs(player_cell->GetCoordinates()->worldX - key->GetCoordinates()->worldX);
+                            auto distY = abs(player_cell->GetCoordinates()->worldY - key->GetCoordinates()->worldY);
+                            auto dist = distX + distY;
+
+                            if (dist < min_dist)
+                            {
+                                min_dist = dist;
+                                best_key = key;
+                            }
+                        }
+                    }
+                }
+                
+            }
+
+            if (min_dist < 8000)
+            {
+                return best_key;
+            }
+        }
+        else
+        {
+            auto settlement_worldspace = settlements.find(player_worldspace);
+
+            if (settlement_worldspace != settlements.end())
+                return settlement_worldspace->first;
+        }
+
+        return nullptr;
+    }
+
+
+
+    std::string get_settlement_name()
+    {
+        auto key = get_closest_settlement();
+
+        if (key)
+        {
+            auto settlement = settlements.find(key);
+
+            if (settlement != settlements.end())
+            {
+                return settlement->second.settlement_name;
+            }
+        }
+
+        return "";
+    }
+
+
+    bool is_settlement_place_valid(RE::TESObjectREFR* object, int mode)
+    {
+        if (object)
+        {
+            //if (is_object_valid(object))
+            {
+                if (object->IsActor())
+                {
+                    bool is_dead = object->IsDead();
+
+                    bool not_trading = false;
+
+                    if (mode == 1 || mode == 3 || mode == 4)
+                    {
+                        auto actor = (RE::Actor*)object;
+
+                        not_trading = !actor->CanOfferServices();
+                        bool stop_here = false;
+                    }
+
+                    return !not_trading && !is_dead;
+                }
+                else
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    std::vector<MenuOption> get_interesting_places_options()
+    {
+        std::vector<MenuOption> options{};
+
+        auto key = get_closest_settlement();
+
+        if (key)
+        {
+            auto settlement = settlements.find(key);
+
+            if (settlement != settlements.end())
+            {
+                if (is_settlement_place_valid(settlement->second.trader, 1)) 
+                    options.push_back({ 1, "Trader" });
+
+                if (is_settlement_place_valid(settlement->second.tavern, 2))
+                    options.push_back({ 2, "Tavern" });
+
+                if (is_settlement_place_valid(settlement->second.alchemist, 3))
+                    options.push_back({ 3, "Alchemist" });
+
+                if (is_settlement_place_valid(settlement->second.blacksmith, 4))
+                    options.push_back({ 4, "Blacksmith" });
+
+                if (is_settlement_place_valid(settlement->second.jarl, 5))
+                    options.push_back({ 5, "Jarl" });
+
+                if (is_settlement_place_valid(settlement->second.court_wizard, 6))
+                    options.push_back({ 6, "Court Wizard" });
+
+                if (is_settlement_place_valid(settlement->second.church, 7))
+                    options.push_back({ 7, "Church" });
+
+                if (std::size(options) > 0)
+                    options.push_back({ -1, "[CANCEL]" });
+
+            }
+        }
+
+        return options;
+    }
+
+
+    bool is_in_settlement()
+    {
+        return std::size(get_interesting_places_options()) > 1;
+    }
+
+
+
+//RE::TESObjectREFR* trader;
+//RE::TESObjectREFR* tavern;
+//RE::TESObjectREFR* alchemist;
+//RE::TESObjectREFR* blacksmith;
+//RE::TESObjectREFR* jarl;
+//RE::TESObjectREFR* court_wizard;
+//RE::TESObjectREFR* church;
+
+
+
+    bool send_settlement_force = false;
+    bool settlement_request_sent = false;
+
+
+
+
+    std::pair<bool, std::string> check_interesting_places()
+    {
+        //supposed to be called near/inside of towns/cities to get a list of traders and other places to visit
+
+        std::pair<bool, std::string> result{};
+
+        auto temp_result = get_interesting_places_options();
+
+        if (std::size(temp_result) < 1)
+        {
+            result.first = false;
+            result.second = "Cannot find any available interesting places to visit";
+            return result;
+        }
+
+        //and now it should give some kind of force with options from updater
+
+        send_settlement_force = true;
+
+        result.first = true;
+        result.second = "Processing...";
+
+        return result;
+    }
+
+
+    float settlement_places_processor_timer = 0.0f;
+
+    
+    void reset_settlement()
+    {
+        settlement_places_processor_timer = 0.0f;
+        send_settlement_force = false;
+        settlement_request_sent = false;
+    }
+
+    std::pair<bool, std::string> visit_interesting_place_by_index(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        auto key = get_closest_settlement();
+
+        if (key)
+        {
+            auto settlement = settlements.find(key);
+
+            if (settlement != settlements.end())
+            {
+                switch (id)
+                {
+                case 1:
+                    if (is_settlement_place_valid(settlement->second.trader, 0))
+                    {
+                        WalkerProcessor::walk_to_object_by_refr(settlement->second.trader, 1);
+                        result.first = true;
+                        result.second = "Started walking to trader...";
+                        return result;
+                    }
+
+                    break;
+
+                case 2:
+                    if (is_settlement_place_valid(settlement->second.tavern, 0))
+                    {
+                        WalkerProcessor::walk_to_object_by_refr(settlement->second.tavern, 1);
+                        result.first = true;
+                        result.second = "Started walking to tavern...";
+                        return result;
+                    }
+                    break;
+
+                case 3:
+                    if (is_settlement_place_valid(settlement->second.alchemist, 0))
+                    {
+                        WalkerProcessor::walk_to_object_by_refr(settlement->second.alchemist, 1);
+                        result.first = true;
+                        result.second = "Started walking to alchemist...";
+                        return result;
+                    }
+                    break;
+
+                case 4:
+                    if (is_settlement_place_valid(settlement->second.blacksmith, 0))
+                    {
+                        WalkerProcessor::walk_to_object_by_refr(settlement->second.blacksmith, 1);
+                        result.first = true;
+                        result.second = "Started walking to blacksmith...";
+                        return result;
+                    }
+                    break;
+
+                case 5:
+                    if (is_settlement_place_valid(settlement->second.jarl, 0))
+                    {
+                        WalkerProcessor::walk_to_object_by_refr(settlement->second.jarl, 1);
+                        result.first = true;
+                        result.second = "Started walking to jarl...";
+                        return result;
+                    }
+                    break;
+
+                case 6:
+                    if (is_settlement_place_valid(settlement->second.court_wizard, 0))
+                    {
+                        WalkerProcessor::walk_to_object_by_refr(settlement->second.court_wizard, 1);
+                        result.first = true;
+                        result.second = "Started walking to court wizard...";
+                        return result;
+                    }
+                    break;
+
+                case 7:
+                    if (is_settlement_place_valid(settlement->second.church, 0))
+                    {
+                        WalkerProcessor::walk_to_object_by_refr(settlement->second.church, 1);
+                        result.first = true;
+                        result.second = "Started walking to church...";
+                        return result;
+                    }
+                    break;
+
+                case -1:
+                {
+                    reset_settlement();
+                    result.first = true;
+                    result.second = "Cancelled";
+                    return result;
+                }
+                    break;
+
+                default:
+                    result.first = false;
+                    result.second = "Invalid choice ID";
+                    return result;
+                }
+            }
+            else
+            {
+                result.first = true;
+                result.second = "This settlement is unavailable. Cancelling";
+                reset_settlement();
+                return result;
+            }
+        }
+        else
+        {
+            result.first = true;
+            result.second = "You are not near settlement anymore. Cancelling";
+            reset_settlement();
+            return result;
+        }
+
+
+        result.first = false;
+        result.second = "This place is unavailable right now. Choose something else";
+        return result;
+    }
+
+
+
+    void settlement_places_processor(float dtime)
+    {
+        if (settlement_places_processor_timer > 0.5f)
+        {
+            if (!WalkerProcessor::is_fighting())
+            {
+                if (send_settlement_force)
+                {
+                    if (!settlement_request_sent)
+                    {
+                        auto temp_result = get_interesting_places_options();
+
+                        if (std::size(temp_result) < 1)
+                        {
+                            reset_settlement();
+                            return;
+                        }
+
+                        std::string force_text = "You are in " + get_settlement_name() + ". Choose a place to visit";
+
+                        if (force_choice(temp_result, force_text, force_type::visit_places))
+                        {
+                            reset_settlement();
+                        }
+                    }
+                }
+            }
+            else
+                reset_settlement();
+        }
+        else
+            settlement_places_processor_timer += dtime;
+    }
+
+
+
+
+
+
+
+
     bool is_loading()
     {
         auto ui = RE::UI::GetSingleton();
@@ -5755,6 +6316,37 @@ namespace MiscThings {
 
         return result;
     }
+
+
+
+
+    bool is_carriage_driver(RE::TESObjectREFR* object)
+    {
+        if (object && object->IsActor())
+        {
+            auto actor_object = (RE::Actor*)object;
+
+            auto extra = actor_object->extraList.GetByType(RE::ExtraDataType::kAliasInstanceArray);
+            if (extra)
+            {
+                auto extra_alias_array = (RE::ExtraAliasInstanceArray*)extra;
+
+                for (auto extra_alias : extra_alias_array->aliases)
+                {
+                    if (extra_alias->alias)
+                    {
+                        std::string alias_name = extra_alias->alias->aliasName.c_str();
+
+                        if (alias_name.find("Driver") != std::string::npos)
+                            return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
 
 
 

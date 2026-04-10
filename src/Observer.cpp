@@ -1366,7 +1366,13 @@ namespace Observer {
 										{
 											std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 											if (info != "")
-												interesting_buffer.insert_or_assign(a_ref, info);
+											{
+												if (MiscThings::is_carriage_driver(a_ref))
+													send_random_context("You see: " + info, false);
+												else
+													interesting_buffer.insert_or_assign(a_ref, info);
+											}
+												
 										}
 
 									}

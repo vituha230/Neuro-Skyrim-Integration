@@ -2171,7 +2171,7 @@ namespace WalkerProcessor {
                     return false;
                 }
 
-                float threshold = 0.3f;
+                float threshold = 0.2f;
 
                 if ((runaway_mode || MiscThings::player_escaping_jail()) && !turning_around)
                     threshold = 0.05f; //runaway mode has a bit problematic pathfinding because it doesnt place target on teleport doors (unlike normal quests)
@@ -5154,6 +5154,10 @@ namespace WalkerProcessor {
                         {
                             if (!MiscThings::player_brawling() && player_actor->GetVoiceRecoveryTime() <= 0.0f)
                                 MiscThings::use_random_offensive_shout(target_ref);
+
+                            result.first = true;
+                            result.second = "You keep attacking...";
+                            return result;
                         }
 
                         result.first = true;
@@ -11211,7 +11215,7 @@ namespace WalkerProcessor {
                                 {
                                     if (!get_targeted_ref() || target_ref == get_targeted_ref())
                                     {
-                                        if (target_ref == get_targeted_ref() && is_door(target_ref) && (MiscThings::get_door_teleport(target_ref) != "") && quest_mode)
+                                        if (target_ref == get_targeted_ref() && is_door(target_ref) && (MiscThings::get_door_teleport(target_ref) != "") && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
                                         {
                                             just_teleported = true;
                                             catch_door_result = false;
@@ -12170,7 +12174,7 @@ namespace WalkerProcessor {
                                                                         return;
                                                                     }
 
-                                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode))
+                                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
                                                                         just_teleported = true;
 
                                                                 }
@@ -12530,7 +12534,7 @@ namespace WalkerProcessor {
                                                         return;
                                                     }
 
-                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode))
+                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
                                                         just_teleported = true;
                                                 }
                                                     

@@ -4,6 +4,12 @@
 #include <vector>
 
 
+
+
+
+
+
+
     struct MenuOption
     {
         int id{};
@@ -51,8 +57,8 @@
         confirm_change_quest_course,
         confirm_stealing,
         specify_quest_path,
-        confirm_attack_friend
-
+        confirm_attack_friend,
+        visit_places
     };
 
     int get_active_force();

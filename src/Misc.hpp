@@ -6,6 +6,33 @@
 namespace MiscThings {
 
 
+
+
+    struct interesting_places {
+        std::string settlement_name;
+        RE::TESObjectREFR* trader;
+        RE::TESObjectREFR* tavern;
+        RE::TESObjectREFR* alchemist;
+        RE::TESObjectREFR* blacksmith;
+        RE::TESObjectREFR* jarl;
+        RE::TESObjectREFR* court_wizard;
+        RE::TESObjectREFR* church;
+    };
+
+
+
+    bool is_carriage_driver(RE::TESObjectREFR* object);
+
+
+    bool is_in_settlement();
+
+    std::pair<bool, std::string> check_interesting_places();
+
+    void settlement_places_processor(float dtime);
+    void reset_settlement();
+    std::pair<bool, std::string> visit_interesting_place_by_index(int id);
+
+
     RE::TESObjectREFR* GetRaycastRef(RE::NiPoint3 from, RE::NiPoint3 aimVector, float distance, RE::TESObjectREFR* target = nullptr);
 
     void set_time_of_death(long long timestamp);

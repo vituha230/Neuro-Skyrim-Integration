@@ -136,7 +136,7 @@ namespace Capabilities
     {
         constexpr char Name[] = "explore";
         constexpr char Desc[] =
-            R"([WILL CANCEL CURRENT WALKING OPERATION] Walk in some direction, exploring the surroundings)";
+            R"(Walk in some direction, exploring the surroundings)";
         //constexpr char JsonSchema[] = null;
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
@@ -170,11 +170,24 @@ namespace Capabilities
     {
         constexpr char Name[] = "exit_dungeon";
         constexpr char Desc[] =
-            R"([WILL CANCEL CURRENT WALKING OPERATION] Walk towards the exit)";
+            R"(Walk towards the exit)";
         //constexpr char JsonSchema[] = null;
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
     }
+
+
+
+    namespace InterestingPlaces
+    {
+        constexpr char Name[] = "check_interesting_places";
+        constexpr char Desc[] =
+            R"(Check interesting places to visit in the area)";
+        //constexpr char JsonSchema[] = null;
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
+    }
+
 
     namespace WalkToObjectDoNothing
     {
