@@ -331,14 +331,15 @@ namespace BarterProcessor {
             return result;
         }
 
-        if (id == -2)
+        
+        //if (id == -2)
         {
-            back_to_barter_type_selection();
-            result.first = true;
-            result.second = "[Went back to barter type selection]";
-            return result;
+        //    back_to_barter_type_selection();
+         //   result.first = true;
+        //    result.second = "[Went back to barter type selection]";
+         //   return result;
         }
-
+        
 
         if (categories_list.find(id) == categories_list.end())
         {
@@ -385,12 +386,12 @@ namespace BarterProcessor {
             return result;
         }
 
-        if (pos == -2)
+        //if (pos == -2)
         {
-            back_to_barter_type_selection();
-            result.first = true;
-            result.second = "[Went back to barter type selection]";
-            return result;
+         //   back_to_barter_type_selection();
+         //   result.first = true;
+         //   result.second = "[Went back to barter type selection]";
+         //   return result;
         }
 
         if (pos == -3)
@@ -447,12 +448,12 @@ namespace BarterProcessor {
             return result;
         }
 
-        if (choice == -2)
+       // if (choice == -2)
         {
-            back_to_barter_type_selection();
-            result.first = true;
-            result.second = "[Went back to barter type selection]";
-            return result;
+           // back_to_barter_type_selection();
+          //  result.first = true;
+          //  result.second = "[Went back to barter type selection]";
+          //  return result;
         }
 
         if (choice == -3)
@@ -510,9 +511,12 @@ namespace BarterProcessor {
             return result;
         }
 
+        /*
         if (pos == -2)
         {
             //back_to_barter_type_selection();
+
+
             switch_barter_type_selection();
             result.first = true;
 
@@ -523,6 +527,8 @@ namespace BarterProcessor {
             result.second = "[Switching to " + operation + "...]";
             return result;
         }
+        */
+
 
         if (pos == -3)
         {
@@ -577,12 +583,12 @@ namespace BarterProcessor {
             }
 
 
-            if (item_choice == -2)
+           // if (item_choice == -2)
             {
-                switch_barter_type_selection();
-                return;
+           //     switch_barter_type_selection();
+           //     return;
             }
-            else
+          //  else
             {
                 if (items_list_valid)
                 {
@@ -768,10 +774,10 @@ namespace BarterProcessor {
 
         if (!(type == barter_type::buy && get_vendor_gold() == 0))
         {
-            if (type == barter_type::sell)
-                result.push_back({ -2, "[SWITCH TO BUYING]" });
-            else
-                result.push_back({ -2, "[SWITCH TO SELLING]" });
+            //if (type == barter_type::sell)
+            //    result.push_back({ -2, "[SWITCH TO BUYING]" });
+           // else
+             //   result.push_back({ -2, "[SWITCH TO SELLING]" });
         }
 
 
