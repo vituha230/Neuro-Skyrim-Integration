@@ -11151,11 +11151,18 @@ namespace WalkerProcessor {
 
                     if (start_attacking)
                     {
-                        if (attack_target(dtime))
+
+                        if ((is_melee_weapon(get_current_active_hand()) || !MiscThings::has_something_equipped(get_current_active_hand())) && !close_enough())
                         {
                             attacking_done = true;
                             start_attacking = false;
                         }
+                        else
+                            if (attack_target(dtime))
+                            {
+                                attacking_done = true;
+                                start_attacking = false;
+                            }
                     }
                     else
                         bool stop_here = false;
