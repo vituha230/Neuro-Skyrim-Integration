@@ -119,7 +119,7 @@ namespace BookProcessor {
 		std::string raw_descr = get_book_text();
 		MiscThings::clean_controls_from_string(&raw_descr);
 
-		std::string result = "You are reading a " + book_or_note + ": " + get_book_name() + "...\n[" + MiscThings::fix_book_description(raw_descr) + "]";
+		std::string result = "You are reading a " + book_or_note + " in Skyrim: " + get_book_name() + "...\n[" + MiscThings::fix_book_description(raw_descr) + "]";
 
 
 		return result;

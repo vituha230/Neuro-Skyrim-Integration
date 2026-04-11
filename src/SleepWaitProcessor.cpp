@@ -197,7 +197,7 @@ namespace SleepWaitProcessor {
 		}
 		
 
-		std::string result = "You are in " + sleep_or_wait + " menu. Choose how many hours to " + action + ". Current date and time: " + get_current_time() + ". You can send -1 to cancel " + sleep_or_wait + " menu.";
+		std::string result = "You are in " + sleep_or_wait + " menu in Skyrim. Choose how many hours to " + action + ". Current date and time: " + get_current_time() + ". You can send -1 to cancel " + sleep_or_wait + " menu.";
 
 		return result;
 	}

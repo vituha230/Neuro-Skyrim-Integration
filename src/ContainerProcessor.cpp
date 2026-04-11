@@ -362,7 +362,7 @@ std::string get_force_message()
 					if (container_mode == RE::ContainerMenu::ContainerMode::kSteal)
 						action = "You are stealing from ";
 
-					result = action + name + ". Select item to take. ";
+					result = action + name + " in Skyrim. Select item to take. ";
 				}
 				
 			}

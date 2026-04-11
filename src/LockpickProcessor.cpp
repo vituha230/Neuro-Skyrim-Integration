@@ -421,7 +421,7 @@ namespace LockpickProcessor {
 							if (lock_level_text != "")
 							{
 
-								if (force_choice({}, "You are lockpicking. You have " + get_picks_amount() + " lockpicks. " + lock_level_text + ". Choose angle of pick to try. Valid range: from 0 to 180. You can send -1 to quit lockpicking. ", force_type::lockpick_angle))
+								if (force_choice({}, "You are lockpicking in Skyrim. You have " + get_picks_amount() + " lockpicks. " + lock_level_text + ". Choose angle of pick to try. Valid range: from 0 to 180. You can send -1 to quit lockpicking. ", force_type::lockpick_angle))
 								{
 									/*
 									auto test_new_input3 = RE::ControlMap::GetSingleton();

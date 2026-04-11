@@ -1067,29 +1067,29 @@ std::string get_force_message(bool category)
 					std::string menu_name = var1.GetString();
 
 					if (menu_name == "Smelter: Choose an item to create")
-						result = "You are at smelter. Select item to craft. ";
+						result = "You are at smelter in Skyrim. Select item to craft. ";
 
 					if (menu_name == "Tanning Rack: Choose an item to create")
-						result = "You are at tanning rack. Select item to craft. ";
+						result = "You are at tanning rack in Skyrim. Select item to craft. ";
 
 					if (menu_name == "Weapon Smithing: Choose an item to improve")
-						result = "You are at grindstone. Select item to improve. ";
+						result = "You are at grindstone in Skyrim. Select item to improve. ";
 
 					if (menu_name == "Armor Smithing: Choose an item to improve")
-						result = "You are at workbench. Select item to improve. ";
+						result = "You are at workbench in Skyrim. Select item to improve. ";
 
 					if (menu_name == "Cooking Pot: Choose an item to create")
 						if (category)
-							result = "You are at cooking pot. Select item category. ";
+							result = "You are at cooking pot in Skyrim. Select item category. ";
 						else
-							result = "You are at cooking pot. Select item to cook. ";
+							result = "You are at cooking pot in Skyrim. Select item to cook. ";
 
 
 					if (result == "") //blacksmith forge
 						if (category)
-							result = "You are at blacksmith forge. Select item category. ";
+							result = "You are at blacksmith forge in Skyrim. Select item category. ";
 						else
-							result = "You are at blacksmith forge. Select item to craft. ";
+							result = "You are at blacksmith forge in Skyrim. Select item to craft. ";
 				}
 
 

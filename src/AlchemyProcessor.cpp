@@ -583,7 +583,7 @@ void processor(float dtime)
 								if (!alchemy_request_sent)
 								{
 									
-									if (force_choice(get_ingredient_options(), "You are in alchemy menu. Choose 2 or 3 ingredients to combine. Ingredients must be different.", force_type::alchemy_ingredients))
+									if (force_choice(get_ingredient_options(), "You are in alchemy menu in Skyrim. Choose 2 or 3 ingredients to combine. Ingredients must be different.", force_type::alchemy_ingredients))
 										alchemy_request_sent = true;
 								}
 								else

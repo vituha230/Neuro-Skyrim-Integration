@@ -613,7 +613,7 @@ namespace DialogueProcessor {
 
                                     no_options_counter_time = 0.0f;
 
-                                    if (force_choice(options, "You are in dialogue. Choose a line to say", force_type::dialogue_line))
+                                    if (force_choice(options, "You are in dialogue in Skyrim. Choose a line to say", force_type::dialogue_line))
                                     {
                                         old_dialogue = *topic_manager->dialogueList->front();
                                         pause_time = 0.0f;

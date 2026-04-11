@@ -787,10 +787,10 @@ namespace RaceProcessor {
 		std::string result = "";
 
 		switch (category) {
-		case (0):result = "You are creating your character. Select your character's race from provided options"; break;
-		case (1):result = "You are creating your character. Select your character's gender from provided options"; break;
-		case (2):result = "You are creating your character. Select your character's look preset from provided options"; break;
-		case (3):result = "You are creating your character. Give your character's name"; break;
+		case (0):result = "You are creating your character in Skyrim. Select your character's race from provided options"; break;
+		case (1):result = "You are creating your character in Skyrim. Select your character's gender from provided options"; break;
+		case (2):result = "You are creating your character in Skyrim. Select your character's look preset from provided options"; break;
+		case (3):result = "You are creating your character in Skyrim. Give your character's name"; break;
 		}
 
 		return result;

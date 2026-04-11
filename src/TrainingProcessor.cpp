@@ -272,7 +272,7 @@ namespace TrainingProcessor {
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::TrainingMenu>();
 		
-		std::string result = "[You are in training menu. Choose action]";
+		std::string result = "[You are in training menu in Skyrim. Choose action]";
 		if (menu)
 		{
 

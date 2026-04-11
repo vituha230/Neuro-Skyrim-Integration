@@ -2220,7 +2220,7 @@ namespace BarterProcessor {
                     {
                         if (false && !barter_category_request_sent)
                         {
-                            if (force_choice(get_barter_categories(), "You are bartering. " + get_gold_text() + ". Choose item category to " + get_barter_type_text(), force_type::barter_category))
+                            if (force_choice(get_barter_categories(), "You are bartering in Skyrim. " + get_gold_text() + ". Choose item category to " + get_barter_type_text(), force_type::barter_category))
                             {
                                 missing_category_detected = false;
                                 last_cursor_move = 0;
@@ -2351,7 +2351,7 @@ namespace BarterProcessor {
                                             if (!barter_item_request_sent && !item_confirming && !item_confirmed)
                                             {
 
-                                                if (force_choice(get_barter_items(), "You are bartering. " + get_gold_text() + ". Choose item to " + get_barter_type_text() + ". " + get_items_we_cant_buy_text(), force_type::barter_item_array))
+                                                if (force_choice(get_barter_items(), "You are bartering in Skyrim. " + get_gold_text() + ". Choose item to " + get_barter_type_text() + ". " + get_items_we_cant_buy_text(), force_type::barter_item_array))
                                                 {
                                                     missing_item_detected = false;
                                                     last_cursor_move = 0;
@@ -2418,7 +2418,7 @@ namespace BarterProcessor {
                                                                 if (!slider_request_sent)
                                                                 {
 
-                                                                    if (force_choice({}, "You are bartering. " + get_gold_text() + ". Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
+                                                                    if (force_choice({}, "You are bartering in Skyrim. " + get_gold_text() + ". Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
                                                                         ". Valid range: from " + std::to_string(0) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity))
                                                                         slider_request_sent = true;
                                                                 }
@@ -2625,7 +2625,7 @@ namespace BarterProcessor {
                         }
                         else
                         {
-                            if (force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering. " + get_gold_text() + ". Choose barter type", force_type::barter_type_force))
+                            if (force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering in Skyrim. " + get_gold_text() + ". Choose barter type", force_type::barter_type_force))
                                 barter_type_request_sent = true;
                         }
 
@@ -2683,7 +2683,7 @@ namespace BarterProcessor {
                     {
                         if (false && !barter_category_request_sent)
                         {
-                            if (force_choice(get_barter_categories(), "You are bartering. " + get_gold_text() + ". Choose item category to " + get_barter_type_text(), force_type::barter_category))
+                            if (force_choice(get_barter_categories(), "You are bartering in Skyrim. " + get_gold_text() + ". Choose item category to " + get_barter_type_text(), force_type::barter_category))
                             {
                                missing_category_detected = false;
                                 last_cursor_move = 0;
@@ -2813,7 +2813,7 @@ namespace BarterProcessor {
                                             if (!barter_item_request_sent && !item_confirming && !item_confirmed)
                                             {
 
-                                                if (force_choice(get_barter_items(), "You are bartering. " + get_gold_text() + ". Choose item to " + get_barter_type_text() + ". " + get_items_we_cant_buy_text(), force_type::barter_item_array))
+                                                if (force_choice(get_barter_items(), "You are bartering in Skyrim. " + get_gold_text() + ". Choose item to " + get_barter_type_text() + ". " + get_items_we_cant_buy_text(), force_type::barter_item_array))
                                                 {
                                                     missing_item_detected = false;
                                                     last_cursor_move = 0;
@@ -2880,7 +2880,7 @@ namespace BarterProcessor {
                                                                 if (!slider_request_sent)
                                                                 {
 
-                                                                    if (force_choice({}, "You are bartering. " + get_gold_text() + ". Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
+                                                                    if (force_choice({}, "You are bartering in Skyrim. " + get_gold_text() + ". Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
                                                                         ". Valid range: from " + std::to_string(0) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity))
                                                                         slider_request_sent = true;
                                                                 }
@@ -3087,7 +3087,7 @@ namespace BarterProcessor {
                         }
                         else
                         {
-                            if (force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering. " + get_gold_text() + ". Choose barter type", force_type::barter_type_force))
+                            if (force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering in Skyrim. " + get_gold_text() + ". Choose barter type", force_type::barter_type_force))
                                 barter_type_request_sent = true;
                         }
 
