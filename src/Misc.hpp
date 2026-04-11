@@ -258,6 +258,7 @@ namespace MiscThings {
 
     float armor_damage_difference(RE::TESBoundObject* item);
 
+    bool player_has_fishing_rod();
 
     RE::TESForm* get_hand_contents(bool right);
     bool is_self_healing_spell(bool right);

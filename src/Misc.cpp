@@ -18,7 +18,33 @@ namespace MiscThings {
 
 
 
+    bool player_has_fishing_rod()
+    {
+        auto inventory = get_filtered_inventory();
 
+        std::vector<RE::TESForm*> fishing_poles{};
+
+        fishing_poles.push_back(RE::TESObjectWEAP::LookupByID(0x05000850));
+        fishing_poles.push_back(RE::TESObjectWEAP::LookupByID(0x0500084d));
+        fishing_poles.push_back(RE::TESObjectWEAP::LookupByID(0x0500084e));
+        fishing_poles.push_back(RE::TESObjectWEAP::LookupByID(0x0500084f));
+
+
+        for (auto& [item, data] : inventory)
+        {
+            if (item)
+            {
+                auto form = item->GetFormID();
+                for (auto pole : fishing_poles)
+                    if (pole && form == pole->GetFormID())
+                        return true;
+
+            }
+
+        }
+
+        return false;
+    }
 
 
 

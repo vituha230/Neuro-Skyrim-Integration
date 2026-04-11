@@ -1428,7 +1428,11 @@ namespace Observer {
 												
 												if (info != "" && MiscThings::is_object_valid(a_ref))
 												{
-													if (name.find("Fishing Supplies") != std::string::npos && !WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path())
+
+													bool fiftyfifty = ((float)std::rand() / RAND_MAX) > 0.5f;
+													auto riverwood_fishing = RE::TESObjectREFR::LookupByID(0x0500081e);
+
+													if (fiftyfifty && name.find("Fishing Supplies") != std::string::npos && !WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path() && (MiscThings::player_has_fishing_rod() || a_ref == riverwood_fishing))
 													{
 														WalkerProcessor::look_at_object_by_refr(a_ref, true, 1.0f);
 														send_random_context("You see: " + info, false); 
