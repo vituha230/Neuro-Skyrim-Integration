@@ -7510,10 +7510,11 @@ namespace WalkerProcessor {
             {
 
                 bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
+                bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
 
                 bool dont_use_right = false;
 
-                dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless);
+                dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
 
 
                 attack_action = dont_use_right;
@@ -7791,7 +7792,7 @@ namespace WalkerProcessor {
                             //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
                             //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
 
-                            dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless);
+                            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless));
 
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
@@ -8047,7 +8048,7 @@ namespace WalkerProcessor {
                             //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
                             //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
 
-                            dont_use_right |= (has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless);
+                            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
 
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
@@ -11513,7 +11514,7 @@ namespace WalkerProcessor {
                                     else
                                     {
                                         //if (use_last_point_of_last_path || current_path_point >= (int)std::size(path) || (close_enough() && !using_custom_path) || MiscThings::is_intro())
-                                        if (looking_mode || MiscThings::is_intro() || use_last_point_of_last_path || (std::size(path) == 0) || current_path_point >= (int)std::size(path) || (close_enough() && (!using_custom_path || custom_with_close_enough_confirm) && (current_path_point > (int)std::size(path) - 5)))
+                                        if (looking_mode || MiscThings::is_intro() || use_last_point_of_last_path || (std::size(path) == 0) || current_path_point >= (int)std::size(path) || (close_enough() && (!using_custom_path || custom_with_close_enough_confirm)))// && (current_path_point > (int)std::size(path) - 5)))
                                         {
                                             dead_point_time = 0.0f;
                                             if (reset_after_walk)
