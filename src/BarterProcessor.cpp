@@ -1337,8 +1337,13 @@ namespace BarterProcessor {
                         for (int i = 0; i < 30; i++)
                         {
                             std::string full_path = path_root + "Entry" + std::to_string(i);
+
+                            RE::GFxValue entry;
+
                             if (menu->uiMovie->GetVariable(&var1, full_path.c_str()))
                             {
+                                menu->uiMovie->GetVariable(&entry, full_path.c_str()); //copy for later
+
                                 if (menu->uiMovie->GetVariable(&var1, (full_path + ".itemIndex").c_str()))
                                 {
                                     //got indexed item
@@ -1379,7 +1384,13 @@ namespace BarterProcessor {
                                                 data.weight = weight;
                                                 data.damage = damage;
                                                 data.armor = armor;
-                                                items_list.insert({ result.id, data });
+
+
+                                                bool equipped = menu->itemList->GetSelectedItem()->data.GetEquipState();
+
+                                                if (!equipped)
+                                                    items_list.insert({ result.id, data });
+                                                
                                             }
 
                                         }
