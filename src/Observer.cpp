@@ -3091,6 +3091,7 @@ namespace Observer {
 
 				RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
 
+				bool had_something_better = false;
 				for (auto& [item, data] : inventory)
 				{
 					if (!MiscThings::is_inventory_item_in_the_list(item))
@@ -3099,6 +3100,15 @@ namespace Observer {
 
 						if (info == "")
 							continue;
+
+
+						if (!had_something_better) //so it doesnt put this caption on every armor piece if we were naked and returned all our inventory from some chest for example. will be re-advised later anyway
+							if (not_first_inventory_info && MiscThings::armor_damage_difference(item) > 0)
+							{
+								info += " - Better than your current gear";
+								had_something_better = true;
+							}
+								
 
 						new_info += info + "\n";
 					}

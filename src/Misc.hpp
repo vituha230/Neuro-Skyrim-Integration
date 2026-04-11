@@ -23,6 +23,7 @@ namespace MiscThings {
 
     bool is_carriage_driver(RE::TESObjectREFR* object);
 
+    std::string get_best_items_list();
 
     bool is_in_settlement();
 
@@ -251,9 +252,11 @@ namespace MiscThings {
 
 
     bool is_inventory_item_in_the_list(RE::TESBoundObject* item);
-    std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item);
+    std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item, bool compact = false);
     std::map<int, item_data>* get_p_inventory_items_list();
     int remove_item_from_inventory_list(RE::TESBoundObject* item);
+
+    float armor_damage_difference(RE::TESBoundObject* item);
 
 
     RE::TESForm* get_hand_contents(bool right);

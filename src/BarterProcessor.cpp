@@ -1368,7 +1368,6 @@ namespace BarterProcessor {
                                                         armor = subvar.GetString();
 
 
-
                                                 data.name = name;
                                                 data.price = get_price_selected_item();
                                                 data.weight = weight;
@@ -1811,6 +1810,147 @@ namespace BarterProcessor {
 
 
 
+    void fill_items_list_new(float dtime)
+    {
+        
+        RE::GFxValue var1;
+        RE::UI* ui = RE::UI::GetSingleton();
+        if (ui)
+            if (const auto menu = ui->GetMenu<RE::BarterMenu>(); menu)
+                if (menu->uiMovie)
+                    if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.InventoryLists_mc._ItemsList"))
+                    {
+                        auto item_list = menu->itemList->items;
+
+                        int i = -1;
+                        for (auto item : item_list)
+                        {
+                            i++;
+
+                            RE::GFxValue entry = item->obj;
+
+                            auto owner = RE::TESObjectREFR::LookupByHandle(item->data.owner);
+
+                            auto player = RE::PlayerCharacter::GetSingleton();
+
+                            auto player_ref = player->AsReference();
+
+                            if (type == barter_type::sell && owner.get() != player_ref)
+                                continue;
+
+                            if (type == barter_type::buy && owner.get() == player_ref)
+                                continue;
+
+
+                            std::vector<std::string> names{};
+
+                            entry.VisitMembers([&](const char* name, const RE::GFxValue& a_value)
+                                {
+                                    std::string name_str = name;
+                                    std::string name_orig = name;
+
+                                    if (!a_value.IsNull())
+                                    {
+                                        if (a_value.IsObject())
+                                            name_str += "{obj}";
+                                        else
+                                        {
+                                            if (a_value.IsArray())
+                                                name_str += "[" + std::to_string(a_value.GetArraySize()) + "]";
+                                            if (a_value.IsNumber())
+                                                name_str += " = " + std::to_string(a_value.GetNumber());
+                                            if (a_value.IsBool())
+                                                name_str += " = " + std::to_string(a_value.GetBool());
+                                            if (a_value.IsString())
+                                            {
+                                                std::string string_val = a_value.GetString();
+                                                name_str += " = " + string_val;
+                                            }
+                                        }
+                                    }
+                                    else
+                                        int isnullwtf = 1;
+
+                                    names.push_back(name_str);
+
+                                });
+
+                            bool stop_here = false;
+
+
+
+
+
+
+                            RE::GFxValue item_index_var;
+                            //if (entry.GetMember("clipIndex", &item_index_var))
+                            {
+                                //got indexed item
+                                //if (!item_index_var.IsNull() && item_index_var.IsNumber())
+                                {
+
+
+                                    MenuOption result{};
+
+                                    result.id = i;//item_index_var.GetNumber();
+                                    std::string name = "";
+
+                                    RE::GFxValue textField;
+                                    RE::GFxValue textField_text;
+
+                                    //if (entry.GetMember("textField", &textField))
+                                    if (entry.GetMember("text", &textField_text))
+                                        if (!textField_text.IsNull() && textField_text.IsString())
+                                            name = textField_text.GetString();
+
+                                    if (name != "")
+                                    {
+                                        //if (result.id == get_item_selected_index())
+                                        {
+                                            item_data data{};
+                                            std::string weight = "";
+                                            std::string damage = "";
+                                            std::string armor = "";
+
+                                            RE::GFxValue subvar;
+
+                                            if (menu->uiMovie->GetVariable(&subvar, "_root.Menu_mc.ItemCard_mc.ItemWeightText.text"))
+                                                if (!subvar.IsNull() && subvar.IsString())
+                                                    weight = subvar.GetString();
+                                            if (menu->uiMovie->GetVariable(&subvar, "_root.Menu_mc.ItemCard_mc.WeaponDamageValue.text"))
+                                                if (!subvar.IsNull() && subvar.IsString())
+                                                    damage = subvar.GetString();
+                                            if (menu->uiMovie->GetVariable(&subvar, "_root.Menu_mc.ItemCard_mc.ApparelArmorValue.text"))
+                                                if (!subvar.IsNull() && subvar.IsString())
+                                                    armor = subvar.GetString();
+
+
+
+                                            data.name = name;
+                                            data.price = get_price_selected_item();
+                                            data.weight = weight;
+                                            data.damage = damage;
+                                            data.armor = armor;
+                                            items_list.insert({ result.id, data });
+                                        }
+
+                                    }
+                                }
+
+                        }
+                        }
+                    }
+
+
+
+        items_list_valid = true;
+    }
+
+
+
+
+
+
     void fill_items_list(float dtime)
     {
         switch (way) {
@@ -2014,14 +2154,16 @@ namespace BarterProcessor {
     {
         if (!block_set)
         {
-            set_universal_block(0.5f);
+            //set_universal_block(0.5f);
             block_set = true;
         }
         else
         {
             item_confirmed = false;
             block_set = false;
-            back_to_items();
+
+            //if (std::size(item_choice_array) <= 0)
+                back_to_items();
             refresh_items_list = true;
             process_next_item_after_refresh = true;
         }
@@ -2045,7 +2187,473 @@ namespace BarterProcessor {
 
     float barter_processor_timer = 0;
 
+
+
     void processor(float dtime)
+    {
+
+        RE::UI* ui = RE::UI::GetSingleton();
+
+        in_barter = ui->IsMenuOpen(RE::BarterMenu::MENU_NAME);
+
+        auto menu = ui->GetMenu<RE::BarterMenu>();
+
+        if (true)//barter_processor_timer > 0.02f)
+        {
+            barter_processor_timer = 0;
+
+            if (in_barter)
+            {
+                WalkerProcessor::reset_walker();
+
+                if (barter_type_defined)
+                {
+                    if (false && !categories_list_valid)
+                        if (!filling_categories)
+                        {
+                            setup_fill_category_list();
+                            filling_categories = true;
+                        }
+                        else
+                            fill_categories_list(0.02f);
+                    else
+                    {
+                        if (false && !barter_category_request_sent)
+                        {
+                            if (force_choice(get_barter_categories(), "You are bartering. " + get_gold_text() + ". Choose item category to " + get_barter_type_text(), force_type::barter_category))
+                            {
+                                missing_category_detected = false;
+                                last_cursor_move = 0;
+                                barter_category_request_sent = true;
+                            }
+                        }
+                        else
+                        {
+                            if (true || category_choice_valid)
+                            {
+                                if (type == barter_type::sell) //no more categories
+                                    category_choice = 11;
+                                else
+                                    category_choice = 0;
+
+
+                                if (type == barter_type::sell && get_vendor_gold() == 0)
+                                {
+                                    send_random_context("Vendor has no gold left", false);
+                                    switch_barter_type_selection();
+                                    return;
+                                }
+
+                                category_choice_valid = true;
+
+                                if (get_category_selected_index() != category_choice && !item_confirming && !item_confirmed)
+                                {
+                                    if (!missing_category_detected)
+                                    {
+                                        move_cursor_to_barter_category(category_choice);
+                                        if (move_cursor_timeout0 > 15.0f)
+                                        {
+                                            barter_reset();
+                                            return;
+                                        }
+                                        else
+                                            move_cursor_timeout0 += 0.02f;
+                                    }
+                                    else
+                                    {
+                                        move_cursor_timeout0 = 0.0f;
+                                        barter_reset_categories_selection();
+                                    }
+
+                                }
+                                else
+                                {
+                                    move_cursor_timeout0 = 0.0f;
+
+                                    //if (get_selected_category() != category_choice && !item_confirming && !item_confirmed) 
+                                    if (!inside_of_category() && !item_confirming && !item_confirmed)
+                                        confirm();
+                                    else
+                                    {   //NOW ITEMS
+
+
+
+                                        if (refresh_items_list)
+                                        {
+                                            bool stop_here = false;
+                                            refresh_items_list = false;
+                                            items_list_valid = false;
+                                        }
+
+
+                                        if (!items_list_valid)
+                                            if (!filling_items)
+                                            {
+                                                setup_fill_item_list();
+                                                filling_items = true;
+                                            }
+                                            else
+                                            {
+                                                fill_items_list(0.02f);
+
+                                                if (move_cursor_timeout1 > 15.0f)
+                                                {
+                                                    barter_reset();
+                                                    return;
+                                                }
+                                                else
+                                                    move_cursor_timeout1 += 0.02f;
+                                            }
+
+                                        else
+                                        {
+                                            move_cursor_timeout1 = 0.0f;
+                                            filling_items = false;
+                                            if (!item_confirming && !item_confirmed)
+                                            {
+                                                int new_items_list_size = std::size(items_list);//menu->itemList->entryList.GetArraySize();
+
+                                                if (new_items_list_size < old_item_list_size)
+                                                {
+                                                    for (auto& a_choice : item_choice_array)
+                                                    {
+                                                        if (a_choice > 0 && a_choice > last_item_choice)
+                                                            a_choice -= 1;
+                                                    }
+
+                                                    quantity_was_specified = false;
+                                                }
+                                                else
+                                                {
+                                                    if (old_item_list_size != -1 && !quantity_was_specified)
+                                                    {
+                                                        //process_next_item_after_refresh = false;
+                                                        quantity_was_specified = false;
+                                                    }
+                                                }
+
+
+
+                                                old_item_list_size = new_items_list_size;
+                                            }
+
+
+                                            if (process_next_item_after_refresh)
+                                            {
+                                                process_next_item_after_refresh = false;
+                                                process_next_item();
+                                                return;
+                                            }
+
+
+
+
+                                            if (!barter_item_request_sent && !item_confirming && !item_confirmed)
+                                            {
+
+                                                if (force_choice(get_barter_items(), "You are bartering. " + get_gold_text() + ". Choose item to " + get_barter_type_text() + ". " + get_items_we_cant_buy_text(), force_type::barter_item_array))
+                                                {
+                                                    missing_item_detected = false;
+                                                    last_cursor_move = 0;
+                                                    barter_item_request_sent = true;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (item_choice_valid)
+                                                {
+                                                    int selected_index = get_item_selected_index();
+                                                    if (selected_index != pos_to_id(item_choice) && !item_confirmed && !item_confirming)
+                                                    {
+                                                        if (!missing_item_detected)
+                                                        {
+                                                            move_cursor_to_barter_item(pos_to_id(item_choice));
+
+                                                            if (move_cursor_timeout2 > 15.0f)
+                                                            {
+                                                                barter_reset();
+                                                                return;
+                                                            }
+                                                            else
+                                                                move_cursor_timeout2 += 0.02f;
+                                                        }
+                                                        else
+                                                        {
+                                                            move_cursor_timeout2 = 0.0f;
+                                                            back_to_items();
+                                                        }
+
+                                                    }
+                                                    else
+                                                    {
+                                                        move_cursor_timeout2 = 0.0f;
+                                                        if (!old_item_choice_text_valid)
+                                                        {
+                                                            old_item_choice_text = get_item_text_by_id(pos_to_id(item_choice));
+                                                            old_item_choice_text_valid = true;
+                                                        }
+
+                                                        if (!item_confirmed) //TODO: replace with actual check
+                                                        {
+                                                            if (detect_item_barter_result(false, false))
+                                                            {
+                                                                item_confirming = false;
+                                                                item_confirmed = true;
+                                                                //RE::DebugMessageBox("SOLD");//this works but it gives message box with OK button. not what i need
+                                                            }
+                                                            else
+                                                            {
+                                                                //leftclick();
+                                                                old_item_list_size = std::size(items_list);
+                                                                confirm();
+                                                                item_confirming = true;
+                                                                //set_universal_block(0.3f);
+                                                            }
+
+                                                        }
+                                                        else
+                                                        {
+                                                            if (quantity_slider_active())
+                                                            {
+                                                                if (!slider_request_sent)
+                                                                {
+
+                                                                    if (force_choice({}, "You are bartering. " + get_gold_text() + ". Choose amount of " + get_item_text_by_id(pos_to_id(item_choice)) + " to " + get_barter_type_text() +
+                                                                        ". Valid range: from " + std::to_string(0) + " to " + std::to_string(get_slider_max()), force_type::barter_quantity))
+                                                                        slider_request_sent = true;
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (slider_choice_valid)
+                                                                    {
+
+                                                                        if (slider_choice != 0 && get_slider_pos() != slider_choice)
+                                                                            move_slider_to_pos(slider_choice);
+                                                                        else
+                                                                        {
+                                                                            if (slider_choice == 0)
+                                                                            {
+                                                                                slider_confirmed = true;
+                                                                                cancel();
+                                                                                finish_transaction();
+                                                                                return;
+                                                                            }
+
+
+                                                                            if (!slider_confirmed)
+                                                                            {
+                                                                                if (detect_item_barter_result(true, false))
+                                                                                {
+                                                                                    slider_confirming = false;
+                                                                                    slider_confirmed = true;
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    confirm();
+                                                                                    slider_confirming = true;
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+
+
+                                                                                if (std::string test = vendor_not_enough_gold_message(); test != "")
+                                                                                {
+                                                                                    if (!vendor_not_enough_gold_request_sent)
+                                                                                    {
+
+                                                                                        if (force_choice({ {0, "No"}, {1, "Yes"}, {-1, "[QUIT BARTER]"} }, test + " Confirm?", force_type::barter_vendor_not_enough_gold))
+                                                                                            vendor_not_enough_gold_request_sent = true;
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (vendor_not_enough_gold_choice_valid)
+                                                                                        {
+                                                                                            if (vendor_not_enough_gold_choice == 1)
+                                                                                            {
+                                                                                                if (!vendor_not_enough_gold_confirmed)
+                                                                                                {
+                                                                                                    if (detect_item_barter_result(false, true))
+                                                                                                    {
+                                                                                                        vendor_not_enough_gold_confirming = false;
+                                                                                                        vendor_not_enough_gold_confirmed = true;
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        vendor_not_enough_gold_confirming = true;
+                                                                                                        confirm();
+                                                                                                    }
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    finish_transaction();
+                                                                                                }
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                if (!vendor_not_enough_gold_confirmed)
+                                                                                                {
+                                                                                                    if (detect_cancel_not_enough_gold_barter_result())
+                                                                                                    {
+                                                                                                        vendor_not_enough_gold_confirming = false;
+                                                                                                        vendor_not_enough_gold_confirmed = true;
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        vendor_not_enough_gold_confirming = true;
+                                                                                                        cancel(); //how to detect this?
+                                                                                                    }
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    //BACK TO SLIDER?
+                                                                                                    //back_to_slider(); //this is actually useless, the game itself cancels the slider
+                                                                                                    back_to_items();
+
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    finish_transaction();
+                                                                                }
+
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                if (std::string test = vendor_not_enough_gold_message(); test != "")
+                                                                {
+                                                                    if (!vendor_not_enough_gold_request_sent)
+                                                                    {
+
+                                                                        if (force_choice({ {0, "No"}, {1, "Yes"}, {-1, "[QUIT BARTER]"} }, test + " Confirm?", force_type::barter_vendor_not_enough_gold))
+                                                                            vendor_not_enough_gold_request_sent = true;
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (vendor_not_enough_gold_choice_valid)
+                                                                        {
+                                                                            if (vendor_not_enough_gold_choice == 1)
+                                                                            {
+                                                                                if (!vendor_not_enough_gold_confirmed)
+                                                                                {
+                                                                                    if (detect_item_barter_result(false, true))
+                                                                                    {
+                                                                                        vendor_not_enough_gold_confirming = false;
+                                                                                        vendor_not_enough_gold_confirmed = true;
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        vendor_not_enough_gold_confirming = true;
+                                                                                        confirm();
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    finish_transaction();
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (!vendor_not_enough_gold_confirmed)
+                                                                                {
+                                                                                    if (detect_item_barter_result(false, true))
+                                                                                    {
+                                                                                        vendor_not_enough_gold_confirming = false;
+                                                                                        vendor_not_enough_gold_confirmed = true;
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        vendor_not_enough_gold_confirming = true;
+                                                                                        cancel();
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    finish_transaction();
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    finish_transaction();
+
+                                                                    //back_to_items();
+                                                                    //refresh_items_list = true;
+                                                                    //process_next_item_after_refresh = true;
+                                                                }
+
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    ;//todo: check for how long it remains invalid. resent request for item if invalid for too long
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                ;//todo: check for how long it remains invalid. resent request for category if invalid for too long
+                            }
+                        }
+                    }
+
+                }
+                else
+                {
+                    if (!barter_type_request_sent)
+                    {
+
+                        if (get_vendor_gold() == 0)
+                        {
+                            barter_type_request_sent = true;
+                            set_barter_type(1);
+                        }
+                        else
+                        {
+                            if (force_choice({ {0, "Sell"},{1, "Buy"}, {-1, "[QUIT BARTER]"} }, "You are bartering. " + get_gold_text() + ". Choose barter type", force_type::barter_type_force))
+                                barter_type_request_sent = true;
+                        }
+
+
+                    }
+
+                }
+
+            }
+            else
+            {
+                barter_reset();
+            }
+        }
+        else
+            barter_processor_timer += dtime;
+
+
+
+    }
+
+
+
+
+
+
+
+    void processor_old(float dtime)
     {
 
         RE::UI* ui = RE::UI::GetSingleton();

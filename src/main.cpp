@@ -3,9 +3,10 @@
 
 //crucial:
 
-//TODO figure out how to make them put on good armor
 
 //TODO staff and scroll usage
+
+//TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
@@ -108,6 +109,48 @@ void reset_poke()
 {
     neuro::reset_poke();
 }
+
+
+bool is_something_registered()
+{
+    return neuro::is_something_registered();
+}
+
+
+
+
+bool get_visit_places_action_status()
+{
+    std::string name = Capabilities::InterestingPlaces::Name;
+
+    return neuro::get_action_status(name);
+}
+
+
+
+bool register_visit_interesting()
+{
+    neurosdk_action actions[] = { Capabilities::InterestingPlaces::Action};
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
+
+bool unregister_visit_interesting()
+{
+    const char* action_names[] = { Capabilities::InterestingPlaces::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
+
 
 
 
@@ -1140,7 +1183,7 @@ namespace Hooks {
                             else
                             {
                                 bool right_is_useless = !MiscThings::has_something_equipped(true) || (MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true)) || (WalkerProcessor::has_ranged_weapon_equipped(true) && WalkerProcessor::no_ammo());
-                                bool left_is_useless = !MiscThings::has_something_equipped(true) || (MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true));
+                                bool left_is_useless = !MiscThings::has_something_equipped(false) || (MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false));
 
                                 if (right_is_useless && left_is_useless && !MiscThings::is_serving_jail() && !MiscThings::is_intro() && !MiscThings::is_intro2())
                                 {
@@ -1152,8 +1195,16 @@ namespace Hooks {
 
 
                         if (MiscThings::is_in_settlement())
-                            advice += ". You are in settlement, you can use check_interesting_places action to visit trader, alchemist, or other useful NPC if you want";
+                            advice += ". You are in a settlement, you can use check_interesting_places action to visit trader, alchemist, or other useful NPC if you want";
                         
+
+
+                        std::string better_gear = MiscThings::get_best_items_list();
+
+                        if (better_gear != "")
+                            advice += ". You have good gear that is not equipped, you can do use_inventory_items action to equip them: " + better_gear;
+
+
 
                         if (WalkerProcessor::walker_active())
                             send_random_context("[Current location: " + location_name + advice + "]");

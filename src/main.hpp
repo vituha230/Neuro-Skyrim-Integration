@@ -61,6 +61,11 @@ bool unregister_walk_and_interact();
 
 void reset_poke();
 
+bool get_visit_places_action_status();
+bool register_visit_interesting();
+bool unregister_visit_interesting();
+bool is_something_registered();
+
 
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);

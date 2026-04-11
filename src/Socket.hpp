@@ -51,6 +51,7 @@ namespace Capabilities
             R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the selected option", "type": "integer" } }, "required": ["id"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+
     } // namespace SelectChoiceOption
 
 
@@ -198,6 +199,7 @@ namespace Capabilities
             R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the object. ", "type": "integer" } }, "required": ["id"] })";//
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
+
     }
 
 
@@ -624,6 +626,11 @@ namespace neuro {
     void add_message_to_delayed_queue(std::string message);
     
     void reset_poke();
+
+    
+
+    bool get_action_status(std::string action_name);
+    bool is_something_registered();
 
 }
 

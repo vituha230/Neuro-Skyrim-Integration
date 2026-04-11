@@ -17,6 +17,20 @@ namespace MiscThings {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //form is settlement/cell. for worlds check if player is inside, for cells check if player is within some range
     std::map<RE::TESForm*, interesting_places> settlements{};
 
@@ -240,7 +254,7 @@ namespace MiscThings {
                 
             }
 
-            if (min_dist < 8000)
+            if (min_dist < 9000)
             {
                 return best_key;
             }
@@ -257,6 +271,136 @@ namespace MiscThings {
     }
 
 
+    bool is_in_settlement()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_worldspace = player->GetWorldspace();
+        auto player_cell = player->GetParentCell();
+        auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+
+        //if (std::size(settlements) < 2)
+
+        fill_settlements();
+
+        if (tamriel_worldspace && player_worldspace == tamriel_worldspace)
+        {
+            //check cells
+
+            float min_dist = FLT_MAX;
+            RE::TESForm* best_key = nullptr;
+
+            for (auto settlement : settlements)
+            {
+                if (settlement.first)
+                {
+                    auto key_type = settlement.first->GetFormType();
+                    auto key = (RE::TESObjectCELL*)settlement.first;
+                    if (key_type == RE::FormType::Cell)
+                    {
+                        if (player_cell)
+                        {
+                            auto distX = abs(player_cell->GetCoordinates()->worldX - key->GetCoordinates()->worldX);
+                            auto distY = abs(player_cell->GetCoordinates()->worldY - key->GetCoordinates()->worldY);
+                            auto dist = distX + distY;
+
+                            if (dist < min_dist)
+                            {
+                                min_dist = dist;
+                                best_key = key;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            if (min_dist < 7000)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            auto settlement_worldspace = settlements.find(player_worldspace);
+
+            if (settlement_worldspace->first && settlement_worldspace != settlements.end())
+                return true;
+
+        }
+
+
+        return false;
+    }
+
+
+    bool not_in_settlement_anymore()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_worldspace = player->GetWorldspace();
+        auto player_cell = player->GetParentCell();
+        auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+
+        //if (std::size(settlements) < 2)
+
+        fill_settlements();
+
+        if (tamriel_worldspace && player_worldspace == tamriel_worldspace)
+        {
+            //check cells
+
+            float min_dist = FLT_MAX;
+            RE::TESForm* best_key = nullptr;
+
+            for (auto settlement : settlements)
+            {
+                if (settlement.first)
+                {
+                    auto key_type = settlement.first->GetFormType();
+                    auto key = (RE::TESObjectCELL*)settlement.first;
+                    if (key_type == RE::FormType::Cell)
+                    {
+                        if (player_cell)
+                        {
+                            auto distX = abs(player_cell->GetCoordinates()->worldX - key->GetCoordinates()->worldX);
+                            auto distY = abs(player_cell->GetCoordinates()->worldY - key->GetCoordinates()->worldY);
+                            auto dist = distX + distY;
+
+                            if (dist < min_dist)
+                            {
+                                min_dist = dist;
+                                best_key = key;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            if (min_dist < 10000)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            auto settlement_worldspace = settlements.find(player_worldspace);
+
+            if (settlement_worldspace->first && settlement_worldspace != settlements.end())
+                return false;
+
+        }
+
+
+        return true;
+    }
+
+
+
+
+
+
 
     std::string get_settlement_name()
     {
@@ -266,7 +410,7 @@ namespace MiscThings {
         {
             auto settlement = settlements.find(key);
 
-            if (settlement != settlements.end())
+            if (settlement->first && settlement != settlements.end())
             {
                 return settlement->second.settlement_name;
             }
@@ -350,10 +494,7 @@ namespace MiscThings {
     }
 
 
-    bool is_in_settlement()
-    {
-        return std::size(get_interesting_places_options()) > 1;
-    }
+    
 
 
 
@@ -537,6 +678,27 @@ namespace MiscThings {
     {
         if (settlement_places_processor_timer > 0.5f)
         {
+
+            
+            if (is_in_settlement())
+            {
+                if (!get_visit_places_action_status() && get_active_force() == -1 && !is_intro() && !is_intro2() && is_something_registered())
+                {
+                    std::string advice = "[You are in a settlement, you can use check_interesting_places action to visit trader, alchemist, or other useful NPC if you want]";
+                    register_visit_interesting();
+
+                    send_random_context(advice, false);
+                }
+            }
+            else
+            {
+                if (get_visit_places_action_status() && get_active_force() == -1 && not_in_settlement_anymore())
+                    unregister_visit_interesting();
+            }
+
+
+
+
             if (!WalkerProcessor::is_fighting())
             {
                 if (send_settlement_force)
@@ -7210,6 +7372,410 @@ namespace MiscThings {
 
 
 
+
+    RE::BGSEquipSlot* get_weapon_slot(RE::TESBoundObject* item)
+    {
+        if (item->IsArmor())
+        {
+            auto armor = (RE::TESObjectARMO*)item;
+
+            return armor->GetEquipSlot();
+        }
+        else
+        {
+            if (item->IsWeapon())
+            {
+                auto weapon = (RE::TESObjectWEAP*)item;
+
+                return weapon->GetEquipSlot();
+            }
+        }
+
+        return nullptr;
+    }
+
+
+    RE::BGSBipedObjectForm::BipedObjectSlot get_armor_slot(RE::TESBoundObject* item)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto actor_equip = RE::ActorEquipManager::GetSingleton();
+
+
+        if (item && player && actor_equip)
+        {
+            //apparel
+            if (item->IsArmor())
+            {
+                auto armor = (RE::TESObjectARMO*)item;
+
+                auto slot = armor->GetSlotMask();
+
+                return slot;
+            }
+        }
+        return (RE::BGSBipedObjectForm::BipedObjectSlot)0;
+    }
+
+
+
+    RE::TESForm* get_weapon_slot_contents(RE::BGSEquipSlot* slot)
+    {
+
+        if (slot)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player)
+                return player->GetEquippedObjectInSlot(slot);
+        }
+
+        return nullptr;
+    }
+
+
+    RE::TESForm* get_armor_slot_contents(RE::BGSBipedObjectForm::BipedObjectSlot slot)
+    {
+
+        if ((int)slot)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player)
+                return player->GetWornArmor(slot);
+        }
+
+        return nullptr;
+    }
+
+
+
+
+    float armor_damage_difference(RE::TESBoundObject* item)
+    {
+        if (item)
+        {
+            if (item->IsArmor())
+            {
+                auto slot = get_armor_slot(item);
+
+                if ((int)slot != -1)
+                {
+                    auto new_armor = (RE::TESObjectARMO*)item;
+
+                    auto new_armor_val = new_armor->GetArmorRating();
+
+                    float current_armor_val = 0.0f;
+
+                    auto current_armor = (RE::TESObjectARMO*)get_armor_slot_contents(slot);
+
+                    if (current_armor)
+                    {
+                        if (current_armor->IsArmor())
+                        {
+                            current_armor_val = current_armor->GetArmorRating();
+                        }
+                    }
+
+                    if (slot == RE::BGSBipedObjectForm::BipedObjectSlot::kShield && (!current_armor || has_spell_equipped(false)))
+                    {
+                        return 0; //dont advice shield if we dont have shield in left or if we have spell there
+                    }
+
+                    return new_armor_val - current_armor_val;
+                }
+            }
+            else
+            {
+                if (item->IsWeapon())
+                {
+                    auto slot = get_weapon_slot(item);
+
+                    if (slot)
+                    {
+                        auto new_weapon = (RE::TESObjectWEAP*)item;
+
+                        auto new_weapon_damage = new_weapon->GetAttackDamage();
+
+                        if (new_weapon->IsTwoHandedAxe() || new_weapon->IsTwoHandedSword() || new_weapon->IsBow() || new_weapon->IsCrossbow())
+                            new_weapon_damage /= 2.0f;
+
+
+                        float current_weapon_damage = 0.0f;
+
+                        auto current_weapon = (RE::TESObjectWEAP*)get_weapon_slot_contents(slot);
+
+                        if (current_weapon)
+                        {
+                            if (current_weapon->IsWeapon())
+                            {
+                                current_weapon_damage = current_weapon->GetAttackDamage();
+
+                                if (current_weapon->IsTwoHandedAxe() || current_weapon->IsTwoHandedSword() || current_weapon->IsBow() || current_weapon->IsCrossbow())
+                                    current_weapon_damage /= 2.0f;
+                            }
+                            else
+                            {
+                                auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+                                auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+
+                                if (slot == right_slot && has_spell_equipped(true))
+                                    return 0;
+
+                                if (slot == left_slot && has_spell_equipped(false))
+                                    return 0;
+                            }
+                        }
+
+                        return new_weapon_damage - current_weapon_damage;
+                    }
+                }
+            }
+        }
+
+        return 0;
+    }
+
+
+
+
+    std::string get_best_weapon_for_slot(RE::BGSEquipSlot* slot)
+    {
+        if (slot)
+        {
+            if (!inventory_valid)
+                auto temp = GetInventory();
+
+            if (!inventory_valid)
+                return "";
+
+            auto p_inventory = get_p_inventory_items_list();
+
+            std::map<RE::BGSEquipSlot*, std::pair<std::string, float>> best_weapon{};
+
+            for (auto inventory_entry : *p_inventory)
+            {
+                if (inventory_entry.second.amount > 0 && inventory_entry.second.object)
+                {
+                    if (inventory_entry.second.object->IsWeapon())
+                    {
+                        float benefit = armor_damage_difference(inventory_entry.second.object);
+
+                        if (benefit > 0.0f)
+                        {
+                            auto this_slot = get_weapon_slot(inventory_entry.second.object);
+
+                            if (this_slot)
+                            {
+                                auto current_best = best_weapon.find(this_slot);
+
+                                std::string item_info = insert_item_into_inventory_list_and_get_info(inventory_entry.second.object, true);
+
+                                if (current_best == best_weapon.end())
+                                    best_weapon.insert({ this_slot, {item_info, benefit} });
+                                else
+                                {
+                                    float current_benefit = current_best->second.second;
+
+                                    if (benefit > current_benefit)
+                                    {
+                                        current_best->second.first = item_info;
+                                        current_best->second.second = benefit;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+            }
+
+
+            auto best_item = best_weapon.find(slot);
+
+            if (best_item != best_weapon.end())
+                return best_item->second.first;
+        }
+        return "";
+    }
+
+
+    std::string get_best_armor_for_slot(RE::BGSBipedObjectForm::BipedObjectSlot slot)
+    {
+        if ((int)slot)
+        {
+            if (!inventory_valid)
+                auto temp = GetInventory();
+
+            if (!inventory_valid)
+                return "";
+
+            auto p_inventory = get_p_inventory_items_list();
+
+            std::map<RE::BGSBipedObjectForm::BipedObjectSlot, std::pair<std::string, float>> best_armor{};
+
+            for (auto inventory_entry : *p_inventory)
+            {
+                if (inventory_entry.second.amount > 0 && inventory_entry.second.object)
+                {
+
+                    float benefit = armor_damage_difference(inventory_entry.second.object);
+
+                    if (benefit > 0.0f)
+                    {
+                        auto this_slot = get_armor_slot(inventory_entry.second.object);
+
+                        if ((int)this_slot)
+                        {
+                            auto current_best = best_armor.find(this_slot);
+
+                            std::string item_info = insert_item_into_inventory_list_and_get_info(inventory_entry.second.object, true);
+
+                            if (current_best == best_armor.end())
+                                best_armor.insert({ this_slot, {item_info, benefit} });
+                            else
+                            {
+                                float current_benefit = current_best->second.second;
+
+                                if (benefit > current_benefit)
+                                {
+                                    current_best->second.first = item_info;
+                                    current_best->second.second = benefit;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+
+
+            auto best_item = best_armor.find(slot);
+
+            if (best_item != best_armor.end())
+                return best_item->second.first;
+        }
+        return "";
+    }
+
+
+
+
+
+
+    std::string get_best_items_list()
+    {
+
+        std::string result = "";
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto actor_equip = RE::ActorEquipManager::GetSingleton();
+
+
+        std::vector<std::string> best_items{};
+
+        if (player && actor_equip)
+        {
+
+            //weapons
+            auto actor_process = player->currentProcess;
+            auto equipped_list = actor_process->equippedForms;
+
+            std::string weapon_slot_last_info = "";
+            for (auto equipped_item : equipped_list)
+            {
+                std::string best_weapon_for_slot = get_best_weapon_for_slot(equipped_item.slot);
+
+                if (best_weapon_for_slot != weapon_slot_last_info)
+                {
+                    best_items.push_back(best_weapon_for_slot);
+                }
+                weapon_slot_last_info = best_weapon_for_slot;
+            }
+
+
+            //apparel
+
+            if (!inventory_valid)
+                auto temp = GetInventory();
+
+            if (!inventory_valid)
+                return "";
+
+            auto p_inventory = get_p_inventory_items_list();
+
+
+
+            std::map<RE::BGSBipedObjectForm::BipedObjectSlot, std::pair<RE::TESBoundObject*, float>> best_armor{};
+
+
+            for (auto inventory_entry : *p_inventory)
+            {
+                if (inventory_entry.second.amount > 0 && inventory_entry.second.object)
+                {
+
+                    float benefit = armor_damage_difference(inventory_entry.second.object);
+
+                    if (benefit > 0.0f)
+                    {
+                        auto this_slot = get_armor_slot(inventory_entry.second.object);
+
+                        if ((int)this_slot)
+                        {
+                            auto current_best = best_armor.find(this_slot);
+
+                            if (current_best == best_armor.end())
+                                best_armor.insert({ this_slot, {inventory_entry.second.object, benefit} });
+                            else
+                            {
+                                float current_benefit = current_best->second.second;
+
+                                if (benefit > current_benefit)
+                                {
+                                    current_best->second.first = inventory_entry.second.object;
+                                    current_best->second.second = benefit;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (auto best_gear_piece : best_armor)
+            {
+                std::string item_info = insert_item_into_inventory_list_and_get_info(best_gear_piece.second.first, true);
+
+                if (item_info != "")
+                    best_items.push_back(item_info);
+            }
+
+            bool first = true;
+            for (auto best_item : best_items)
+            {
+                if (best_item != "")
+                {
+                    if (!first)
+                        result += "; " + best_item;
+                    else
+                        result += best_item;
+
+                    first = false;
+                }
+            }
+
+        }
+        return result;
+    }
+
+
+
+
+
+
+
+
+
+
+
     void reset_misc()
     {
     
@@ -8938,7 +9504,7 @@ namespace MiscThings {
 
 
 
-    std::string get_inventory_item_full_info(RE::TESBoundObject* item)
+    std::string get_inventory_item_full_info(RE::TESBoundObject* item, bool compact = false)
     {
 
         std::string result = "";
@@ -9016,8 +9582,9 @@ namespace MiscThings {
 
                     std::string heavy = "";
 
-                    if (armor->IsHeavyArmor())
-                        heavy = "Heavy, ";
+                    if (!compact)
+                        if (armor->IsHeavyArmor())
+                            heavy = "Heavy, ";
 
 
                     auto armor_val = armor->armorRating / 100;
@@ -9033,13 +9600,16 @@ namespace MiscThings {
                 }
 
 
+                if (!compact)
+                {
+                    if (is_equipped(item))
+                        actions += "[Equipped" + hand_text + "]";// [Can unequip] ";
+                    else
+                        actions += "[Not equipped" + hand_text + "]";// [Can unequip] ";
 
-                if (is_equipped(item))
-                    actions += "[Equipped" + hand_text + "]";// [Can unequip] ";
-                else
-                    actions += "[Not equipped" + hand_text + "]";// [Can unequip] ";
-
-                actions += stats;
+                    actions += stats;
+                }
+    
             }
             else
             {
@@ -9117,7 +9687,7 @@ namespace MiscThings {
     }
 
 
-    std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item)
+    std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item, bool compact)
     {
         std::string result = "";
 
@@ -9131,7 +9701,7 @@ namespace MiscThings {
             if (inventory_entry.second.object == item)
             {
 
-                std::string info = get_inventory_item_full_info(item);
+                std::string info = get_inventory_item_full_info(item, compact);
 
                 if (info == "")
                     return result; //nothing
@@ -9165,7 +9735,7 @@ namespace MiscThings {
             if (data)
                 inv_entry = data.get();
 
-            std::string info = get_inventory_item_full_info(item);
+            std::string info = get_inventory_item_full_info(item, compact);
 
             if (info == "" || quantity <= 0)
                 return result;

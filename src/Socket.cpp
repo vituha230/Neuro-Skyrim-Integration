@@ -23,6 +23,44 @@ std::string greet_phrase = "You are playing Skyrim, an action RPG. Use commands 
 long long timestamp_greet_sent = 0;
 
 
+std::map<std::string, bool> actions_status{};
+
+
+void set_action_status(std::string action_name, bool status)
+{
+    auto action_status = actions_status.find(action_name);
+
+    if (action_status != actions_status.end())
+        action_status->second = status;
+    else
+    {
+        actions_status.insert({ action_name, status });
+    }
+}
+
+
+bool neuro::get_action_status(std::string action_name)
+{
+    auto action_status = actions_status.find(action_name);
+    if (action_status != actions_status.end())
+        return action_status->second;
+
+    return false;
+}
+
+
+bool neuro::is_something_registered()
+{
+    return something_is_registered;
+}
+
+
+
+void clear_actions_status()
+{
+    actions_status.clear();
+}
+
 
 
 neurosdk_action ActionsList[] = {
@@ -344,6 +382,14 @@ bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
     if (!(size == 1 && (action_name == force_name_1 || action_name == force_name_2 || action_name == force_name_3 || action_name == force_name_4))) //exclude forces
         something_is_registered = true;
 
+
+    for (int i = 0; i < size; i++)
+    {
+        set_action_status(actions[i].name, true);
+    }
+
+
+
     return true;
 }
 
@@ -368,6 +414,13 @@ bool neuro::NeuroSocket::unregister_actions(const char** action_names, int size)
         return false;
     }
 
+
+    for (int i = 0; i < size; i++)
+    {
+        set_action_status(action_names[i], false);
+    }
+
+
     return true;
 }
 
@@ -391,7 +444,15 @@ bool neuro::NeuroSocket::unregister_all()
     }
 
     if (ActionsCountNoForces <= 0)
+    {
+        for (int i = 0; i < ActionsCountNoForces; i++)
+        {
+            set_action_status(action_names[i], false);
+        }
+
         return true;
+    }
+        
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsUnregister,
                                          .value = {.actions_unregister = {.action_names = action_names,
@@ -403,6 +464,12 @@ bool neuro::NeuroSocket::unregister_all()
     }
 
     something_is_registered = false;
+
+
+    for (int i = 0; i < ActionsCountNoForces; i++)
+    {
+        set_action_status(action_names[i], false);
+    }
 
     return true;
 }
@@ -427,7 +494,14 @@ bool neuro::NeuroSocket::unregister_all2()
     }
 
     if (ActionsCountNoForces2 <= 0)
+    {
+        for (int i = 0; i < ActionsCountNoForces2; i++)
+        {
+            set_action_status(action_names[i], false);
+        }
         return true;
+    }
+        
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsUnregister,
                                          .value = {.actions_unregister = {.action_names = action_names,
@@ -436,6 +510,11 @@ bool neuro::NeuroSocket::unregister_all2()
     if (const auto status = neurosdk_context_send(&m_context, &capabilityMessage); status != NeuroSDK_None)
     {
         return false;
+    }
+
+    for (int i = 0; i < ActionsCountNoForces2; i++)
+    {
+        set_action_status(action_names[i], false);
     }
 
     return true;
@@ -482,6 +561,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     int unbound_quest_stage = threshold_quest->GetCurrentStageID();
 
     int active_force = get_active_force();
+
 
 
     if (active_force == -1)
@@ -628,6 +708,8 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
 
 
+
+
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
                                          .value = {.actions_register = {.actions = actions_to_register,
                                                                         .actions_len = action_pos}} };
@@ -636,6 +718,16 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
     {
         return false;
     }
+
+
+
+    for (auto action_to_register : actions_to_register)
+    {
+        if (action_to_register.name)
+            set_action_status(action_to_register.name, true);
+    }
+
+
 
 
     std::string delayed_context = "";
