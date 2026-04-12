@@ -4400,6 +4400,7 @@ namespace WalkerProcessor {
 
         if (MiscThings::is_dragon(target_ref) && player_pos.GetDistance(target_pos) > 30000.0f && !quest_mode)
         {
+            do_delayed_poke();
             reset_walker();
             return false;
         }
@@ -6203,6 +6204,7 @@ namespace WalkerProcessor {
                                                     reset_walker();
                                                     result.first = false;
                                                     result.second = "[This quest has no target to walk to... You need to investigate items in your inventory (" + actual_target_name + ")]";
+                                                    do_delayed_poke();
                                                     return result;
 
                                                 }
@@ -10901,6 +10903,7 @@ namespace WalkerProcessor {
                             }
                             else
                             {
+                                do_delayed_poke();
                                 reset_walker();
                                 return;
                             }
@@ -11157,8 +11160,11 @@ namespace WalkerProcessor {
                     {
                         if (target_is_too_high())
                         {
-                            if (MiscThings::raycastable(target_ref, 50000.0f, false))
-                                lock_camera_onto_target(target_ref, dtime);
+                            if (MiscThings::raycastable(target_ref, 50000.0f, false) || !target_ref->IsActor())
+                            {
+                                if (lock_camera_onto_target(target_ref, dtime))
+                                    reset_walker();
+                            }
 
                             return;
                         }

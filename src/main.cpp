@@ -105,6 +105,14 @@ std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 
 
 
+
+void do_delayed_poke()
+{
+    neuro::do_delayed_poke();
+}
+
+
+
 void reset_poke()
 {
     neuro::reset_poke();

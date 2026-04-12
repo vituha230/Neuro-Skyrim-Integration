@@ -66,6 +66,7 @@ bool register_visit_interesting();
 bool unregister_visit_interesting();
 bool is_something_registered();
 
+void do_delayed_poke();
 
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);

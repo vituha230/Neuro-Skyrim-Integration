@@ -840,6 +840,13 @@ float delayed_poke_time = 0.0f;
 bool make_delayed_poke = false;
 
 
+void neuro::do_delayed_poke()
+{
+    make_delayed_poke = true;
+}
+
+
+
 void neuro::reset_poke()
 {
     time_no_commands = 0.0f;
