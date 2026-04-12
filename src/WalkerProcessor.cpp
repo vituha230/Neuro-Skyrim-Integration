@@ -2174,7 +2174,25 @@ namespace WalkerProcessor {
                 float threshold = 0.2f;
 
                 if ((runaway_mode || MiscThings::player_escaping_jail()) && !turning_around)
-                    threshold = 0.05f; //runaway mode has a bit problematic pathfinding because it doesnt place target on teleport doors (unlike normal quests)
+                    threshold = 0.023f; //runaway mode has a bit problematic pathfinding because it doesnt place target on teleport doors (unlike normal quests)
+
+                if (target_ref && !turning_around)
+                {
+                    //auto target_cell = target_ref->GetParentCell();
+                    
+                    auto player = RE::PlayerCharacter::GetSingleton();
+                    auto player_worldspace = player->GetWorldspace();
+                    auto target_worldspace = target_ref->GetWorldspace();
+
+                    auto player_cell = player->GetParentCell();
+                    auto target_cell = target_ref->GetParentCell();
+
+                    if ((target_worldspace != player_worldspace) || (!player_worldspace && target_cell != player_cell))
+                    {
+                        threshold = 0.023f;
+                    }
+                }
+
 
                 if (last_targeted_ref == targeted_ref)
                 {

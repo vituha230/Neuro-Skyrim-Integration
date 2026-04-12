@@ -596,6 +596,7 @@ namespace MiscThings {
                         WalkerProcessor::walk_to_object_by_refr(settlement->second.trader, 1);
                         result.first = true;
                         result.second = "Started walking to trader...";
+                        register_allowed_actions();
                         return result;
                     }
 
@@ -607,6 +608,7 @@ namespace MiscThings {
                         WalkerProcessor::walk_to_object_by_refr(settlement->second.tavern, 1);
                         result.first = true;
                         result.second = "Started walking to tavern...";
+                        register_allowed_actions();
                         return result;
                     }
                     break;
@@ -617,6 +619,7 @@ namespace MiscThings {
                         WalkerProcessor::walk_to_object_by_refr(settlement->second.alchemist, 1);
                         result.first = true;
                         result.second = "Started walking to alchemist...";
+                        register_allowed_actions();
                         return result;
                     }
                     break;
@@ -627,6 +630,7 @@ namespace MiscThings {
                         WalkerProcessor::walk_to_object_by_refr(settlement->second.blacksmith, 1);
                         result.first = true;
                         result.second = "Started walking to blacksmith...";
+                        register_allowed_actions();
                         return result;
                     }
                     break;
@@ -637,6 +641,7 @@ namespace MiscThings {
                         WalkerProcessor::walk_to_object_by_refr(settlement->second.jarl, 1);
                         result.first = true;
                         result.second = "Started walking to jarl...";
+                        register_allowed_actions();
                         return result;
                     }
                     break;
@@ -647,6 +652,7 @@ namespace MiscThings {
                         WalkerProcessor::walk_to_object_by_refr(settlement->second.court_wizard, 1);
                         result.first = true;
                         result.second = "Started walking to court wizard...";
+                        register_allowed_actions();
                         return result;
                     }
                     break;
@@ -657,6 +663,7 @@ namespace MiscThings {
                         WalkerProcessor::walk_to_object_by_refr(settlement->second.church, 1);
                         result.first = true;
                         result.second = "Started walking to church...";
+                        register_allowed_actions();
                         return result;
                     }
                     break;
@@ -666,6 +673,7 @@ namespace MiscThings {
                     reset_settlement();
                     result.first = true;
                     result.second = "Cancelled";
+                    register_allowed_actions();
                     return result;
                 }
                     break;
@@ -680,6 +688,7 @@ namespace MiscThings {
             {
                 result.first = true;
                 result.second = "This settlement is unavailable. Cancelling";
+                register_allowed_actions();
                 reset_settlement();
                 return result;
             }
@@ -688,6 +697,7 @@ namespace MiscThings {
         {
             result.first = true;
             result.second = "You are not near settlement anymore. Cancelling";
+            register_allowed_actions();
             reset_settlement();
             return result;
         }
@@ -695,6 +705,7 @@ namespace MiscThings {
 
         result.first = false;
         result.second = "This place is unavailable right now. Choose something else";
+        register_allowed_actions();
         return result;
     }
 
@@ -740,6 +751,8 @@ namespace MiscThings {
                         }
 
                         std::string force_text = "You are in " + get_settlement_name() + ". Choose a place to visit";
+
+                        unregister_all_actions();
 
                         if (force_choice(temp_result, force_text, force_type::visit_places))
                         {
