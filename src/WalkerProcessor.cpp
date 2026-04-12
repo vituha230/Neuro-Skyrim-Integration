@@ -6160,8 +6160,10 @@ namespace WalkerProcessor {
                                     {
                                         RE::ObjectRefHandle quest_ref_handle{};
                                         target->GetTrackingRef(quest_ref_handle, quest_entry.quest); //try tracked
+                                        //target->GetTargetRef(quest_ref_handle, false, quest_entry.quest); //no tracked - try actual target
                                         if (!quest_ref_handle)
                                         {
+                                            //target->GetTrackingRef(quest_ref_handle, quest_entry.quest); //try tracked
                                             target->GetTargetRef(quest_ref_handle, false, quest_entry.quest); //no tracked - try actual target
                                         }
                                         else
