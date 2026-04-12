@@ -899,6 +899,9 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
     }
 
 
+    if (have_any_menus_open)
+        WalkerProcessor::reset_inactive_timer();
+
 
     if (make_delayed_poke)
     {

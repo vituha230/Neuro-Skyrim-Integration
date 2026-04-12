@@ -2779,7 +2779,7 @@ class MyHook {
 
                         if (autolook_at_speakers_on_afk)
                         {
-                            if (WalkerProcessor::get_walker_inactive_time() > 4.0f && MiscThings::raycastable(speaker, 5000.0f, false) && !WalkerProcessor::walker_active())
+                            if (WalkerProcessor::get_walker_inactive_time() > 4.0f && MiscThings::raycastable(speaker, 5000.0f, false) && !WalkerProcessor::walker_active() && !MiscThings::have_force_only_menu_open())
                             {
                                 WalkerProcessor::look_at_object_by_refr(speaker);
                             }

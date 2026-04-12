@@ -130,6 +130,10 @@ namespace Observer {
 
 	std::string old_furniture_name = "";
 
+	float brawl_weapon_restore_timer = 0.0f;
+	RE::TESForm* left_hand_pre_brawl = nullptr;
+	RE::TESForm* right_hand_pre_brawl = nullptr;
+
 
 
 	void reset_quest_puzzles()
@@ -901,6 +905,12 @@ namespace Observer {
 		object_cleanup_timer = 0.0f;
 
 		dont_inform_inventory = false;
+
+
+		brawl_weapon_restore_timer = 0.0f;
+		left_hand_pre_brawl = nullptr;
+		right_hand_pre_brawl = nullptr;
+
 	}
 
 	
@@ -3081,6 +3091,9 @@ namespace Observer {
 	
 
 
+
+
+
 	void inventory_monitor(float dtime)
 	{
 
@@ -3090,6 +3103,109 @@ namespace Observer {
 		{
 			if (inventory_monitor_timer > 0.5f)
 			{
+				inventory_monitor_timer = 0.0f;
+
+				//brawl fists monitor. want automatically reequip old weapons after brawl is over
+				if (MiscThings::player_brawling() && get_active_force() == -1) //this only checks if we have brawl fists equipped. so it works even after brawl
+				{
+					auto attackers = MiscThings::get_player_attackers();
+
+					//fun part starts when we got no non-brawl-fists weapons equipped. i guess then we just unequip them and let player decide what to wear since all notifiers will now see player having no weapons and not brawling
+					if (std::size(attackers) <= 0 && !WalkerProcessor::is_fighting())
+					{
+						if (brawl_weapon_restore_timer > 5.0f)
+						{
+							brawl_weapon_restore_timer = 0.0f;
+
+							//restore old weapons
+
+							auto player_equip = RE::ActorEquipManager::GetSingleton();
+							auto player = RE::PlayerCharacter::GetSingleton();
+							auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+							auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+
+							player_equip->UnequipObject(player, (RE::TESBoundObject*)MiscThings::get_hand_contents(false));
+							player_equip->UnequipObject(player, (RE::TESBoundObject*)MiscThings::get_hand_contents(false));
+
+							if (left_hand_pre_brawl)
+								if (left_hand_pre_brawl->GetFormType() == RE::FormType::Weapon && left_hand_pre_brawl->GetFormID() != 0x1f4)
+								{
+									if (player->GetItemCount((RE::TESBoundObject*)left_hand_pre_brawl) > 0)
+										player_equip->EquipObject(player, (RE::TESBoundObject*)left_hand_pre_brawl, nullptr, 1, left_slot);
+								}
+								else
+									if (left_hand_pre_brawl->GetFormType() == RE::FormType::Spell)
+										if (MiscThings::player_has_spell((RE::SpellItem*)left_hand_pre_brawl))
+											player_equip->EquipSpell(player, (RE::SpellItem*)left_hand_pre_brawl, left_slot);
+											
+								
+
+							if (right_hand_pre_brawl)
+								if (right_hand_pre_brawl->GetFormType() == RE::FormType::Weapon && right_hand_pre_brawl->GetFormID() != 0x1f4)
+								{
+									if (player->GetItemCount((RE::TESBoundObject*)right_hand_pre_brawl) > 0)
+										player_equip->EquipObject(player, (RE::TESBoundObject*)right_hand_pre_brawl, nullptr, 1, right_slot);
+								}
+								else
+									if (right_hand_pre_brawl->GetFormType() == RE::FormType::Spell)
+										if (MiscThings::player_has_spell((RE::SpellItem*)right_hand_pre_brawl))
+											player_equip->EquipSpell(player, (RE::SpellItem*)right_hand_pre_brawl, right_slot);
+										
+
+						}
+						else
+							brawl_weapon_restore_timer += 0.5f;
+					}
+					else
+						brawl_weapon_restore_timer = 0.0f;
+				}
+				else
+				{
+					brawl_weapon_restore_timer = 0.0f;
+
+					if (!MiscThings::player_brawling())
+					{
+						//remember current weapons
+
+						left_hand_pre_brawl = nullptr;
+						right_hand_pre_brawl = nullptr;
+
+
+						if (MiscThings::has_spell_equipped(false))
+						{
+							RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(false);
+
+							if (spell && spell->GetFormType() == RE::FormType::Spell)
+								if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+									left_hand_pre_brawl = (RE::TESForm*)spell;
+						}
+						else
+							left_hand_pre_brawl = MiscThings::get_hand_contents(false);
+
+
+						if (MiscThings::has_spell_equipped(true))
+						{
+							RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(true);
+
+							if (spell && spell->GetFormType() == RE::FormType::Spell)
+								if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+									right_hand_pre_brawl = (RE::TESForm*)spell;
+						}
+						else
+							right_hand_pre_brawl = MiscThings::get_hand_contents(true);
+
+						bool stop_here = false;
+					}
+					
+					
+
+				}
+					
+
+
+
+
+
 				/////// ITEMS ADDED
 				std::string new_info = "";
 

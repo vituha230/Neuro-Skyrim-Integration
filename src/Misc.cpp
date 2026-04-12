@@ -8878,11 +8878,6 @@ namespace MiscThings {
     }
 
 
-    
-
-
-
-
 
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id)
     {
@@ -10870,7 +10865,50 @@ namespace MiscThings {
     }
 
 
+    std::pair<bool, std::string> equip_spell_by_refr(RE::SpellItem* spell)
+    {
 
+        std::pair<bool, std::string> result{};
+
+        if (MiscThings::is_intro() || MiscThings::is_intro2())
+        {
+            result.first = false;
+            result.second = "Cannot use spells right now. ";
+            return result;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)(player->AsReference());
+
+
+
+        if (std::size(spells) <= 0)
+        {
+            auto get_spells_result = get_available_spells();
+            //send_random_context("Available spells: " + get_spells_result.second);
+        }
+
+        int id = -1;
+        for (auto spell_from_list : spells)
+        {
+            if (spell_from_list.second.spell == spell)
+            {
+                id = spell_from_list.first;
+                break;
+            }
+
+            if (spell_from_list.second.shout == (RE::TESShout*)spell)
+            {
+                id = spell_from_list.first;
+                break;
+            }
+        }
+
+        if (id != -1)
+            return equip_spell_by_index(id);
+        else
+            return { false, "You dont have this spell" };
+    }
 
 
 
