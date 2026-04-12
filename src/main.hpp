@@ -36,7 +36,7 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
 void unregister_all_actions();
 void unregister_all_actions2();
 
-void register_allowed_actions();
+void register_allowed_actions(float bonus_pause = 0.0f);
 bool register_unlock_shout_action();
 bool unregister_look_action();
 bool register_get_objects_around();

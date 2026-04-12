@@ -3660,6 +3660,10 @@ namespace WalkerProcessor {
     bool cast_pathfinding(float dtime)
     {
 
+        if (!is_something_registered() && !using_custom_path)
+            return false;
+
+
         //cast_immidiately();
         //return true;
 
@@ -8980,6 +8984,14 @@ namespace WalkerProcessor {
 
     bool detect_stuck(float dtime)
     {
+
+        if (!is_something_registered() && !using_custom_path)
+        {
+            time_stuck = 0.0f;
+            return false;
+        }
+
+
         bool result = false;
 
         auto player = RE::PlayerCharacter::GetSingleton();

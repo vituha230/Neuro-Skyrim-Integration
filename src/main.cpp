@@ -193,10 +193,10 @@ void unregister_all_actions2()
 }
 
 
-void register_allowed_actions()
+void register_allowed_actions(float bonus_pause)
 {
     restore_actions = true;
-    restore_actions_timer = 0.0f;
+    restore_actions_timer = 0.0f - bonus_pause;
     //m_neuroSocket->register_allowed_actions();
 }
 
@@ -1106,7 +1106,7 @@ namespace Hooks {
 
                 in_game = true;
 
-                register_allowed_actions();
+                register_allowed_actions(2.0f);
 
                 auto player = RE::PlayerCharacter::GetSingleton();
 
