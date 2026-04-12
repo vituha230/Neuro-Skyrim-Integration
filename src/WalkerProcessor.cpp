@@ -4322,7 +4322,7 @@ namespace WalkerProcessor {
 
             auto pos_dif = target_pos - player_pos;
 
-            bool its_high = pos_dif.z > 300.0f;
+            bool its_high = pos_dif.z > 400.0f;
 
             pos_dif.z = 0.0f;
 
@@ -4641,7 +4641,9 @@ namespace WalkerProcessor {
 
                     if (abs(distance.z) < 200.0f)
                         distance.z = 0.0f;
-
+                    else
+                        if (abs(distance.z) < 400.0f)
+                            distance.z = 50.0f;
 
                     if (getting_into_carriage)
                     {
@@ -4729,6 +4731,35 @@ namespace WalkerProcessor {
     }
 
 
+    bool need_jump_to_reach()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        auto targeted_ref = get_targeted_ref();
+
+        if (targeted_ref == target_ref)
+            return false;
+
+        if (player && target_ref)
+        {
+            auto player_pos = player->GetPosition();
+            auto target_pos = target_ref->GetPosition();
+
+            if (target_pos.z - player_pos.z > 400.0f)
+                return false; //wont help
+
+
+            float threshold = 300.0f;
+
+            if (player->IsSneaking())
+                threshold = 200.0f;
+
+            if (target_pos.z - player_pos.z > 300.0f)
+                return true;
+        }
+
+        return false;
+    }
 
     std::string get_cant_walk_reason()
     {
@@ -11661,6 +11692,12 @@ namespace WalkerProcessor {
                                                         return; 
                                                     }
                                                         
+                                                    if (need_jump_to_reach())
+                                                        jump();
+
+
+
+
                                                     if (get_targeted_ref() == target_ref)
                                                     {
                                                         stable_target++;
