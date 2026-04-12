@@ -999,7 +999,7 @@ namespace Observer {
 					{
 						//wait a little then notify
 
-						if (detect_threats_time > 0.5f)
+						if (detect_threats_time > 1.0f)
 						{
 
 

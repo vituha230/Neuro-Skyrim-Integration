@@ -838,11 +838,14 @@ float time_threshold = 7.77f;
 
 float delayed_poke_time = 0.0f;
 bool make_delayed_poke = false;
+bool ignore_menus_for_poke = false;
 
 
 void neuro::do_delayed_poke()
 {
     make_delayed_poke = true;
+    ignore_menus_for_poke = true;
+    delayed_poke_time = -1.0f; //extend it a little
 }
 
 
@@ -889,7 +892,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
     //float time_threshold = afk_threshold * 5.0f + 10.0f;
 
     
-    if (have_any_menus_open)
+    if (have_any_menus_open && !ignore_menus_for_poke)
     {
         make_delayed_poke = false;
         delayed_poke_time = 0.0f;
@@ -906,6 +909,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                 send_random_context("[Choose next action to do]", false);// . " + advice + "]", false);
                 delayed_poke_time = 0.0f;
                 make_delayed_poke = false;
+                ignore_menus_for_poke = false;
 
                 WalkerProcessor::reset_inactive_timer();
                 time_no_commands = 0.0f;
@@ -913,8 +917,12 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
             }
             else
             {
-                delayed_poke_time = 0.0f;
-                make_delayed_poke = false;
+                if (!ignore_menus_for_poke) //wait for something to get registered
+                {
+                    delayed_poke_time = 0.0f;
+                    make_delayed_poke = false;
+                }
+
             }
 
         }
