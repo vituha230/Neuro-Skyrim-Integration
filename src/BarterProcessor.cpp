@@ -564,12 +564,15 @@ namespace BarterProcessor {
     
 
 
-    void process_next_item()
+    bool process_next_item()
     {
         //send_random_context("choice array size: " + std::to_string(std::size(item_choice_array)) + "; current choice: " + std::to_string(item_choice));
 
         if (std::size(item_choice_array) <= 0)
+        {
             back_to_items();
+            return true;
+        }
         else
         {
             item_choice = item_choice_array.at(0);
@@ -579,7 +582,7 @@ namespace BarterProcessor {
             if (item_choice == -1)
             {
                 quit_menu();
-                return;
+                return true;
             }
 
 
@@ -589,7 +592,7 @@ namespace BarterProcessor {
            //     return;
             }
           //  else
-            {
+            //{
                 if (items_list_valid)
                 {
 
@@ -599,7 +602,7 @@ namespace BarterProcessor {
                     {
                         item_choice_valid = false;
                         process_next_item();
-                        return;
+                        return true;
                     }
                     else
                     {
@@ -613,22 +616,20 @@ namespace BarterProcessor {
                                 item_choice_valid = true;
                                 barter_item_request_sent = true;
                                 last_item_choice = item_choice;
-                                return;
+                                return true;
                             }
                         }
 
                         //not enough gold, skip
-                        process_next_item();
-                        return;
-
+                        return process_next_item();
                     }
                 }
                 else
                 {
                     back_to_items();
-                    return;
+                    return true;
                 }
-            }
+           // }
         }
     }
 
@@ -658,9 +659,19 @@ namespace BarterProcessor {
 
         item_choice_array = ids;
 
-        process_next_item();
-        result.first = true;
-        result.second = "[Processing...]";
+        bool test_result = process_next_item();
+
+        if (test_result)
+        {
+            result.first = true;
+            result.second = "[Processing...]";
+        }
+        else
+        {
+            result.first = false;
+            result.second = "No valid IDs found in provided array!";
+        }
+
 
         return result;
     }
@@ -2257,7 +2268,12 @@ namespace BarterProcessor {
                                 if (type == barter_type::sell && get_vendor_gold() == 0)
                                 {
                                     send_random_context("Vendor has no gold left", false);
-                                    switch_barter_type_selection();
+                                    add_delayed_message("Barter cancelled");
+                                    barter_reset();
+                                    quit_menu();
+
+                                    //switch_barter_type_selection();
+
                                     return;
                                 }
 
@@ -2367,8 +2383,19 @@ namespace BarterProcessor {
 
                                             if (!barter_item_request_sent && !item_confirming && !item_confirmed)
                                             {
+                                                auto options = get_barter_items();
 
-                                                if (force_choice(get_barter_items(), "You are bartering in Skyrim. " + get_gold_text() + ". Choose item to " + get_barter_type_text() + ". " + get_items_we_cant_buy_text(), force_type::barter_item_array))
+                                                if (std::size(options) <= 1) //if can only quit - we quit no prompt
+                                                {
+                                                    send_random_context("No available items to " + get_barter_type_text(), false);
+                                                    add_delayed_message("Barter cancelled");
+                                                    barter_reset();
+                                                    quit_menu();
+                                                    return;
+                                                }
+
+
+                                                if (force_choice(options, "You are bartering in Skyrim. " + get_gold_text() + ". Choose item to " + get_barter_type_text() + ". " + get_items_we_cant_buy_text(), force_type::barter_item_array))
                                                 {
                                                     missing_item_detected = false;
                                                     last_cursor_move = 0;
