@@ -3107,7 +3107,7 @@ namespace Observer {
 
 
 						if (!had_something_better) //so it doesnt put this caption on every armor piece if we were naked and returned all our inventory from some chest for example. will be re-advised later anyway
-							if (not_first_inventory_info && MiscThings::armor_damage_difference(item) > 0)
+							if (not_first_inventory_info && MiscThings::armor_damage_difference(item) > 2)
 							{
 								info += " - Better than your current gear";
 								had_something_better = true;

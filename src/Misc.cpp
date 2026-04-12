@@ -7599,7 +7599,7 @@ namespace MiscThings {
                     {
                         float benefit = armor_damage_difference(inventory_entry.second.object);
 
-                        if (benefit > 0.0f)
+                        if (benefit > 2.0f)
                         {
                             auto this_slot = get_weapon_slot(inventory_entry.second.object);
 
@@ -7659,7 +7659,7 @@ namespace MiscThings {
 
                     float benefit = armor_damage_difference(inventory_entry.second.object);
 
-                    if (benefit > 0.0f)
+                    if (benefit > 2.0f)
                     {
                         auto this_slot = get_armor_slot(inventory_entry.second.object);
 
@@ -7754,7 +7754,7 @@ namespace MiscThings {
 
                     float benefit = armor_damage_difference(inventory_entry.second.object);
 
-                    if (benefit > 0.0f)
+                    if (benefit > 2.0f)
                     {
                         auto this_slot = get_armor_slot(inventory_entry.second.object);
 
