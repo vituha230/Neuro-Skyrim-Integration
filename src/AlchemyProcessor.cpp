@@ -125,7 +125,7 @@ std::pair<bool, std::string> choose_ingredients(std::vector<int> ingredients)
 		return result;
 	}
 
-	if (amount == 3 && ingredients[1] == ingredients[2] || ingredients[0] == ingredients[2])
+	if (amount == 3 && (ingredients[1] == ingredients[2] || ingredients[0] == ingredients[2]))
 	{
 		result.first = false;
 		result.second = "Ingredients must be different";

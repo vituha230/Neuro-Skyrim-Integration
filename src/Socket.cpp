@@ -860,6 +860,30 @@ void neuro::reset_poke()
 }
 
 
+std::string get_random_poke_phrase()
+{
+    int choice = MiscThings::random_int_from_range(0, 5);
+
+    switch (choice)
+    {
+    case (0):
+        return "[Choose next action to do]";
+    case (1):
+        return "[Do another action]";
+    case (2):
+        return "...";
+    case (3):
+        return "[Perform next action]";
+    case (4):
+        return "[Use next command]";
+    case (5):
+        return "[Do something]";
+    }
+
+    return "[Choose next action to do]";
+}
+
+
 bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aClosure)
 {
     if (!IsAlive())
@@ -909,7 +933,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
         {
             if (!have_any_menus_open && something_is_registered)
             {
-                send_random_context("[Choose next action to do]", false);// . " + advice + "]", false);
+                send_random_context(get_random_poke_phrase(), false);// . " + advice + "]", false);
                 delayed_poke_time = 0.0f;
                 make_delayed_poke = false;
                 ignore_menus_for_poke = false;
@@ -963,7 +987,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
         if (advice != "")
             advice = "You can " + advice;
 
-        send_random_context("[Choose next action to do]", false);// . " + advice + "]", false);
+        send_random_context(get_random_poke_phrase(), false);// . " + advice + "]", false);
 
         time_threshold = (float)std::rand() / RAND_MAX * 4 + 6;
     }

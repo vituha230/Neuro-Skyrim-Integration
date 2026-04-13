@@ -260,7 +260,7 @@ namespace MiscThings {
 
     bool player_has_fishing_rod();
     std::pair<bool, std::string> equip_spell_by_refr(RE::SpellItem* spell);
-
+    int random_int_from_range(int min, int max);
 
     RE::TESForm* get_hand_contents(bool right);
     bool is_self_healing_spell(bool right);
