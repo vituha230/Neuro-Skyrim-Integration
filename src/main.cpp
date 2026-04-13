@@ -1867,7 +1867,6 @@ private:
                 GiftProcessor::processor(dtime);
                 RandomMessageBoxProcessor::processor(dtime);
 
-
                 Observer::detect_threats(dtime); //uses pause. must be here
                 Observer::detect_interesting_objects(dtime);
                 Observer::detect_events(dtime);

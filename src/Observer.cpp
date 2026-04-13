@@ -1238,9 +1238,16 @@ namespace Observer {
 
 				if (!player->IsDead())
 				{
+
+					std::map<RE::FormType, int> dbg_test{};
+
+
 					RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 4000.0f,
 						//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 						[&](RE::TESObjectREFR* a_ref) {
+
+							
+
 
 							auto base_obj = a_ref->GetBaseObject();
 							RE::FormType base_type{};
@@ -1254,6 +1261,22 @@ namespace Observer {
 							{
 								bool no_base_object = true;
 							}
+
+							auto pos111 = dbg_test.find(base_type);
+
+							if (pos111 != dbg_test.end())
+								pos111->second++;
+							else
+								dbg_test.insert({ base_type, 1 });
+
+
+							if (base_type == RE::FormType::Hazard)
+								return RE::BSContainer::ForEachResult::kContinue;
+
+							if (base_type == RE::FormType::Static)
+								return RE::BSContainer::ForEachResult::kContinue;
+
+							
 
 							if (base_type == RE::FormType::Activator)
 							{
@@ -1308,6 +1331,9 @@ namespace Observer {
 									bool stop_here = false;
 								}
 
+								
+
+
 								if (!MiscThings::is_object_valid(a_ref))
 									return RE::BSContainer::ForEachResult::kContinue;
 
@@ -1349,7 +1375,7 @@ namespace Observer {
 									if (name.find("default") != std::string::npos)
 										return RE::BSContainer::ForEachResult::kContinue;
 
-
+									
 
 									if (auto extra = a_ref->extraList.GetByType(RE::ExtraDataType::kItemDropper); extra)
 									{
@@ -2065,6 +2091,9 @@ namespace Observer {
 
 						//if (base_type == RE::FormType::Static || base_type == RE::FormType::Hazard)
 						if (base_type == RE::FormType::Hazard)
+							return RE::BSContainer::ForEachResult::kContinue;
+
+						if (base_type == RE::FormType::Static)
 							return RE::BSContainer::ForEachResult::kContinue;
 
 
