@@ -6485,12 +6485,19 @@ namespace MiscThings {
         if (base_obj)
         {
             auto base_type = base_obj->GetFormType();
+
+
+            if (base_type == RE::FormType::Furniture)
+            {
+                return "";
+            }
+
+
             if (base_obj->IsInventoryObject() || base_type == RE::FormType::Tree || base_type == RE::FormType::Flora)
             {
                 if (player_actor && player_actor->WouldBeStealing(object) && !object->IsActor())
                     result = "[Is stealing]";
             }
-
             if (result == "")
             {
                 if (base_type == RE::FormType::Activator)

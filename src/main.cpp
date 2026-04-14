@@ -4,6 +4,9 @@
 //crucial:
 
 
+//TODO fix walker doing nothing after force and still doing unstuck after some location switches
+
+
 //TODO staff and scroll usage
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
