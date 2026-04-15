@@ -5013,6 +5013,9 @@ namespace WalkerProcessor {
     int attacked_already_dead_in_a_row = 0;
 
 
+
+
+
     std::pair<bool, std::string> walk_to_object_by_index(int index, int interaction)
     {
 
@@ -5070,6 +5073,12 @@ namespace WalkerProcessor {
                 {
                     result.first = false;
                     result.second = "This object doesnt exist anymore";
+                    if (interaction == 3)
+                    {
+                        result.second += "... Searching for other enemies...";
+                        search_next_fight_target = true; //in case we actually have enemies around and player just messed up the IDs
+                    }
+
                     return result;
                 }
 
@@ -5393,6 +5402,12 @@ namespace WalkerProcessor {
 
         result.first = false;
         result.second = "Invalid object ID"; //TODO more info
+
+        if (interaction == 3)
+        {
+            result.second += "... Searching for other enemies...";
+            search_next_fight_target = true; //in case we actually have enemies around and player just messed up the IDs
+        }
 
         return result;
     }
@@ -10327,17 +10342,23 @@ namespace WalkerProcessor {
                         if (search_next_target_timer > 1.0f)
                         {
                             std::string result_header = "[Fight ended";
+                            bool useless_fight = false;
 
                             if (was_already_dead || (target_ref && !target_ref->IsActor()))
+                            {
                                 result_header = "[You finished attacking " + reminder_target_name;
+                                useless_fight = true;
+                            }
+                                
 
                             Observer::reset_threats();
 
                             reset_walker();
                             std::string advice = "";
 
-                            if (MiscThings::is_objects_around_valid())
-                                advice = "walk somewhere, interact with something, loot the bodies of defeated";
+                            if (!useless_fight)
+                                if (MiscThings::is_objects_around_valid())
+                                    advice = "loot dead enemies";
 
                             if (MiscThings::have_any_quests())
                                 if (advice != "")

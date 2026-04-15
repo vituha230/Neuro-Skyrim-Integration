@@ -4,8 +4,6 @@
 //crucial:
 
 
-//TODO fix walker doing nothing after force and still doing unstuck after some location switches
-
 
 //TODO staff and scroll usage
 
@@ -1098,7 +1096,7 @@ namespace Hooks {
 
                 exit_dungeon_was_registered = false;
 
-                send_random_context("[The game is loading]");// .You are not in game yet]");
+                send_random_context("[The game is loading. Object list was cleared]");// .You are not in game yet]");
             }
 
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
