@@ -3659,9 +3659,23 @@ namespace WalkerProcessor {
 
     bool cast_pathfinding(float dtime)
     {
+        
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
 
-        if (!is_something_registered() && !using_custom_path)
+        //if (!can_walk && !is_something_registered() && !using_custom_path)
+        if (!can_walk && !using_custom_path)
+        {
+            time_stuck = 0.0f;
             return false;
+        }
+            
+
+
+
+        //need alternative for this
+        //if (!is_something_registered() && !using_custom_path)
+        //    return false;
 
 
         //cast_immidiately();
@@ -8984,8 +8998,11 @@ namespace WalkerProcessor {
 
     bool detect_stuck(float dtime)
     {
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
 
-        if (!is_something_registered() && !using_custom_path)
+
+        if ((!can_walk || !is_something_registered()) && !using_custom_path)
         {
             time_stuck = 0.0f;
             return false;
