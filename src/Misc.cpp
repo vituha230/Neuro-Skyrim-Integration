@@ -8765,6 +8765,9 @@ namespace MiscThings {
     }
 
 
+
+
+
     bool charge_inventory_item(RE::InventoryEntryData* item, float charge_to_add, bool right)
     {
         auto player = RE::PlayerCharacter::GetSingleton();

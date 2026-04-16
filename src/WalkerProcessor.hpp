@@ -90,6 +90,10 @@ namespace WalkerProcessor {
 	bool is_walking_important_path();
 	bool target_is_too_high();
 
+	bool has_bow_equipped(bool right);
+	bool has_crossbow_equipped(bool right);
+	bool has_staff_equipped(bool right);
+	bool no_charge(bool right);
 
 	std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch = false, float look_speed_koef = 0.5f);
 

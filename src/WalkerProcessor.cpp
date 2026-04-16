@@ -15,6 +15,9 @@
 namespace WalkerProcessor {
 
 
+
+    float pause_post_attack = 0.0f;
+
     float special_look_speed_koef = 1.0f;
 
     bool try_power_attack = false;
@@ -3733,6 +3736,8 @@ namespace WalkerProcessor {
 
         try_power_attack = false;
 
+        pause_post_attack = 0.0f;
+
 
         special_look_speed_koef = 1.0f;
 
@@ -4093,6 +4098,9 @@ namespace WalkerProcessor {
     {
         //if (!using_custom_path)
         {
+
+            pause_post_attack = 0.0f;
+
             door_refocus_timeout = 0.0f; 
 
             stable_target = 0;
@@ -6868,7 +6876,7 @@ namespace WalkerProcessor {
             reminder_target_name = "walking towards the exit. ";
             reminder_start_pos = player->GetPosition();
             result.first = true;
-            result.second = "[You are waalking towards the exit...]";
+            result.second = "[You are walking towards the exit...]";
         }
         else
         {
@@ -7298,16 +7306,85 @@ namespace WalkerProcessor {
             else
             {
                 //not a spell..
-                if (has_ranged_weapon_equipped(true) && !no_ammo())
+
+                if (has_bow_equipped(true) && !no_ammo())
                     result = 2.4f;//result = 2.7f;
                 else
-                    result = 0.8f;
+                    if (has_staff_equipped(right) && !no_charge(right))
+                    {
+                        auto staff = (RE::TESObjectWEAP*)spell;
+
+                        auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                        if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                        {
+                            if (ench->formEnchanting->avEffectSetting)
+                            {
+                                auto cast_type = ench->formEnchanting->avEffectSetting->data.castingType;
+                                if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                                    result = 10.0f;
+                                else
+                                    result = 1.0f;
+                            }
+                        }
+                    }
+                    else
+                        result = 0.8f; //melee
             }
 
         }
         return result;
 
     }
+
+
+
+    bool no_charge(bool right)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+        auto worn_ammo = player_actor->GetCurrentAmmo();
+
+        RE::TESForm* hand_contents = MiscThings::get_hand_contents(true); //check if we have bow in right hand
+
+        bool no_charge = false;
+
+        if (hand_contents)
+        {
+            if (hand_contents->formType != RE::FormType::Spell)
+            {
+                auto weapon = (RE::TESObjectWEAP*)hand_contents;
+
+                if (weapon->IsStaff())
+                {
+                    auto ench = weapon ? weapon->As<RE::TESEnchantableForm>() : nullptr;
+
+                    if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                    {
+
+                        float max_charge = ench->amountofEnchantment;
+                        float cur_charge = 0;//xCharge->charge;
+
+                        if (right)
+                            cur_charge = player->GetActorValue(RE::ActorValue::kRightItemCharge);
+                        else
+                            cur_charge = player->GetActorValue(RE::ActorValue::kLeftItemCharge);
+
+
+                        auto cost = ench->formEnchanting->data.costOverride;
+
+                        if (cur_charge < cost)
+                            return true;
+                    }
+                }
+            }
+        }
+        return no_charge;
+    }
+
+
+
+
 
 
     bool no_ammo()
@@ -7319,6 +7396,8 @@ namespace WalkerProcessor {
         RE::TESForm* hand_contents = MiscThings::get_hand_contents(true); //check if we have bow in right hand
 
         bool have_bow = false;
+        bool have_staff = false;
+        bool no_charge = false;
 
         if (hand_contents)
         {
@@ -7326,11 +7405,48 @@ namespace WalkerProcessor {
             {
                 auto weapon = (RE::TESObjectWEAP*)hand_contents;
                 if (!weapon->IsMelee())
-                    have_bow = true;
+                {
+
+                    if (weapon->IsStaff())
+                    {
+                        have_staff = true;
+
+                        /*
+                        auto ench = weapon ? weapon->As<RE::TESEnchantableForm>() : nullptr;
+
+                        if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                        {
+
+                            float max_charge = ench->amountofEnchantment;
+                            float cur_charge = 0;//xCharge->charge;
+
+                            if (right)
+                                cur_charge = player->GetActorValue(RE::ActorValue::kRightItemCharge);
+                            else
+                                cur_charge = player->GetActorValue(RE::ActorValue::kLeftItemCharge);
+
+
+                            auto cost = 
+
+
+                            bool stop_here = false;
+                        }
+                        */
+                    }
+                    else
+                    {
+                        if (weapon->IsBow() || weapon->IsCrossbow())
+                        {
+                            have_bow = true;
+                        }
+                    }
+                }
             }
         }
 
-        return !worn_ammo && have_bow;
+
+
+        return (!worn_ammo && have_bow) || (no_charge && have_staff);
 
     }
 
@@ -7354,6 +7470,55 @@ namespace WalkerProcessor {
                 auto weapon = (RE::TESObjectWEAP*)hand_contents;
                 if (!weapon->IsMelee())
                     return true;
+            }
+
+        }
+        return result;
+    }
+
+
+
+
+    bool has_bow_equipped(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        if (player)
+        {
+            RE::TESForm* hand_contents = MiscThings::get_hand_contents(right);
+
+            if (hand_contents)
+            {
+                auto weapon = (RE::TESObjectWEAP*)hand_contents;
+                if (weapon->IsBow())
+                    return true;
+
+            }
+
+        }
+        return result;
+    }
+
+
+    bool has_crossbow_equipped(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        if (player)
+        {
+            RE::TESForm* hand_contents = MiscThings::get_hand_contents(right);
+
+            if (hand_contents)
+            {
+                auto weapon = (RE::TESObjectWEAP*)hand_contents;
+                if (weapon->IsCrossbow())
+                    return true;
 
             }
 
@@ -7361,6 +7526,33 @@ namespace WalkerProcessor {
         return result;
     }
   
+
+    bool has_staff_equipped(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        if (player)
+        {
+            RE::TESForm* hand_contents = MiscThings::get_hand_contents(right);
+
+            if (hand_contents)
+            {
+                auto weapon = (RE::TESObjectWEAP*)hand_contents;
+                if (weapon->IsStaff())
+                    return true;
+
+            }
+
+        }
+        return result;
+    }
+
+
+
+
 
     //this should never return 0
     float get_weapon_projectile_speed(bool right)
@@ -7600,7 +7792,7 @@ namespace WalkerProcessor {
 
                 bool dont_use_right = false;
 
-                dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
+                dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && (no_ammo() || no_charge(true))) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
 
 
                 attack_action = dont_use_right;
@@ -7687,84 +7879,98 @@ namespace WalkerProcessor {
                         bool no_weapon = false;
                         bool silent = true;
 
-                        if (MiscThings::has_spell_equipped(true))
+
+
+                        if (has_staff_equipped(true))
                         {
-                            if (attack_action_time0 > 0.7f);
-                            ;// was_charging_ranged = true;
+                            //if (attack_action_time0 > 0.9f);
+                               // was_charging_ranged = true;
 
-                            if (!is_casting_walker(true))
-                            {
-                                if (attack_spell_cast_timeout > 1.0f)
-                                {
-                                    skip_cast = true;
-                                    attack_spell_cast_timeout = 0.0f;
-                                    right_attack_cancel();
-                                    attack_action_time0 = 0.0f;
-                                }
-                                else
-                                    attack_spell_cast_timeout += dtime;
-                            }
-                            else
-                                attack_spell_cast_timeout = 0.0f;
+                            right_attack_spell();
 
-
-                            if (!skip_cast)
-                            {
-                                right_attack_spell();
-                                if (!MiscThings::is_offensive_spell(true))
-                                {
-                                    casting = true;
-                                    start_attacking_info = "[You are casting ";
-                                }
-
-                                attacking_weapon = get_equipped_spell_name(true) + ". ";
-                            }
-                            
+                            attacking_weapon = get_equipped_weapon_name(true) + ". ";
                         }
                         else
-                        {
-                            attack_spell_cast_timeout = 0.0f;
-
-                            bool can_power_attack = !MiscThings::has_spell_equipped(true) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f;
-
-                            if (has_ranged_weapon_equipped(true))
+                            if (MiscThings::has_spell_equipped(true))
                             {
-                                if (attack_action_time0 > 0.9f);
-                                was_charging_ranged = true;
-                                right_attack_bow();
-                            }
-                            else
-                            {
+                                if (attack_action_time0 > 0.7f);
+                                ;// was_charging_ranged = true;
 
-
-                                if (can_power_attack && try_power_attack)
-                                    right_attack_bow();
-                                else
-                                    right_attack();
-                            }
-
-                            if (!MiscThings::has_something_equipped(true))
-                            {
-                                no_weapon = true;
-                                attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
-                                    cursor_up();
-                            }
-                            else
-                            {
-                                if (has_ranged_weapon_equipped(true) && no_ammo())
+                                if (!is_casting_walker(true))
                                 {
-                                    no_weapon = true;
-                                    attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                    if (attack_spell_cast_timeout > 1.0f)
+                                    {
+                                        skip_cast = true;
+                                        attack_spell_cast_timeout = 0.0f;
+                                        right_attack_cancel();
+                                        attack_action_time0 = 0.0f;
+                                    }
+                                    else
+                                        attack_spell_cast_timeout += dtime;
                                 }
                                 else
-                                    attacking_weapon = get_equipped_weapon_name(true) + ". ";
+                                    attack_spell_cast_timeout = 0.0f;
 
-                                if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
-                                    cursor_up();
+
+                                if (!skip_cast)
+                                {
+                                    right_attack_spell();
+                                    if (!MiscThings::is_offensive_spell(true))
+                                    {
+                                        casting = true;
+                                        start_attacking_info = "[You are casting ";
+                                    }
+
+                                    attacking_weapon = get_equipped_spell_name(true) + ". ";
+                                }
+                            
                             }
+                            else
+                            {
+                                attack_spell_cast_timeout = 0.0f;
 
-                        }
+                                bool can_power_attack = !MiscThings::has_spell_equipped(true) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f;
+
+                                if (has_bow_equipped(true))
+                                {
+                                    if (attack_action_time0 > 0.9f);
+                                        was_charging_ranged = true;
+                                    right_attack_bow();
+                                }
+                                else
+                                {
+
+                                    if (can_power_attack && try_power_attack)
+                                        right_attack_bow();
+                                    else
+                                        right_attack();
+                                }
+
+                                if (!MiscThings::has_something_equipped(true))
+                                {
+                                    no_weapon = true;
+                                    attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                    if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
+                                        cursor_up();
+                                }
+                                else
+                                {
+                                    if (has_bow_equipped(true) && no_ammo())
+                                    {
+                                        no_weapon = true;
+                                        attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                    }
+                                    else
+                                    {
+                                        attacking_weapon = get_equipped_weapon_name(true) + ". ";
+                                    }
+                                    
+
+                                    if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
+                                        cursor_up();
+                                }
+
+                            }
 
                         if (!gave_attacking_info)
                         {
@@ -7836,6 +8042,20 @@ namespace WalkerProcessor {
                         //if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kNone && player_actor->actorState2.recoil == 0 && player_actor->actorState2.staggered == 0 && !player->animationObjectAction.any(RE::DEFAULT_OBJECTS::DEFAULT_OBJECT::kActionRightAttack))
                         {
                             //end of attack
+
+
+
+                            if (has_staff_equipped(true))
+                            {
+                                if (pause_post_attack < 0.6f)
+                                {
+                                    pause_post_attack += dtime;
+                                    goto finalize_attack;
+                                } 
+                            }
+                            pause_post_attack = 0.0f;
+
+
                             attack_spell_cast_timeout = 0.0f;
                             try_power_attack = false;
 
@@ -7874,11 +8094,13 @@ namespace WalkerProcessor {
                             bool dont_use_right = false;
 
 
-                            dont_use_left |= has_ranged_weapon_equipped(true) && !no_ammo();
+                            dont_use_left |= has_bow_equipped(true) && !no_ammo();
                             //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
                             //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
 
-                            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
+                            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && (no_ammo() || no_charge(true))) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
+
+                            dont_use_left |= has_staff_equipped(false) && no_charge(false);
 
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
@@ -8095,6 +8317,18 @@ namespace WalkerProcessor {
                         }
                         else
                         {
+
+                            if (has_staff_equipped(false))
+                            {
+                                if (pause_post_attack < 0.6f)
+                                {
+                                    pause_post_attack += dtime;
+                                    goto finalize_attack;
+                                }
+                            }
+                            pause_post_attack = 0.0f;
+
+
                             try_power_attack = false;
                             gave_attacking_info = false;
                             attack_spell_cast_timeout = 0.0f;
@@ -8130,12 +8364,13 @@ namespace WalkerProcessor {
                                 try_power_attack = true;
 
 
-                            dont_use_left |= has_ranged_weapon_equipped(true) && !no_ammo();
+                            dont_use_left |= has_bow_equipped(true) && !no_ammo();
                             //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
                             //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
 
-                            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
+                            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && (no_ammo() || no_charge(true))) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
 
+                            dont_use_left |= has_staff_equipped(false) && no_charge(false);
 
                             if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
                                 attack_action = 1;
