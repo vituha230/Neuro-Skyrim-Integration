@@ -7560,6 +7560,19 @@ namespace MiscThings {
 
                         if (current_weapon)
                         {
+                            auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+                            auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+
+
+                            if (current_weapon->IsStaff())
+                            {
+                                bool is_right_slot = slot == right_slot;
+
+                                if (!WalkerProcessor::no_charge(is_right_slot))
+                                    return 0; //dont advise to replace charged staves (might be a bad idea to do this...)
+
+                            }
+
                             if (current_weapon->IsWeapon())
                             {
                                 current_weapon_damage = current_weapon->GetAttackDamage();
@@ -7569,8 +7582,7 @@ namespace MiscThings {
                             }
                             else
                             {
-                                auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
-                                auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+
 
                                 if (slot == right_slot && has_spell_equipped(true))
                                     return 0;

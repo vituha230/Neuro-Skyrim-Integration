@@ -29,6 +29,12 @@ namespace WalkerProcessor {
 
 	void invalidate_path();
 
+	bool no_charge(bool right);
+
+
+	bool has_staff_equipped(bool right);
+
+
 
 	std::pair<bool, std::string> set_multiple_path_quest_choice(int id);
 
