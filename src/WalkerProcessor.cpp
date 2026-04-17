@@ -7186,11 +7186,6 @@ namespace WalkerProcessor {
 
 
 
-
-
-    
-
-
     bool left_is_block()
     {
         bool result = false;
@@ -7324,7 +7319,7 @@ namespace WalkerProcessor {
                                 if (cast_type == RE::MagicSystem::CastingType::kConcentration)
                                     result = 10.0f;
                                 else
-                                    result = 1.0f;
+                                    result = 0.3f;
                             }
                         }
                     }
@@ -7451,6 +7446,7 @@ namespace WalkerProcessor {
     }
 
 
+    //returns true for all non ranged weapons (spells,bows,crossbows,staves,scrolls)
     bool has_ranged_weapon_equipped(bool right)
     {
         bool result = false;
@@ -7652,8 +7648,27 @@ namespace WalkerProcessor {
                     auto weapon = (RE::TESObjectWEAP*)hand_contents;
                     if (!weapon->IsMelee())
                     {
-                        //bow
-                        if (!no_ammo())
+
+                        if (weapon->IsStaff() && !no_charge(right))
+                        {
+                            auto staff = weapon;
+
+                            auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                            if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                            {
+                                if (ench->formEnchanting->avEffectSetting && ench->formEnchanting->avEffectSetting->data.projectileBase)
+                                {
+                                    auto staff_range = ench->formEnchanting->avEffectSetting->data.projectileBase->data.range;
+
+                                    if (staff_range > 0.0f)
+                                        return staff_range * 0.9f;
+                                }
+                            }
+                        }
+
+                        //bow/crossbow
+                        if ((weapon->IsBow() || weapon->IsCrossbow()) && !no_ammo())
                             return 5000.0f;
                     }
                     else
@@ -8219,8 +8234,9 @@ namespace WalkerProcessor {
 
                                 
 
+                                auto left_contents = MiscThings::get_hand_contents(false);
 
-                                if (!MiscThings::has_something_equipped(false) && MiscThings::has_something_equipped(true) && is_melee_weapon(true))
+                                if ((!MiscThings::has_something_equipped(false) && MiscThings::has_something_equipped(true) && is_melee_weapon(true)) || (left_contents && left_contents->IsArmor()))
                                 {
                                     attacking_info = "[You are blocking";
                                     if (player->GetDistance(target_ref, true) > 100.0f)
