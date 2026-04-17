@@ -3529,9 +3529,20 @@ namespace WalkerProcessor {
 
         if (right)
         {
-            auto state = right_caster->state;
-            if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(right)))
-                result = true;
+            std::string right_anim_name = player->magicCasters[1]->animationGraphManager->variableCache.animationGraph->projectName.c_str();
+
+            if (right_anim_name.find("Ritual") != std::string::npos)
+            {
+                return player->IsAnimationDriven();
+            }
+            else
+            {
+
+                auto state = right_caster->state;
+                if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(right)))
+                    result = true;
+            }
+
         }
         else
         {
@@ -7276,6 +7287,30 @@ namespace WalkerProcessor {
     }
 
 
+    bool is_long_charge_spell(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
+
+            if (spell && spell->GetFormType() == RE::FormType::Spell)
+            {
+                if (spell->avEffectSetting)
+                {
+                    auto cast_type = spell->avEffectSetting->data.castingType;
+                    
+                    return spell->avEffectSetting->data.spellmakingChargeTime > 2.0f;
+                }
+            }
+        }
+        return result;
+    }
+
+
+
     float get_attack_time(bool right)
     {
         float result = 1.0;
@@ -7295,7 +7330,7 @@ namespace WalkerProcessor {
                     if (cast_type == RE::MagicSystem::CastingType::kConcentration)
                         result = 10.0f;
                     else
-                        result = 1.3f;
+                        result = 1.3f + spell->avEffectSetting->data.spellmakingChargeTime;
                 }
             }
             else
@@ -7913,7 +7948,12 @@ namespace WalkerProcessor {
 
                                 if (!is_casting_walker(true))
                                 {
-                                    if (attack_spell_cast_timeout > 1.0f)
+                                    float timeout_val = 1.0f;
+                                    if (is_long_charge_spell(true))
+                                        timeout_val = 6.0f;
+
+
+                                    if (attack_spell_cast_timeout > timeout_val)
                                     {
                                         skip_cast = true;
                                         attack_spell_cast_timeout = 0.0f;
@@ -8187,7 +8227,11 @@ namespace WalkerProcessor {
 
                                 if (!is_casting_walker(false))
                                 {
-                                    if (attack_spell_cast_timeout > 1.0f)
+                                    float timeout_val = 1.0f;
+                                    if (is_long_charge_spell(false))
+                                        timeout_val = 6.0f;
+
+                                    if (attack_spell_cast_timeout > timeout_val)
                                     {
                                         skip_cast = true;
                                         attack_spell_cast_timeout = 0.0f;

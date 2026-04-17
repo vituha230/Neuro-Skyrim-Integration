@@ -3334,6 +3334,7 @@ namespace Observer {
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();
 
+
 		if (wait_and_send_game_start_context)
 		{
 			if (start_game_timer > 11.777f)

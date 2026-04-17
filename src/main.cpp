@@ -5,7 +5,7 @@
 
 
 
-//TODO staff and scroll usage
+//TODO scroll usage
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 
@@ -14,7 +14,6 @@
 //TODO oxygen control
 
 //TODO slaughterfish fights
-//TODO test all spells
 //TODO letter aliases for locations (foreachscript scanner)
 
 //TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
