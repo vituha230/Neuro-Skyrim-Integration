@@ -3529,8 +3529,12 @@ namespace WalkerProcessor {
 
         if (right)
         {
-            std::string right_anim_name = player->magicCasters[1]->animationGraphManager->variableCache.animationGraph->projectName.c_str();
-
+            std::string right_anim_name = "";
+            if (player->magicCasters[1] && player->magicCasters[1]->animationGraphManager && player->magicCasters[1]->animationGraphManager->variableCache.animationGraph)
+            {
+                right_anim_name = player->magicCasters[1]->animationGraphManager->variableCache.animationGraph->projectName.c_str();
+            }
+            
             if (right_anim_name.find("Ritual") != std::string::npos)
             {
                 return player->IsAnimationDriven();
@@ -3546,9 +3550,23 @@ namespace WalkerProcessor {
         }
         else
         {
-            auto state = left_caster->state;
-            if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(right)) && !MiscThings::is_intro2())
-                result = true;
+
+            std::string left_anim_name = "";
+            if (player->magicCasters[0] && player->magicCasters[0]->animationGraphManager && player->magicCasters[0]->animationGraphManager->variableCache.animationGraph)
+            {
+                left_anim_name = player->magicCasters[0]->animationGraphManager->variableCache.animationGraph->projectName.c_str();
+            }
+
+            if (left_anim_name.find("Ritual") != std::string::npos)
+            {
+                return player->IsAnimationDriven();
+            }
+            else
+            {
+                auto state = left_caster->state;
+                if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(right)) && !MiscThings::is_intro2())
+                    result = true;
+            }
         }
 
 
@@ -7287,9 +7305,9 @@ namespace WalkerProcessor {
     }
 
 
-    bool is_long_charge_spell(bool right)
+    float get_spell_timeout(bool right)
     {
-        bool result = false;
+        float result = 1.0f;
 
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
@@ -7302,7 +7320,14 @@ namespace WalkerProcessor {
                 {
                     auto cast_type = spell->avEffectSetting->data.castingType;
                     
-                    return spell->avEffectSetting->data.spellmakingChargeTime > 2.0f;
+                    if (spell->avEffectSetting->data.spellmakingChargeTime > 2.0f)
+                    {
+                        if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                            return 20.0f;
+                        else
+                            return 6.0f;
+                    }
+
                 }
             }
         }
@@ -7675,7 +7700,22 @@ namespace WalkerProcessor {
                         }
                     }
                     else
-                        return 1500.0f;
+                    {
+                        std::string perk_name = spell->data.castingPerk->GetFullName();
+
+                        if (perk_name.find("Master Destruction") != std::string::npos)
+                        {
+                            auto cast_type = spell->avEffectSetting->data.castingType;
+
+                            if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                                return 20000.0f;
+                            else
+                                return 300.0f;
+                        }
+                        else
+                            return 1500.0f;
+                    }
+                        
 
                 }
                 else
@@ -7948,10 +7988,7 @@ namespace WalkerProcessor {
 
                                 if (!is_casting_walker(true))
                                 {
-                                    float timeout_val = 1.0f;
-                                    if (is_long_charge_spell(true))
-                                        timeout_val = 6.0f;
-
+                                    float timeout_val = get_spell_timeout(true);
 
                                     if (attack_spell_cast_timeout > timeout_val)
                                     {
@@ -8227,9 +8264,7 @@ namespace WalkerProcessor {
 
                                 if (!is_casting_walker(false))
                                 {
-                                    float timeout_val = 1.0f;
-                                    if (is_long_charge_spell(false))
-                                        timeout_val = 6.0f;
+                                    float timeout_val = get_spell_timeout(false);
 
                                     if (attack_spell_cast_timeout > timeout_val)
                                     {
