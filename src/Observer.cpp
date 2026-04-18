@@ -12,6 +12,12 @@
 namespace Observer {
 
 
+
+	RE::TESForm* old_right_hand = nullptr;
+	RE::TESForm* old_left_hand = nullptr;
+
+
+
 	bool surroundings_scanned = false;
 
 	float no_threats_timer = 0.0f;
@@ -3134,6 +3140,14 @@ namespace Observer {
 			{
 				inventory_monitor_timer = 0.0f;
 
+
+
+				auto player_equip = RE::ActorEquipManager::GetSingleton();
+				auto player = RE::PlayerCharacter::GetSingleton();
+				auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+				auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+
+
 				//brawl fists monitor. want automatically reequip old weapons after brawl is over
 				if (MiscThings::player_brawling() && get_active_force() == -1) //this only checks if we have brawl fists equipped. so it works even after brawl
 				{
@@ -3148,10 +3162,7 @@ namespace Observer {
 
 							//restore old weapons
 
-							auto player_equip = RE::ActorEquipManager::GetSingleton();
-							auto player = RE::PlayerCharacter::GetSingleton();
-							auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
-							auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+
 
 							player_equip->UnequipObject(player, (RE::TESBoundObject*)MiscThings::get_hand_contents(false));
 							player_equip->UnequipObject(player, (RE::TESBoundObject*)MiscThings::get_hand_contents(false));
@@ -3229,12 +3240,56 @@ namespace Observer {
 					
 
 				}
+
+
+
+
+				auto right_hand = MiscThings::get_hand_contents(true);
+				auto left_hand = MiscThings::get_hand_contents(false);
+
+
+				if (!right_hand && old_right_hand && old_right_hand->GetFormType() == RE::FormType::Scroll)
+				{
+					if (old_right_hand)
+						if (old_right_hand->GetFormType() == RE::FormType::Weapon)
+						{
+							if (player->GetItemCount((RE::TESBoundObject*)old_right_hand) > 0)
+								player_equip->EquipObject(player, (RE::TESBoundObject*)old_right_hand, nullptr, 1, left_slot);
+						}
+						else
+							if (old_right_hand->GetFormType() == RE::FormType::Spell)
+								if (MiscThings::player_has_spell((RE::SpellItem*)old_right_hand))
+									player_equip->EquipSpell(player, (RE::SpellItem*)old_right_hand, left_slot);
+				}
+
+
+
+				if (!left_hand && old_left_hand && old_left_hand->GetFormType() == RE::FormType::Scroll)
+				{
+					if (old_left_hand)
+						if (old_left_hand->GetFormType() == RE::FormType::Weapon)
+						{
+							if (player->GetItemCount((RE::TESBoundObject*)old_left_hand) > 0)
+								player_equip->EquipObject(player, (RE::TESBoundObject*)old_left_hand, nullptr, 1, left_slot);
+						}
+						else
+							if (old_left_hand->GetFormType() == RE::FormType::Spell)
+								if (MiscThings::player_has_spell((RE::SpellItem*)old_left_hand))
+									player_equip->EquipSpell(player, (RE::SpellItem*)old_left_hand, left_slot);
+				}
+
+
+				if (!player->IsDead())
+				{
+					if (!right_hand || right_hand->GetFormType() != RE::FormType::Scroll) //i want to remember everything but scrolls, including empty hand. so either 0x0 or non scroll
+						old_right_hand = right_hand;
+
+					if (!left_hand || left_hand->GetFormType() != RE::FormType::Scroll)
+						old_left_hand = left_hand;
+				}
+
+
 					
-
-
-
-
-
 				/////// ITEMS ADDED
 				std::string new_info = "";
 

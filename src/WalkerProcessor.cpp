@@ -7109,13 +7109,20 @@ namespace WalkerProcessor {
         {
             RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
+            if (spell && spell->GetFormType() == RE::FormType::Scroll)
+                return 0.0f;
+
             if (spell && spell->GetFormType() == RE::FormType::Spell)
             {
                 result = spell->CalculateMagickaCost(player_actor);
 
-                auto cast_type = spell->avEffectSetting->data.castingType;
-                if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                    result = 1.0f;
+                if (spell->avEffectSetting)
+                {
+                    auto cast_type = spell->avEffectSetting->data.castingType;
+                    if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                        result = 1.0f;
+                }
+
             }
 
         }
@@ -7137,7 +7144,7 @@ namespace WalkerProcessor {
             RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
 
-            if (spell && spell->GetFormType() == RE::FormType::Spell)
+            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                     result = spell->GetFullName();
 
@@ -7294,11 +7301,15 @@ namespace WalkerProcessor {
         RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
 
-        if (spell && spell->GetFormType() == RE::FormType::Spell)
+        if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
         {
-            auto cast_type = spell->avEffectSetting->data.castingType;
-            if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                return true;
+            if (spell->avEffectSetting)
+            {
+                auto cast_type = spell->avEffectSetting->data.castingType;
+                if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                    return true;
+            }
+
         }
 
         return false;
@@ -7314,7 +7325,7 @@ namespace WalkerProcessor {
         {
             RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
-            if (spell && spell->GetFormType() == RE::FormType::Spell)
+            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
             {
                 if (spell->avEffectSetting)
                 {
@@ -7347,7 +7358,7 @@ namespace WalkerProcessor {
             //auto right_spell = player->selectedSpells[1];
             RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
-            if (spell && spell->GetFormType() == RE::FormType::Spell)
+            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
             {
                 if (spell->avEffectSetting)
                 {
@@ -7406,7 +7417,7 @@ namespace WalkerProcessor {
 
         if (hand_contents)
         {
-            if (hand_contents->formType != RE::FormType::Spell)
+            if (hand_contents->formType != RE::FormType::Spell && hand_contents->GetFormType() != RE::FormType::Scroll)
             {
                 auto weapon = (RE::TESObjectWEAP*)hand_contents;
 
@@ -7456,7 +7467,7 @@ namespace WalkerProcessor {
 
         if (hand_contents)
         {
-            if (hand_contents->formType != RE::FormType::Spell)
+            if (hand_contents->GetFormType() != RE::FormType::Spell && hand_contents->GetFormType() != RE::FormType::Scroll)
             {
                 auto weapon = (RE::TESObjectWEAP*)hand_contents;
                 if (!weapon->IsMelee())
@@ -7520,7 +7531,7 @@ namespace WalkerProcessor {
 
             if (hand_contents)
             {
-                if (hand_contents->formType == RE::FormType::Spell)
+                if (hand_contents->GetFormType() == RE::FormType::Spell || hand_contents->GetFormType() == RE::FormType::Scroll)
                     return true;
 
                 auto weapon = (RE::TESObjectWEAP*)hand_contents;
@@ -7623,7 +7634,7 @@ namespace WalkerProcessor {
 
             if (hand_contents)
             {
-                if (hand_contents->formType == RE::FormType::Spell)
+                if (hand_contents->GetFormType() == RE::FormType::Spell || hand_contents->GetFormType() == RE::FormType::Scroll)
                 {
                     //spell
                     auto spell = (RE::SpellItem*)hand_contents;
@@ -7674,10 +7685,12 @@ namespace WalkerProcessor {
 
             if (hand_contents)
             {
-                if (hand_contents->formType == RE::FormType::Spell)
+                if (hand_contents->GetFormType() == RE::FormType::Spell || hand_contents->GetFormType() == RE::FormType::Scroll)
                 {
                     //spell
                     auto spell = (RE::SpellItem*)hand_contents;
+
+                    auto slot_both_hands = RE::TESForm::LookupByID(0x00013F45);
 
                     auto range1 = spell->GetRange();
                     if (range1 > 0)
@@ -7701,19 +7714,34 @@ namespace WalkerProcessor {
                     }
                     else
                     {
-                        std::string perk_name = spell->data.castingPerk->GetFullName();
-
-                        if (perk_name.find("Master Destruction") != std::string::npos)
+                        if (spell->GetEquipSlot() == slot_both_hands)
                         {
-                            auto cast_type = spell->avEffectSetting->data.castingType;
+                            std::string perk_name = "";
 
-                            if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                                return 20000.0f;
+                            if (spell->data.castingPerk)
+                                perk_name = spell->data.castingPerk->GetFullName();
                             else
-                                return 300.0f;
+                            {
+                                auto spell_id = spell->GetFormID();
+
+                                if (spell_id == 0xA44B2 || spell_id == 0xA44B1)
+                                    return 300.0f;
+                            }
+
+
+                            if (perk_name.find("Master Destruction") != std::string::npos)
+                            {
+                                auto cast_type = spell->avEffectSetting->data.castingType;
+
+                                if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                                    return 20000.0f;
+                                else
+                                    return 300.0f;
+                            }
+                            else
+                                return 1500.0f;
                         }
-                        else
-                            return 1500.0f;
+
                     }
                         
 
@@ -7896,7 +7924,7 @@ namespace WalkerProcessor {
 
             if (MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
             {
-                //cannpt attack. notify
+                //cannot attack. notify
                 if (!no_weapons_notified)
                 {
                     no_weapons_notified = true;

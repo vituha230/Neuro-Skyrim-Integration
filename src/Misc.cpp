@@ -7874,7 +7874,7 @@ namespace MiscThings {
         std::string actions = "";
 
         if (item_form)
-            if (item_form->IsArmor() || item_form->IsWeapon() || item_form->IsAmmo())
+            if (item_form->IsArmor() || item_form->IsWeapon() || item_form->IsAmmo() || item_form->GetFormType() == RE::FormType::Scroll)
                 result = true;
 
         return result;
@@ -7946,7 +7946,7 @@ namespace MiscThings {
         {
             RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
-            if (spell && spell->GetFormType() == RE::FormType::Spell)
+            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                     result = true;
 
@@ -10483,12 +10483,10 @@ namespace MiscThings {
 
         if (right)
         {
-            //if (equipped_right && equipped_right->GetFormType() == RE::FormType::Spell)
             hand_contents = equipped_right;
         }
         else
         {
-            //if (equipped_left && equipped_left->GetFormType() == RE::FormType::Spell)
             hand_contents = equipped_left;
         }
 
@@ -10506,7 +10504,7 @@ namespace MiscThings {
         {
             RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
 
-            if (spell && spell->GetFormType() == RE::FormType::Spell)
+            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                 {
                     if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf)
@@ -11374,11 +11372,17 @@ namespace MiscThings {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
-            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
+            RE::SpellItem* spell = (RE::SpellItem*)MiscThings::get_hand_contents(right);
 
-            if (spell && spell->GetFormType() == RE::FormType::Spell)
+            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                 {
+                    auto slot_both_hands = RE::TESForm::LookupByID(0x00013F45);
+
+                    if (spell->GetEquipSlot() == slot_both_hands)
+                        return true; //otherwise this will not let us cast 2handed spells/scrolls
+
+
                     for (auto effect : spell->effects)
                     {
                         if (effect->IsHostile())
