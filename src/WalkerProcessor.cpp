@@ -3214,6 +3214,10 @@ namespace WalkerProcessor {
         float coef = 200.0f;
         //float coef = 300.0f;
 
+        if (MiscThings::is_intro())
+            coef = 75.0f;
+
+
         coef *= speed_koef;
 
         if (MiscThings::is_intro())
