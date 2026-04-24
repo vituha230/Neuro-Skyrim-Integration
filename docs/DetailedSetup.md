@@ -1,0 +1,63 @@
+# Detailed Setup
+Documentation for advanced setup (VS project, debugging) and xmake tasks.
+
+## VS Project & Debugging
+
+### Build Output
+If you want to redirect the build output, set the following environment variable:
+
+- Path to Skyrim install folder: SKYRIM_PATH
+- (example: D:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition)
+- Resulting .dll file will be in ...\Skyrim Special Edition\Data\SKSE\Plugins\
+
+Alternatively, from ...\Neuro-Skyrim-Integration\build\windows\x64\debug manually copy Neuro-Skyrim-Integration.dll into ...\Skyrim Special Edition\Data\SKSE\Plugins\ folder. If the folder does not exist, create it.
+
+---
+### Project Generation (Optional)
+If you use Visual Studio, run the following command:
+```bat
+xmake project -k vsxmake
+```
+> ***Note:*** *This will generate a `vsxmakeXXXX/` directory in the **project's root directory** using the latest version of Visual Studio installed on the system.*
+
+---
+### Debug mode
+It is possible to build the mod in debug mode, and attatch debugger to the game.
+- **In debug mode the game will be paused after launch until a debugger is attatched**
+- Install [Cmake](https://cmake.org/download)
+- Run following commands:
+```bat
+git clone https://github.com/ianpatt/common
+git clone https://github.com/ianpatt/skse64
+cmake -B common/build -S common -DCMAKE_INSTALL_PREFIX=extern common
+cmake --build common/build --config Debug --target install
+cmake -B skse64/build -S skse64 -DCMAKE_INSTALL_PREFIX=extern skse64
+cmake --build skse64/build --config Debug
+```
+- Copy contents of `...\skse64\build\skse64_loader\Debug` into Skyrim install directory
+- Copy contents of `...\skse64\build\skse64\Debug` into Skyrim install directory
+- The mod has to be built in debug mode too (currently its the default mode, see `xmake.lua`)
+
+## Tasks Reference
+These tasks were automated; here's documentation for the old manual process.
+
+### SKSE Installation (now `xmake setup-skse`)
+The mod requires the runtime component of SKSE to run.
+
+- Follow the link: https://skse.silverlock.org/
+- Download archive: `Current Anniversary Edition build 2.2.6 (game version 1.6.1170)` (first link)
+- ***Both Anniversary and Special edition 1.6.1170 use the same game version***
+- Extract archive contents into Skyrim install folder
+- Extract `SKSE_addresses.zip` contents into `Skyrim Special Edition\Data\SKSE\Plugins\`. Or download it from here: https://www.nexusmods.com/skyrimspecialedition/mods/32444
+
+---
+### Additional mod files (now `xmake deploy`)
+- Backup (copy and rename) `...\Skyrim Special Edition\Data\Scripts` folder; copy `Scripts` folder from `scripts_compiled` folder into `...\Skyrim Special Edition\Data\` folder, agree to replace files (some vanila files were changed).
+- Copy `mysc.esp` file from repository into `...\Skyrim Special Edition\Data\` directory. This file is required for some core mechanics of the mod to work.
+- At `%appdata%\Local\Skyrim Special Edition\` edit the `Plugins.txt` file: add `*mysc.esp` line in the end (asterisk required). If the file does not exist, create it. Example file contents (for me it has been created automatically):
+```
+# This file is used by Skyrim to keep track of your downloaded content.
+# Please do not modify this file.
+*mysc.esp
+```
+**THE GAME HAS TO BE RUN USING `skse64_loader.exe` FOR THE MOD TO WORK. However, you may run the game launcher (from steam or manually from game folder) to change graphics settings at any time.**
