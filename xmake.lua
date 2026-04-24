@@ -336,7 +336,7 @@ task("debug")
 task("first-time-setup")
     set_menu {
         usage = "xmake first-time-setup",
-        description = "I'm feeling lucky... (attempts to run through all setups steps in sequence)",
+        description = "Attempts to run through all setups steps in sequence",
         options = {},
     }
     on_run(function ()
@@ -347,5 +347,5 @@ task("first-time-setup")
         task.run("setup-skse")
         task.run("deploy")
         task.run("launch")
-        cprint("SUCCESS!!! ASSERT DOMINANCE OVER ALL DRAGONS!")
+        cprint("Success!")
     end)
