@@ -10,7 +10,7 @@ You can use one of these apps to interact with the game:
 2. [Quick Start](https://github.com/Govorunb/gary/tree/main#quick-start)
 
 ### [Jippity](https://github.com/EnterpriseScratchDev/neuro-api-jippity)
-Alternative to Gary, also provides control to an actual LLM
+Alternative to Gary, also gives control to an actual LLM
 
 ### [Tony](https://github.com/Pasu4/neuro-api-tony)
 "Manual human control" - provides context, can perform chosen actions. Controlled by human via GUI. Convenient for precise testing
