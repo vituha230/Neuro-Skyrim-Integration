@@ -33,6 +33,7 @@ bool notified_cast = false;
 float spell_cast_time = 0.0f;
 
 
+
 float fishing_timer = 0.0f;
 
 
@@ -936,10 +937,18 @@ bool is_fishing()
 }
 
 
+
+
+
 float fishing_reaction_time = 0.5f;
 
 void input_processor(float dtime)
 {
+
+
+
+
+
     if ((MiscThings::have_force_only_menu_open() || MiscThings::is_intro() || MiscThings::is_intro2()) && !is_fishing())
         reset_input_processor();
 

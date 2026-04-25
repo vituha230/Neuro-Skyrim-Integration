@@ -1897,6 +1897,13 @@ private:
                     m_neuroSocket->SendGreeting();
                 }
             }
+            else
+            {
+                if (ui)
+                {
+                    WalkerProcessor::lower_processor(dtime);
+                }
+            }
                 
         }
 

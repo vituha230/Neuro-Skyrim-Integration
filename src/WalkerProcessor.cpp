@@ -15,6 +15,8 @@
 namespace WalkerProcessor {
 
 
+    bool start_pathfinding_quest = false;
+
 
     float pause_post_attack = 0.0f;
 
@@ -793,6 +795,14 @@ namespace WalkerProcessor {
     }
 
 
+
+
+
+
+
+
+
+
     namespace Hooks {
 
         struct Pathing {
@@ -832,23 +842,32 @@ namespace WalkerProcessor {
                     }
 
 
-                    if (my_quest->GetCurrentStageID() != 10);
+                    if (my_quest->GetCurrentStageID() != 10)
                     {
-                        ;
-                        //TODO: somehow set the stage of quest
-                        /*
-                        RE::UIMessageQueue::GetSingleton()->AddMessage(RE::Console::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
-                        RE::UIMessageQueue::GetSingleton()->ProcessCommands();
+                        start_pathfinding_quest = true;
 
-                        RE::UI* ui = RE::UI::GetSingleton();
-                        auto console = ui->GetMenu<RE::Console>();
-                        if (console)
+                        return originalStart(a_guideEffect);
+
+                    }
+                    else
+                    {
+
+                        bool temp_result = false;
+
+                        if (!my_quest->data.flags.all(RE::QuestFlag::kKeepInstance) && !my_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD))
                         {
-                            console->ExecuteCommand("setstage myscPath 10");
+                            my_quest->EnsureQuestStarted(temp_result, true);
+
+                            if (!temp_result)
+                            {
+                                my_quest->Stop();
+                                my_quest->Start();
+                            }
+
+                            return originalStart(a_guideEffect);
                         }
-                        RE::UIMessageQueue::GetSingleton()->AddMessage(RE::Console::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
-                        RE::UIMessageQueue::GetSingleton()->ProcessCommands();
-                        */
+                        else
+                            bool stop_here = false;
                     }
 
 
@@ -10319,6 +10338,30 @@ namespace WalkerProcessor {
 
     void lower_processor(float dtime)
     {
+
+        if (start_pathfinding_quest)
+        {
+            auto ui = RE::UI::GetSingleton();
+            if (!ui->IsMenuOpen(RE::Console::MENU_NAME))
+            {
+                RE::UIMessageQueue::GetSingleton()->AddMessage(RE::Console::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+            }
+            else
+            {
+                auto console_menu = ui->GetMenu<RE::Console>();
+
+                if (console_menu)
+                {
+                    console_menu->ExecuteCommand("setstage myscpath 10");
+                    RE::UIMessageQueue::GetSingleton()->AddMessage(RE::Console::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+                    start_pathfinding_quest = false;
+                    //set_universal_block(1.0f);
+                }
+            }
+        }
+
+
+
         if (backup_pickup)
         {
             if (get_cant_walk_reason() != "")

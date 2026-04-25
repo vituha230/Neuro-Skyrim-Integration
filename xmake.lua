@@ -18,6 +18,7 @@ set_languages("c++23")
 set_warnings("allextra")
 
 -- add rules
+--add_rules("mode.debug", "mode.releasedbg")
 add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 
