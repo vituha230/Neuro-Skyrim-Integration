@@ -278,8 +278,11 @@ task("deploy")
         if not os.isdir(compiled_scripts) then
             raise("scripts_compiled/Scripts dir not found! Checked: %s", compiled_scripts)
         end
-        cprint("Deploying compiled scripts to: %s", data_dir)
-        os.cp(path.join(compiled_scripts, "*"), data_dir)
+		
+		local scripts_dir = path.join(data_dir, "Scripts")
+		
+        cprint("Deploying compiled scripts to: %s", scripts_dir)
+        os.cp(path.join(compiled_scripts, "*"), scripts_dir)
 
         local esp = path.join(os.projectdir(), "mysc.esp")
         if not os.isfile(esp) then
