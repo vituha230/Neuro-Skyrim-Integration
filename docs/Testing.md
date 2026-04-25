@@ -16,7 +16,7 @@ Alternative to Gary, also gives control to an actual LLM
 "Manual human control" - provides context, can perform chosen actions. Controlled by human via GUI. Convenient for precise testing
 
 ### [Randy](https://github.com/VedalAI/neuro-sdk/tree/main/Randy)
-Performs random actions. Not very useful for this specific integration (many important action require object IDs from certain range, random inputs will just fail most of the time)
+Performs random actions. Not very useful for this specific integration (many important actions require object IDs from certain range, random inputs will just fail most of the time)
 
 
 ## LLM
