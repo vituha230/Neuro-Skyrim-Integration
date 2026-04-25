@@ -52,7 +52,7 @@ The mod requires the runtime component of SKSE to run.
 
 ---
 ### Additional mod files (now `xmake deploy`)
-- Backup (copy and rename) `...\Skyrim Special Edition\Data\Scripts` folder; copy `Scripts` folder from `scripts_compiled` folder into `...\Skyrim Special Edition\Data\` folder, agree to replace files (some vanila files were changed).
+- Backup (copy and rename) `...\Skyrim Special Edition\Data\Scripts` folder; copy contents of `Scripts` folder from `scripts_compiled` folder into `...\Skyrim Special Edition\Data\Scripts` folder, agree to replace files (some vanila files were changed).
 - Copy `mysc.esp` file from repository into `...\Skyrim Special Edition\Data\` directory. This file is required for some core mechanics of the mod to work.
 - At `%appdata%\Local\Skyrim Special Edition\` edit the `Plugins.txt` file: add `*mysc.esp` line in the end (asterisk required). If the file does not exist, create it. Example file contents (for me it has been created automatically):
 ```
