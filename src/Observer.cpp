@@ -141,6 +141,14 @@ namespace Observer {
 	RE::TESForm* right_hand_pre_brawl = nullptr;
 
 
+	bool player_was_hit = false;
+	float threat_active_time = 0.0f;
+
+	void notify_threat_detector_player_hit()
+	{
+		player_was_hit = true;
+	}
+
 
 	void reset_quest_puzzles()
 	{
@@ -835,6 +843,10 @@ namespace Observer {
 		closest_guard = nullptr;
 
 		no_threats_timer = 0.0f;
+
+		player_was_hit = false;
+		threat_active_time = 0.0f;
+
 	}
 
 
@@ -1053,12 +1065,9 @@ namespace Observer {
 
 								if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response))
 								{
-									if (!pause_was_made && !MiscThings::is_game_paused())
-									{
-										threats_response_request_sent = true;
-										pause_was_made = true; //tween menu mouse kills walker so it has disabled mouse in main.cpp
-										MiscThings::pause_game();
-									}
+									threats_response_request_sent = true;
+
+									unregister_all_actions();
 								}
 							}
 							else
@@ -1071,7 +1080,8 @@ namespace Observer {
 										{
 											MiscThings::unpause_game();
 										}
-										//set_universal_block(0.5f);
+
+										//set_universal_block(0.1f);
 										pause_was_made = false;
 										return;
 
@@ -1079,6 +1089,8 @@ namespace Observer {
 
 									if (!action_taken)
 									{
+										register_allowed_actions();
+
 										if (threats_response_choice == 1)
 										{
 											runaway_in_a_row = 0;
@@ -1129,6 +1141,21 @@ namespace Observer {
 											//walker inactive, but we have threats. reset threats
 											reset_threats();
 										}
+									}
+								}
+								else
+								{
+									if (player_was_hit || threat_active_time > 3.0f)
+									{
+										if (!pause_was_made && !MiscThings::is_game_paused())
+										{
+											pause_was_made = true; //tween menu mouse kills walker so it has disabled mouse in main.cpp
+											MiscThings::pause_game();
+										}
+									}
+									else
+									{
+										threat_active_time += dtime;
 									}
 								}
 							}
@@ -1474,7 +1501,7 @@ namespace Observer {
 													bool fiftyfifty = ((float)std::rand() / RAND_MAX) > 0.5f;
 													auto riverwood_fishing = RE::TESObjectREFR::LookupByID(0x0500081e);
 
-													if (fiftyfifty && name.find("Fishing Supplies") != std::string::npos && !WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path() && (MiscThings::player_has_fishing_rod() || a_ref == riverwood_fishing))
+													if (fiftyfifty && MiscThings::raycastable(a_ref, 1000.0f, true) && name.find("Fishing Supplies") != std::string::npos && !WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path() && (MiscThings::player_has_fishing_rod() || a_ref == riverwood_fishing))
 													{
 														WalkerProcessor::look_at_object_by_refr(a_ref, true, 1.0f);
 														send_random_context("You see: " + info, false); 

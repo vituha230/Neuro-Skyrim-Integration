@@ -44,6 +44,9 @@ namespace Observer {
 	void attatch_hitmap();
 
 	
+	void notify_threat_detector_player_hit();
+
+
 
 	class EventSink :
 		public REX::TSingleton<EventSink>,
@@ -86,6 +89,9 @@ namespace Observer {
 					if (target_ref == player_ref)
 					{
 						//player_hit_info.insert_or_assign({ agressor_ref, {} })
+
+						Observer::notify_threat_detector_player_hit();
+
 
 						if (player_hit_info && hitmap_lock && !*hitmap_lock && send_random_context)
 						{
