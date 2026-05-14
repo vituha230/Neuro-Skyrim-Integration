@@ -706,8 +706,15 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
 
 
+    std::string text = "";
 
+    for (int i = 0; i < action_pos; i++)
+    {
+        text += actions_to_register[i].name;
+        text += "\n";
+    }
 
+    Hooks::add_debug_line("NEUROSOCKET: registering actions: " + text);
 
 
     neurosdk_message_t capabilityMessage{ .kind = NeuroSDK_MessageKind_ActionsRegister,
@@ -1630,6 +1637,8 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
             {
                 command_result.second = MiscThings::fix_book_description(command_result.second); //clear all <> parts
 
+
+                //command_result.second = "[" + MiscThings::get_timestamp_string() + "] " + command_result.second;
 
                 action_result.value.action_result.success = command_result.first;
                 action_result.value.action_result.message = command_result.second.c_str();

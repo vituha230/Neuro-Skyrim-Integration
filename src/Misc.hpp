@@ -7,6 +7,8 @@ namespace MiscThings {
 
 
 
+    std::string get_timestamp_string();
+
 
     struct interesting_places {
         std::string settlement_name;

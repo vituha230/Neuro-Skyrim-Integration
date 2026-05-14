@@ -54,6 +54,8 @@
 #include <vector>
 
 
+
+
 //REMOVE ON RELEASE (i mean if we wont used it)
 #include <fstream>
 
@@ -65,6 +67,8 @@ bool API_CONTROL_CRAFTING = false;
 
 
 bool do_debug_scan = false;
+bool debug_info = false;
+
 
 bool autolook_at_speakers_on_afk = true;
 bool count_ephemeral_force = true;
@@ -254,6 +258,11 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
                 message.c_str(),
                 json.c_str(),
                 "medium");
+
+            std::string debug_msg = force_action.name;
+
+            Hooks::add_debug_line("NEUROSOCKET: new force: " + debug_msg);
+
             return true;
         }
         return false;
@@ -655,8 +664,13 @@ void send_random_context(std::string context, bool silent)
     if (Observer::not_informing_inventory() && context.find("Quest Items cannot be removed") != std::string::npos)
         return;
 
+    //context = "[" + MiscThings::get_timestamp_string() + "] " + context;
 
     context_chars_sent += context.length();
+
+    std::string text = context;
+
+    Hooks::add_debug_line("NEUROSOCKET: sending context: " + text);
 
     if (m_neuroSocket)
         m_neuroSocket->SendContext(context.c_str(), silent);
@@ -1236,10 +1250,124 @@ namespace Hooks {
         static inline void Install() { originalFunction = REL::Relocation<std::uintptr_t>(RE::VTABLE_LoadingMenu[0]).write_vfunc(0x4, thunk); }
     };
 
+
+
+
+
+
+
+    RE::GFxValue GetMenu_mc(std::string_view nameOfMenuToGet)
+    {
+        auto UISingleton = RE::UI::GetSingleton();
+        auto menuToGet = nameOfMenuToGet != "HUD Menu" ? nameOfMenuToGet : RE::HUDMenu::MENU_NAME;
+        auto menu = UISingleton ? UISingleton->GetMenu(menuToGet) : nullptr;
+        RE::GFxMovieView* view = menu ? menu->uiMovie.get() : nullptr;
+        if (!view)
+            return nullptr;
+
+        RE::GFxValue Menu_mc;
+        bool menuObtained = view->GetVariable(
+            &Menu_mc,
+            nameOfMenuToGet == "LootMenu" ? "_root.lootMenu"
+            : nameOfMenuToGet == "HUD Menu" ? "_root"
+            : "_root.Menu_mc");
+        if (!menuObtained)
+            return nullptr;
+        return Menu_mc;
+    }
+
+    std::string debug_text = "";
+
+    std::vector<std::string> debug_lines{};
+
+    int max_debug_size = 30;
+
+    void add_debug_line(std::string line)
+    {
+        if (!debug_info)
+            return;
+
+
+        if (std::size(debug_lines) < max_debug_size)
+        {
+            debug_lines.push_back(line);
+        }
+        else
+        {
+            for (int i = 0; i < max_debug_size - 1; i++)
+            {
+                debug_lines.at(i) = debug_lines.at(i + 1);
+            }
+
+            debug_lines.at(max_debug_size - 1) = line;
+        }
+
+        debug_text = "";
+        for (auto a_line : debug_lines)
+        {
+            debug_text += a_line + "\n";
+        }
+
+    }
+
+    void update_debug_text()
+    {
+        if (!debug_info)
+            return;
+
+        RE::GFxValue Menu_mc = GetMenu_mc(RE::HUDMenu::MENU_NAME);
+
+        if (Menu_mc.IsObject())
+        {
+            RE::GFxValue ceMenu;
+
+            Menu_mc.GetMember("MyMenu", &ceMenu);
+
+            if (ceMenu.IsObject())
+            {
+                RE::GFxValue my_text{};
+
+                RE::UI* ui = RE::UI::GetSingleton();
+                if (ui)
+                    if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu)
+                    {
+                        if (menu->uiMovie)
+                            if (menu->uiMovie->GetVariable(&my_text, "_root.MyMenu.LevelUpMenu_mc.ItemTextField"))
+                            {
+                                if (!my_text.IsNull() && my_text.IsDisplayObject())
+                                {
+                                    my_text.SetTextHTML(debug_text.c_str());
+
+                                    menu->uiMovie->SetVariable("_root.MyMenu.LevelUpMenu_mc.ItemTextField", my_text);
+
+                                }
+                            }
+                    }
+            }
+        }
+    }
+
+
+
+
+
+    bool one_shot = false;
+
     struct HUDMenuProcessMessage {
         static RE::UI_MESSAGE_RESULTS thunk(RE::HUDMenu* menu, RE::UIMessage& a_message) {
-            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
+            if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) 
+            {
                 RE::ConsoleLog::GetSingleton()->Print("HUDMenu WAS OPENED");
+
+
+                //auto scale_manager = RE::BSScaleformManager::GetSingleton();
+                
+                //RE::IMenu my_menu{};
+
+                //RE::GPtr<RE::GFxMovieView> my_menu_gptr;
+
+                //scale_manager->LoadMovie(&my_menu, my_menu_gptr, "Data/mymenu.swf");
+
 
                 //WalkerProcessor::reset_walker(); //this shit doesnt actually work. hud menu stays loaded in loading it seems
 
@@ -1249,6 +1377,49 @@ namespace Hooks {
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
                 //RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
 
+            }
+            else
+            {
+                if (!one_shot && debug_info)
+                {
+                    if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kUpdate)
+                    {
+                        SKSE::GetTaskInterface()->AddUITask([]()
+                            {
+
+                                RE::GFxValue args[2];
+                                args[0].SetString("MyMenu"); // name
+                                args[1] = 3999;               // depth
+
+                                RE::GFxValue Menu_mc = GetMenu_mc(RE::HUDMenu::MENU_NAME);
+
+                                if (Menu_mc.IsObject())
+                                {
+                                    if (!Menu_mc.Invoke("createEmptyMovieClip", nullptr, args, 2))
+                                        return;
+
+                                    RE::GFxValue ceMenu;
+
+                                    Menu_mc.GetMember("MyMenu", &ceMenu);
+
+                                    if (ceMenu.IsObject())
+                                    {
+                                        RE::GFxValue args2[1];
+                                        args2[0].SetString("mymenu.swf"); // name
+                                        if (!ceMenu.Invoke("loadMovie", nullptr, args2, 1))
+                                            return;
+
+                                        one_shot = true;
+                                        bool stop_here = false;
+                                    }
+                                }
+
+                            });
+
+                        bool stop_here = false;
+                    }
+                }
+                
             }
            
             return originalFunction(menu, a_message);
@@ -2700,6 +2871,8 @@ class MyHook {
             WalkerProcessor::processor(dtime);
             DialogueProcessor::processor(dtime);
             MiscThings::book_reader(dtime);
+
+            Hooks::update_debug_text();
         }
 
         

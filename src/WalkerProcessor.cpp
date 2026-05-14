@@ -8665,7 +8665,7 @@ namespace WalkerProcessor {
                 {
                     if (attacking_inanimate_object_time > 3.0f)
                     {
-                        if (MiscThings::get_destructible_state(target_ref) != 0)
+                        if (MiscThings::get_destructible_state(target_ref) != 0 && MiscThings::get_destructible_state(target_ref) != -1)
                         {
                             right_attack_cancel();
                             left_attack_cancel();
@@ -8677,7 +8677,7 @@ namespace WalkerProcessor {
                         else
                             attacking_inanimate_object_time += dtime;
 
-                        if (attacking_inanimate_object_time > 5.0f)
+                        if ((attacking_inanimate_object_time > 5.0f && MiscThings::get_destructible_state(target_ref) != -1) || attacking_inanimate_object_time > 15.0f)
                         {
                             right_attack_cancel();
                             left_attack_cancel();

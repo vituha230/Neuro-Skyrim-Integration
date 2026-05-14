@@ -36,6 +36,13 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
 void unregister_all_actions();
 void unregister_all_actions2();
 
+namespace Hooks {
+	void add_debug_line(std::string line);
+	void update_debug_text();
+}
+
+
+
 void register_allowed_actions(float bonus_pause = 0.0f);
 bool register_unlock_shout_action();
 bool unregister_look_action();

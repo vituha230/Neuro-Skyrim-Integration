@@ -3354,7 +3354,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -3469,7 +3469,7 @@ if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
                             */
 
 
-                            search_var = "invitation";
+                            search_var = "Choose an attribute";
                             search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {

@@ -2,6 +2,9 @@
 #include "main.hpp"
 #include "Misc.hpp"
 #include "InputActions.hpp"
+
+#include <ctime>
+
 //TODO: at least put it in groups. maybe tell what can be done with each group
 
 
@@ -15,6 +18,21 @@ namespace MiscThings {
 
 
 
+
+
+    std::string get_timestamp_string()
+    {
+        std::time_t now = std::time(nullptr);
+        // ctime returns a pointer to a static string: Www Mmm dd hh:mm:ss yyyy\n
+        char* dt = std::ctime(&now);
+
+        std::string result = dt;
+
+        if (result.length() > 0)
+            result = result.substr(0, result.length() - 1); //remove endln
+
+        return result;
+    }
 
 
 
@@ -1555,7 +1573,7 @@ namespace MiscThings {
             {
                 auto cobweb = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xAA83F);
 
-                if (cobweb && MiscThings::get_destructible_state(cobweb) == 0) //it exists and it isnt destroyed
+                if (cobweb && (MiscThings::get_destructible_state(cobweb) == 0 || MiscThings::get_destructible_state(cobweb) == -1)) //it exists and it isnt destroyed
                 {
                     auto spider_eggs = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3E63E);
 
@@ -1742,7 +1760,7 @@ namespace MiscThings {
 
         if (target == skuldafn_inner_door && skuldafn_inner_door && skuldafn_web)
         {
-            if (MiscThings::get_destructible_state(skuldafn_web) == 0) //not destroyed
+            if (MiscThings::get_destructible_state(skuldafn_web) == 0 || MiscThings::get_destructible_state(skuldafn_web) == -1) //not destroyed
             {
                 return skuldafn_web;
             }
@@ -2824,6 +2842,14 @@ namespace MiscThings {
                 result = name;
             }
 
+            if (model.find("StockadeBarricade") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", a_ref);
+
+                result = name;
+            }
+
+
             if (model.find("PuzzleDoorKeyHole") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
             {
                 std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
@@ -2931,11 +2957,13 @@ namespace MiscThings {
                     if (!MiscThings::is_object_valid(a_ref))
                         return RE::BSContainer::ForEachResult::kContinue;
 
+                    if (result != "")
+                        return RE::BSContainer::ForEachResult::kStop;
 
                     result = get_blocking_object_name(a_ref);
 
                     if (result != "")
-                        return RE::BSContainer::ForEachResult::kStop;
+                        return RE::BSContainer::ForEachResult::kStop; //this stop isnt stopping for some reason
 
                     return RE::BSContainer::ForEachResult::kContinue;
                 });
@@ -3163,8 +3191,19 @@ namespace MiscThings {
                     auto extra_swap = extralist->GetByType(RE::ExtraDataType::kModelSwap);
                     if (extra_swap)
                         result = 1;
+                    else
+                        result = -1;
                 }
 
+                if (model.find("StockadeBarricade") != std::string::npos)
+                {
+                    auto extralist = &web->extraList;
+                    auto extra_swap = extralist->GetByType(RE::ExtraDataType::kModelSwap);
+                    if (extra_swap)
+                        result = 2;
+                    else
+                        result = -1;
+                }
             }
         }
 
@@ -7275,6 +7314,13 @@ namespace MiscThings {
                 if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
                 {
                     std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Cobweb", refr);
+
+                    result = name;
+                }
+
+                if (model.find("StockadeBarricade") != std::string::npos)
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", refr);
 
                     result = name;
                 }
@@ -12020,7 +12066,7 @@ namespace MiscThings {
             name = a_ref->GetDisplayFullName();
 
 
-            if (get_destructible_state(a_ref) != 0)
+            if (get_destructible_state(a_ref) != 0 && get_destructible_state(a_ref) != -1)
                 return false;
 
             if (base_type == RE::FormType::Activator)
