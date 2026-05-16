@@ -3,7 +3,11 @@
 
 //crucial:
 
-
+//TODO exclude empty containers from object list, unless they are quest related
+//TODO endless pickpocket attempts if "character is busy"
+//TODO unregister non-choice actions when giving "confirm fucking up pillar" choice
+//TODO barter: remove items that vendor cannot afford even if they still have some gold (llms dont wish to agree on underpaid transaction)
+//TODO dont walk until game is paused when threats detected
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 

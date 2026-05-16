@@ -6707,6 +6707,10 @@ namespace WalkerProcessor {
                     }
 
 
+                    //old objective conditions are not met anymore. reset walker if no new targets found.
+
+                    bool new_target_found = false;
+
                     for (auto* target : std::span(quest_targets, objective->numTargets)) {
                         if (target)
                         {
@@ -6734,6 +6738,7 @@ namespace WalkerProcessor {
 
                                 if (conditions_met)
                                 {
+                                    
                                     RE::ObjectRefHandle quest_ref_handle{};
                                     target->GetTrackingRef(quest_ref_handle, quest); //try tracked
                                     if (!quest_ref_handle)
@@ -6745,6 +6750,8 @@ namespace WalkerProcessor {
                                             auto quests_target_ref = quest_ref_handle.get().get();
 
                                             quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref);
+
+                                            new_target_found = true;
 
                                             if (target_ref != quests_target_ref)
                                             {
@@ -6799,6 +6806,13 @@ namespace WalkerProcessor {
                                 }
                             }
                         }
+                    }
+
+                    //test if new target was found at all
+                    if (!new_target_found)
+                    {
+                        result = true;
+                        reset_walker();
                     }
                 }
             }
