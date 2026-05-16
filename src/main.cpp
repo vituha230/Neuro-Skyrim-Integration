@@ -6,7 +6,6 @@
 //TODO exclude empty containers from object list, unless they are quest related
 //TODO endless pickpocket attempts if "character is busy"
 //TODO unregister non-choice actions when giving "confirm fucking up pillar" choice
-//TODO barter: remove items that vendor cannot afford even if they still have some gold (llms dont wish to agree on underpaid transaction)
 
 
 

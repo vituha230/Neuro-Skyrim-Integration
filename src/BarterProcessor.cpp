@@ -611,7 +611,7 @@ namespace BarterProcessor {
                             int item_price = items_list.find(pos_to_id(item_choice))->second.price;
                             int player_gold = MiscThings::get_player_gold();
 
-                            if (type == barter_type::sell || (item_price <= player_gold))
+                            if ((type == barter_type::buy && (item_price <= player_gold)) || (type == barter_type::sell && (item_price <= get_vendor_gold())))
                             {
                                 item_choice_valid = true;
                                 barter_item_request_sent = true;
@@ -724,7 +724,14 @@ namespace BarterProcessor {
         }
 
         if (result != "")
-            result = "Items you cannot afford: " + result;
+        {
+            if (type == barter_type::buy)
+                result = "Items you cannot afford: " + result;
+
+            if (type == barter_type::sell)
+                result = "Items that vendor cannot afford: " + result;
+        }
+
 
         return result;
     }
@@ -773,7 +780,9 @@ namespace BarterProcessor {
             if (stats != "")
                 stats = " [" + stats + "]";
 
-            if (type == barter_type::sell || (item.second.price <= MiscThings::get_player_gold()))
+
+            //filter items that cannot be sold/bought
+            if ((type == barter_type::buy && (item.second.price <= MiscThings::get_player_gold())) || (type == barter_type::sell && (item.second.price <= get_vendor_gold())))
             {
                 MenuOption option = { id_to_pos(item.first), item.second.name + stats + " - " + std::to_string(item.second.price) + " gold" };
                 result.push_back(option);

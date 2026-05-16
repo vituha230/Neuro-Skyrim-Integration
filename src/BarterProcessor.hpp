@@ -32,6 +32,9 @@ namespace BarterProcessor {
 
     bool inside_of_category();
 
+
+    int get_vendor_gold();
+
 }
 
 
