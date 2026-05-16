@@ -992,6 +992,12 @@ namespace Observer {
 
 
 
+	bool threat_response_choice_pending()
+	{
+		return threats_response_request_sent && !threats_response_choice_valid;
+	}
+
+
 	void detect_threats(float dtime)
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();

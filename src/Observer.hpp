@@ -46,7 +46,7 @@ namespace Observer {
 	
 	void notify_threat_detector_player_hit();
 
-
+	bool threat_response_choice_pending();
 
 	class EventSink :
 		public REX::TSingleton<EventSink>,

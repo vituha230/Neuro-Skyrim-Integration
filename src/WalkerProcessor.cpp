@@ -10408,6 +10408,11 @@ namespace WalkerProcessor {
         }
 
 
+        if (Observer::threat_response_choice_pending())
+            return; //dont walk until threat response is resolved
+
+
+
         if (multiple_paths_quest_choice_confirming)
         {
             if (!multiple_paths_quest_request_sent)
