@@ -474,16 +474,18 @@ namespace WalkerProcessor {
     }
 
 
+    bool is_pickpocketing()
+    {
+        return interaction_after_walk == 2 && target_ref;
+    }
+
+
+
     bool walker_active()
     {
         return (bool)target_ref;
     }
 
-
-    bool is_pickpocketing()
-    {
-        return interaction_after_walk == 2;
-    }
 
 
     bool gate_shout_condition()

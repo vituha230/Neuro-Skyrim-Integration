@@ -4,9 +4,6 @@
 //crucial:
 
 
-//TODO endless pickpocket attempts if "character is busy"
-
-
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open

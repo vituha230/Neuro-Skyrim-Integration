@@ -4138,6 +4138,13 @@ namespace MiscThings {
                                                             if (result_string.find("has already caught you") != std::string::npos)
                                                                 WalkerProcessor::reset_walker();
 
+                                                            if (WalkerProcessor::is_pickpocketing() && result_string == "This person is busy.")
+                                                            {
+                                                                WalkerProcessor::reset_walker();
+
+                                                                result_string += " Pickpocketing cancelled";
+                                                            }
+
 
                                                             if (result_string.find("hands are bound") != std::string::npos)
                                                                 if (MiscThings::is_intro())
