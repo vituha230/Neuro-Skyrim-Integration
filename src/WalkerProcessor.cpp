@@ -10174,6 +10174,8 @@ namespace WalkerProcessor {
 
         if (!fuckup_pillar_confirm_request_sent)
         {
+            register_allowed_actions();
+
             result.first = true;
             result.second = "[Error]";
         }
@@ -10181,6 +10183,8 @@ namespace WalkerProcessor {
         {
             if (id == 0 || id == 1)
             {
+                register_allowed_actions();
+
                 fuckup_pillar_confirm_choice_valid = true;
                 fuckup_pillar_confirm_choice = id;
                 result.first = true;
@@ -11600,6 +11604,8 @@ namespace WalkerProcessor {
                             std::vector<MenuOption> options{};
                             options.push_back({ 0, "No" });
                             options.push_back({ 1, "Yes" });
+
+                            unregister_all_actions();
 
                             if (force_choice(options, "It is already in correct position. Are you sure you want to touch it?", force_type::confirm_pillar))
                             {

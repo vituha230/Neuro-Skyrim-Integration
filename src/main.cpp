@@ -5,8 +5,6 @@
 
 
 //TODO endless pickpocket attempts if "character is busy"
-//TODO unregister non-choice actions when giving "confirm fucking up pillar" choice
-
 
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
