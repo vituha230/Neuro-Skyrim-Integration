@@ -1586,10 +1586,17 @@ namespace Observer {
 															send_random_context("You see: " + info, false); //large chests are not silent and immidiate 
 														}
 														else
-															interesting_buffer.insert_or_assign(a_ref, info);
+														{
+															if (!MiscThings::is_container_empty(a_ref))
+																interesting_buffer.insert_or_assign(a_ref, info);
+														}
 													}
 													else
-														interesting_buffer.insert_or_assign(a_ref, info);
+													{
+														if (!MiscThings::is_container_empty(a_ref))
+															interesting_buffer.insert_or_assign(a_ref, info);
+													}
+														
 												}
 
 											}

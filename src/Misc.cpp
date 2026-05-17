@@ -6494,10 +6494,18 @@ namespace MiscThings {
                 {
                     if (extra_changes->changes)
                     {
-                        if (extra_changes->changes->changed)
+                        //if (extra_changes->changes->changed)
                         {
                             if (extra_changes->changes->entryList)
-                                return extra_changes->changes->entryList->size() == 0;
+                            {
+                                for (auto entry : *extra_changes->changes->entryList)
+                                {
+                                    if (entry && entry->countDelta > 0)
+                                        return false;
+                                }
+
+                                return true;
+                            }
                             else
                                 return true;
                         }       
@@ -12141,6 +12149,12 @@ namespace MiscThings {
                 }
                 else
                     return false;
+            }
+
+
+            if (base_type == RE::FormType::Container)
+            {
+                return !MiscThings::is_container_empty(a_ref);
             }
 
         }
