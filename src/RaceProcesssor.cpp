@@ -330,7 +330,10 @@ namespace RaceProcessor {
 							//_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList1.EntriesA		[10].1.raceDescription
 							if (menu->uiMovie->GetVariable(&var1, ("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList1.EntriesA." + std::to_string(result.id) + ".raceDescription").c_str()))
 								if (!var1.IsNull() && var1.IsString())
+								{
 									description = var1.GetString();
+								}
+									
 
 
 							if (name != "")
@@ -1608,9 +1611,23 @@ namespace RaceProcessor {
 		int selected_gender_index = get_gender_selected_index();
 
 		if (selected_gender_index > gender_choice)
+		{
+			if (last_cursor_move == 2)
+				missing_item_detected = true;
+
 			left();
+			last_cursor_move = 1;
+		}
+
 		if (selected_gender_index < gender_choice)
+		{
+			if (last_cursor_move == 1)
+				missing_item_detected = true;
+
 			right();
+
+			last_cursor_move = 2;
+		}
 	}
 
 
@@ -1619,9 +1636,22 @@ namespace RaceProcessor {
 		int selected_preset_index = get_preset_selected_index();
 
 		if (selected_preset_index > preset_choice)
+		{
+			if (last_cursor_move == 2)
+				missing_item_detected = true;
+
 			left();
+			last_cursor_move = 1;
+		}
 		if (selected_preset_index < preset_choice)
+		{
+			if (last_cursor_move == 1)
+				missing_item_detected = true;
+
 			right();
+
+			last_cursor_move = 2;
+		}
 	}
 
 
@@ -1631,9 +1661,24 @@ namespace RaceProcessor {
 		int selected_generic_slider_index = get_generic_slider_selected_index();
 
 		if (selected_generic_slider_index > generic_slider_choice)
+		{
+			if (last_cursor_move == 2)
+				missing_item_detected = true;
+
 			left();
+			last_cursor_move = 1;
+		}
+			
 		if (selected_generic_slider_index < generic_slider_choice)
+		{
+			if (last_cursor_move == 1)
+				missing_item_detected = true;
+
 			right();
+
+			last_cursor_move = 2;
+		}
+
 	}
 
 
@@ -1747,7 +1792,18 @@ namespace RaceProcessor {
 										if (!missing_item_detected)
 											move_to_item(race_choice);
 										else
-											reset_menu();
+										{
+											//this should never happen
+											confirm_race = false;
+											race_defined = true;
+
+											last_cursor_move = -1;
+											missing_item_detected = false;
+
+											increment_category();
+
+											set_universal_block(1.0f);
+										}
 									}
 									else
 									{
@@ -1755,6 +1811,9 @@ namespace RaceProcessor {
 
 										confirm_race = false;
 										race_defined = true;
+
+										last_cursor_move = -1;
+										missing_item_detected = false;
 
 										increment_category();
 
@@ -1792,7 +1851,22 @@ namespace RaceProcessor {
 											if (!missing_item_detected)
 												move_generic_slider(generic_slider_choice);
 											else
-												reset_menu();
+											{
+												//this might happen. something about truncating floats
+												
+												//generic_slider_defined = true;
+
+												generic_slider_defined = false;
+												generic_slider_request_sent = false;
+												generic_slider_choice_valid = false;
+												generic_slider_choice = -1;
+
+												last_cursor_move = -1;
+												missing_item_detected = false;
+
+												increment_category();
+												set_universal_block(1.0f);
+											}
 										}
 										else
 										{
@@ -1802,6 +1876,9 @@ namespace RaceProcessor {
 											generic_slider_request_sent = false;
 											generic_slider_choice_valid = false;
 											generic_slider_choice = -1;
+
+											last_cursor_move = -1;
+											missing_item_detected = false;
 
 											increment_category();
 											set_universal_block(1.0f);
