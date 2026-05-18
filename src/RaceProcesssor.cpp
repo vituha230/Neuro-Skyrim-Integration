@@ -50,6 +50,12 @@ namespace RaceProcessor {
 	bool preset_choice_valid = false;
 	int preset_choice = -1;
 
+	bool generic_slider_defined = false;
+	bool generic_slider_request_sent = false;
+	bool generic_slider_choice_valid = false;
+	int generic_slider_choice = -1;
+
+
 	bool name_defined = false;
 	bool name_request_sent = false;
 	bool name_choice_valid = false;
@@ -61,6 +67,150 @@ namespace RaceProcessor {
 
 	float last_pause_time = 0.0f;
 
+
+	int current_page = -1;
+	int current_slider = -1;
+
+
+	void reset_category()
+	{
+		current_page = 0;
+		current_slider = 0;
+	}
+
+
+	bool has_facial_hair()
+	{
+		bool result = false;
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::RaceSexMenu>();
+		RE::GFxValue var1;
+
+		if (ui && menu && ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.EntriesA.46.sliderMax"))
+					if (!var1.IsNull() && var1.IsNumber())
+						result = true;
+
+		return result;
+	}
+
+	void increment_category()
+	{
+		if (current_page == 0)
+		{
+			current_page = 1;
+			current_slider = 0;
+			return;
+		}
+
+		if (current_page == 1)
+		{
+			if (current_slider < 3)
+			{
+				current_slider++;
+			}
+			else
+			{
+				current_page++;
+				current_slider = 0;
+			}
+			return;
+		}
+
+
+		if (current_page == 2)
+		{
+			if (current_slider < 5)
+			{
+				current_slider++;
+			}
+			else
+			{
+				current_page++;
+				current_slider = 0;
+			}
+			return;
+		}
+
+
+		if (current_page == 3)
+		{
+			if (current_slider < 14)
+			{
+				current_slider++;
+			}
+			else
+			{
+				current_page++;
+				current_slider = 0;
+			}
+			return;
+		}
+
+
+
+		if (current_page == 4)
+		{
+			if (current_slider < 7)
+			{
+				current_slider++;
+			}
+			else
+			{
+				current_page++;
+				current_slider = 0;
+			}
+			return;
+		}
+
+
+
+		if (current_page == 5)
+		{
+			if (current_slider < 3)
+			{
+				current_slider++;
+			}
+			else
+			{
+				current_page++;
+				current_slider = 0;
+			}
+			return;
+		}
+
+
+		if (current_page == 6)
+		{
+			if (current_slider < 6)
+			{
+				current_slider++;
+			}
+			else
+			{
+				current_page++;
+				current_slider = 0;
+			}
+			return;
+		}
+
+
+		if (current_page == 7)
+		{
+			if (current_slider < (1 + has_facial_hair()))
+			{
+				current_slider++;
+			}
+			else
+			{
+				current_page++;
+				current_slider = 0;
+			}
+			return;
+		}
+
+	}
 
 
 	std::string typed_string = "";
@@ -402,6 +552,8 @@ namespace RaceProcessor {
 
 
 		typed_string = "";
+
+		reset_category();
 	}
 
 
@@ -478,8 +630,32 @@ namespace RaceProcessor {
 
 
 
+	std::pair<bool, std::string> set_generic_slider_choice(int choice)
+	{
+		std::pair<bool, std::string> result{};
 
-	int get_selected_category()
+
+		if (choice >= 0 && choice < get_max_generic_slider() + 1)
+		{
+			generic_slider_choice = choice;
+			generic_slider_choice_valid = true;
+
+			result.first = true;
+			result.second = "[Processing...]";
+		}
+		else
+		{
+			result.first = false;
+			result.second = "Invalid choice";
+		}
+
+
+		return result;
+	}
+
+
+
+	int get_selected_page()
 	{
 		int result = -1;
 
@@ -495,25 +671,12 @@ namespace RaceProcessor {
 							result = var1.GetNumber();
 						}
 
-		if (result == 1)
-		{
-			if (ui)
-				if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
-					if (menu->uiMovie)
-						if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.iSelectedIndex"))
-							if (!var1.IsNull() && var1.IsNumber())
-							{
-								result = result + var1.GetNumber();
-							}
-		}
-
-
 		return result;
 	}
 
 
 
-	bool is_inside_of_category(int category)
+	bool is_inside_of_category(int page, int category)
 	{
 		bool result = false;
 
@@ -524,7 +687,10 @@ namespace RaceProcessor {
 		RE::GFxValue var1;
 		RE::UI* ui = RE::UI::GetSingleton();
 
-		switch (category) {
+
+		int shift = get_category_shift(page);
+
+		switch (page) {
 		case (0):
 		{
 
@@ -555,6 +721,7 @@ namespace RaceProcessor {
 
 			if (is_in_body)
 			{
+
 				if (ui)
 					if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
 						if (menu->uiMovie)
@@ -563,7 +730,7 @@ namespace RaceProcessor {
 								{
 									int var1_number = var1.GetNumber();
 
-									result = var1_number == 0;
+									result = var1_number == category + shift;
 								}
 			}
 
@@ -580,7 +747,7 @@ namespace RaceProcessor {
 							if (!var1.IsNull() && var1.IsString())
 							{
 								std::string var1_string = var1.GetString();
-								is_in_body = true;
+								is_in_body = var1_string == "Head";
 							}
 
 			if (is_in_body)
@@ -593,7 +760,7 @@ namespace RaceProcessor {
 								{
 									int var1_number = var1.GetNumber();
 
-									result = var1_number == 1;
+									result = var1_number == category + shift;
 								}
 			}
 
@@ -602,9 +769,166 @@ namespace RaceProcessor {
 
 		case (3):
 		{
+			bool is_in_body = false;
+			if (ui)
+				if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+					if (menu->uiMovie)
+						if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._CategoriesList.SelectedEntry.textField.text"))
+							if (!var1.IsNull() && var1.IsString())
+							{
+								std::string var1_string = var1.GetString();
+								is_in_body = var1_string == "Face";
+							}
+
+			if (is_in_body)
+			{
+				if (ui)
+					if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+						if (menu->uiMovie)
+							if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.iSelectedIndex"))
+								if (!var1.IsNull() && var1.IsNumber())
+								{
+									int var1_number = var1.GetNumber();
+
+									result = var1_number == category + shift;
+								}
+			}
 
 			break;
 		}
+
+
+		case (4):
+		{
+			bool is_in_body = false;
+			if (ui)
+				if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+					if (menu->uiMovie)
+						if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._CategoriesList.SelectedEntry.textField.text"))
+							if (!var1.IsNull() && var1.IsString())
+							{
+								std::string var1_string = var1.GetString();
+								is_in_body = var1_string == "Eyes";
+							}
+
+			if (is_in_body)
+			{
+				if (ui)
+					if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+						if (menu->uiMovie)
+							if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.iSelectedIndex"))
+								if (!var1.IsNull() && var1.IsNumber())
+								{
+									int var1_number = var1.GetNumber();
+
+									result = var1_number == category + shift;
+								}
+			}
+
+			break;
+		}
+
+
+		case (5):
+		{
+			bool is_in_body = false;
+			if (ui)
+				if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+					if (menu->uiMovie)
+						if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._CategoriesList.SelectedEntry.textField.text"))
+							if (!var1.IsNull() && var1.IsString())
+							{
+								std::string var1_string = var1.GetString();
+								is_in_body = var1_string == "Brow";
+							}
+
+			if (is_in_body)
+			{
+				if (ui)
+					if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+						if (menu->uiMovie)
+							if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.iSelectedIndex"))
+								if (!var1.IsNull() && var1.IsNumber())
+								{
+									int var1_number = var1.GetNumber();
+
+									result = var1_number == category + shift;
+								}
+			}
+
+			break;
+		}
+
+		case (6):
+		{
+			bool is_in_body = false;
+			if (ui)
+				if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+					if (menu->uiMovie)
+						if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._CategoriesList.SelectedEntry.textField.text"))
+							if (!var1.IsNull() && var1.IsString())
+							{
+								std::string var1_string = var1.GetString();
+								is_in_body = var1_string == "Mouth";
+							}
+
+			if (is_in_body)
+			{
+				if (ui)
+					if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+						if (menu->uiMovie)
+							if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.iSelectedIndex"))
+								if (!var1.IsNull() && var1.IsNumber())
+								{
+									int var1_number = var1.GetNumber();
+
+									result = var1_number == category + shift;
+								}
+			}
+
+			break;
+		}
+
+
+
+		case (7):
+		{
+			bool is_in_body = false;
+			if (ui)
+				if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+					if (menu->uiMovie)
+						if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._CategoriesList.SelectedEntry.textField.text"))
+							if (!var1.IsNull() && var1.IsString())
+							{
+								std::string var1_string = var1.GetString();
+								is_in_body = var1_string == "Hair";
+							}
+
+			if (is_in_body)
+			{
+				if (ui)
+					if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+						if (menu->uiMovie)
+							if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.iSelectedIndex"))
+								if (!var1.IsNull() && var1.IsNumber())
+								{
+									int var1_number = var1.GetNumber();
+
+									result = var1_number == category + shift;
+								}
+			}
+
+			break;
+		}
+
+
+		case (8):
+		{
+			//name
+			break;
+		}
+
+
 
 		}
 
@@ -666,6 +990,50 @@ namespace RaceProcessor {
 		return result;
 	}
 
+
+
+	void page_right()
+	{
+		bool result = false;
+
+		RE::GFxValue var1;
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (ui)
+			if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+			{
+				//menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.CagetoryLockBaseInstance.CategoryInstance.ButtonHintRightInstance.onRollOver", nullptr, nullptr, 0);
+				//menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.CagetoryLockBaseInstance.CategoryInstance.ButtonHintRightInstance.onPress", nullptr, nullptr, 0);
+
+				menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RightClickInstance.onRollOver", nullptr, nullptr, 0);
+				menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RightClickInstance.onPress", nullptr, nullptr, 0);
+				menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RightClickInstance.onRelease", nullptr, nullptr, 0);
+			}
+
+	}
+
+
+	void page_left()
+	{
+		bool result = false;
+
+		RE::GFxValue var1;
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (ui)
+			if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+			{
+				//menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.CagetoryLockBaseInstance.CategoryInstance.ButtonHintRightInstance.onRollOver", nullptr, nullptr, 0);
+				//menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.CagetoryLockBaseInstance.CategoryInstance.ButtonHintRightInstance.onPress", nullptr, nullptr, 0);
+
+				menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.LeftClickInstance.onRollOver", nullptr, nullptr, 0);
+				menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.LeftClickInstance.onPress", nullptr, nullptr, 0);
+				menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.LeftClickInstance.onRelease", nullptr, nullptr, 0);
+			}
+
+	}
+
+
 	/*
 	void categories_right()
 	{
@@ -691,6 +1059,27 @@ namespace RaceProcessor {
 	}
 	*/
 
+
+	int get_category_shift(int page)
+	{
+		switch (page)
+		{
+		case (0): return 0; //race
+		case (1): return 0; //body
+		case (2): return 4; //head
+		case (3): return 24 + has_facial_hair(); //face
+		case (4): return 12 + has_facial_hair(); //eyes
+		case (5): return 20 + has_facial_hair(); //brow
+		case (6): return 39 + has_facial_hair(); //mouth
+		case (7): return 10; //hair
+		case (8): return 0;
+		}
+
+		return -1;
+	}
+
+
+
 	int get_selected_slider()
 	{
 		int result = -1;
@@ -698,13 +1087,16 @@ namespace RaceProcessor {
 		RE::GFxValue var1;
 		RE::UI* ui = RE::UI::GetSingleton();
 
+
+		int shift = get_category_shift(get_selected_page());
+
 		if (ui)
 			if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
 				if (menu->uiMovie)
 					if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.iSelectedIndex"))
 						if (!var1.IsNull() && var1.IsNumber())
 						{
-							result = var1.GetNumber();
+							result = var1.GetNumber() - shift;
 						}
 
 		return result;
@@ -712,85 +1104,135 @@ namespace RaceProcessor {
 
 
 
-	void move_to_category(int category)
+	void move_to_category(int page, int category)
 	{
-		int selected_category = get_selected_category();
+		int selected_page = get_selected_page();
+		int selected_slider = get_selected_slider();
+
 
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::RaceSexMenu>();
 
 		if (menu)
 		{
-			if (category == 0)
+			if (selected_page > page)
+				page_left();
+
+			if (selected_page < page)
+				page_right();
+
+			if (selected_page == page)
 			{
-				if (selected_category < 0)
-					;// categories_right();
-				if (selected_category > 0)
-					categories_left();
+				if (selected_slider < category)
+					cursor_down();
 
-				//menu->unk188 = 0;
+				if (selected_slider > category)
+					cursor_up();
 			}
-			else
-			{
-				if (category == 1)
-				{
-					if (selected_category < 1)
-						;// categories_right();
-					else
-						if (selected_category > 2)
-							categories_left();
-				
-						//if (selected_category < 1 || selected_category > 2)
-						//	menu->unk188 = 1;
-						else
-						{
-							int selected_subcategory = get_selected_slider();
 
-							if (selected_subcategory > 0)
-								cursor_down();
-							if (selected_subcategory < 0)
-								cursor_up();
-						}
-				}
-				else
-					if (category == 2)
-					{
-						if (selected_category < 1)
-							;// categories_right();
-						else
-							if (selected_category > 2)
-								categories_left();
-
-						//if (selected_category < 1 || selected_category > 2)
-						//	menu->unk188 = 1;
-							else
-							{
-								int selected_subcategory = get_selected_slider();
-
-								if (selected_subcategory > 1)
-									cursor_up();
-								if (selected_subcategory < 1)
-									cursor_down();
-							}
-					}
-			}
 		}
 		
+	}
+
+	/*
+	std::vector<std::vector<std::string>> slider_names_table = 
+	{
+		{"Race"},
+		{"Gender", "Preset", "Skin Tone", "Weight"},
+		{"Complexion", "Dirt", "Dirt colour", "Scars", "War paint", "War paint colour"},
+		{"Nose type", "Nose height", "Nose length", "Jaw width", "Jaw height", "Jaw forward", "Cheekbone height", "Cheekbone width", "Cheek color", "Laugh lines", "Cheek colour lower", "Nose colour", "Chin colour", "Neck colour", }
+	}
+	*/
+
+	std::string get_current_slider_name()
+	{
+		//_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA[47].2.text = Skin Tone
+
+		std::string result = "Parameter";
+
+		RE::GFxValue var1;
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (ui)
+			if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+				if (menu->uiMovie)
+				{
+					int selected_slider = get_selected_slider();
+
+					if (selected_slider < 0)
+						return "Parameter";
+
+					int shift = get_category_shift(get_selected_page());
+
+					selected_slider += shift;
+
+					std::string selected_slider_text = std::to_string(selected_slider);
+
+					std::string path = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".text";
+
+					if (menu->uiMovie->GetVariable(&var1, path.c_str()))
+						if (!var1.IsNull() && var1.IsString())
+						{
+							result = var1.GetString();
+						}
+				}
 
 
+		return result;
 	}
 
 
-
-	std::string get_force_message(int category)
+	std::string get_force_message(int page, int category)
 	{
 		std::string result = "";
 
-		switch (category) {
-		case (0):result = "You are creating your character in Skyrim. Select your character's race from provided options"; break;
-		case (1):result = "You are creating your character in Skyrim. Select your character's gender from provided options"; break;
-		case (2):result = "You are creating your character in Skyrim. Select your character's look preset from provided options"; break;
-		case (3):result = "You are creating your character in Skyrim. Give your character's name"; break;
+		switch (page) 
+		{
+		case (0):
+		{
+			result = "You are creating your character in Skyrim. Select your character's race from provided options";
+			break;
+		}
+
+		case (1):
+		{
+			switch (category)
+			{
+				case (0):
+				{
+					result = "You are creating your character in Skyrim. Select your character's gender from provided options";
+					break;
+				}
+
+				case (1):
+				{
+					result = "You are creating your character in Skyrim. Select your character's look preset from provided options"; 
+					break;
+				}
+
+				default:
+				{
+					result = "You are creating your character in Skyrim. Select your character's " + get_current_slider_name() + " from provided options";
+					break;
+				}
+			}
+
+			break;
+		}
+
+		case (8):
+		{
+			result = "You are creating your character in Skyrim. Give your character's name";
+			break;
+		}
+
+		default:
+		{
+			result = "You are creating your character in Skyrim. Select your character's " + get_current_slider_name() + " from provided options";
+			break;
+		}
+
+
 		}
 
 		return result;
@@ -823,53 +1265,168 @@ namespace RaceProcessor {
 	}
 
 
-	std::vector<MenuOption> get_options(int category)
+
+	int get_max_generic_slider()
+	{
+		int result = -1;
+
+		RE::GFxValue var1;
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (ui)
+			if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+				if (menu->uiMovie)
+				{
+					int selected_slider = get_selected_slider();
+
+					if (selected_slider < 0)
+						return selected_slider;
+
+					int shift = get_category_shift(get_selected_page());
+
+					selected_slider += shift;
+
+					std::string selected_slider_text = std::to_string(selected_slider);
+
+					std::string path_position = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".position";
+					std::string path_interval = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".interval";
+					std::string path_min = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".sliderMin";
+					std::string path_max = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".sliderMax";
+
+					RE::GFxValue var_position;
+					RE::GFxValue var_interval;
+					RE::GFxValue var_min;
+					RE::GFxValue var_max;
+
+					float position = 0.0f;
+					float interval = 0.0f;
+					float min = 0.0f;
+					float max = 0.0f;
+
+
+
+					if (menu->uiMovie->GetVariable(&var_position, path_position.c_str()))
+						if (!var_position.IsNull() && var_position.IsNumber())
+						{
+							position = var_position.GetNumber();
+						}
+
+					if (menu->uiMovie->GetVariable(&var_interval, path_interval.c_str()))
+						if (!var_interval.IsNull() && var_interval.IsNumber())
+						{
+							interval = var_interval.GetNumber();
+						}
+
+					if (menu->uiMovie->GetVariable(&var_min, path_min.c_str()))
+						if (!var_min.IsNull() && var_min.IsNumber())
+						{
+							min = var_min.GetNumber();
+						}
+
+					if (menu->uiMovie->GetVariable(&var_max, path_max.c_str()))
+						if (!var_max.IsNull() && var_max.IsNumber())
+						{
+							max = var_max.GetNumber();
+						}
+
+
+					float slider_length = max - min;
+
+					if (interval == 0.0f)
+						return -1;
+
+					result = slider_length / interval;
+
+
+				}
+
+
+		return result;
+	}
+
+
+
+
+	std::vector<MenuOption> get_options(int page, int category)
 	{
 		std::vector<MenuOption> result{};
 
-		switch (category) {
-		case (0):
+		switch (page) 
 		{
-
-			for (std::pair<int, item_data> item : items_list)
+			case (0):
 			{
-				std::string name_text = "";
-				if (item.second.name != "")
-					name_text = item.second.name;
-				std::string description_text = "";
-				if (item.second.description != "")
-					description_text = ". Description: " + item.second.description;
+
+				for (std::pair<int, item_data> item : items_list)
+				{
+					std::string name_text = "";
+					if (item.second.name != "")
+						name_text = item.second.name;
+					std::string description_text = "";
+					if (item.second.description != "")
+						description_text = ". Description: " + item.second.description;
 
 
-				MenuOption option = { item.first, name_text + description_text };
-				result.push_back(option);
-			}
-			break;
-		}
-
-		case (1):
-		{
-			MenuOption option = { 0, "Male" };
-			result.push_back(option);
-			option = { 1, "Female" };
-			result.push_back(option);
-			break;
-		}
-
-		case (2):
-		{
-			MenuOption option = { 0, "Preset1" }; 
-
-			for (int i = 0; i < get_max_preset_slider() + 1; i++)
-			{
-				option = { i, "Preset" + std::to_string(i)};
-				result.push_back(option);
+					MenuOption option = { item.first, name_text + description_text };
+					result.push_back(option);
+				}
+				break;
 			}
 
-			break;
-		}
+			case (1):
+			{
+				switch (category)
+				{
+					case (0):
+					{
+						MenuOption option = { 0, "Male" };
+						result.push_back(option);
+						option = { 1, "Female" };
+						result.push_back(option);
+						break;
+					}
 
+					case (1):
+					{
+						MenuOption option = { 0, "Preset1" };
 
+						for (int i = 0; i < get_max_preset_slider() + 1; i++)
+						{
+							option = { i, "Preset" + std::to_string(i) };
+							result.push_back(option);
+						}
+
+						break;
+					}
+
+					default:
+					{
+						MenuOption option = { 0, "Value 0" };
+
+						for (int i = 0; i < get_max_generic_slider() + 1; i++)
+						{
+							option = { i, "Value " + std::to_string(i) };
+							result.push_back(option);
+						}
+
+						break;
+					}
+				}
+
+				break;
+			}
+
+			default:
+			{
+				MenuOption option = { 0, "Value 0" };
+
+				for (int i = 0; i < get_max_generic_slider() + 1; i++)
+				{
+					option = { i, "Value " + std::to_string(i) };
+					result.push_back(option);
+				}
+
+				break;
+			}
 
 		}
 
@@ -895,14 +1452,9 @@ namespace RaceProcessor {
 			return set_race_choice(choice);
 		}
 
-		if (!gender_defined)
+		if (!generic_slider_defined)
 		{
-			return set_gender_choice(choice);
-		}
-
-		if (!preset_defined)
-		{
-			return set_preset_choice(choice);
+			return set_generic_slider_choice(choice);
 		}
 
 
@@ -967,6 +1519,90 @@ namespace RaceProcessor {
 	}
 
 
+	int get_generic_slider_selected_index()
+	{
+		int result = -1;
+
+		
+		RE::UI* ui = RE::UI::GetSingleton();
+
+		if (ui)
+			if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+				if (menu->uiMovie)
+				{
+					int selected_slider = get_selected_slider();
+
+					if (selected_slider < 0)
+						return selected_slider;
+
+					int shift = get_category_shift(get_selected_page());
+
+					selected_slider += shift;
+
+					std::string selected_slider_text = std::to_string(selected_slider);
+
+					std::string path_position = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".position";
+					std::string path_interval = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".interval";
+					std::string path_min = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".sliderMin";
+					std::string path_max = "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA." + selected_slider_text + ".sliderMax";
+
+					RE::GFxValue var_position;
+					RE::GFxValue var_interval;
+					RE::GFxValue var_min;
+					RE::GFxValue var_max;
+
+					float position = 0.0f;
+					float interval = 0.0f;
+					float min = 0.0f;
+					float max = 0.0f;
+
+
+
+					if (menu->uiMovie->GetVariable(&var_position, path_position.c_str()))
+						if (!var_position.IsNull() && var_position.IsNumber())
+						{
+							position = var_position.GetNumber();
+						}
+
+					if (menu->uiMovie->GetVariable(&var_interval, path_interval.c_str()))
+						if (!var_interval.IsNull() && var_interval.IsNumber())
+						{
+							interval = var_interval.GetNumber();
+						}
+
+					if (menu->uiMovie->GetVariable(&var_min, path_min.c_str()))
+						if (!var_min.IsNull() && var_min.IsNumber())
+						{
+							min = var_min.GetNumber();
+						}
+
+					if (menu->uiMovie->GetVariable(&var_max, path_max.c_str()))
+						if (!var_max.IsNull() && var_max.IsNumber())
+						{
+							max = var_max.GetNumber();
+						}
+
+
+					float slider_length = max - min;
+
+					if (interval == 0.0f)
+						return -1;
+
+					//float slider_coef = slider_length / interval; //amount of steps on slider
+
+					float pos_corrected = position - min;
+
+					result = pos_corrected / interval;
+
+
+				}
+
+
+		return result;
+	}
+
+
+
 	void move_gender_slider(int gender_choice)
 	{
 		int selected_gender_index = get_gender_selected_index();
@@ -987,6 +1623,19 @@ namespace RaceProcessor {
 		if (selected_preset_index < preset_choice)
 			right();
 	}
+
+
+
+	void move_generic_slider(int generic_slider_choice)
+	{
+		int selected_generic_slider_index = get_generic_slider_selected_index();
+
+		if (selected_generic_slider_index > generic_slider_choice)
+			left();
+		if (selected_generic_slider_index < generic_slider_choice)
+			right();
+	}
+
 
 
 
@@ -1016,8 +1665,15 @@ namespace RaceProcessor {
 	bool key_up = false;
 
 
+
+
+
 	void processor(float dtime)
 	{
+		//int test123 = get_selected_slider();
+		//bool stop_here = false;
+		//return;
+
 
 		RE::UI* ui = RE::UI::GetSingleton();
 
@@ -1032,7 +1688,7 @@ namespace RaceProcessor {
 			pause_timer += dtime;
 		}
 
-
+		/*
 		if (confirm_race)
 		{
 			if (confirm_race_and_go_to_body(dtime))
@@ -1041,7 +1697,7 @@ namespace RaceProcessor {
 				race_defined = true;
 			}
 		}
-
+		*/
 
 
 		if (racemenu_processor_timer > 0.01f)
@@ -1052,8 +1708,10 @@ namespace RaceProcessor {
 			{
 				if (!race_defined)
 				{
-					if (!is_inside_of_category(0))
-						move_to_category(0);
+					reset_category();
+
+					if (!is_inside_of_category(current_page, current_slider))
+						move_to_category(current_page, current_slider);
 					else
 					{
 						if (!items_list_valid)
@@ -1076,7 +1734,7 @@ namespace RaceProcessor {
 							if (!race_request_sent)
 							{
 								
-								if (force_choice(get_options(0), get_force_message(0), force_type::race))
+								if (force_choice(get_options(current_page, current_slider), get_force_message(current_page, current_slider), force_type::race))
 									race_request_sent = true;
 							}
 							else
@@ -1093,7 +1751,14 @@ namespace RaceProcessor {
 									}
 									else
 									{
-										confirm_race = true;
+										//confirm_race = true;
+
+										confirm_race = false;
+										race_defined = true;
+
+										increment_category();
+
+										set_universal_block(1.0f);
 									}
 								}
 							}
@@ -1103,37 +1768,44 @@ namespace RaceProcessor {
 				}
 				else
 				{
-					if (!gender_defined)
+					if (current_page < 8)
 					{
-						if (!is_inside_of_category(1))
-							move_to_category(1);
-						else
+						if (!generic_slider_defined)
 						{
-
-							if (!gender_request_sent)
-							{
-								
-								if (force_choice(get_options(1), get_force_message(1), force_type::race))
-									gender_request_sent = true;
-							}
+							if (!is_inside_of_category(current_page, current_slider))
+								move_to_category(current_page, current_slider);
 							else
 							{
-								if (gender_choice_valid)
+
+								if (!generic_slider_request_sent)
 								{
-									int selected_index = get_gender_selected_index();
-									if ((selected_index != gender_choice))
+									if (force_choice(get_options(current_page, current_slider), get_force_message(current_page, current_slider), force_type::race))
+										generic_slider_request_sent = true;
+								}
+								else
+								{
+									if (generic_slider_choice_valid)
 									{
-										if (!missing_item_detected)
-											move_gender_slider(gender_choice);
+										int selected_index = get_generic_slider_selected_index();
+										if ((selected_index != generic_slider_choice))
+										{
+											if (!missing_item_detected)
+												move_generic_slider(generic_slider_choice);
+											else
+												reset_menu();
+										}
 										else
-											reset_menu();
-									}
-									else
-									{
+										{
+											//generic_slider_defined = true;
 
-										gender_defined = true;
-										set_universal_block(1.0f);
+											generic_slider_defined = false;
+											generic_slider_request_sent = false;
+											generic_slider_choice_valid = false;
+											generic_slider_choice = -1;
 
+											increment_category();
+											set_universal_block(1.0f);
+										}
 									}
 								}
 							}
@@ -1141,115 +1813,76 @@ namespace RaceProcessor {
 					}
 					else
 					{
-						if (!preset_defined)
+						if (!name_defined)
 						{
-							if (!is_inside_of_category(2))
-								move_to_category(2);
+							if (!name_field_called)
+							{
+								if (auto menu_confirm = ui->GetMenu<RE::MessageBoxMenu>(); menu_confirm)
+								{
+									RandomMessageBoxProcessor::set_messagebox_handeled();
+									if (!rolled_over)
+									{
+										menu_confirm->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onRollOver", nullptr, nullptr, 0);
+										rolled_over = true;
+										set_universal_block(1.0f);
+									}
+									else
+									{
+										rolled_over = false;
+										menu_confirm->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0);
+										set_universal_block(0.5f);
+										name_field_called = true;
+									}
+								}
+								else
+								{
+									confirm_craft();
+									set_universal_block(0.3f);
+								}
+
+							}
 							else
 							{
-
-								if (!preset_request_sent)
+								if (!name_request_sent)
 								{
-									
-									if (force_choice(get_options(2), get_force_message(2), force_type::race))
-										preset_request_sent = true;
+
+									if (force_choice({}, get_force_message(current_page, current_slider), force_type::character_name))
+									{
+										name_request_sent = true;
+									}
+									//set_character_name("test_name_123");
 								}
 								else
 								{
-									if (preset_choice_valid)
+
+
+									if (name_choice_valid)
 									{
-										int selected_index = get_preset_selected_index();
-										if ((selected_index != preset_choice))
+										if (name_choice.length() > 0)
 										{
-											if (!missing_item_detected)
-												move_preset_slider(preset_choice);
-											else
-												reset_menu();
+
+											set_universal_block(0.3f);
+											send_char_to_text_input_window(name_choice.at(0));
+											name_choice = name_choice.substr(1, name_choice.length() - 1);
+
 										}
 										else
 										{
-
-											preset_defined = true;
-											set_universal_block(1.0f);
-
-										}
-									}
-								}
-							}
-						}
-						else
-						{
-							if (!name_defined)
-							{
-								if (!name_field_called)
-								{
-									if (auto menu_confirm = ui->GetMenu<RE::MessageBoxMenu>(); menu_confirm) 
-									{
-										RandomMessageBoxProcessor::set_messagebox_handeled();
-										if (!rolled_over)
-										{
-											menu_confirm->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onRollOver", nullptr, nullptr, 0);
-											rolled_over = true;
-											set_universal_block(1.0f);
-										}
-										else
-										{
-											rolled_over = false;
-											menu_confirm->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0);
-											set_universal_block(0.5f);
-											name_field_called = true;
-										}
-									}
-									else
-									{
-										confirm_craft();
-										set_universal_block(0.3f);
-									}
-
-								}
-								else
-								{
-									if (!name_request_sent)
-									{
-										
-										if (force_choice({}, get_force_message(3), force_type::character_name))
-										{
-											name_request_sent = true;
-										}
-										//set_character_name("test_name_123");
-									}
-									else
-									{
-										
-
-										if (name_choice_valid)
-										{
-											if (name_choice.length() > 0)
+											if (last_pause_time > 1.0f)
 											{
+												send_random_context("[Character creation is done!]", false);
 
-												set_universal_block(0.3f);
-												send_char_to_text_input_window(name_choice.at(0));
-												name_choice = name_choice.substr(1, name_choice.length() - 1);
-												
+												name_defined = true;
+												//menu->ChangeName(typed_string.c_str()); //this jus closes menu (and probably sets the name) but it wasnt typed
+
+												menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onPress", nullptr, nullptr, 0);
+												menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onRelease", nullptr, nullptr, 0);
+
+												set_universal_block(2.0f);
 											}
 											else
-											{
-												if (last_pause_time > 1.0f)
-												{
-													send_random_context("[Character creation is done!]", false);
+												last_pause_time += dtime + 0.01;
 
-													name_defined = true;
-													//menu->ChangeName(typed_string.c_str()); //this jus closes menu (and probably sets the name) but it wasnt typed
-
-													menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onPress", nullptr, nullptr, 0);
-													menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onRelease", nullptr, nullptr, 0);
-
-													set_universal_block(2.0f);
-												}
-												else
-													last_pause_time += dtime + 0.01;
-
-											}
 										}
 									}
 								}

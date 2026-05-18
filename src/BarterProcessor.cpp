@@ -3363,7 +3363,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -3413,20 +3413,28 @@ if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) {
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
 
                             //_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA[46].0.sliderMax
-                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
                             search_var = "gold";
-                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
-                            search_var = "iSelectedIndex";
+                            search_var = "sliderMax";
+                            //search_var = "onPress";
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
+                            //search_var = "iSelectedIndex";
                             //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
@@ -3478,7 +3486,7 @@ if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) {
                             */
 
 
-                            search_var = "Choose an attribute";
+                            search_var = "Skin Tone";
                             search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
@@ -3586,7 +3594,13 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
         //"_root.Menu_mc.ItemCard_mc",
        // "_root.Menu_mc.InventoryLists_mc._ItemsList"
         //"_root.Menu_mc.InventoryLists_mc._ItemsList.Entry0"
-        "_root.DialogueMenu_mc.TopicListHolder.List_mc._filterer._filterArray.0"
+        //"_root.DialogueMenu_mc.TopicListHolder.List_mc._filterer._filterArray.0"
+        // 
+        //"_root.RaceSexMenuBaseInstance.RightClickInstance",
+        //"_root.RaceSexMenuBaseInstance.LeftClickInstance"
+        "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.1",
+        "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.26",
+        "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.27"
 
         //"_root.Menu.InventoryLists._ItemsList.Entry0",
         //"_root.Menu.InventoryLists._ItemsList.Entry0.textField"
@@ -3627,7 +3641,7 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
     if (const auto ui = RE::UI::GetSingleton(); ui) 
         //if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) 
         //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu)
-        if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu)
+        if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
         {
 
             if (menu->uiMovie)
