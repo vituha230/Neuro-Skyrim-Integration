@@ -2883,6 +2883,7 @@ namespace MiscThings {
             }
 
 
+
             if (model.find("PuzzleDoorKeyHole") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
             {
                 std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
@@ -3237,6 +3238,18 @@ namespace MiscThings {
                     else
                         result = -1;
                 }
+
+                if (model.find("TG01DwemerUrn") != std::string::npos)
+                {
+                    auto extralist = &web->extraList;
+                    auto extra_swap = extralist->GetByType(RE::ExtraDataType::kModelSwap);
+                    if (extra_swap)
+                        result = 3;
+                    else
+                        result = -1;
+                }
+
+
             }
         }
 
@@ -7372,6 +7385,15 @@ namespace MiscThings {
 
                     result = name;
                 }
+
+                if (model.find("TG01DwemerUrn") != std::string::npos)
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Dwemer Urn", refr);
+
+                    result = name;
+                }
+
+
 
                 if (model.find("PuzzleDoorKeyHole") != std::string::npos && model.find("PuzzleDoorKeyHoleIvory") == std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                 {

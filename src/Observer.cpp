@@ -1801,6 +1801,19 @@ namespace Observer {
 												}
 											}
 
+											if (model.find("TG01DwemerUrn") != std::string::npos)
+											{
+												if (a_ref->GetDistance(player_ref) < 300.0f)
+												{
+													if (!MiscThings::is_object_in_the_list(a_ref))
+													{
+														std::string info = MiscThings::insert_object_into_list_custom_name("[Destructible] Dwemer Urn", a_ref);
+														if (info != "")
+															interesting_buffer.insert_or_assign(a_ref, info);
+													}
+												}
+											}
+
 
 											if (model.find("StockadeBarricade") != std::string::npos)
 											{
@@ -2977,6 +2990,13 @@ namespace Observer {
 										if (new_state.destructible_state == 2)
 										{
 											std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", a_ref);
+
+											result.push_back(name + " was destroyed");
+										}
+
+										if (new_state.destructible_state == 3)
+										{
+											std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Dwemer Urn", a_ref);
 
 											result.push_back(name + " was destroyed");
 										}

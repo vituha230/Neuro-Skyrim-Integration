@@ -2141,6 +2141,22 @@ namespace WalkerProcessor {
                         }
                     }
 
+                    if (model.find("TG01DwemerUrn") != std::string::npos)
+                    {
+                        if (target_ref->GetDistance(player_ref, true) < 200.0f)
+                        {
+                            return target_ref;
+                        }
+                    }
+
+                    if (model.find("StockadeBarricade") != std::string::npos)
+                    {
+                        if (target_ref->GetDistance(player_ref, true) < 200.0f)
+                        {
+                            return target_ref;
+                        }
+                    }
+
                 }
             }
         
