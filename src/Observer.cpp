@@ -3450,7 +3450,10 @@ namespace Observer {
 
 
 
-
+	void add_quicksave_timer(float time_to_add)
+	{
+		last_saved_time += time_to_add;
+	}
 
 
 	void player_state_monitor(float dtime)

@@ -9,7 +9,6 @@
 //TODO check gift menu for companions. probably keep it non-functional (take only)
 //TODO fix helgen keep cage
 //TODO check pathfinding after helgen escape on hadvar's side
-//TODO end of fight with actual enemies reduces cooldown for quicksave
 //TODO check bleak falls first part last gate pathfinding fix when we following dragonstone quest
 //TODO filter draugr's lays from object list completely (overlord's lay)
 //TODO test non-destruction spells in combat. adjust if needed

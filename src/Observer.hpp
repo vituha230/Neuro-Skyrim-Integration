@@ -6,6 +6,7 @@
 
 namespace Observer {
 
+	void add_quicksave_timer(float time_to_add);
 
 	void detect_threats(float dtime);
 	void reset_threats();

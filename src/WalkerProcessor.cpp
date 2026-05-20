@@ -10787,8 +10787,13 @@ namespace WalkerProcessor {
                             std::string advice = "";
 
                             if (!useless_fight)
+                            {
                                 if (MiscThings::is_objects_around_valid())
                                     advice = "loot dead enemies";
+
+                                Observer::add_quicksave_timer(40.0f);
+                            }
+
 
                             if (MiscThings::have_any_quests())
                                 if (advice != "")
