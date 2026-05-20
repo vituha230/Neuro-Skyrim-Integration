@@ -1676,7 +1676,7 @@ void processor(float dtime)
 								item_choice_request_sent = true;
 								close_empty_container = true;
 
-								set_universal_block(2.0f);
+								set_universal_block(0.8f);
 
 								return;
 							}

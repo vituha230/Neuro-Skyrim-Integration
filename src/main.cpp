@@ -6,12 +6,10 @@
 
 //TODO check entire main quest again AFTER CHANGES BELOW
 
-//TODO check gift menu for companions. probably keep it non-functional (take only)
 //TODO fix helgen keep cage
 //TODO check pathfinding after helgen escape on hadvar's side
-//TODO check bleak falls first part last gate pathfinding fix when we following dragonstone quest
-//TODO filter draugr's lays from object list completely (overlord's lay)
 //TODO test non-destruction spells in combat. adjust if needed
+
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 
