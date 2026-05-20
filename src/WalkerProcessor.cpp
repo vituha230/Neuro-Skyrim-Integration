@@ -7870,6 +7870,14 @@ namespace WalkerProcessor {
                         {
                             std::string shout_name = shout_to_use->GetFullName();;
 
+                            std::string words_text = MiscThings::get_shout_known_words_text(shout_to_use);
+                            if (words_text != "")
+                            {
+                                shout_name += " - " + words_text;
+                            }
+
+
+
                             send_random_context("You are using the shout: " + shout_name);
                             MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
                             return true;

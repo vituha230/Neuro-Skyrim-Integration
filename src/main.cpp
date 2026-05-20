@@ -3,12 +3,7 @@
 
 //crucial:
 
-
-//TODO check entire main quest again AFTER CHANGES BELOW
-
-//TODO fix helgen keep cage
-//TODO check pathfinding after helgen escape on hadvar's side
-//TODO test non-destruction spells in combat. adjust if needed
+//TODO check entire main quest again
 
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)

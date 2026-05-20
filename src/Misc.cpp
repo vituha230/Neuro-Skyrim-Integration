@@ -2593,6 +2593,39 @@ namespace MiscThings {
     }
 
 
+    bool object_inside_of_helgen_keep_cage(RE::TESObjectREFR* object)
+    {
+        if (object && is_object_valid(object))
+        {
+            auto object_pos = object->GetPosition();
+
+            auto object_parent_cell = object->GetParentCell();
+            if (object_parent_cell && object_parent_cell->formID == 0x152aa)
+            {
+                RE::NiPoint2 a = { -1268.38196, 1375.06421 };//, -1103.65869
+                RE::NiPoint2 b = { -1417.26965, 1372.94409 };// , -1095.44202
+                RE::NiPoint2 c = { -1416.88232, 1548.62952 };// , -1113.10095
+                RE::NiPoint2 d = { -1269.51685, 1548.62476 };// , -1104.09680
+
+                float z = -750.0f;
+
+                if (abs(object_pos.z - z) < 150.0f)
+                {
+                    RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                    if (is_inside_of_rectangle(p, a, b, c, d))
+                    {
+                        //object inside
+                        return true;
+                    }
+                }
+            }
+        }
+        
+
+        return false;
+    }
+
+
 
 
 
@@ -10300,10 +10333,10 @@ namespace MiscThings {
 
                 for (auto variation : shout_p->variations)
                 {
-                    if ((variation.word->formFlags & 65600) == 65600)
+                    if (variation.word && (variation.word->formFlags & 65600) == 65600)
                         unlocked_words++;
 
-                    if (variation.word->GetKnown())
+                    if (variation.word && variation.word->GetKnown())
                         known_words++;
                     //else
                     //{
@@ -10324,6 +10357,12 @@ namespace MiscThings {
 
 
                 std::string name = shout_p->GetFullName();
+
+                std::string words_text = MiscThings::get_shout_known_words_text(shout_p);
+                if (words_text != "")
+                {
+                    name += " - " + words_text;
+                }
 
                 name += "[Words (unlocked/known/total): " + std::to_string(unlocked_words) + "/" + std::to_string(known_words) + "/" + std::to_string(max_words) + "]";
 
@@ -10384,6 +10423,127 @@ namespace MiscThings {
 
 
 
+    std::string fix_word_of_power_name(std::string name)
+    {
+        std::string result = name;
+
+        bool found_something = false;
+
+        if (auto pos = result.find("1"); pos != std::string::npos)
+        {
+            result.erase(pos, 1);
+            result.insert(pos, "aa");
+            found_something = true;
+        }
+
+        if (auto pos = result.find("2"); pos != std::string::npos)
+        {
+            result.erase(pos, 1);
+            result.insert(pos, "ei");
+            found_something = true;
+        }
+
+        if (auto pos = result.find("3"); pos != std::string::npos)
+        {
+            result.erase(pos, 1);
+            result.insert(pos, "ii");
+            found_something = true;
+        }
+
+        if (auto pos = result.find("4"); pos != std::string::npos)
+        {
+            result.erase(pos, 1);
+            result.insert(pos, "ah");
+            found_something = true;
+        }
+
+        //doesnt exist?
+        //if (auto pos = result.find("5"); pos != std::string::npos)
+        //{
+        //    result.erase(pos, 1);
+        //    result.insert(pos, "");
+        //    found_something = true;
+        //}
+
+        if (auto pos = result.find("6"); pos != std::string::npos)
+        {
+            result.erase(pos, 1);
+            result.insert(pos, "ur");
+            found_something = true;
+        }
+
+        if (auto pos = result.find("7"); pos != std::string::npos)
+        {
+            result.erase(pos, 1);
+            result.insert(pos, "ir");
+            found_something = true;
+        }
+
+        if (auto pos = result.find("8"); pos != std::string::npos)
+        {
+            result.erase(pos, 1);
+            result.insert(pos, "oo");
+            found_something = true;
+        }
+
+        if (auto pos = result.find("9"); pos != std::string::npos)
+        {
+            result.erase(pos, 1);
+            result.insert(pos, "ey");
+            found_something = true;
+        }
+
+
+        if (found_something)
+            return fix_word_of_power_name(result);
+        else
+            return result;
+    }
+
+
+    std::string get_shout_known_words_text(RE::TESShout* shout)
+    {
+        std::string result = "";
+
+        if (shout)
+        {
+            int known_words = 0;
+            int unlocked_words = 0;
+            int max_words = 0;
+            //bool set_known_one = false;
+
+            for (auto variation : shout->variations)
+            {
+                if (variation.word && (variation.word->formFlags & 65600) == 65600)
+                {
+                    auto word_of_power = (RE::TESWordOfPower*)variation.word;
+
+
+                    std::string word_text = word_of_power->GetFullName();
+
+                    word_text = fix_word_of_power_name(word_text);
+
+                    result += word_text + " ";
+
+                    unlocked_words++;
+                }
+
+
+
+                if (variation.word && variation.word->GetKnown())
+                    known_words++;
+
+                max_words++;
+            }
+        }
+
+
+        return result;
+    }
+
+
+    
+
     std::pair<bool, std::string> unlock_shout_level(int shout_id)
     {
         
@@ -10411,7 +10571,7 @@ namespace MiscThings {
             {
                 for (auto variation : shout_p->variations)
                 {
-                    if (variation.word->GetKnown()) //known
+                    if (variation.word && variation.word->GetKnown()) //known
                     {
                         if (!(variation.word->formFlags & (65536))) //not unlocked     //bit16 - unlocked, bit6 - known
                         {
@@ -10728,7 +10888,7 @@ namespace MiscThings {
 
                                 for (auto variation : shout->variations)
                                 {
-                                    if ((variation.word->formFlags & 65600) == 65600)
+                                    if (variation.word && (variation.word->formFlags & 65600) == 65600)
                                         unlocked_words++;
                                 }
                                 if (unlocked_words > 0)
@@ -10757,8 +10917,17 @@ namespace MiscThings {
                                     else
                                         use_ult();
 
+
+                                    std::string shout_name = shout->GetFullName();
+
+                                    std::string words_text = MiscThings::get_shout_known_words_text(shout);
+                                    if (words_text != "")
+                                    {
+                                        shout_name += " - " + words_text;
+                                    }
+
                                     result.first = true;
-                                    result.second = "[Using [id " + std::to_string(id) + "] " + shout->GetFullName();
+                                    result.second = "[Using [id " + std::to_string(id) + "] " + shout_name;
                                 }
                                 else
                                 {
@@ -10843,7 +11012,7 @@ namespace MiscThings {
                         int unlocked_words = 0;
                         for (auto variation : spell.second.shout->variations)
                         {
-                            if ((variation.word->formFlags & 65600) == 65600)
+                            if (variation.word && (variation.word->formFlags & 65600) == 65600)
                                 unlocked_words++;
                         }
                         if (unlocked_words > 0)
@@ -11145,7 +11314,7 @@ namespace MiscThings {
 
                                 for (auto variation : shout->variations)
                                 {
-                                    if ((variation.word->formFlags & 65600) == 65600)
+                                    if (variation.word && (variation.word->formFlags & 65600) == 65600)
                                         unlocked_words++;
                                 }
                                 if (unlocked_words > 0)
@@ -11354,10 +11523,10 @@ namespace MiscThings {
 
                 for (auto variation : shout_p->variations)
                 {
-                    if ((variation.word->formFlags & 65600) == 65600)
+                    if (variation.word && (variation.word->formFlags & 65600) == 65600)
                         unlocked_words++;
 
-                    if (variation.word->GetKnown())
+                    if (variation.word && variation.word->GetKnown())
                         known_words++;
 
                     max_words++;
