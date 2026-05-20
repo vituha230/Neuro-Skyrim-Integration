@@ -12174,7 +12174,7 @@ namespace WalkerProcessor {
                                                         return; 
                                                     }
                                                         
-                                                    if (need_jump_to_reach())
+                                                    if (need_jump_to_reach() && !(has_ranged_weapon_equipped(true) && interaction_after_walk == 3))
                                                         jump();
 
 
