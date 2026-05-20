@@ -431,7 +431,7 @@ namespace MiscThings {
         {
             auto settlement_worldspace = settlements.find(player_worldspace);
 
-            if (settlement_worldspace->first && settlement_worldspace != settlements.end())
+            if (settlement_worldspace != settlements.end() && settlement_worldspace->first)
                 return false;
 
         }
@@ -454,7 +454,7 @@ namespace MiscThings {
         {
             auto settlement = settlements.find(key);
 
-            if (settlement->first && settlement != settlements.end())
+            if (settlement != settlements.end() && settlement->first)
             {
                 return settlement->second.settlement_name;
             }
