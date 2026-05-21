@@ -12349,9 +12349,9 @@ namespace WalkerProcessor {
                                                                                             auto target_actor = (RE::Actor*)target_ref;
                                                                                             auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
                                                                                             RE::TESObjectREFR* tsun = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4f829);
+                                                                                            RE::TESObjectREFR* delphine = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13485);
 
-
-                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun)
+                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun && target_actor != delphine)
                                                                                                 dont_autointerract = true;
                                                                                             
                                                                                         }
