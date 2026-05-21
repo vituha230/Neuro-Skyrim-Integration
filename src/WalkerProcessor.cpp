@@ -5595,7 +5595,7 @@ namespace WalkerProcessor {
     }
 
 
-    std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch, float look_speed_koef)
+    std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch, float look_speed_koef, bool dont_reset_threats)
     {
 
         std::pair<bool, std::string> result{};
@@ -5629,7 +5629,8 @@ namespace WalkerProcessor {
 
             if (object)
             {
-                Observer::reset_threats();
+                if (!dont_reset_threats)
+                    Observer::reset_threats();
 
                 if (have_target_to_walk)
                 {
@@ -10439,7 +10440,22 @@ namespace WalkerProcessor {
 
 
         if (Observer::threat_response_choice_pending())
-            return; //dont walk until threat response is resolved
+        {
+            if (!looking_mode)
+            {
+                auto enemies = MiscThings::get_player_attackers(false, target_ref);
+
+                if (std::size(enemies) > 0)
+                {
+                    reset_walker();
+                    auto closest_threat = enemies.at(0);
+                    
+                    look_at_object_by_refr(closest_threat, false, 0.5f, true);
+                }
+            }
+            //return; //dont walk until threat response is resolved
+        }
+            
 
 
 
@@ -12350,8 +12366,10 @@ namespace WalkerProcessor {
                                                                                             auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
                                                                                             RE::TESObjectREFR* tsun = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4f829);
                                                                                             RE::TESObjectREFR* delphine = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13485);
+                                                                                            RE::TESObjectREFR* malborne = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x33f46);
 
-                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun && target_actor != delphine)
+
+                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun && target_actor != delphine && target_actor != malborne)
                                                                                                 dont_autointerract = true;
                                                                                             
                                                                                         }

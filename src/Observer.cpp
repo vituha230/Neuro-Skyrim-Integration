@@ -1010,7 +1010,7 @@ namespace Observer {
 			{
 				MiscThings::unpause_game();
 
-				set_universal_block(0.5f);
+				set_universal_block(0.3f);
 				return;
 			}
 
@@ -1033,7 +1033,7 @@ namespace Observer {
 					{
 						//wait a little then notify
 
-						if (detect_threats_time > 1.0f)
+						if (detect_threats_time > 1.0f || player_was_hit)
 						{
 
 
@@ -1069,7 +1069,7 @@ namespace Observer {
 
 
 
-								if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response))
+								if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response, true))
 								{
 									threats_response_request_sent = true;
 

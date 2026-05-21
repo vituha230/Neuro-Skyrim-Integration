@@ -101,7 +101,7 @@ namespace WalkerProcessor {
 	bool has_staff_equipped(bool right);
 	bool no_charge(bool right);
 
-	std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch = false, float look_speed_koef = 0.5f);
+	std::pair<bool, std::string> look_at_object_by_refr(RE::TESObjectREFR* object, bool no_crouch = false, float look_speed_koef = 0.5f, bool dont_reset_threats = false);
 
 	void look_up(float speed_koef = 0.5f);
 

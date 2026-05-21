@@ -31,7 +31,7 @@ bool visit_all_members4(std::vector<std::string>& results, const RE::GFxValue& i
 void add_delayed_message(std::string message);
 
 
-bool force_choice(std::vector<MenuOption> options, std::string message, int force_type);
+bool force_choice(std::vector<MenuOption> options, std::string message, int force_type, bool no_block = false);
 
 void unregister_all_actions();
 void unregister_all_actions2();

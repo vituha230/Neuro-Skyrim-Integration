@@ -4,8 +4,9 @@
 //crucial:
 
 
-//TODO investigate walk crash
+//TODO test from beginning to the ustengrev puzzle
 //TODO check entire main quest again
+//TODO test all menus
 
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
@@ -221,7 +222,7 @@ bool resend_active_force()
 }
 
 //universal force choice
-bool force_choice(std::vector<MenuOption> options, std::string message, int force_type)
+bool force_choice(std::vector<MenuOption> options, std::string message, int force_type, bool no_block)
 {
     if (get_active_force() == -1)
     {
@@ -248,7 +249,10 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
 
             set_active_force(force_type);
             MiscThings::clean_controls_from_string(&message);
-            set_universal_block(1.0f);
+
+            if (!no_block)
+                set_universal_block(1.0f);
+
             std::string json{};
             bool result = !glz::write_json(options, json);
 
