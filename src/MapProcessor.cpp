@@ -36,6 +36,8 @@ namespace MapProcessor {
 
 	RE::TESObjectREFR* chosen_marker_refr = nullptr;
 
+	int last_arrow_moveX = -1;
+	int last_arrow_moveY = -1;
 
 	bool can_fast_travel(int id)
 	{
@@ -622,6 +624,7 @@ namespace MapProcessor {
 	float K = 100.0f;
 
 
+	
 
 	bool move_cursor_to_marker(int id)
 	{
@@ -674,20 +677,69 @@ namespace MapProcessor {
 					if (!camera_posX_ok)
 					{
 						if (marker_posX > 0.55)
-							right();
+						{
+							if (last_arrow_moveX == 2)
+							{
+								camera_posX_ok = true;
+								goto cursor_y;
+							}
+							else
+							{
+								last_arrow_moveX = 1;
+								right();
+							}
+						}
+							
 
 						if (marker_posX < 0.45)
-							left();
+						{
+							if (last_arrow_moveX == 1)
+							{
+								camera_posX_ok = true;
+								goto cursor_y;
+							}
+							else
+							{
+								last_arrow_moveX = 2;
+								left();
+							}
+
+						}
 					}
 					else
 					{
+					cursor_y:
+
 						if (!camera_posY_ok)
 						{
 							if (marker_posY > 0.55)
-								cursor_down();
+							{
+								if (last_arrow_moveY == 4)
+								{
+									camera_posY_ok = true;
+								}
+								else
+								{
+									last_arrow_moveY = 3;
+									cursor_down();
+								}
+							}
+								
 
 							if (marker_posY < 0.45)
-								cursor_up();
+							{
+								if (last_arrow_moveY == 3)
+								{
+									camera_posY_ok = true;
+								}
+								else
+								{
+									last_arrow_moveY = 4;
+									cursor_up();
+								}
+
+							}
+								
 						}
 					}
 
@@ -775,6 +827,8 @@ namespace MapProcessor {
 		catch_result_timer = 0.0f;
 		start_moving = false;
 		catch_result = false;
+		last_arrow_moveX = -1;
+		last_arrow_moveY = -1;
 
 		undiscovered_travel_request_sent = false;
 		undiscovered_travel_choice_valid = false;
