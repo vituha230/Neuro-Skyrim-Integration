@@ -11960,7 +11960,7 @@ namespace WalkerProcessor {
 
                                 
                                 //if (path_point_reached() || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough() && interaction_after_walk == 3) || MiscThings::is_intro())
-                                if (looking_mode || MiscThings::is_intro() || path_point_reached(dtime) || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (close_enough()))// && interaction_after_walk == 3))
+                                if (looking_mode || MiscThings::is_intro() || path_point_reached(dtime) || (!using_custom_path && close_enough() && (current_path_point > (int)std::size(path) - 5)) || (!using_custom_path && close_enough()))// && interaction_after_walk == 3))
                                 {
                                     path_point_reached_timeout = 0.0f;
                                     //time_stuck = 0.0f;
@@ -12024,7 +12024,7 @@ namespace WalkerProcessor {
 
                                     }
 
-                                    if (!close_enough() && !use_last_point_of_last_path && (current_path_point < (int)std::size(path)))
+                                    if ((!close_enough() || using_custom_path) && !use_last_point_of_last_path && (current_path_point < (int)std::size(path)))
                                     {
                                         if (current_path_point >= 0 && std::size(path) > 0)
                                         {

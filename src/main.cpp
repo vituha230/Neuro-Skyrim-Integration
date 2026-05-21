@@ -4,6 +4,7 @@
 //crucial:
 
 
+//TODO investigate walk crash
 //TODO check entire main quest again
 
 
@@ -2943,7 +2944,7 @@ class MyHook {
 
                         auto delphine = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13485);
 
-                        if (speaker == delphine && subtitle_msg.find("Close the door, then we can talk.") != std::string::npos)
+                        if (speaker == delphine && (subtitle_msg.find("Close the door, then we can talk.") != std::string::npos || subtitle_msg.find("Close the door.") != std::string::npos))
                         {
                             Observer::set_quest_puzzle_type(4);
                             unregister_all_actions();
