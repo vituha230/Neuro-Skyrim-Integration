@@ -2741,8 +2741,11 @@ namespace Observer {
 														{
 															std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 															if (activation == 1)
-																result.push_back("[ " + name + " crumbles and reveals the passage behind it]");
-
+															{
+																if (name != "") //this is meant for destructible wall in solitude prison. TODO: maybe describe actual sacrophagus, some of them really do have passages behind. But this triggers for every draugr sarcophagus opening so probably no
+																	result.push_back("[ " + name + " crumbles and reveals the passage behind it]");
+															}
+															
 														}
 
 

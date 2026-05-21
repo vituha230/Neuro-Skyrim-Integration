@@ -4738,7 +4738,7 @@ namespace WalkerProcessor {
                     if (abs(distance.z) < 200.0f)
                         distance.z = 0.0f;
                     else
-                        if (abs(distance.z) < 400.0f)
+                        if (abs(distance.z) < 400.0f && !is_door(target_ref))
                             distance.z = 50.0f;
 
                     if (getting_into_carriage)
