@@ -2895,7 +2895,7 @@ namespace WalkerProcessor {
                             if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
                                 lookat_location.z -= 30.0f;
 
-                            if (target_ref == tsun)
+                            if (target == tsun)
                                 lookat_location.z -= 20.0f;
 
 
@@ -2989,19 +2989,19 @@ namespace WalkerProcessor {
             }
         }
         
-        if (MiscThings::is_inventory_object(target_ref) && !must_use_bounds)
+        if (MiscThings::is_inventory_object(target) && !must_use_bounds)
             dont_use_bounds_for_close_enough = true;
 
         if (lookat_used)
         {
-            if (MiscThings::is_dragon(target_ref) && !is_fighting())
+            if (MiscThings::is_dragon(target) && !is_fighting())
                 dont_use_bounds_for_close_enough = true;
         }
 
         
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && is_fighting()))
+            if (!must_use_bounds && !(MiscThings::is_dragon(target) && is_fighting()))
                 dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
@@ -3324,9 +3324,9 @@ namespace WalkerProcessor {
         //mouse_mouse_x(mouse_x);
 
 
-        if (MiscThings::is_insect(target_ref))
+        if (MiscThings::is_insect(target))
         {
-            auto distance_insect = target_ref->GetPosition() - player->GetPosition();
+            auto distance_insect = target->GetPosition() - player->GetPosition();
             distance_insect.z = 0.0f;
 
             if (distance_insect.Length() < 60.0f)
@@ -10441,18 +10441,25 @@ namespace WalkerProcessor {
 
         if (Observer::threat_response_choice_pending())
         {
-            if (!looking_mode)
+            //if (!looking_mode)
             {
                 auto enemies = MiscThings::get_player_attackers(false, target_ref);
 
                 if (std::size(enemies) > 0)
                 {
-                    reset_walker();
+                    
                     auto closest_threat = enemies.at(0);
                     
-                    look_at_object_by_refr(closest_threat, false, 0.5f, true);
+                    //using lock instead of look so ignore threats works properly
+                    //reset_walker();
+                    //look_at_object_by_refr(closest_threat, false, 0.5f, true);
+                    lock_camera_onto_target(closest_threat, dtime);
+                    
                 }
             }
+
+            return; //NEW FROM LOOK->LOCK CHANGE
+
             //return; //dont walk until threat response is resolved
         }
             

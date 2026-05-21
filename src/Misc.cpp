@@ -2388,6 +2388,9 @@ namespace MiscThings {
 
     bool is_insect(RE::TESObjectREFR* object)
     {
+        if (!object)
+            return false;
+
         auto base_obj = object->GetBaseObject();
         auto base_type = base_obj->GetFormType();
 
