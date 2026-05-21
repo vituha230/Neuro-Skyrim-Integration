@@ -11804,7 +11804,14 @@ namespace WalkerProcessor {
                             {
                                 //door is opened (now?)
                                 register_allowed_actions();
+
+
                                 catch_door_result = false;
+
+                                door_is_closed_request_sent = false;
+                                door_is_closed_choice_valid = false;
+                                door_is_closed_choice = -1;
+
                                 if (!get_targeted_ref() || is_door(get_targeted_ref()))
                                 {
                                     if (!get_targeted_ref() || target_ref == get_targeted_ref())
