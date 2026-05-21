@@ -11454,21 +11454,21 @@ namespace WalkerProcessor {
 
 
 
-                    auto redirect_marker_danstar_area = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700e516);
+                    auto redirect_marker_danstar_area = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700e517); //16 original
 
                     if (redirect_marker_danstar_area && player_worldspace == tamriel_worldspace)
                     {
                         auto player_pos_noZ = player_pos;
                         player_pos_noZ.z = 0.0f;
 
-                        RE::NiPoint3 ban_root = { -91201.2891f, 27304.0020f, 0.0f };
-                        RE::NiPoint3 ban_edge = { -116173.117f, 41768.2500f, 0.0f };
+                        RE::NiPoint3 ban_root = { 50586.7500f, 86216.3984f, 0.0f };
+                        RE::NiPoint3 ban_edge = { 71271.7422f, 86216.3984f, 0.0f };
 
                         auto radius = (ban_root - ban_edge).Length();
 
                         if (player_pos_noZ.GetDistance(ban_root) < radius)
                         {
-                            RE::NiPoint3 corner = { -123944.070f, 19016.9492f, 0.0f };
+                            RE::NiPoint3 corner = { 75756.5625f, 85134.9375f, 0.0f };
                             if (target_ref != redirect_marker_danstar_area)
                             {
 

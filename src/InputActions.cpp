@@ -965,6 +965,11 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         return false;
     }
 
+    if (player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing)
+    {
+        return false; //just wait for it to draw completely
+    }
+
 
     bool low_mana_detected = false;
     bool dont_check_mana = false;
