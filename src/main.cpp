@@ -2951,7 +2951,6 @@ class MyHook {
                         if (speaker == delphine && (subtitle_msg.find("Close the door, then we can talk.") != std::string::npos || subtitle_msg.find("Close the door.") != std::string::npos))
                         {
                             Observer::set_quest_puzzle_type(4);
-                            unregister_all_actions();
                         }
 
 

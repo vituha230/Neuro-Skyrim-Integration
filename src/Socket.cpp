@@ -776,7 +776,7 @@ bool neuro::NeuroSocket::action_register_watchdog(float dtime)
 {
     if (had_connection && ever_registered && !something_is_registered && (get_active_force() == -1) && !MiscThings::have_force_only_menu_open() && !MiscThings::is_intro())
     {
-        if (action_watchdog_timer > 20.0f)
+        if (action_watchdog_timer > 30.0f)
         {
             if (MiscThings::is_game_paused())
             {

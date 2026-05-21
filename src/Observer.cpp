@@ -328,6 +328,8 @@ namespace Observer {
 					options.push_back({ 4, "Do nothing" });
 					options.push_back({ 5, "Do some spins" });
 
+					//unregister_all_actions(); //causes pause - no need to unregister here
+
 					if (force_choice(options, "The greybeards want you to demonstrate that you are able to use the power of the voice. They summoned a ghost as a dummy target for you. What will you do?", force_type::timed_quest_puzzle))
 					{
 						if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
@@ -419,6 +421,8 @@ namespace Observer {
 					options.push_back({ 4, "Jump" });
 					options.push_back({ 5, "Attack the gate" });
 
+					//unregister_all_actions(); //causes pause - no need to unregister here
+
 					if (force_choice(options, "The greybeards want you to demonstrate that you are able to use the power of the voice once again. In this trial you have to use a shout to quickly fly through a gate, before it closes. What will you do?", force_type::timed_quest_puzzle))
 					{
 						if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
@@ -508,6 +512,7 @@ namespace Observer {
 					options.push_back({ 3, "Run through the keystones to open the gates first, then quickly use Whirlwind Sprint shout to fly through the gates" });
 					options.push_back({ 4, "Run through the keystones and then continue running through the gates without using a shout" });
 
+					//unregister_all_actions(); //causes pause - no need to unregister here
 
 					if (force_choice(options, "The path is blocked by some kind of gate puzzle. There are 3 keystones and 3 gates. When you run past a keystone, it opens 1 gate. But in short period of time the gate closes again. Looks you will need to use the Whirlwind shout because gates close too fast. What will you do?", force_type::timed_quest_puzzle))
 					{
@@ -596,6 +601,8 @@ namespace Observer {
 					options.push_back({ 5, "Pickpocket Delphine" });
 					options.push_back({ 6, "Attack Delphine" });
 
+					unregister_all_actions(); //no pause - unregister here
+
 					if (force_choice(options, "Looks like Delphine wants you to close the door before you can continue talking... What will you do?", force_type::timed_quest_puzzle))
 					{
 						puzzle_request_was_sent = true;
@@ -612,6 +619,8 @@ namespace Observer {
 				{
 					if (puzzle_choice_valid)
 					{
+						register_allowed_actions();
+
 						if (puzzle_pause_was_made)
 						{
 							if (MiscThings::is_game_paused())
@@ -711,6 +720,7 @@ namespace Observer {
 							options.push_back({ 4, "Walk carefully to the chain, only stepping on the pressure plates with the Dragonborn symbol on them" });
 					}
 					
+					unregister_all_actions(); //no pause - unregister here
 
 					if (force_choice(options, "You stop and see another puzzle. Suspicious pressure plates cover entire floor of this room, they have different symbols on them. There is a pulling chain across the room, and exit cave on the right. What will you do?", force_type::timed_quest_puzzle))
 					{
@@ -728,6 +738,7 @@ namespace Observer {
 				{
 					if (puzzle_choice_valid)
 					{
+
 						if (false && puzzle_pause_was_made)
 						{
 							if (MiscThings::is_game_paused())
@@ -751,6 +762,8 @@ namespace Observer {
 							//}
 						case 1:
 						{
+							register_allowed_actions();
+
 							auto our_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ203");
 							WalkerProcessor::walk_to_quest_by_index(WalkerProcessor::get_quest_id_by_refr(our_quest), false);
 							pause_puzzle_scan_time = 10.0f;
@@ -759,6 +772,8 @@ namespace Observer {
 						}
 						case 2:
 						{
+							register_allowed_actions();
+
 							RE::TESObjectREFR* chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x511a4);
 							WalkerProcessor::walk_to_object_by_refr(chain, 1);
 							pause_puzzle_scan_time = 10.0f;
@@ -784,6 +799,8 @@ namespace Observer {
 
 						default:
 						{
+							register_allowed_actions();
+
 							reset_quest_puzzles();
 							break;
 						}
