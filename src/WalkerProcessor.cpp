@@ -29,6 +29,8 @@ namespace WalkerProcessor {
 
 
     RE::TESObjectREFR* target_before_markarth_redirect = nullptr;
+    RE::TESObjectREFR* target_before_danstar_redirect = nullptr;
+    
 
     bool must_use_bounds = false;
 
@@ -3812,6 +3814,8 @@ namespace WalkerProcessor {
         special_look_speed_koef = 1.0f;
 
         target_before_markarth_redirect = nullptr;
+        target_before_danstar_redirect = nullptr;
+
 
         must_use_bounds = false;
 
@@ -7894,10 +7898,56 @@ namespace WalkerProcessor {
                             }
 
 
+                            auto parthurnax_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x34e03);
+
+                            if (target_ref == parthurnax_target)
+                                lock_camera_onto_target(target_ref, 0.016); //this part is very bugged, must shout with precision
 
                             send_random_context("You are using the shout: " + shout_name);
                             MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
                             return true;
+                        }
+                        else
+                        {
+                            //additional check so it doesnt stall 
+                            auto hazard_0 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x105375);
+                            auto hazard_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x105965);
+                            auto hazard_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10f764);
+
+                            auto player = RE::PlayerCharacter::GetSingleton();
+
+                            if (player)
+                            {
+                                if (hazard_0 && target_ref == hazard_0)
+                                {
+                                    auto hazard_0_blizzard = MiscThings::get_linked_ref_children(hazard_0, 0);
+
+                                    if (hazard_0_blizzard && hazard_0_blizzard->IsDisabled())
+                                    {
+                                        return true;
+                                    }
+                                }
+
+                                if (hazard_1 && target_ref == hazard_1)
+                                {
+                                    auto hazard_1_pos = hazard_1->GetPosition();
+
+                                    if (hazard_1->IsDisabled())
+                                    {
+                                        return true;
+                                    }
+                                }
+
+                                if (hazard_2 && target_ref == hazard_2)
+                                {
+                                    auto hazard_2_pos = hazard_2->GetPosition();
+
+                                    if (hazard_2->IsDisabled())
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
                         }
 
                     }
@@ -11404,6 +11454,77 @@ namespace WalkerProcessor {
 
 
 
+                    auto redirect_marker_danstar_area = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700e516);
+
+                    if (redirect_marker_danstar_area && player_worldspace == tamriel_worldspace)
+                    {
+                        auto player_pos_noZ = player_pos;
+                        player_pos_noZ.z = 0.0f;
+
+                        RE::NiPoint3 ban_root = { -91201.2891f, 27304.0020f, 0.0f };
+                        RE::NiPoint3 ban_edge = { -116173.117f, 41768.2500f, 0.0f };
+
+                        auto radius = (ban_root - ban_edge).Length();
+
+                        if (player_pos_noZ.GetDistance(ban_root) < radius)
+                        {
+                            RE::NiPoint3 corner = { -123944.070f, 19016.9492f, 0.0f };
+                            if (target_ref != redirect_marker_danstar_area)
+                            {
+
+                                if (target_ref_pos.x > corner.x && target_ref_pos.y > corner.y)
+                                {
+
+                                    //fix bad pathfinding
+                                    dont_check_quest_target_change = true;
+                                    target_before_danstar_redirect = target_ref;
+                                    target_ref = redirect_marker_danstar_area;
+                                    walk_again();
+                                    return;
+                                }
+                                else
+                                {
+                                    if (target_ref == redirect_marker_danstar_area)
+                                    {
+                                        target_ref = target_before_danstar_redirect;
+                                        walk_again();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (target_ref == redirect_marker_danstar_area)
+                            {
+                                target_ref = target_before_danstar_redirect;
+
+                                if (!target_before_danstar_redirect)
+                                {
+                                    reset_walker();
+                                    return;
+                                }
+
+                                walk_again();
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (target_ref == redirect_marker_danstar_area)
+                        {
+                            target_ref = target_before_danstar_redirect;
+                            walk_again();
+                            return;
+                        }
+                    }
+
+
+
+
+
+
 
 
                     auto hrothgar_chair = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x28e36);
@@ -11560,7 +11681,7 @@ namespace WalkerProcessor {
 
                                         if (hazard_0_blizzard && !hazard_0_blizzard->IsDisabled())
                                         {
-                                            if (player_pos.GetDistance(hazard_0_pos) < 1200.0f)
+                                            if (player_pos.GetDistance(hazard_0_pos) < 2200.0f)
                                             {
                                                 WalkerProcessor::shout_at_target(parthurnax_target, clear_skies_shout);
                                                 ignore_raycast = true;

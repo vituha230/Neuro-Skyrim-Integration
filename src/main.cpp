@@ -7,6 +7,7 @@
 //TODO test from beginning to the ustengrev puzzle
 //TODO check entire main quest again
 //TODO test all menus
+//TODO test prisons
 
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
