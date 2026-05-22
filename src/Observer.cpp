@@ -785,14 +785,14 @@ namespace Observer {
 							RE::TESObjectREFR* chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x511a4);
 							auto shout_form = (RE::TESShout*)RE::TESForm::LookupByID(0x2f7ba);
 							WalkerProcessor::shout_at_target(chain, shout_form, false, chain);
-							pause_puzzle_scan_time = 10.0f;
+							pause_puzzle_scan_time = 20.0f;
 							reset_quest_puzzles();
 							break;
 						}
 						case 4:
 						{
 							WalkerProcessor::walk_karthspire_plates();
-							pause_puzzle_scan_time = 10.0f;
+							pause_puzzle_scan_time = 20.0f;
 							reset_quest_puzzles();
 							break;
 						}
