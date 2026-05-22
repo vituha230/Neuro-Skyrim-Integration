@@ -610,6 +610,9 @@ void send_delayed_messages(float dtime)
 //maybe add some info about speaker too (his job or bio)
 void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text, bool force_display)
 {
+    if (!speaker)
+        return;
+
     //THIS IS NPC'S RESPONSE SENT AS CONTEXT.
                                //"Dialogue: [Type \(lineDataDeref.type)] \(localizedSpeakerName) says \"\(line)\"";
 
@@ -2686,9 +2689,12 @@ class MyHook {
                     RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 30000.0f,
                         [&](RE::TESObjectREFR* a_ref) {
 
-                            std::string name = "";
-                            name = a_ref->GetDisplayFullName();
-                            refrs.insert({ a_ref, name });
+                            if (a_ref)
+                            {
+                                std::string name = "";
+                                name = a_ref->GetDisplayFullName();
+                                refrs.insert({ a_ref, name });
+                            }
 
                             return RE::BSContainer::ForEachResult::kContinue;
                         });
@@ -2777,24 +2783,28 @@ class MyHook {
                         RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 30000.0f,
                             [&](RE::TESObjectREFR* a_ref) {
 
-                                auto base_obj = a_ref->GetBaseObject();
-                                auto base_type = base_obj->GetFormType();
-
-
-                                //if (base_obj && base_type == RE::FormType::ProjectileArrow)
-                                if (refrs.find(a_ref) == refrs.end())
+                                if (a_ref)
                                 {
-                                    the_arrow = (RE::ArrowProjectile*)a_ref;
+                                    auto base_obj = a_ref->GetBaseObject();
+                                    auto base_type = base_obj->GetFormType();
 
-                                    RE::CFilter cFilter_info{};
 
-                                    //the_arrow->GetCollisionFilterInfo(cFilter_info);
+                                    //if (base_obj && base_type == RE::FormType::ProjectileArrow)
+                                    if (refrs.find(a_ref) == refrs.end())
+                                    {
+                                        the_arrow = (RE::ArrowProjectile*)a_ref;
 
-                                    bool catched_an_arrow = true;
-                                    start_pos = the_arrow->GetPosition().z;
+                                        RE::CFilter cFilter_info{};
 
-                                    original_dif = a_ref->GetPosition() - player_ref->GetPosition();
+                                        //the_arrow->GetCollisionFilterInfo(cFilter_info);
+
+                                        bool catched_an_arrow = true;
+                                        start_pos = the_arrow->GetPosition().z;
+
+                                        original_dif = a_ref->GetPosition() - player_ref->GetPosition();
+                                    }
                                 }
+                                
 
                                 return RE::BSContainer::ForEachResult::kContinue;
                             });

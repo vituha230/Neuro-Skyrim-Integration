@@ -2103,6 +2103,9 @@ namespace MiscThings {
 
     std::string lever_interaction_advice(RE::TESObjectREFR* lever)
     {
+        if (!lever)
+            return "";
+
         auto object_p = General::Script::GetObject(lever, "defaultPillarPuzzleLever");
 
         if (!object_p)
@@ -2266,6 +2269,9 @@ namespace MiscThings {
 
     void myMoveTo_Impl(RE::TESObjectREFR* object, const RE::ObjectRefHandle& a_targetHandle, RE::TESObjectCELL* a_targetCell, RE::TESWorldSpace* a_selfWorldSpace, const RE::NiPoint3& a_position, const RE::NiPoint3& a_rotation)
     {
+        if (!object)
+            return;
+
         using func_t = decltype(&myMoveTo_Impl);
         static REL::Relocation<func_t> func{ RELOCATION_ID(56227, 56626) };
         return func(object, a_targetHandle, a_targetCell, a_selfWorldSpace, a_position, a_rotation);
@@ -2273,7 +2279,10 @@ namespace MiscThings {
 
     void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos)
     {
-        assert(a_target);
+        if (a_target)
+            return;
+
+        //assert(a_target);
 
         auto handle = a_target->GetHandle();
 
@@ -2288,6 +2297,9 @@ namespace MiscThings {
 
     bool raycastable(RE::TESObjectREFR* object, float range, bool only_forward)
     {
+        if (!object)
+            return false;
+
         auto camera = RE::PlayerCamera::GetSingleton();
 
         auto camera_pos = camera->pos;
@@ -2338,6 +2350,10 @@ namespace MiscThings {
 
     RE::TESObjectREFR* get_word_of_power(RE::TESObjectREFR* trigger_zone_ref, bool strict)
     {
+        if (!trigger_zone_ref)
+            return nullptr;
+
+
         auto object_p = General::Script::GetObject(trigger_zone_ref, "WordWallTriggerScript");
         //auto object_p = General::Script::GetObject(trigger_zone_ref, "WordWallTrigger02Script");
         
@@ -2797,6 +2813,9 @@ namespace MiscThings {
 
     std::string get_blocking_object_name2(RE::TESObjectREFR* a_ref)
     {
+        if (!a_ref)
+            return "";
+
        // return "";
 
         std::string result = "";
@@ -2846,6 +2865,9 @@ namespace MiscThings {
 
     std::string get_blocking_object_name(RE::TESObjectREFR* a_ref)
     {
+        if (!a_ref)
+            return "";
+
        // return "";
         std::string result = "";
 
@@ -3158,6 +3180,9 @@ namespace MiscThings {
 
                 std::sort(levers.begin(), levers.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
 
+                    if (!left || !right)
+                        return false;
+
                     if (left->data.objectReference && right->data.objectReference)
                         return left->GetDistance(blocking_object) < right->GetDistance(blocking_object); //switch > to < for inversed order. this is last->closest
                     else
@@ -3210,6 +3235,9 @@ namespace MiscThings {
     int get_destructible_state(RE::TESObjectREFR* web)
     {
         int result = 0;
+
+        if (!web)
+            return 0;
 
         auto base_obj = web->GetBaseObject();
         if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
@@ -3265,6 +3293,10 @@ namespace MiscThings {
     {
         //default2StateActivator
         int result = -1;
+
+        if (!activator)
+            return -1;
+
         auto object_p = General::Script::GetObject(activator, "default2StateActivator");
         //dunCGdefault2StateActivator
         if (!object_p)
@@ -3460,6 +3492,10 @@ namespace MiscThings {
     int trap_firing(RE::TESObjectREFR* trap)
     {
         int result = -1;
+
+        if (!trap)
+            return -1;
+
         auto object_p = General::Script::GetObject(trap, "DartTrap");
         if (object_p)
         {
@@ -3604,6 +3640,8 @@ namespace MiscThings {
 
     bool is_pillar_solved(RE::TESObjectREFR* pillar)
     {
+        if (!pillar)
+            return false;
 
         bool result = false;
 
@@ -3670,6 +3708,9 @@ namespace MiscThings {
     std::string get_pillar_solved_text(RE::TESObjectREFR* pillar)
     {
         std::string result = "";
+
+        if (!pillar)
+            return "";
 
 
         auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
@@ -3770,6 +3811,10 @@ namespace MiscThings {
     std::string get_pillar_face_name(RE::TESObjectREFR* object, int code)
     {
         std::string result = "";
+
+        if (!object)
+            return "";
+
 
         int type = -1;
 
@@ -6133,6 +6178,9 @@ namespace MiscThings {
     {
         std::string marker_category = "";
 
+        if (!refr)
+            return "";
+
         auto data = (RE::ExtraMapMarker*)refr->extraList.GetByType(RE::ExtraDataType::kMapMarker);
         if (data && data->mapData)
         {
@@ -6581,6 +6629,10 @@ namespace MiscThings {
     std::string is_stealing(RE::TESObjectREFR* object)
     {
         std::string result = "";
+
+        if (!object)
+            return "";
+
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_actor = (RE::Actor*)player->AsReference();
 
@@ -6705,6 +6757,9 @@ namespace MiscThings {
 
     std::string get_object_category(RE::TESObjectREFR* object)
     {
+        if (!object)
+            return "";
+
         if (!object->AsReference())
         {
             bool wtf_is_this = true;
@@ -7169,6 +7224,9 @@ namespace MiscThings {
     std::string get_stats_info(RE::TESObjectREFR* refr)
     {
         std::string result = "";
+
+        if (!refr)
+            return "";
 
         auto base_obj = refr->GetBaseObject();
         if (base_obj)
@@ -11710,7 +11768,7 @@ namespace MiscThings {
             //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
             [&](RE::TESObjectREFR* a_ref) {
 
-                if (a_ref->IsActor())
+                if (a_ref && a_ref->IsActor())
                 {
                     if (is_enemy_to_actor(a_ref) && (!raycastable_only || raycastable(a_ref, 9000.0f, false)))
                     {
@@ -11755,6 +11813,9 @@ namespace MiscThings {
 
     bool is_new_object_valid(RE::TESObjectREFR* a_ref)
     {
+        if (!a_ref)
+            return false;
+
         std::string name = a_ref->GetName();
         std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
@@ -11984,202 +12045,84 @@ namespace MiscThings {
         RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, max_dist,
             [&](RE::TESObjectREFR* a_ref) {
 
-                std::string name = a_ref->GetName();
-                std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
-
-                auto base_obj = a_ref->GetBaseObject();
-                RE::FormType base_type{};
-
-                if (base_obj)
+                if (a_ref)
                 {
-                    base_type = base_obj->GetFormType();
-                    bool debug_type = true;
-                }
-                else
-                {
-                    bool no_base_object = true;
-                }
+                    std::string name = a_ref->GetName();
+                    std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
-                if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
-                {
-                    if (base_type == RE::FormType::Door)
-                        return RE::BSContainer::ForEachResult::kContinue;
-
-                    if (MiscThings::has_digits(name))
-                        return RE::BSContainer::ForEachResult::kContinue;
-
-                    if (a_ref->AsReference()->modelState == 0)
-                        return RE::BSContainer::ForEachResult::kContinue; //skip objects without world model
-
-
-                    if (base_type == RE::FormType::Activator)
-                    {
-                        auto test = (RE::TESObjectACTI*)base_obj;
-                        std::string model = test->GetModel();
-                        if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
-                            return RE::BSContainer::ForEachResult::kContinue;
-
-                        //little flags
-                        if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
-                            return RE::BSContainer::ForEachResult::kContinue;
-                    }
-
-
-
-                    if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
-                        return RE::BSContainer::ForEachResult::kContinue;
-
-                    if (name.find("Do Not Delete") != std::string::npos)
-                        return RE::BSContainer::ForEachResult::kContinue;
-
-                    if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
-                        return RE::BSContainer::ForEachResult::kContinue;
-
-                    if (name.find("default") != std::string::npos)
-                        return RE::BSContainer::ForEachResult::kContinue;
-
-
-
-                    if (auto extra = a_ref->extraList.GetByType(RE::ExtraDataType::kItemDropper); extra)
-                    {
-                        auto extra_dropper = (RE::ExtraItemDropper*)extra;
-
-                        if (extra_dropper && extra_dropper->dropper && extra_dropper->dropper.get())
-                        {
-                            auto dropper = extra_dropper->dropper.get().get();
-
-                            if (dropper)
-                            {
-                                if (dropper->IsActor())
-                                {
-                                    return RE::BSContainer::ForEachResult::kContinue; //exclude dropped items, they have weird position.
-                                }
-                            }
-                        }
-                    }
-
-
-                    if (a_ref->AsReference()->IsActor())
-                    {
-                        if (!MiscThings::is_object_in_the_list(a_ref))
-                            if (player_ref->GetDistance(a_ref) > min_dist)
-                            {
-                                candidates.push_back(a_ref);
-                                return RE::BSContainer::ForEachResult::kContinue;
-                            }
-                    }
-
-
-                    if (base_type == RE::FormType::Door)
-                    {
-                        if (!MiscThings::is_object_in_the_list(a_ref))
-                            if (player_ref->GetDistance(a_ref) > min_dist)
-                            {
-                                candidates.push_back(a_ref);
-                                return RE::BSContainer::ForEachResult::kContinue;
-                            }
-                    }
-
-
-
-                    if (base_type == RE::FormType::Activator)
-                    {
-                        if (!MiscThings::is_object_in_the_list(a_ref))
-                            if (player_ref->GetDistance(a_ref) > min_dist)
-                            {
-                                candidates.push_back(a_ref);
-                                return RE::BSContainer::ForEachResult::kContinue;
-                            }
-                    }
-
-                    if (base_type == RE::FormType::Furniture) //pullchains/levers
-                    {
-                        auto furniture = (RE::TESFurniture*)base_obj;
-                        auto workbenchtype = furniture->workBenchData.benchType;
-                        if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
-                        {
-                            if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
-                            {
-                                if (!MiscThings::is_object_in_the_list(a_ref))
-                                    if (player_ref->GetDistance(a_ref) > min_dist)
-                                    {
-                                        candidates.push_back(a_ref);
-                                        return RE::BSContainer::ForEachResult::kContinue;
-                                    }
-                            }
-                        }
-                    }
-
-
-
-
-
-                    if (base_type == RE::FormType::Container)
-                    {
-                        if (!MiscThings::is_object_in_the_list(a_ref))
-                            if (player_ref->GetDistance(a_ref) > min_dist)
-                            {
-                                candidates.push_back(a_ref);
-                                return RE::BSContainer::ForEachResult::kContinue;
-                            }
-                    }
+                    auto base_obj = a_ref->GetBaseObject();
+                    RE::FormType base_type{};
 
                     if (base_obj)
                     {
-                        bool is_harvestable = false;
-
-                        if (base_type == RE::FormType::Tree)
-                        {
-                            auto tree_form = (RE::TESObjectTREE*)base_obj;
-
-                            auto test_flags = a_ref->AsReference()->GetFormFlags();
-
-                            bool already_harvested = false;
-
-                            if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-                                already_harvested = true;
-
-                            if (test_flags & 2048) //this is potentially only one we need here
-                                already_harvested = true;
-
-
-
-
-                            if (tree_form->produceItem && !already_harvested)
-                                is_harvestable = true;
-                        }
-
-                        if (base_type == RE::FormType::Flora)
-                        {
-                            auto tree_form = (RE::TESFlora*)base_obj;
-
-                            auto test_flags = a_ref->AsReference()->GetFormFlags();
-                            bool already_harvested = false;
-                            if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
-                                already_harvested = true;
-
-                            if (tree_form->produceItem && !already_harvested)
-                                is_harvestable = true;
-                        }
-
-
-                        if (is_harvestable)
-                        {
-                            if (!MiscThings::is_object_in_the_list(a_ref))
-                                if (player_ref->GetDistance(a_ref) > min_dist)
-                                {
-                                    candidates.push_back(a_ref);
-                                    return RE::BSContainer::ForEachResult::kContinue;
-                                }
-                        }
+                        base_type = base_obj->GetFormType();
+                        bool debug_type = true;
+                    }
+                    else
+                    {
+                        bool no_base_object = true;
                     }
 
-                    if (base_type == RE::FormType::Furniture) //workbenches and beds
+                    if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
                     {
-                        bool this_isnt_a_furniture = false;
-                        auto furniture = (RE::TESFurniture*)base_obj;
-                        auto workbenchtype = furniture->workBenchData.benchType;
-                        if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                        if (base_type == RE::FormType::Door)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (MiscThings::has_digits(name))
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (a_ref->AsReference()->modelState == 0)
+                            return RE::BSContainer::ForEachResult::kContinue; //skip objects without world model
+
+
+                        if (base_type == RE::FormType::Activator)
+                        {
+                            auto test = (RE::TESObjectACTI*)base_obj;
+                            std::string model = test->GetModel();
+                            if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            //little flags
+                            if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                                return RE::BSContainer::ForEachResult::kContinue;
+                        }
+
+
+
+                        if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (name.find("Do Not Delete") != std::string::npos)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (name.find("default") != std::string::npos)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+
+
+                        if (auto extra = a_ref->extraList.GetByType(RE::ExtraDataType::kItemDropper); extra)
+                        {
+                            auto extra_dropper = (RE::ExtraItemDropper*)extra;
+
+                            if (extra_dropper && extra_dropper->dropper && extra_dropper->dropper.get())
+                            {
+                                auto dropper = extra_dropper->dropper.get().get();
+
+                                if (dropper)
+                                {
+                                    if (dropper->IsActor())
+                                    {
+                                        return RE::BSContainer::ForEachResult::kContinue; //exclude dropped items, they have weird position.
+                                    }
+                                }
+                            }
+                        }
+
+
+                        if (a_ref->AsReference()->IsActor())
                         {
                             if (!MiscThings::is_object_in_the_list(a_ref))
                                 if (player_ref->GetDistance(a_ref) > min_dist)
@@ -12188,28 +12131,150 @@ namespace MiscThings {
                                     return RE::BSContainer::ForEachResult::kContinue;
                                 }
                         }
-                        else
+
+
+                        if (base_type == RE::FormType::Door)
                         {
-                            if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
+                            if (!MiscThings::is_object_in_the_list(a_ref))
+                                if (player_ref->GetDistance(a_ref) > min_dist)
+                                {
+                                    candidates.push_back(a_ref);
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                }
+                        }
+
+
+
+                        if (base_type == RE::FormType::Activator)
+                        {
+                            if (!MiscThings::is_object_in_the_list(a_ref))
+                                if (player_ref->GetDistance(a_ref) > min_dist)
+                                {
+                                    candidates.push_back(a_ref);
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                }
+                        }
+
+                        if (base_type == RE::FormType::Furniture) //pullchains/levers
+                        {
+                            auto furniture = (RE::TESFurniture*)base_obj;
+                            auto workbenchtype = furniture->workBenchData.benchType;
+                            if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                            {
+                                if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
+                                {
+                                    if (!MiscThings::is_object_in_the_list(a_ref))
+                                        if (player_ref->GetDistance(a_ref) > min_dist)
+                                        {
+                                            candidates.push_back(a_ref);
+                                            return RE::BSContainer::ForEachResult::kContinue;
+                                        }
+                                }
+                            }
+                        }
+
+
+
+
+
+                        if (base_type == RE::FormType::Container)
+                        {
+                            if (!MiscThings::is_object_in_the_list(a_ref))
+                                if (player_ref->GetDistance(a_ref) > min_dist)
+                                {
+                                    candidates.push_back(a_ref);
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                }
+                        }
+
+                        if (base_obj)
+                        {
+                            bool is_harvestable = false;
+
+                            if (base_type == RE::FormType::Tree)
+                            {
+                                auto tree_form = (RE::TESObjectTREE*)base_obj;
+
+                                auto test_flags = a_ref->AsReference()->GetFormFlags();
+
+                                bool already_harvested = false;
+
+                                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                                    already_harvested = true;
+
+                                if (test_flags & 2048) //this is potentially only one we need here
+                                    already_harvested = true;
+
+
+
+
+                                if (tree_form->produceItem && !already_harvested)
+                                    is_harvestable = true;
+                            }
+
+                            if (base_type == RE::FormType::Flora)
+                            {
+                                auto tree_form = (RE::TESFlora*)base_obj;
+
+                                auto test_flags = a_ref->AsReference()->GetFormFlags();
+                                bool already_harvested = false;
+                                if (test_flags & RE::TESObjectREFR::RecordFlags::kHarvested) //THIS FLAG IS POTENTIALLY INCORRECT.
+                                    already_harvested = true;
+
+                                if (tree_form->produceItem && !already_harvested)
+                                    is_harvestable = true;
+                            }
+
+
+                            if (is_harvestable)
+                            {
                                 if (!MiscThings::is_object_in_the_list(a_ref))
                                     if (player_ref->GetDistance(a_ref) > min_dist)
                                     {
                                         candidates.push_back(a_ref);
                                         return RE::BSContainer::ForEachResult::kContinue;
                                     }
+                            }
+                        }
+
+                        if (base_type == RE::FormType::Furniture) //workbenches and beds
+                        {
+                            bool this_isnt_a_furniture = false;
+                            auto furniture = (RE::TESFurniture*)base_obj;
+                            auto workbenchtype = furniture->workBenchData.benchType;
+                            if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                            {
+                                if (!MiscThings::is_object_in_the_list(a_ref))
+                                    if (player_ref->GetDistance(a_ref) > min_dist)
+                                    {
+                                        candidates.push_back(a_ref);
+                                        return RE::BSContainer::ForEachResult::kContinue;
+                                    }
+                            }
+                            else
+                            {
+                                if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
+                                    if (!MiscThings::is_object_in_the_list(a_ref))
+                                        if (player_ref->GetDistance(a_ref) > min_dist)
+                                        {
+                                            candidates.push_back(a_ref);
+                                            return RE::BSContainer::ForEachResult::kContinue;
+                                        }
+                            }
+                        }
+
+                        if (base_obj->IsInventoryObject())
+                        {
+                            if (!MiscThings::is_object_in_the_list(a_ref))
+                                if (player_ref->GetDistance(a_ref) > min_dist)
+                                {
+                                    candidates.push_back(a_ref);
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                }
                         }
                     }
-
-                    if (base_obj->IsInventoryObject())
-                    {
-                        if (!MiscThings::is_object_in_the_list(a_ref))
-                            if (player_ref->GetDistance(a_ref) > min_dist)
-                            {
-                                candidates.push_back(a_ref);
-                                return RE::BSContainer::ForEachResult::kContinue;
-                            }
-                    }
                 }
+                
 
                 return RE::BSContainer::ForEachResult::kContinue;
             });
@@ -12217,7 +12282,7 @@ namespace MiscThings {
 
 
             std::sort(candidates.begin(), candidates.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
-                if (left->data.objectReference && left->data.objectReference &&
+                if (left && right && left->data.objectReference && left->data.objectReference &&
                     right->data.objectReference)
                     return left->GetDistance(player_ref) < right->GetDistance(player_ref); //switch > to < for inversed order. this is last->closest
                 else
@@ -12235,6 +12300,9 @@ namespace MiscThings {
 
     bool puzzle_door_open(RE::TESObjectREFR* a_ref)
     {
+        if (!a_ref)
+            return false;
+
 
         auto object_p = General::Script::GetObject(a_ref, "HallofStoriesKeyholeScript");
         if (object_p)
@@ -12429,7 +12497,7 @@ namespace MiscThings {
         RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 30000.0,
             [&](RE::TESObjectREFR* a_ref) {
                 {
-                    if (a_ref == test_object)
+                    if (a_ref && a_ref == test_object)
                     {
                         found = true;
                         return RE::BSContainer::ForEachResult::kStop;
@@ -12799,16 +12867,20 @@ namespace MiscThings {
         RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 50000.0,
             [&](RE::TESObjectREFR* a_ref) {
 
-                for (std::pair<int, object_data> object : objects_around)
+                if (a_ref)
                 {
-                    if (object.second.object == a_ref)
+                    for (std::pair<int, object_data> object : objects_around)
                     {
-                        if (is_object_valid(a_ref))
-                            local_copy.push_back(object);
+                        if (object.second.object == a_ref)
+                        {
+                            if (is_object_valid(a_ref))
+                                local_copy.push_back(object);
 
-                        return RE::BSContainer::ForEachResult::kContinue;
-                    } 
+                            return RE::BSContainer::ForEachResult::kContinue;
+                        }
+                    }
                 }
+                
                 return RE::BSContainer::ForEachResult::kContinue;
             });
 

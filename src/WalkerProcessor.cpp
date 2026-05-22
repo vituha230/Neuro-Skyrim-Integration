@@ -2089,35 +2089,39 @@ namespace WalkerProcessor {
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
 
-                    std::string name = a_ref->GetName();
-                    std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
-
-
-                    if (!MiscThings::is_object_valid(a_ref))
-                        return RE::BSContainer::ForEachResult::kContinue;
-
-                    auto base_obj = a_ref->GetBaseObject();
-                    RE::FormType base_type{};
-
-                    if (base_obj)
+                    if (a_ref)
                     {
-                        base_type = base_obj->GetFormType();
-                        bool debug_type = true;
-                    }
-                    else
-                    {
-                        bool no_base_object = true;
-                    }
+                        std::string name = a_ref->GetName();
+                        std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
-                    if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
-                    {
-                        if (MiscThings::raycastable(a_ref, 500.0f))
+
+                        if (!MiscThings::is_object_valid(a_ref))
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        auto base_obj = a_ref->GetBaseObject();
+                        RE::FormType base_type{};
+
+                        if (base_obj)
                         {
-                            result = true;
-                            return RE::BSContainer::ForEachResult::kStop;
+                            base_type = base_obj->GetFormType();
+                            bool debug_type = true;
+                        }
+                        else
+                        {
+                            bool no_base_object = true;
                         }
 
+                        if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
+                        {
+                            if (MiscThings::raycastable(a_ref, 500.0f))
+                            {
+                                result = true;
+                                return RE::BSContainer::ForEachResult::kStop;
+                            }
+
+                        }
                     }
+                    
 
 
                     return RE::BSContainer::ForEachResult::kContinue;
@@ -2384,6 +2388,10 @@ namespace WalkerProcessor {
 
     void cut_navmesh_on_target(RE::TESObjectREFR* target)
     {
+        if (!target)
+            return;
+
+
         std::vector<RE::TESObjectREFR*> dont_cut_list =
         {
             (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee), //idk
