@@ -4691,17 +4691,35 @@ namespace WalkerProcessor {
 
                         auto raycast_test = raycast_ref == target_ref;
                         bool target_visible = false;
+
+                        float on_time = 0.4f;
+                        float off_time = 0.2f;
+                        bool dragon_coef = false;
+
+                        //dragons raycasting sucks for some reason even though they are huge; make time windows easier
+                        if (MiscThings::is_dragon(target_ref))
+                        {
+                            on_time = 0.3f;
+                            off_time = 0.01f;
+                            dragon_coef = true;
+                        }
+
+
                         if (raycast_test || ignore_raycast)
                         {
-                            if (successful_raycast_time > 0.4f)
+                            if (successful_raycast_time > on_time)
+                            {
                                 target_visible = true;
+                                if (dragon_coef)
+                                    successful_raycast_time = 2.0f;
+                            } 
                             else
                                 successful_raycast_time += dtime_better;
                         }
                         else
                         {
                             if (start_attacking)
-                                if (successful_raycast_time < 0.2f)
+                                if (successful_raycast_time < off_time)
                                 {
                                     target_visible = false;
                                     successful_raycast_time = 0.0f;
@@ -4709,7 +4727,7 @@ namespace WalkerProcessor {
                                 else
                                 {
                                     successful_raycast_time -= dtime_better;
-                                    target_visible = true;
+                                    target_visible = true; //prolong visibile status until success time depletes
                                 }
                                     
                         }
