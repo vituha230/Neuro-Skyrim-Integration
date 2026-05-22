@@ -396,6 +396,19 @@ namespace WalkerProcessor {
 
 
 
+    bool in_skuldafn()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto skuldafn_worldspace = RE::TESForm::LookupByID(0x278dd);
+        auto player_worldspace = player->GetWorldspace();
+
+        if (player_worldspace == skuldafn_worldspace && skuldafn_worldspace)
+            return true;
+
+        return false;
+    }
+
+
     void invalidate_path()
     {
         path_valid = false;
@@ -801,7 +814,13 @@ namespace WalkerProcessor {
 
 
 
-
+    RE::TESObjectREFR* get_runaway_target()
+    {
+        if (in_skuldafn())
+            return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker skuldafn
+        else
+            return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker
+    }
 
 
 
@@ -831,7 +850,7 @@ namespace WalkerProcessor {
 
                     if (navmesh_probe_mode)
                     {
-                        RE::TESObjectREFR* probe_target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker
+                        RE::TESObjectREFR* probe_target = get_runaway_target();
 
                         
                         pre_probe_target = target_ref;
@@ -4698,7 +4717,7 @@ namespace WalkerProcessor {
                     }
                     //else
 
-                    if (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)) //melee only
+                    if (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode) || MiscThings::is_dragon(target_ref)) //melee only
                     {
 
                         auto bound_max = target_ref->GetBoundMax() * target_ref->GetScale();
@@ -6934,7 +6953,7 @@ namespace WalkerProcessor {
         std::pair<bool, std::string> result{};
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
+        RE::TESObjectREFR* target = get_runaway_target();
 
 
         auto player_pos = player->GetPosition();
@@ -6985,7 +7004,7 @@ namespace WalkerProcessor {
         std::pair<bool, std::string> result{};
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        RE::TESObjectREFR* target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
+        RE::TESObjectREFR* target = get_runaway_target();
 
         
         auto player_pos = player->GetPosition();
@@ -12502,9 +12521,9 @@ namespace WalkerProcessor {
                                                                                             RE::TESObjectREFR* tsun = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4f829);
                                                                                             RE::TESObjectREFR* delphine = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13485);
                                                                                             RE::TESObjectREFR* malborne = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x33f46);
+                                                                                            RE::TESObjectREFR* tulius = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ba);
 
-
-                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun && target_actor != delphine && target_actor != malborne)
+                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun && target_actor != delphine && target_actor != malborne && target_actor != tulius)
                                                                                                 dont_autointerract = true;
                                                                                             
                                                                                         }
