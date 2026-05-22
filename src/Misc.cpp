@@ -12321,7 +12321,7 @@ namespace MiscThings {
 
     bool is_object_valid(RE::TESObjectREFR* a_ref)
     {
-        if (!a_ref || !a_ref->data.objectReference)
+        if (!a_ref || !a_ref->data.objectReference || !a_ref->data.objectReference->formID)
             return false;
 
         RE::ObjectRefHandle my_handle{};
