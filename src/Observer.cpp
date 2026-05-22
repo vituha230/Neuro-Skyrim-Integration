@@ -1464,7 +1464,7 @@ namespace Observer {
 
 										if (a_ref->AsReference()->IsActor())
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref) && (a_ref->GetDistance(player_ref) < 150.0f || MiscThings::raycastable(a_ref, scan_distance)))
+											if (!MiscThings::is_object_in_the_list(a_ref) && (a_ref->GetDistance(player_ref) < 150.0f || ((MiscThings::is_carriage_driver(a_ref) && a_ref->GetDistance(player_ref) < 1000.0f) || MiscThings::raycastable(a_ref, scan_distance))))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
