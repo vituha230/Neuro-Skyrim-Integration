@@ -1019,6 +1019,7 @@ namespace Observer {
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();
 
+		bool backup_register = false;
 
 		if (threats_response_request_sent && threats_response_choice_valid)
 		{
@@ -1031,6 +1032,8 @@ namespace Observer {
 				return;
 			}
 
+			if (!action_taken)
+				backup_register = true;
 		}
 
 
@@ -1202,6 +1205,9 @@ namespace Observer {
 				}
 			}
 		}
+
+		if (backup_register && !action_taken && !is_something_registered())
+			register_allowed_actions();
 
 	}
 

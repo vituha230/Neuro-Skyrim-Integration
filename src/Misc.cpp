@@ -6389,6 +6389,47 @@ namespace MiscThings {
     std::map<int, object_data> objects_around{};
 
 
+    RE::TESObjectREFR* get_dragon_for_dragonrend()
+    {
+        RE::TESObjectREFR* result = nullptr;
+
+        RE::TESObjectREFR* parthurnax = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3c57d);
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (objects_around_valid && player)
+        {
+
+            float min_distance = FLT_MAX;
+
+            for (auto object_around : objects_around)
+            {
+                auto object = object_around.second.object;
+
+                if (object && object->data.objectReference)
+                {
+                    if (MiscThings::is_dragon(object) && !object->IsDead())
+                    {
+                        float distance = player->GetDistance(object);
+
+                        if ((distance < min_distance || result == parthurnax) && (!result || object != parthurnax))
+                        {
+                            min_distance = distance;
+                            result = object;
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+
+
+
+
     void nullify_object_by_id(int id)
     {
         auto object_p = objects_around.find(id);
@@ -10843,7 +10884,7 @@ namespace MiscThings {
 
 
 
-    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast)
+    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast, bool player_issued)
     {
 
         //TODO: somehow get proper result of this action
@@ -11007,11 +11048,28 @@ namespace MiscThings {
                                     //use_ult();
                                     right_attack_cancel();
                                     left_attack_cancel();
+
+                                    auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
+
+                                    if (player_issued && shout == dragonrend)
+                                    {
+                                        auto dragonrend_target = MiscThings::get_dragon_for_dragonrend();
+
+                                        if (dragonrend_target)
+                                        {
+                                            WalkerProcessor::shout_at_target(dragonrend_target, dragonrend);
+                                            goto finalize_shout; //skip casting part
+                                        }
+                                    }
+                                    
+
                                     if (!fast)
                                         make_long_ult_cast();
                                     else
                                         use_ult();
 
+
+                                    finalize_shout:
 
                                     std::string shout_name = shout->GetFullName();
 

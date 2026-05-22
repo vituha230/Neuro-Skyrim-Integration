@@ -1066,6 +1066,11 @@ bool is_fishing()
 
 
 
+bool is_casting_ult()
+{
+    return long_cast_ult;
+}
+
 
 float fishing_reaction_time = 0.5f;
 

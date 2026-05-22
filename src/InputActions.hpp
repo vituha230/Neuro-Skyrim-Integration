@@ -100,3 +100,6 @@ void lockpick_move_x(float angle);
 
 
 void sprint_start();
+
+
+bool is_casting_ult();

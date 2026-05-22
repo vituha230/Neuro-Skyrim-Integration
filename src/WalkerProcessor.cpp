@@ -17,6 +17,7 @@ namespace WalkerProcessor {
 
     bool start_pathfinding_quest = false;
 
+    bool raycast_was_on = false;
 
     float pause_post_attack = 0.0f;
 
@@ -2837,7 +2838,7 @@ namespace WalkerProcessor {
     int debug_mode_cam = 0;
 
 
-    bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, float speed_koef)
+    bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, float speed_koef, bool force_speed_correction)
     {
         if (looking_mode)
             speed_koef = special_look_speed_koef;
@@ -3042,7 +3043,7 @@ namespace WalkerProcessor {
         auto path_point_pos = target_center;
         auto pos_dif = path_point_pos - camera_pos;
 
-        if (interaction_after_walk == 3 && start_attacking && has_ranged_weapon_equipped(true))
+        if (force_speed_correction || (interaction_after_walk == 3 && start_attacking && (has_ranged_weapon_equipped(true) || shout_mode)))
         {
             //assuming its always pulled to the max
 
@@ -3101,8 +3102,18 @@ namespace WalkerProcessor {
                     last_u_valid = true;
                 }
 
+                auto projectile_speed = get_weapon_projectile_speed(get_current_active_hand());
 
-                RE::NiPoint3 speed_shift = u * (pos_dif_copy.Length() / get_weapon_projectile_speed(get_current_active_hand())); //something is wrong. gives too little on low speeds and too much on high speeds (maybe illusion)
+                if (force_speed_correction || (shout_mode && shout_to_use))
+                {
+                    projectile_speed = 3000.0f;
+                }
+
+
+                RE::NiPoint3 speed_shift = u * (pos_dif_copy.Length() / projectile_speed); //something is wrong. gives too little on low speeds and too much on high speeds (maybe illusion)
+
+                if (projectile_speed == 0.0f)
+                    speed_shift = { 0.0f, 0.0f, 0.0f };
 
                     //arc_coef3 * delta_target_pos * distance;
                 target_center += speed_shift;
@@ -3120,7 +3131,8 @@ namespace WalkerProcessor {
 
             //target_center.z -= 7.77f;
 
-            high_precision = true;
+            if (!shout_mode && !force_speed_correction)
+                high_precision = true;
 
         }
 
@@ -3832,6 +3844,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        raycast_was_on = false;
         last_dragon_was_flying = false;
 
         try_power_attack = false;
@@ -4681,7 +4694,7 @@ namespace WalkerProcessor {
 
                         //this is for melee
                         if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
-                            range = 20000.0f;
+                            range = 50000.0f;
 
 
 
@@ -4700,7 +4713,7 @@ namespace WalkerProcessor {
                         //dragons raycasting sucks for some reason even though they are huge; make time windows easier
                         if (MiscThings::is_dragon(target_ref))
                         {
-                            on_time = 0.3f;
+                            on_time = 0.1f;
                             off_time = 0.01f;
                             dragon_coef = true;
                         }
@@ -4710,6 +4723,7 @@ namespace WalkerProcessor {
                         {
                             if (successful_raycast_time > on_time)
                             {
+                                raycast_was_on = true;
                                 target_visible = true;
                                 if (dragon_coef)
                                     successful_raycast_time = 2.0f;
@@ -4719,11 +4733,12 @@ namespace WalkerProcessor {
                         }
                         else
                         {
-                            if (start_attacking)
+                            if (start_attacking || attack_paused || raycast_was_on)
                                 if (successful_raycast_time < off_time)
                                 {
                                     target_visible = false;
                                     successful_raycast_time = 0.0f;
+                                    raycast_was_on = false;
                                 }
                                 else
                                 {
@@ -8010,8 +8025,10 @@ namespace WalkerProcessor {
         }
 
 
+        bool speed_correction = is_casting_ult();
 
-        lock_camera_onto_target(target_ref, dtime);
+
+        lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
 
 
 
@@ -11703,7 +11720,8 @@ namespace WalkerProcessor {
                 {
                     if (start_attacking || (shout_mode && target_ref && target_ref->IsActor()))
                     {
-                        lock_camera_onto_target(target_ref, dtime);
+                        bool speed_correction = is_casting_ult();
+                        lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
                     }
                     return;
                 }

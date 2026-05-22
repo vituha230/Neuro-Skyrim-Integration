@@ -4,11 +4,11 @@
 //crucial:
 
 
-//TODO manually casting dragonrend targets nearest dragon if no active target exists. Exclude parthurnax if he is not the only dragon in the area
 //TODO try to make automatic softlock protection when we die too fast after loading of a save. Should load previous save and overwrite it with new quicksave.
 //TODO test all menus
 //TODO test prisons
-//TODO try unlocking get_locations command
+//TODO character creation pre-confirm prompt (with array input, ask what categories to modify)
+
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 

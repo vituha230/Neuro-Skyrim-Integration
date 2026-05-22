@@ -1444,7 +1444,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                 if (glz::read_json(json, messageQueue[i].value.action.data))
                                     failed_to_parse_json = true;
                                 else
-                                    command_result = MiscThings::cast_spell_by_index(json.id);
+                                    command_result = MiscThings::cast_spell_by_index(json.id, false, true);
                             }
 
 

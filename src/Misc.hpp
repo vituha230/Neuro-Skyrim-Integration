@@ -194,7 +194,7 @@ namespace MiscThings {
 
     bool has_digits(std::string& str);
 
-    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast = false);
+    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast = false, bool player_issued = false);
     std::pair<bool, std::string> equip_spell_by_index(int id, bool fast = false);
 
     int player_overencumbered_by();
@@ -254,6 +254,7 @@ namespace MiscThings {
 
     void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos);
 
+    RE::TESObjectREFR* get_dragon_for_dragonrend();
 
     bool is_inventory_item_in_the_list(RE::TESBoundObject* item);
     std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item, bool compact = false);
