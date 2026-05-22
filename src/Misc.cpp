@@ -2004,6 +2004,9 @@ namespace MiscThings {
         auto sovngarde_quest2 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ305");
         auto sovngarde_quest3 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ306");
 
+        if (quest == sovngarde_quest3)
+            return false;
+
         if (sovngarde_quest1)
         {
             auto stage = sovngarde_quest1->GetCurrentStageID();

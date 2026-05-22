@@ -1295,7 +1295,17 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                     set_active_force(-1);
 
                     if (command_result.second == "[Error]")
+                    {
                         register_allowed_actions();
+
+                        if (MiscThings::is_game_paused() && !MiscThings::have_force_only_menu_open() && !MiscThings::player_has_levelup())
+                        {
+                            MiscThings::unpause_game();
+
+                            set_universal_block(0.3f);
+                        }
+                    }
+                        
                 }
 
 
