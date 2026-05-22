@@ -2965,6 +2965,8 @@ class MyHook {
                         }
 
 
+                        if (subtitle_msg.find("This is far as I can take you. Krif voth ahkrin.") != std::string::npos)
+                            quicksave();
 
                         send_speech_context(speaker, subtitle_msg, the_subtitle_data->forceDisplay);
 

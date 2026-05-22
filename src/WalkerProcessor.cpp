@@ -5212,7 +5212,7 @@ namespace WalkerProcessor {
 
                 if ((!object->second.object->IsHumanoid() || (object->second.object->IsHumanoid() && object->second.object->IsDead())) && interaction == 2)
                 {
-                    if (object->second.object->IsInventoryObject() || MiscThings::is_stealing(object->second.object) != "")
+                    if ((object->second.object->IsActor() && object->second.object->IsDead()) || object->second.object->IsInventoryObject() || MiscThings::is_stealing(object->second.object) != "")
                     {
                         interaction = 1; //they probably want to steal it. allow this
                     }
