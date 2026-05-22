@@ -6562,7 +6562,7 @@ namespace MiscThings {
     bool player_brawling()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
-        if (player)
+        if (player && player->currentProcess)
         {
             auto left_hand = player->currentProcess->equippedObjects[0];
             auto right_hand = player->currentProcess->equippedObjects[1];
@@ -7924,7 +7924,7 @@ namespace MiscThings {
 
         std::vector<std::string> best_items{};
 
-        if (player && actor_equip)
+        if (player && actor_equip && player->currentProcess)
         {
 
             //weapons
@@ -8100,7 +8100,7 @@ namespace MiscThings {
         bool result = false;
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        if (player)
+        if (player && player->currentProcess)
         {
             auto left_hand = player->currentProcess->equippedObjects[0];
             auto right_hand = player->currentProcess->equippedObjects[1];
@@ -8152,7 +8152,7 @@ namespace MiscThings {
         auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
         auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
 
-        if (player && actor_equip)
+        if (player && actor_equip && player->currentProcess)
         {
             //weapons
             auto actor_process = player->currentProcess;
@@ -8196,7 +8196,7 @@ namespace MiscThings {
         auto actor_equip = RE::ActorEquipManager::GetSingleton();
 
 
-        if (object && player && actor_equip)
+        if (object && player && actor_equip && player->currentProcess)
         {
             //weapons
             auto actor_process = player->currentProcess;
@@ -8219,7 +8219,7 @@ namespace MiscThings {
         auto actor_equip = RE::ActorEquipManager::GetSingleton();
 
 
-        if (object && player && actor_equip)
+        if (object && player && actor_equip && player->currentProcess)
         {
 
             //weapons
@@ -8274,7 +8274,7 @@ namespace MiscThings {
         }
 
 
-        if (object && player && actor_equip)
+        if (object && player && actor_equip && player->currentProcess)
         {
 
             //weapons
@@ -8307,7 +8307,7 @@ namespace MiscThings {
         bool result = false;
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        if (player)
+        if (player && player->currentProcess)
         {
             RE::MagicItem* spell;
 
@@ -10787,6 +10787,10 @@ namespace MiscThings {
         RE::TESForm* hand_contents = nullptr;
 
         auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!player || !player->currentProcess)
+            return nullptr;
+
         auto actor_process = player->currentProcess;
         auto equipped_list = actor_process->equippedObjects;
 

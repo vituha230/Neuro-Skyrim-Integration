@@ -965,8 +965,8 @@ namespace WalkerProcessor {
 
                     std::vector<std::pair<RE::TESQuest*, bool>> quests_to_restore{};
 
-
-                    player->currentProcess->cachedValues->cachedWidth = 25.0; //this is it. this is used to calculate path for clairvoyance.
+                    if (player && player->currentProcess && player->currentProcess->cachedValues)
+                        player->currentProcess->cachedValues->cachedWidth = 25.0; //this is it. this is used to calculate path for clairvoyance.
 
 
                     for (auto target : targets)
@@ -2997,7 +2997,7 @@ namespace WalkerProcessor {
                 }
                 else
                 {
-                    if (target_actor->currentProcess->middleHigh->headNode)
+                    if (target_actor->currentProcess && target_actor->currentProcess->middleHigh && target_actor->currentProcess->middleHigh->headNode)
                     {
                         auto head_pos = target_actor->currentProcess->middleHigh->headNode->world.translate;
 
@@ -7305,7 +7305,7 @@ namespace WalkerProcessor {
         std::string result = "";
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        if (player)
+        if (player && player->currentProcess)
         {
             auto left_hand = player->currentProcess->equippedObjects[0];
             auto right_hand = player->currentProcess->equippedObjects[1];
@@ -7332,7 +7332,7 @@ namespace WalkerProcessor {
         bool result = false;
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        if (player)
+        if (player && player->currentProcess)
         {
             auto left_hand = player->currentProcess->equippedObjects[0];
 
@@ -7369,7 +7369,7 @@ namespace WalkerProcessor {
         bool result = false;
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        if (player)
+        if (player && player->currentProcess)
         {
             auto left_hand = player->currentProcess->equippedObjects[0];
             auto right_hand = player->currentProcess->equippedObjects[1];
