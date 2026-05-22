@@ -654,7 +654,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         if (!MiscThings::is_interior_cell() && can_fight && player_worldspace == tamriel_worldspace) //refreshed automatically when we switch location
                         {
                             actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
-                            if (!MiscThings::have_any_quests())
+                            //if (!MiscThings::have_any_quests())
                             {
                                 actions_to_register[action_pos] = Capabilities::GetLocations::Action; action_pos++;
                             }

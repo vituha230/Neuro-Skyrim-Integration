@@ -5839,7 +5839,8 @@ namespace WalkerProcessor {
         }
 
         result.first = false;
-        result.second = "Invalid location ID. You get valid location ID's from context. ";// Use get_locations_around to get valid IDs. "; //TODO more info
+        //result.second = "Invalid location ID. You get valid location ID's from context. ";// Use get_locations_around to get valid IDs. "; //TODO more info
+        result.second = "Invalid location ID. Use get_locations_around to get valid IDs. "; //TODO more info
 
         return result;
     }
