@@ -1150,6 +1150,8 @@ void input_processor(float dtime)
         }
         else
         {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
             if (WalkerProcessor::pause_attacking(dtime))
             {
                 if (use_ult_time < 2.5f)
@@ -1163,6 +1165,11 @@ void input_processor(float dtime)
                     stop_use_ult();
                     reset_input_processor();
                 }
+            }
+            else
+            {
+                //attempt to "prepare"
+                stop_use_ult();
             }
 
         }
