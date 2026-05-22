@@ -9436,7 +9436,14 @@ namespace WalkerProcessor {
                     }
                 }
 
+                RE::TESObjectREFR* college_entrance_spell_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51190);
 
+                if (target_ref == college_entrance_spell_target)
+                {
+                    send_random_context("You are looking at the target. You can now cast the spell they asked", false);
+                    reset_walker();
+                    return "";
+                }
 
                 result = "You walked up to " + target_name; //default
 
@@ -12457,7 +12464,15 @@ namespace WalkerProcessor {
                                                                 {
                                                                     //std::string target_name = target_ref->GetDisplayFullName();
                                                                     if (!chill_with_context && !looking_mode)
-                                                                        send_random_context(get_success_message(), true);
+                                                                    {
+                                                                        std::string result_message = get_success_message();
+
+                                                                        if (result_message == "")
+                                                                            return;
+                                                                        else
+                                                                            send_random_context(get_success_message(), true);
+                                                                    }
+                                                                        
                                                                 }
 
                                                             }
@@ -12547,7 +12562,7 @@ namespace WalkerProcessor {
                                                                                 reset_walker();
                                                                             else
                                                                             {
-                                                                                if (target_ref->IsActor() && !close_enough())
+                                                                                if (target_ref && target_ref->IsActor() && !close_enough())
                                                                                     walk_again(); //follow it if its actor;
                                                                                 else
                                                                                 {
@@ -12570,6 +12585,16 @@ namespace WalkerProcessor {
                                                                                                 dont_autointerract = true;
                                                                                             
                                                                                         }
+
+                                                                                        RE::TESObjectREFR* college_entrance_spell_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51190);
+
+                                                                                        if (target_ref == college_entrance_spell_target)
+                                                                                        {
+                                                                                            dont_autointerract = true;
+                                                                                            send_random_context("You are looking at the target. You can not cast the spell they asked", false);
+                                                                                            reset_walker();
+                                                                                        }
+                                                                                            
 
                                                                                         //attempts to not autointerract with npc's that want us to follow them. interaction will stop walking and start (probably useless) dialogue
                                                                                         if (!dont_autointerract)
