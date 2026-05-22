@@ -394,7 +394,7 @@ namespace WalkerProcessor {
     bool use_last_point_of_last_path = false;
     RE::NiPoint3 last_point_of_last_path{};
 
-
+    bool last_dragon_was_flying = false;
 
     bool in_skuldafn()
     {
@@ -3468,9 +3468,9 @@ namespace WalkerProcessor {
                 auto distance = pos_dif.Length();
 
                 if ((int)std::size(path) < 3)
-                    result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
                 else
-                    result = distance < 60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
@@ -3544,7 +3544,7 @@ namespace WalkerProcessor {
                             result = distance < base_threshold + 70.0f * MiscThings::is_player_swimming(); //100
                         }
                         else
-                            result = distance < (60.0f * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f*MiscThings::is_player_swimming()); //100
+                            result = distance < ((blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f*MiscThings::is_player_swimming()); //100
                     }
                     else
                         result = true;
@@ -3832,6 +3832,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        last_dragon_was_flying = false;
 
         try_power_attack = false;
 
@@ -10553,6 +10554,8 @@ namespace WalkerProcessor {
         }
 
 
+        
+
         if (Observer::threat_response_choice_pending())
         {
             //if (!looking_mode)
@@ -11712,6 +11715,22 @@ namespace WalkerProcessor {
 
                 if (have_target_to_walk)
                 {
+
+
+                    if (target_ref && target_ref->IsDragon())
+                    { 
+                        bool dragon_is_flying = MiscThings::is_flying(target_ref);
+
+                        if (last_dragon_was_flying && !dragon_is_flying)
+                        {
+                            last_dragon_was_flying = false;
+                            invalidate_path();
+                            return;
+                        }
+
+                        last_dragon_was_flying = dragon_is_flying;
+                    }
+
 
                     auto parthurnax_walk_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ204");
 

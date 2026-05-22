@@ -2687,7 +2687,7 @@ namespace MiscThings {
     uint32_t my_filter0 = 0b00000101011010101000000000011110; //bjorlams filter (has bit 15 set)
     uint32_t my_filter1 = 0b00000000000010010000000000011110; //player filter
     uint32_t my_filter2 = 0b00000000000010010000000000001110; //filter without invisible zones, that doesnt work on bjorlam
-
+    uint32_t my_filter3 = 0b00011000101111000000000000011110; //alduin filter (maybe all dragons)
 
     RayCastResult RayCast(RE::NiPoint3 rayStart, RE::NiPoint3 rayDir, float maxDist,
         RE::Actor* actor, RE::TESObjectREFR* target) {
