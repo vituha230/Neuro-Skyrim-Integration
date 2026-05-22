@@ -6671,27 +6671,32 @@ namespace MiscThings {
 
     std::string get_door_teleport(RE::TESObjectREFR* object)
     {
-        auto extra = object->extraList.GetByType(RE::ExtraDataType::kTeleport);
 
         std::string leads_to = "";
 
-        if (extra)
+        if (object)
         {
-            auto extra_teleport = (RE::ExtraTeleport*)extra;
+            auto extra = object->extraList.GetByType(RE::ExtraDataType::kTeleport);
 
-            if (auto teleport_target_data = extra_teleport->teleportData; teleport_target_data)
-                if (auto teleport_target_handle = teleport_target_data->linkedDoor; teleport_target_handle)
-                    if (auto teleport_target_refr = teleport_target_handle.get(); teleport_target_refr)
-                        if (auto target_cell = teleport_target_refr->GetParentCell(); target_cell)
-                        {
-                            leads_to = target_cell->GetName();
+            if (extra)
+            {
+                auto extra_teleport = (RE::ExtraTeleport*)extra;
 
-                            if (leads_to == "")
+                if (auto teleport_target_data = extra_teleport->teleportData; teleport_target_data)
+                    if (auto teleport_target_handle = teleport_target_data->linkedDoor; teleport_target_handle)
+                        if (auto teleport_target_refr = teleport_target_handle.get(); teleport_target_refr)
+                            if (auto target_cell = teleport_target_refr->GetParentCell(); target_cell)
+                            {
+                                leads_to = target_cell->GetName();
+
+                                if (leads_to == "")
+                                    leads_to = "outside";
+                            }
+                            else
                                 leads_to = "outside";
-                        }
-                        else
-                            leads_to = "outside";
+            }
         }
+        
 
 
         return leads_to;

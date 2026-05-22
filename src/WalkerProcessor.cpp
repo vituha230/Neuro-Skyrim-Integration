@@ -9199,7 +9199,19 @@ namespace WalkerProcessor {
                                         std::string lever_advice = MiscThings::lever_interaction_advice(target_ref);
 
                                         if (backup_pickup_attempts <= 1)
-                                            send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
+                                        {
+                                            RE::TESObjectREFR* skuldafn_web = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab25b);
+
+                                            if (target_ref == skuldafn_web)
+                                            {
+                                                send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "... You need to destroy it to proceed]", false);
+                                                reset_walker();
+                                            }
+                                            else
+                                                send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
+
+                                        }
+                                            
                                     }
 
 
