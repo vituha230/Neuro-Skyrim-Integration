@@ -2282,7 +2282,7 @@ namespace MiscThings {
 
     void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos)
     {
-        if (a_target)
+        if (!a_target)
             return;
 
         //assert(a_target);
