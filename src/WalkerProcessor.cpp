@@ -817,7 +817,7 @@ namespace WalkerProcessor {
     RE::TESObjectREFR* get_runaway_target()
     {
         if (in_skuldafn())
-            return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker skuldafn
+            return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x700ea7a); //runaway marker skuldafn
         else
             return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker
     }
