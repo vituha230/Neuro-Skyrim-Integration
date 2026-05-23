@@ -47,6 +47,11 @@ bool slider_request_sent = false;
 bool slider_confirmed = false;
 bool slider_confirming = false;
 
+float move_cursor_timeout0 = 0.0f;
+float move_cursor_timeout1 = 0.0f;
+float move_cursor_timeout2 = 0.0f;
+
+
 struct item_data {
 	std::string name;
 	int price; //TODO: replace with something useful (maybe type of item)
@@ -70,6 +75,10 @@ way_to_fill way{};
 
 void reset_enchant()
 {
+	move_cursor_timeout0 = 0.0f;
+	move_cursor_timeout1 = 0.0f;
+	move_cursor_timeout2 = 0.0f;
+
 	quitting_menu = false;
 	rolled_over = false;
 	operation_type_request_sent = false;
@@ -107,6 +116,10 @@ void reset_enchant()
 
 void reset_next_step()
 {
+	move_cursor_timeout0 = 0.0f;
+	move_cursor_timeout1 = 0.0f;
+	move_cursor_timeout2 = 0.0f;
+
 	up_done = false;
 	down_done = false;
 	fill_items_one_direction_done = false;
@@ -611,12 +624,17 @@ void setup_fill_item_list()
 	int max_scroll = get_item_max_scroll_position();
 	int scroll = get_item_scroll_position();
 
+	items_list.clear();
+	items_list_valid = false;
+
 	last_cursor_move = 0;
 	missing_item_detected = false;
 
 	up_done = false;
 	down_done = false;
 	fill_items_one_direction_done = false;
+	scroll_stuck = false;
+
 
 	if (scroll <= min_scroll)
 		way = way_to_fill::down;
@@ -965,7 +983,6 @@ void processor(float dtime)
 							result_timeout += dtime;
 							
 					}
-					
 				}
 				else
 				{
@@ -982,23 +999,46 @@ void processor(float dtime)
 							if (operation_type_choice == enchant_type::disenchant)
 							{
 								if (get_selected_category_index() != 0) //for npw the category is fixed as 0. will work unless we have too many items?
+								{
 									move_to_category(0);
+									if (move_cursor_timeout0 > 10.0f)
+									{
+										reset_enchant();
+										return;
+									}
+									else
+										move_cursor_timeout0 += 0.02f;
+								}
 								else
 								{
+									move_cursor_timeout0 = 0.0f;
+
 									if (!is_inside_of_category())
 										right();
 									else
 									{
 										if (!items_list_valid)
+										{
 											if (!filling_items)
 											{
 												setup_fill_item_list();
 												filling_items = true;
 											}
 											else
+											{
 												fill_items_list(0.01f);
+												if (move_cursor_timeout1 > 10.0f)
+												{
+													reset_enchant();
+													return;
+												}
+												else
+													move_cursor_timeout1 += 0.02f;
+											}
+										}	
 										else
 										{
+											move_cursor_timeout1 = 0.0f;
 											if (!enchant_item_request_sent)
 											{
 												
@@ -1014,9 +1054,18 @@ void processor(float dtime)
 													if (get_item_selected_index() != enchant_item_choice)
 													{
 														move_to_item(enchant_item_choice);
+														if (move_cursor_timeout2 > 10.0f)
+														{
+															reset_enchant();
+															return;
+														}
+														else
+															move_cursor_timeout2 += 0.02f;
 													}
 													else
 													{
+														move_cursor_timeout2 = 0.0f;
+
 														if (!check_results)
 														{
 															if (auto menu_confirm = ui->GetMenu<RE::MessageBoxMenu>(); menu_confirm) // this is confirmation menu. after it there is "you leaned this ok" message box, handeled up there
@@ -1066,23 +1115,47 @@ void processor(float dtime)
 									step_enchanting = 1;
 
 								if (get_selected_category_index() != step_enchanting + 1) //turned out it starts with 2
+								{
 									move_to_category(step_enchanting + 1);
+									if (move_cursor_timeout0 > 10.0f)
+									{
+										reset_enchant();
+										return;
+									}
+									else
+										move_cursor_timeout0 += 0.02f;
+								}
 								else
 								{
+									move_cursor_timeout0 = 0.0f;
+
 									if (!is_inside_of_category())
 										right();
 									else
 									{
 										if (!items_list_valid)
+										{
 											if (!filling_items)
 											{
 												setup_fill_item_list();
 												filling_items = true;
 											}
 											else
+											{
 												fill_items_list(0.01f);
+												if (move_cursor_timeout1 > 10.0f)
+												{
+													reset_enchant();
+													return;
+												}
+												else
+													move_cursor_timeout1 += 0.02f;
+											}
+										}	
 										else
 										{
+											move_cursor_timeout1 = 0.0f;
+
 											if (!enchant_item_request_sent)
 											{
 												
@@ -1100,9 +1173,18 @@ void processor(float dtime)
 													if (get_item_selected_index() != enchant_item_choice)
 													{
 														move_to_item(enchant_item_choice);
+														if (move_cursor_timeout2 > 10.0f)
+														{
+															reset_enchant();
+															return;
+														}
+														else
+															move_cursor_timeout2 += 0.02f;
 													}
 													else
 													{
+														move_cursor_timeout2 = 0.0f;
+
 														if (filter_already_selected)
 														{
 															//if already selected, disellect and try again. might be wrong item.
@@ -1225,7 +1307,18 @@ void processor(float dtime)
 																	}
 																}
 																else
+																{
+																	std::string temp_result = get_result_message();
+																	if (temp_result.find("Insufficient charge for enchantment") != std::string::npos)
+																	{
+																		send_random_context("[You do not have any charged soulgems for enchhanting]");
+																		reset_enchant();
+																		return;
+																	}
+
 																	confirm();
+																}
+																	
 															}
 														}
 													}
