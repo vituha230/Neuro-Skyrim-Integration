@@ -1717,7 +1717,7 @@ namespace Observer {
 												auto workbenchtype = furniture->workBenchData.benchType;
 												if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
 												{
-													if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
+													if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f, false)))
 													{
 														std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 														if (info != "")
@@ -1727,7 +1727,7 @@ namespace Observer {
 												else
 												{
 													if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-														if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f)))
+														if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f, false)))
 														{
 															std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 															if (info != "")

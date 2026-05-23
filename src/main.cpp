@@ -3,10 +3,9 @@
 
 //crucial:
 
-
-//TODO try to make automatic softlock protection when we die too fast after loading of a save. Should load previous save and overwrite it with new quicksave.
 //TODO test all menus
 //TODO test prisons
+//TODO try to make automatic softlock protection when we die too fast after loading of a save. Should load previous save and overwrite it with new quicksave.
 //TODO character creation pre-confirm prompt (with array input, ask what categories to modify)
 
 
