@@ -1586,7 +1586,7 @@ namespace PerksProcessor {
 			if (old_perk_id == -1)
 				old_perk_id = get_current_perk_id();
 
-			if (cur_path_step < std::size(cur_path))
+			if (cur_path_step >= 0 && cur_path_step < std::size(cur_path))
 			{
 				if (get_current_perk_id() != old_perk_id)
 				{

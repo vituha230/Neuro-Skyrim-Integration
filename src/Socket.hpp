@@ -42,6 +42,29 @@
 namespace Capabilities
 {
 
+    namespace ConfirmCharacter
+    {
+        constexpr char Name[] = "confirm";
+        constexpr char Desc[] =
+            R"(Confirm your character's appearance, choose name and continue playing Skyrim)";
+        //constexpr char JsonSchema[] = null;
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
+    }
+
+
+    namespace ChangeCharacter
+    {
+        constexpr char Name[] = "change_appearance";
+        constexpr char Desc[] =
+            R"(Go back and change your character's appearance)";
+        //constexpr char JsonSchema[] = null;
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
+    }
+
+
+
     namespace SelectForceChoice
     {
         constexpr char Name[] = "select_choice";

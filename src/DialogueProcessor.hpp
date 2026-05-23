@@ -58,7 +58,8 @@
         confirm_stealing,
         specify_quest_path,
         confirm_attack_friend,
-        visit_places
+        visit_places,
+        change_character
     };
 
     int get_active_force();

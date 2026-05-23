@@ -305,7 +305,7 @@ bool is_ingredient_selected(int index)
 	{
 		auto alchemy_menu = (RE::CraftingSubMenus::AlchemyMenu*)menu->subMenu;
 
-		if (index < std::size(alchemy_menu->ingredientEntries))
+		if (index >= 0 && index < std::size(alchemy_menu->ingredientEntries))
 		{
 			result = alchemy_menu->ingredientEntries[index].isSelected;
 		}
@@ -387,7 +387,7 @@ int get_amount_of_ingredient_by_index(int index)
 	if (menu && menu->subMenu)
 	{
 		auto alchemy_menu = (RE::CraftingSubMenus::AlchemyMenu*)menu->subMenu;
-		if (index < std::size(alchemy_menu->ingredientEntries))
+		if (index >= 0 && index < std::size(alchemy_menu->ingredientEntries))
 		{
 			result = alchemy_menu->ingredientEntries[index].ingredient->countDelta;
 		}

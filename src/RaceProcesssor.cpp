@@ -72,6 +72,13 @@ namespace RaceProcessor {
 	int current_slider = -1;
 
 
+	bool confirm_change_registered = false;
+	bool character_confirmed = false;
+	bool character_needs_change = false;
+	bool unregistered_change_confirm = false;
+	bool change_character_request_sent = false;
+
+
 	void reset_category()
 	{
 		current_page = 0;
@@ -94,6 +101,102 @@ namespace RaceProcessor {
 
 		return result;
 	}
+	
+
+	struct slider_status {
+		std::string name;
+		bool defined;
+	};
+
+	std::map<int, std::map<int, slider_status>> categories_info{};
+
+
+	bool is_category_defined(int page, int slider)
+	{
+
+		auto page_info = categories_info.find(page);
+
+		if (page_info != categories_info.end())
+		{
+			auto slider_info = page_info->second.find(slider);
+
+			if (slider_info != page_info->second.end())
+			{
+				return slider_info->second.defined;
+			}
+		}
+
+		return false;
+	}
+
+	void set_category_defined(int page, int slider)
+	{
+		auto page_info = categories_info.find(page);
+
+		if (page_info != categories_info.end())
+		{
+			auto slider_info = page_info->second.find(slider);
+
+			if (slider_info != page_info->second.end())
+			{
+				slider_info->second.defined = true;
+			}
+		}
+	}
+
+	void set_category_undefined(int page, int slider)
+	{
+		auto page_info = categories_info.find(page);
+
+		if (page_info != categories_info.end())
+		{
+			auto slider_info = page_info->second.find(slider);
+
+			if (slider_info != page_info->second.end())
+			{
+				slider_info->second.defined = false;
+			}
+		}
+	}
+
+
+	void add_category_info(int page, int slider, std::string name)
+	{
+		auto page_info = categories_info.find(page);
+
+		if (page_info != categories_info.end())
+		{
+			slider_status new_status = { name, false };
+			categories_info.at(page).insert({ slider, new_status }); //insert slider info
+		}
+		else
+		{
+			slider_status new_status = { name, false };
+			categories_info.insert({ page, {} }); //empty page
+			categories_info.at(page).insert({ slider, new_status }); //insert slider info
+		}
+	}
+
+	bool does_category_exist(int page, int slider)
+	{
+		auto page_info = categories_info.find(page);
+
+		if (page_info != categories_info.end())
+		{
+			auto slider_info = page_info->second.find(slider);
+
+			if (slider_info != page_info->second.end())
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
+
+
 
 	void increment_category()
 	{
@@ -509,6 +612,15 @@ namespace RaceProcessor {
 
 	void reset_menu()
 	{
+
+		confirm_change_registered = false;
+		character_confirmed = false;
+		character_needs_change = false;
+		unregistered_change_confirm = false;
+		change_character_request_sent = false;
+		categories_info.clear();
+
+
 		last_pause_time = 0.0f;
 		in_racemenu = false;
 		last_cursor_move = 0;
@@ -616,6 +728,107 @@ namespace RaceProcessor {
 		{
 			preset_choice = choice;
 			preset_choice_valid = true;
+
+			result.first = true;
+			result.second = "[Processing...]";
+		}
+		else
+		{
+			result.first = false;
+			result.second = "Invalid choice";
+		}
+
+
+		return result;
+	}
+
+
+	std::vector<MenuOption> get_change_options()
+	{
+		std::vector<MenuOption> result{};
+
+		int i = 0;
+
+		for (auto page : categories_info)
+		{
+			for (auto slider : page.second)
+			{
+				MenuOption option = { i, slider.second.name };
+				result.push_back(option);
+				i++;
+			}
+		}
+
+		return result;
+	}
+
+	std::vector<std::pair<int, int>> get_change_options_with_page_info()
+	{
+		std::vector<std::pair<int, int>> result{};
+
+
+		for (auto page : categories_info)
+		{
+			for (auto slider : page.second)
+			{
+				std::pair<int, int> option = { page.first, slider.first };
+				result.push_back(option);
+			}
+		}
+
+		return result;
+	}
+
+
+	std::pair<bool, std::string> set_change_categories_choice(std::vector<int> ids)
+	{
+		std::pair<bool, std::string> result{};
+
+
+		auto temp_options = get_change_options_with_page_info();
+
+		bool found_anything = false;
+		bool redefine_race = false;
+
+
+		for (auto id : ids)
+		{
+			if (id >= 0 && id < std::size(temp_options))
+			{
+				auto page_info = categories_info.find(temp_options.at(id).first);
+
+				if (page_info != categories_info.end())
+				{
+					auto slider_info = page_info->second.find(temp_options.at(id).second);
+
+					if (slider_info != page_info->second.end())
+					{
+						categories_info.at(temp_options.at(id).first).at(temp_options.at(id).second).defined = false;
+						found_anything = true;
+
+						if (temp_options.at(id).first == 0)
+							redefine_race = true;
+					}
+				}
+			}
+		}
+
+
+		if (found_anything)
+		{
+			if (redefine_race)
+				reset_menu();
+			else
+			{
+				current_page = 1;
+				current_slider = 0;
+
+				confirm_change_registered = false;
+				character_confirmed = false;
+				character_needs_change = false;
+				unregistered_change_confirm = false;
+				change_character_request_sent = false;
+			}
 
 			result.first = true;
 			result.second = "[Processing...]";
@@ -1193,7 +1406,14 @@ namespace RaceProcessor {
 		{
 		case (0):
 		{
-			result = "You are creating your character in Skyrim. Select your character's race from provided options";
+			std::string slider_name = "Race";
+
+			if (!does_category_exist(current_page, current_slider))
+			{
+				add_category_info(current_page, current_slider, slider_name);
+			}
+
+			result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
 			break;
 		}
 
@@ -1203,19 +1423,40 @@ namespace RaceProcessor {
 			{
 				case (0):
 				{
-					result = "You are creating your character in Skyrim. Select your character's gender from provided options";
+					std::string slider_name = "Gender";
+
+					if (!does_category_exist(current_page, current_slider))
+					{
+						add_category_info(current_page, current_slider, slider_name);
+					}
+
+					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
 					break;
 				}
 
 				case (1):
 				{
-					result = "You are creating your character in Skyrim. Select your character's look preset from provided options"; 
+					std::string slider_name = "Look Preset";
+
+					if (!does_category_exist(current_page, current_slider))
+					{
+						add_category_info(current_page, current_slider, slider_name);
+					}
+
+					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
 					break;
 				}
 
 				default:
 				{
-					result = "You are creating your character in Skyrim. Select your character's " + get_current_slider_name() + " from provided options";
+					std::string slider_name = get_current_slider_name();
+
+					if (!does_category_exist(current_page, current_slider))
+					{
+						add_category_info(current_page, current_slider, slider_name);
+					}
+
+					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
 					break;
 				}
 			}
@@ -1231,7 +1472,15 @@ namespace RaceProcessor {
 
 		default:
 		{
-			result = "You are creating your character in Skyrim. Select your character's " + get_current_slider_name() + " from provided options";
+			std::string slider_name = get_current_slider_name();
+
+			if (!does_category_exist(current_page, current_slider))
+			{
+				add_category_info(current_page, current_slider, slider_name);
+			}
+
+			result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
+
 			break;
 		}
 
@@ -1346,6 +1595,9 @@ namespace RaceProcessor {
 
 		return result;
 	}
+
+
+
 
 
 
@@ -1465,6 +1717,37 @@ namespace RaceProcessor {
 		result.second = "[Error]";
 		return result;
 	}
+
+
+
+	std::pair<bool, std::string> confirm_change_character(int confirm)
+	{
+		std::pair<bool, std::string> result{};
+
+		auto ui = RE::UI::GetSingleton();
+		if (!ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+		{
+			result.first = true;
+			result.second = "[Error]";
+			return result;
+		}
+
+		if (confirm)
+		{
+			character_confirmed = true;
+			result.first = true;
+			result.second = "[Confirming...]";
+			return result;
+		}
+		else
+		{
+			character_needs_change = true;
+			result.first = true;
+			result.second = "[Going back...]";
+			return result;
+		}
+	}
+
 
 
 	std::pair<bool, std::string> set_character_name(std::string choice)
@@ -1800,6 +2083,7 @@ namespace RaceProcessor {
 											last_cursor_move = -1;
 											missing_item_detected = false;
 
+											set_category_defined(current_page, current_slider);
 											increment_category();
 
 											set_universal_block(1.0f);
@@ -1815,6 +2099,7 @@ namespace RaceProcessor {
 										last_cursor_move = -1;
 										missing_item_detected = false;
 
+										set_category_defined(current_page, current_slider);
 										increment_category();
 
 										set_universal_block(1.0f);
@@ -1823,7 +2108,6 @@ namespace RaceProcessor {
 							}
 						}
 					}
-					
 				}
 				else
 				{
@@ -1831,29 +2115,48 @@ namespace RaceProcessor {
 					{
 						if (!generic_slider_defined)
 						{
-							if (!is_inside_of_category(current_page, current_slider))
-								move_to_category(current_page, current_slider);
-							else
+							if (!is_category_defined(current_page, current_slider))
 							{
-
-								if (!generic_slider_request_sent)
-								{
-									if (force_choice(get_options(current_page, current_slider), get_force_message(current_page, current_slider), force_type::race))
-										generic_slider_request_sent = true;
-								}
+								if (!is_inside_of_category(current_page, current_slider))
+									move_to_category(current_page, current_slider);
 								else
 								{
-									if (generic_slider_choice_valid)
+
+									if (!generic_slider_request_sent)
 									{
-										int selected_index = get_generic_slider_selected_index();
-										if ((selected_index != generic_slider_choice))
+										if (force_choice(get_options(current_page, current_slider), get_force_message(current_page, current_slider), force_type::race))
+											generic_slider_request_sent = true;
+									}
+									else
+									{
+										if (generic_slider_choice_valid)
 										{
-											if (!missing_item_detected)
-												move_generic_slider(generic_slider_choice);
+											int selected_index = get_generic_slider_selected_index();
+											if ((selected_index != generic_slider_choice))
+											{
+												if (!missing_item_detected)
+													move_generic_slider(generic_slider_choice);
+												else
+												{
+													//this might happen. something about truncating floats
+
+													//generic_slider_defined = true;
+
+													generic_slider_defined = false;
+													generic_slider_request_sent = false;
+													generic_slider_choice_valid = false;
+													generic_slider_choice = -1;
+
+													last_cursor_move = -1;
+													missing_item_detected = false;
+
+													set_category_defined(current_page, current_slider);
+													increment_category();
+													set_universal_block(1.0f);
+												}
+											}
 											else
 											{
-												//this might happen. something about truncating floats
-												
 												//generic_slider_defined = true;
 
 												generic_slider_defined = false;
@@ -1864,107 +2167,141 @@ namespace RaceProcessor {
 												last_cursor_move = -1;
 												missing_item_detected = false;
 
+
+												set_category_defined(current_page, current_slider);
 												increment_category();
 												set_universal_block(1.0f);
 											}
 										}
-										else
-										{
-											//generic_slider_defined = true;
-
-											generic_slider_defined = false;
-											generic_slider_request_sent = false;
-											generic_slider_choice_valid = false;
-											generic_slider_choice = -1;
-
-											last_cursor_move = -1;
-											missing_item_detected = false;
-
-											increment_category();
-											set_universal_block(1.0f);
-										}
 									}
 								}
+							}
+							else
+							{
+								increment_category();
 							}
 						}
 					}
 					else
 					{
-						if (!name_defined)
+
+						if (!confirm_change_registered)
 						{
-							if (!name_field_called)
+							confirm_change_registered = true;
+							register_confirm_change_character();
+						}
+						else
+						{
+							if (character_confirmed)
 							{
-								if (auto menu_confirm = ui->GetMenu<RE::MessageBoxMenu>(); menu_confirm)
+								if (!unregistered_change_confirm)
 								{
-									RandomMessageBoxProcessor::set_messagebox_handeled();
-									if (!rolled_over)
-									{
-										menu_confirm->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onRollOver", nullptr, nullptr, 0);
-										rolled_over = true;
-										set_universal_block(1.0f);
-									}
-									else
-									{
-										rolled_over = false;
-										menu_confirm->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0);
-										set_universal_block(0.5f);
-										name_field_called = true;
-									}
+									unregistered_change_confirm = true;
+									unregister_all_actions();
 								}
-								else
-								{
-									confirm_craft();
-									set_universal_block(0.3f);
-								}
+									
 
-							}
-							else
-							{
-								if (!name_request_sent)
+								//CONFIRMED
+								if (!name_defined)
 								{
-
-									if (force_choice({}, get_force_message(current_page, current_slider), force_type::character_name))
+									if (!name_field_called)
 									{
-										name_request_sent = true;
-									}
-									//set_character_name("test_name_123");
-								}
-								else
-								{
-
-
-									if (name_choice_valid)
-									{
-										if (name_choice.length() > 0)
+										if (auto menu_confirm = ui->GetMenu<RE::MessageBoxMenu>(); menu_confirm)
 										{
-
-											set_universal_block(0.3f);
-											send_char_to_text_input_window(name_choice.at(0));
-											name_choice = name_choice.substr(1, name_choice.length() - 1);
-
+											RandomMessageBoxProcessor::set_messagebox_handeled();
+											if (!rolled_over)
+											{
+												menu_confirm->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onRollOver", nullptr, nullptr, 0);
+												rolled_over = true;
+												set_universal_block(1.0f);
+											}
+											else
+											{
+												rolled_over = false;
+												menu_confirm->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0);
+												set_universal_block(0.5f);
+												name_field_called = true;
+											}
 										}
 										else
 										{
-											if (last_pause_time > 1.0f)
+											confirm_craft();
+											set_universal_block(0.3f);
+										}
+
+									}
+									else
+									{
+										if (!name_request_sent)
+										{
+
+											if (force_choice({}, get_force_message(current_page, current_slider), force_type::character_name))
 											{
-												send_random_context("[Character creation is done!]", false);
-
-												name_defined = true;
-												//menu->ChangeName(typed_string.c_str()); //this jus closes menu (and probably sets the name) but it wasnt typed
-
-												menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onPress", nullptr, nullptr, 0);
-												menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onRelease", nullptr, nullptr, 0);
-
-												set_universal_block(2.0f);
+												name_request_sent = true;
 											}
-											else
-												last_pause_time += dtime + 0.01;
+											//set_character_name("test_name_123");
+										}
+										else
+										{
 
+
+											if (name_choice_valid)
+											{
+												if (name_choice.length() > 0)
+												{
+
+													set_universal_block(0.3f);
+													send_char_to_text_input_window(name_choice.at(0));
+													name_choice = name_choice.substr(1, name_choice.length() - 1);
+
+												}
+												else
+												{
+													if (last_pause_time > 1.0f)
+													{
+														send_random_context("[Character creation is done!]", false);
+
+														name_defined = true;
+														//menu->ChangeName(typed_string.c_str()); //this jus closes menu (and probably sets the name) but it wasnt typed
+
+														menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onPress", nullptr, nullptr, 0);
+														menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._TextEntryField.AcceptButton.onRelease", nullptr, nullptr, 0);
+
+														set_universal_block(2.0f);
+													}
+													else
+														last_pause_time += dtime + 0.01;
+
+												}
+											}
 										}
 									}
 								}
 							}
+							else
+							{
+								if (character_needs_change)
+								{
+									if (!unregistered_change_confirm)
+									{
+										unregistered_change_confirm = true;
+										unregister_all_actions();
+									}
+
+									if (!change_character_request_sent)
+									{
+										if (force_choice(get_change_options(), "Choose categories to change", force_type::change_character))
+											change_character_request_sent = true;
+									}
+									else
+									{
+										;//just wait for force response
+									}
+
+								}
+							}
 						}
+						
 					}
 				}
 

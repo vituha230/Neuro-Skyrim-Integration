@@ -64,6 +64,10 @@ void clear_actions_status()
 
 
 neurosdk_action ActionsList[] = {
+    
+                                    Capabilities::ConfirmCharacter::Action,
+                                    Capabilities::ChangeCharacter::Action,
+
                                     Capabilities::WalkToObjectDoNothing::Action,
                                     Capabilities::WalkToObject::Action,
                                     Capabilities::LookAtObject::Action,
@@ -110,6 +114,9 @@ neurosdk_action ActionsList[] = {
                                 };
 
 neurosdk_action ActionsListNoForces[] = {
+    
+                                    Capabilities::ConfirmCharacter::Action,
+                                    Capabilities::ChangeCharacter::Action,
 
                                     Capabilities::WalkToObjectDoNothing::Action,
                                     Capabilities::WalkToObject::Action,
@@ -1255,6 +1262,10 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                         case (force_type::barter_item_array):
                             command_result = BarterProcessor::set_item_choice_array(json.ids_array); break;
 
+                        case (force_type::change_character):
+                            command_result = RaceProcessor::set_change_categories_choice(json.ids_array); break;
+
+
                         default:
                         {
                             command_result = { true, "You dont have any choices to make" };
@@ -1336,6 +1347,15 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                         else
                         {
 
+                            if (name == Capabilities::ConfirmCharacter::Name)
+                            {
+                                command_result = RaceProcessor::confirm_change_character(true);
+                            }
+
+                            if (name == Capabilities::ChangeCharacter::Name)
+                            {
+                                command_result = RaceProcessor::confirm_change_character(false);
+                            }
 
 
                             if (name == Capabilities::SurrenderToGuards::Name)

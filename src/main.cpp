@@ -3,7 +3,6 @@
 
 //crucial:
 
-//TODO try to make automatic softlock protection when we die too fast after loading of a save. Should load previous save and overwrite it with new quicksave.
 //TODO character creation pre-confirm prompt (with array input, ask what categories to modify)
 
 
@@ -68,7 +67,7 @@ bool API_CONTROL_LOCKPICK = false;
 bool API_CONTROL_CRAFTING = false;
 
 
-bool do_debug_scan = true;
+bool do_debug_scan = false;
 bool debug_info = false;
 
 
@@ -152,6 +151,18 @@ bool get_visit_places_action_status()
 bool register_visit_interesting()
 {
     neurosdk_action actions[] = { Capabilities::InterestingPlaces::Action};
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+
+
+bool register_confirm_change_character()
+{
+    neurosdk_action actions[] = { Capabilities::ConfirmCharacter::Action, Capabilities::ChangeCharacter::Action };
 
     if (m_neuroSocket->register_actions(actions, std::size(actions)))
         return true;
@@ -245,7 +256,7 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
         if (force_type == force_type::character_name)
             force_action = Capabilities::SelectForceChoiceString::Action;
 
-        if (force_type == force_type::container_item_array || force_type == force_type::barter_item_array)
+        if (force_type == force_type::container_item_array || force_type == force_type::barter_item_array || force_type == force_type::change_character)
             force_action = Capabilities::SelectForceChoiceArray::Action;
 
 

@@ -45,7 +45,7 @@ namespace Hooks {
 }
 
 
-
+bool register_confirm_change_character();
 void register_allowed_actions(float bonus_pause = 0.0f);
 bool register_unlock_shout_action();
 bool unregister_look_action();

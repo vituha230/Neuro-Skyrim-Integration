@@ -131,7 +131,7 @@ namespace BarterProcessor {
         int result = -1;
         if (items_list_valid)
         {
-            if (pos < std::size(items_list))
+            if (pos >= 0 && pos < std::size(items_list))
             {
                 auto it = items_list.begin();
 

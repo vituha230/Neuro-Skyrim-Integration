@@ -14,6 +14,10 @@ namespace RaceProcessor {
 
 	int get_category_shift(int page);
 	int get_max_generic_slider();
+
+	std::pair<bool, std::string> confirm_change_character(int confirm);
+	std::pair<bool, std::string> set_change_categories_choice(std::vector<int> ids);
+
 }
 
 

@@ -48,7 +48,7 @@ namespace MapProcessor {
 
 		if (menu)
 		{
-			if (id < std::size(menu->mapMarkers))
+			if (id >= 0 && id < std::size(menu->mapMarkers))
 			{
 				auto marker = menu->mapMarkers[id];
 
@@ -578,7 +578,7 @@ namespace MapProcessor {
 			location_choice_valid = true;
 
 			auto menu = ui->GetMenu<RE::MapMenu>();
-			if (id < std::size(menu->mapMarkers))
+			if (id >= 0 && id < std::size(menu->mapMarkers))
 			{
 				auto marker = menu->mapMarkers[id];
 				RE::NiPointer<RE::TESObjectREFR> a_refrOut;
@@ -647,7 +647,7 @@ namespace MapProcessor {
 
 
 
-			if ((id * 4 + 3)< std::size(menu->markerData))
+			if (id >= 0 && (id * 4 + 3) < std::size(menu->markerData))
 			{
 				auto marker_posX_raw = menu->markerData[id * 4 + 1];
 				auto marker_posY_raw = menu->markerData[id * 4 + 2];
