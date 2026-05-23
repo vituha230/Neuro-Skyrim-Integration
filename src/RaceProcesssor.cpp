@@ -13,6 +13,8 @@
 
 namespace RaceProcessor {
 
+	int character_change_attempts = 0;
+
 	int cursor_jumps = 0;
 	bool pause_made = false;
 	bool in_racemenu = false;
@@ -1840,6 +1842,7 @@ namespace RaceProcessor {
 		}
 		else
 		{
+			character_change_attempts++;
 			character_needs_change = true;
 			result.first = true;
 			result.second = "[Going back...]";
@@ -2365,14 +2368,14 @@ namespace RaceProcessor {
 					else
 					{
 
-						if (!confirm_change_registered)
+						if (character_change_attempts < 10 && !confirm_change_registered)
 						{
 							confirm_change_registered = true;
 							register_confirm_change_character();
 						}
 						else
 						{
-							if (character_confirmed)
+							if (character_confirmed || character_change_attempts >= 10)
 							{
 								if (!unregistered_change_confirm)
 								{
@@ -2488,6 +2491,7 @@ namespace RaceProcessor {
 			}
 			else
 			{
+				character_change_attempts = 0;
 				reset_menu();
 			}
 
