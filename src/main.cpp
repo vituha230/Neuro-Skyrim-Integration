@@ -3,8 +3,6 @@
 
 //crucial:
 
-//TODO test all menus
-//TODO test prisons
 //TODO try to make automatic softlock protection when we die too fast after loading of a save. Should load previous save and overwrite it with new quicksave.
 //TODO character creation pre-confirm prompt (with array input, ask what categories to modify)
 
@@ -1231,8 +1229,9 @@ namespace Hooks {
 
                         std::string better_gear = MiscThings::get_best_items_list();
 
-                        if (better_gear != "")
-                            advice += ". You have good gear that is not equipped, you can do use_inventory_items action to equip them: " + better_gear;
+                        if (!MiscThings::is_serving_jail() && !MiscThings::player_escaping_jail())
+                            if (better_gear != "")
+                                advice += ". You have good gear that is not equipped, you can do use_inventory_items action to equip them: " + better_gear;
 
 
 
