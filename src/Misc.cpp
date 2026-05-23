@@ -8632,6 +8632,141 @@ namespace MiscThings {
 
 
 
+    bool prelast_save_load = false;
+    bool prelast_save_load_system_menu_called = false;
+    bool prelast_save_load_system_page_open = false;
+
+    bool is_prelast_saveloading()
+    {
+        return prelast_save_load;
+    }
+
+    bool is_inside_of_system_tab()
+    {
+        bool result = false;
+
+        RE::GFxValue var1;
+        RE::UI* ui = RE::UI::GetSingleton();
+
+        if (ui)
+            if (const auto menu = ui->GetMenu<RE::JournalMenu>(); menu)
+                if (menu->uiMovie)
+                    //if (menu->uiMovie->GetVariable(&var1, "_root.QuestJournalFader.Menu_mc.SystemTab._group.scope.TopmostPage.Page_mc.CategoryList.Entry7.textField.text"))
+                    if (menu->uiMovie->GetVariable(&var1, "_root.QuestJournalFader.Menu_mc.SystemTab._group.scope.TopmostPage.Page_mc.CategoryList.EntriesA.0.text"))
+                        if (!var1.IsNull() && var1.IsString())
+                        {
+                            std::string temp_result = var1.GetString();
+
+                            if (temp_result == "$QUICKSAVE")
+                                result = true;
+                        }
+
+        return result;
+
+    }
+
+
+    int get_system_menu_category()
+    {
+        int result = -1;
+
+        RE::GFxValue var1;
+        RE::UI* ui = RE::UI::GetSingleton();
+
+        if (ui)
+            if (const auto menu = ui->GetMenu<RE::JournalMenu>(); menu)
+                if (menu->uiMovie)
+                    if (menu->uiMovie->GetVariable(&var1, "_root.QuestJournalFader.Menu_mc.SystemTab._group.scope.TopmostPage.Page_mc.CategoryList_mc.List_mc.iSelectedIndex"))
+                        if (!var1.IsNull() && var1.IsNumber())
+                        {
+                            result = var1.GetNumber();
+                        }
+
+        return result;
+    }
+
+
+    int get_selected_load()
+    {
+        int result = -1;
+
+        RE::GFxValue var1;
+        RE::UI* ui = RE::UI::GetSingleton();
+
+        if (ui)
+            if (const auto menu = ui->GetMenu<RE::JournalMenu>(); menu)
+                if (menu->uiMovie)
+                    if (menu->uiMovie->GetVariable(&var1, "_root.QuestJournalFader.Menu_mc.SystemTab._group.scope.TopmostPage.Page_mc.SaveLoadPanel.List_mc.iSelectedIndex"))
+                        if (!var1.IsNull() && var1.IsNumber())
+                        {
+                            result = var1.GetNumber();
+                        }
+        return result;
+    }
+
+    bool is_inside_of_category()
+    {
+        bool result = false;
+        RE::UI* ui = RE::UI::GetSingleton();
+        auto menu = ui->GetMenu<RE::JournalMenu>();
+        RE::GFxValue var1;
+
+        if (ui && menu && ui->IsMenuOpen(RE::JournalMenu::MENU_NAME))
+            if (menu->uiMovie)
+                if (menu->uiMovie->GetVariable(&var1, "_root.QuestJournalFader.Menu_mc.SystemTab._group.scope.SystemFader.Page_mc.SaveLoadPanel.SaveLoadList_mc.focused"))
+                    if (!var1.IsNull() && var1.IsNumber())
+                        result = var1.GetNumber();
+
+        if (!result)
+        {
+            if (ui && menu && ui->IsMenuOpen(RE::JournalMenu::MENU_NAME))
+                if (menu->uiMovie)
+                    if (menu->uiMovie->GetVariable(&var1, "_root.QuestJournalFader.Menu_mc.SystemTab._group.scope.SystemFader.Page_mc.ConfirmPanel.focused"))
+                        if (!var1.IsNull() && var1.IsNumber())
+                            result = var1.GetNumber();
+        }
+
+        return result;
+    }
+
+
+    void move_system_cursor_to_category(int category)
+    {
+        int selected_category = get_system_menu_category();
+
+        if (selected_category > category)
+            cursor_up();
+
+        if (selected_category < category)
+            cursor_down();
+    }
+
+
+    void move_system_cursor_to_load(int category)
+    {
+        int selected_category = get_selected_load();
+
+        if (selected_category > category)
+            cursor_up();
+
+        if (selected_category < category)
+            cursor_down();
+    }
+
+
+
+    void initiate_prelast_save_load()
+    {
+        prelast_save_load = true;
+    }
+
+    void reset_prelast_save_load()
+    {
+        prelast_save_load = false;
+        prelast_save_load_system_menu_called = false;
+        prelast_save_load_system_page_open = false;
+    }
+
     void save_loader(float dtime)
     {
         if (!save_loader_done)
@@ -8886,6 +9021,68 @@ namespace MiscThings {
                 }
             }
         }
+
+
+        if (prelast_save_load)
+        {
+            auto ui = RE::UI::GetSingleton();
+
+            if (!prelast_save_load_system_menu_called)
+            {
+                if (!ui->IsMenuOpen(RE::JournalMenu::MENU_NAME))
+                {
+                    call_journal_menu();
+                    set_universal_block(1.0f);
+                }
+                else
+                    prelast_save_load_system_menu_called = true;
+            }
+            else
+            {
+                if (!is_inside_of_system_tab())
+                {
+                    if (ui)
+                        if (const auto menu = ui->GetMenu<RE::JournalMenu>(); menu)
+                        {
+                            menu->uiMovie->Invoke("_root.QuestJournalFader.Menu_mc.SystemTab.onPress", nullptr, nullptr, 0);
+                            menu->uiMovie->Invoke("_root.QuestJournalFader.Menu_mc.SystemTab.onRelease", nullptr, nullptr, 0);
+                            set_universal_block(1.0f);
+                        }
+                }
+                else
+                {
+                    if (get_system_menu_category() != 2)
+                    {
+                        move_system_cursor_to_category(2);
+                        set_universal_block(0.5f);
+                    }
+                    else
+                    {
+                        if (!is_inside_of_category())
+                        {
+                            right();
+                            set_universal_block(0.5f);
+                        }
+                        else
+                        {
+                            if (get_selected_load() != 1)
+                            {
+                                move_system_cursor_to_load(1);
+                                set_universal_block(0.5f);
+                            }
+                            else
+                            {
+                                confirm();
+                                set_universal_block(0.5f);
+                            }
+                        }
+                    }
+                }
+            }
+
+            
+        }
+
     }
 
 

@@ -14,6 +14,9 @@
 
 //void action_queue_add(neurosdk_action action);
 
+long long get_last_load_timestamp();
+
+
 bool is_universal_blocked();
 void set_universal_block(float time);
 

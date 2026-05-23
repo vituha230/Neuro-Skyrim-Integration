@@ -3363,7 +3363,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::JournalMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -3426,23 +3426,23 @@ if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu) {
                                 auto test = var1.GetType();
                             }
 
-                            search_var = "sliderMax";
-                            //search_var = "onPress";
+                            //search_var = "sliderMax";
+                            search_var = "onPress";
                             //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
-                            //search_var = "iSelectedIndex";
-                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            search_var = "focused";
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
 
-                            search_var = "NEW";
+                            
                             //search_var = "Body";
 
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
@@ -3485,16 +3485,16 @@ if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu) {
                             }
                             */
 
-
-                            search_var = "Skin Tone";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            search_var = "QUICKSAVE";
+                            //search_var = "Skin Tone";
+                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
                             }
 
                             search_var = "Cultist";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "Gary", skip_problematic);
+                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", "Gary", skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();

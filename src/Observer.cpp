@@ -3513,6 +3513,9 @@ namespace Observer {
 	}
 
 
+	int deaths_after_load = 0;
+
+
 	void player_state_monitor(float dtime)
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();
@@ -4049,6 +4052,30 @@ namespace Observer {
 						player_dead_sent = true;
 						send_random_context("[YOU DIED. The game will resume from last save soon]", false);
 						MiscThings::set_time_of_death(std::chrono::steady_clock::now().time_since_epoch().count());
+
+
+						long long last_load_timestamp = get_last_load_timestamp();
+
+						if (last_load_timestamp != 0)
+						{
+							long long death_timestamp = MiscThings::get_time_of_death();
+
+							float load_delta = (double)(death_timestamp - last_load_timestamp) / 1000000000.0;
+
+							if (load_delta < 15.0f)
+								deaths_after_load++;
+							else
+								deaths_after_load = 0;
+
+							if (deaths_after_load > 10)
+							{
+								MiscThings::initiate_prelast_save_load();
+								deaths_after_load = 0;
+							}
+
+						}
+						
+
 					}
 
 				}

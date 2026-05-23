@@ -9,6 +9,10 @@ namespace MiscThings {
 
     std::string get_timestamp_string();
 
+    void initiate_prelast_save_load();
+    void reset_prelast_save_load();
+    bool is_prelast_saveloading();
+
 
     struct interesting_places {
         std::string settlement_name;

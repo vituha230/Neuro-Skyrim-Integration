@@ -68,7 +68,7 @@ bool API_CONTROL_LOCKPICK = false;
 bool API_CONTROL_CRAFTING = false;
 
 
-bool do_debug_scan = false;
+bool do_debug_scan = true;
 bool debug_info = false;
 
 
@@ -102,7 +102,16 @@ bool in_game = false;
 
 long long context_chars_sent = 0;
 
+long long last_load_timestamp = 0;
+
 /////////////////////////////////////////////////////////
+
+
+long long get_last_load_timestamp()
+{
+    return last_load_timestamp;
+}
+
 
 
 std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
@@ -1040,6 +1049,9 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kShow) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS OPENED");
 
+
+
+
                 auto player = RE::PlayerCharacter::GetSingleton();
 
                 if (player)
@@ -1121,6 +1133,8 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS CLOSED");
 
+
+                last_load_timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
 
                 WalkerProcessor::clear_just_teleported();
 
@@ -1239,6 +1253,15 @@ namespace Hooks {
                             send_random_context("[Current location: " + location_name + advice + "]");
                         else
                             neuro::add_message_to_delayed_queue("[Current location: " + location_name + ". Use commands to interact with the game" + advice + "]");
+
+
+                        if (MiscThings::is_prelast_saveloading())
+                        {
+                            MiscThings::reset_prelast_save_load();
+                            quicksave();
+                        }
+                            
+
 
                         //send_random_context(, false);
                     }
@@ -2398,7 +2421,7 @@ bool visit_all_members2(std::vector<std::string>& results, const RE::GFxValue& i
 bool visit_all_members3(std::vector<std::string>& results, const RE::GFxValue& in, std::string* search_var, int depth, std::string current_path, std::string val_to_search, std::vector<std::string>& skip_problematic)
 {
 
-    if (depth > 20)
+    if (depth > 10)
         return false;
 
     bool found_something = false;

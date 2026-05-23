@@ -940,6 +940,17 @@ void quicksave()
 
 
 
+//stats
+void call_journal_menu()
+{
+    int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->pause, RE::INPUT_DEVICES::kKeyboard);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 1.0, 0.0);
+    RE::BSInputEventQueue::GetSingleton()->AddButtonEvent(RE::INPUT_DEVICES::kKeyboard, my_key, 0.0, 0.0);
+
+    Hooks::add_debug_line("Input: journal called");
+}
+
+
 
 void try_casting_hand(bool right)
 {
