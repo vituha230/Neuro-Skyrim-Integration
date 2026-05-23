@@ -20,6 +20,7 @@ namespace RaceProcessor {
 	std::pair<bool, std::string> confirm_change_character(int confirm);
 	std::pair<bool, std::string> set_change_categories_choice(std::vector<int> ids);
 
+	bool race_menu_wants_to_poke();
 }
 
 

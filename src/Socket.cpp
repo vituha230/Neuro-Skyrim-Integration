@@ -971,7 +971,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
             delayed_poke_time += dtime;
     }
 
-    if (time_no_commands > time_threshold && time_walker_inactive > time_threshold && time_no_menus > time_threshold)
+    if (time_no_commands > time_threshold && (RaceProcessor::race_menu_wants_to_poke() || (time_walker_inactive > time_threshold && time_no_menus > time_threshold)))
     {
         afk_threshold++;
 
@@ -1000,6 +1000,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
         if (advice != "")
             advice = "You can " + advice;
+
 
         send_random_context(get_random_poke_phrase(), false);// . " + advice + "]", false);
 

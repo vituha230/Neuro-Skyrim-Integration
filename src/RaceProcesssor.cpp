@@ -13,6 +13,9 @@
 
 namespace RaceProcessor {
 
+
+	bool allow_poking = false;
+
 	int character_change_attempts = 0;
 
 	int cursor_jumps = 0;
@@ -84,6 +87,13 @@ namespace RaceProcessor {
 	float change_slider_timeout1 = 0.0f;
 	float change_slider_timeout2 = 0.0f;
 	float change_slider_timeout3 = 0.0f;
+
+
+	bool race_menu_wants_to_poke()
+	{
+		return allow_poking;
+	}
+
 
 	void next_page()
 	{
@@ -687,6 +697,7 @@ namespace RaceProcessor {
 
 	void reset_menu()
 	{
+		allow_poking = false;
 		cursor_jumps = 0;
 		pause_made = false;
 		confirm_change_registered = false;
@@ -2375,8 +2386,10 @@ namespace RaceProcessor {
 						}
 						else
 						{
+							allow_poking = true;
 							if (character_confirmed || character_change_attempts >= 10)
 							{
+								allow_poking = false;
 								if (!unregistered_change_confirm)
 								{
 									unregistered_change_confirm = true;
