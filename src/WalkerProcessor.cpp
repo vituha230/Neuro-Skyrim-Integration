@@ -28,6 +28,8 @@ namespace WalkerProcessor {
 
     bool ignore_raycast = false;
 
+    bool attack_was_not_banned = false;
+
 
     RE::TESObjectREFR* target_before_markarth_redirect = nullptr;
     RE::TESObjectREFR* target_before_danstar_redirect = nullptr;
@@ -703,8 +705,31 @@ namespace WalkerProcessor {
             }
             else
             {
-                //attack_pause_time = 0.0f;
-                return true;
+                bool weapon_state_ban = false;
+
+                if (!attack_was_not_banned)
+                {
+                    auto player = RE::PlayerCharacter::GetSingleton();
+                    if (player)
+                    {
+                        auto player_actor = (RE::Actor*)player->AsReference();
+                        if (player_actor)
+                        {
+                            if (player_actor->actorState1.meleeAttackState != RE::ATTACK_STATE_ENUM::kNone)
+                                weapon_state_ban = true;
+                            else
+                                attack_was_not_banned = true;
+                        }
+                    }
+                }
+
+                
+
+                if (!weapon_state_ban || attack_pause_time > 2.0f)
+                    return true;
+
+                attack_pause_time += dtime;
+                
             }
         }
 
@@ -716,6 +741,7 @@ namespace WalkerProcessor {
     {
         attack_pause_time = 0.0f;
         attack_paused = false;
+        attack_was_not_banned = false;
 
         //reset shout
         auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
@@ -3106,7 +3132,7 @@ namespace WalkerProcessor {
 
                 if (force_speed_correction || (shout_mode && shout_to_use))
                 {
-                    projectile_speed = 3000.0f;
+                    projectile_speed = 3500.0f;
                 }
 
 
@@ -3124,6 +3150,10 @@ namespace WalkerProcessor {
             auto distance = (target_center - camera_pos).Length();
             //float arc_shift = arc_coef1*(arc_coef2 * distance * distance - arc_coef3 * distance);
             float arc_shift = arc_coef1 * distance * distance + arc_coef2 * distance;
+
+
+            if (!shout_mode && !force_speed_correction)
+                arc_shift = 0.0f;
 
 
             target_center.z += arc_shift;
@@ -3844,6 +3874,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        attack_was_not_banned = false;
         raycast_was_on = false;
         last_dragon_was_flying = false;
 
@@ -5343,7 +5374,7 @@ namespace WalkerProcessor {
                 }
 
 
-                if (!attack_friend_confirmed && (interaction == 3 && MiscThings::is_friend(object->second.object) && (object->second.object->IsDragon() || object->second.object->IsHumanoid())))
+                if (!attack_friend_confirmed && (interaction == 3 && MiscThings::is_friend(object->second.object) && (MiscThings::is_dragon(object->second.object) || object->second.object->IsHumanoid())))
                 {
                     trying_to_attack_friend = true;
                     attack_friend_interaction = interaction;
@@ -8025,7 +8056,7 @@ namespace WalkerProcessor {
         }
 
 
-        bool speed_correction = is_casting_ult();
+        bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
 
 
         lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
@@ -11720,7 +11751,7 @@ namespace WalkerProcessor {
                 {
                     if (start_attacking || (shout_mode && target_ref && target_ref->IsActor()))
                     {
-                        bool speed_correction = is_casting_ult();
+                        bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
                         lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
                     }
                     return;
@@ -11736,7 +11767,7 @@ namespace WalkerProcessor {
                 {
 
 
-                    if (target_ref && target_ref->IsDragon())
+                    if (target_ref && MiscThings::is_dragon(target_ref))
                     { 
                         bool dragon_is_flying = MiscThings::is_flying(target_ref);
 
