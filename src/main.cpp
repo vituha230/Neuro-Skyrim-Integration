@@ -3,8 +3,6 @@
 
 //crucial:
 
-//TODO character creation pre-confirm prompt (with array input, ask what categories to modify)
-
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 

@@ -13,8 +13,8 @@
 
 namespace RaceProcessor {
 
-
-
+	int cursor_jumps = 0;
+	bool pause_made = false;
 	bool in_racemenu = false;
 	int last_cursor_move = 0;
 	bool missing_item_detected = false;
@@ -78,11 +78,29 @@ namespace RaceProcessor {
 	bool unregistered_change_confirm = false;
 	bool change_character_request_sent = false;
 
+	float change_slider_timeout0 = 0.0f;
+	float change_slider_timeout1 = 0.0f;
+	float change_slider_timeout2 = 0.0f;
+	float change_slider_timeout3 = 0.0f;
+
+	void next_page()
+	{
+		current_page++;
+		current_slider = 0;
+		change_slider_timeout0 = 0.0f;
+		change_slider_timeout1 = 0.0f;
+		change_slider_timeout2 = 0.0f;
+		change_slider_timeout3 = 0.0f;
+	}
 
 	void reset_category()
 	{
 		current_page = 0;
 		current_slider = 0;
+		change_slider_timeout0 = 0.0f;
+		change_slider_timeout1 = 0.0f;
+		change_slider_timeout2 = 0.0f;
+		change_slider_timeout3 = 0.0f;
 	}
 
 
@@ -95,13 +113,68 @@ namespace RaceProcessor {
 
 		if (ui && menu && ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
 			if (menu->uiMovie)
-				if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.EntriesA.46.sliderMax"))
-					if (!var1.IsNull() && var1.IsNumber())
-						result = true;
+				if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.EntriesA"))
+					if (!var1.IsNull() && var1.IsArray())
+					{
+						auto array_size = var1.GetArraySize();
+
+						for (int i = 0; i < array_size; i++)
+						{
+							RE::GFxValue array_entry;
+
+							if (var1.GetElement(i, &array_entry))
+							{
+								RE::GFxValue name_var;
+								if (array_entry.GetMember("text", &name_var))
+								{
+									std::string name_var_text = name_var.GetString();
+
+									if (name_var_text.find("Facial Hair") != std::string::npos)
+										return true;
+								}
+							}
+						}
+					}
 
 		return result;
 	}
 	
+
+	bool has_brow_type()
+	{
+		bool result = false;
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::RaceSexMenu>();
+		RE::GFxValue var1;
+
+		if (ui && menu && ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.EntriesA"))
+					if (!var1.IsNull() && var1.IsArray())
+					{
+						auto array_size = var1.GetArraySize();
+
+						for (int i = 0; i < array_size; i++)
+						{
+							RE::GFxValue array_entry;
+
+							if (var1.GetElement(i, &array_entry))
+							{
+								RE::GFxValue name_var;
+								if (array_entry.GetMember("text", &name_var))
+								{
+									std::string name_var_text = name_var.GetString();
+
+									if (name_var_text.find("Brow Type") != std::string::npos)
+										return true;
+								}
+							}
+						}
+					}
+
+		return result;
+	}
+
 
 	struct slider_status {
 		std::string name;
@@ -271,7 +344,7 @@ namespace RaceProcessor {
 
 		if (current_page == 5)
 		{
-			if (current_slider < 3)
+			if (current_slider < (2 + has_brow_type()))
 			{
 				current_slider++;
 			}
@@ -612,13 +685,19 @@ namespace RaceProcessor {
 
 	void reset_menu()
 	{
-
+		cursor_jumps = 0;
+		pause_made = false;
 		confirm_change_registered = false;
 		character_confirmed = false;
 		character_needs_change = false;
 		unregistered_change_confirm = false;
 		change_character_request_sent = false;
 		categories_info.clear();
+
+		change_slider_timeout0 = 0.0f;
+		change_slider_timeout1 = 0.0f;
+		change_slider_timeout2 = 0.0f;
+		change_slider_timeout3 = 0.0f;
 
 
 		last_pause_time = 0.0f;
@@ -820,6 +899,8 @@ namespace RaceProcessor {
 				reset_menu();
 			else
 			{
+				cursor_jumps = 0;
+				pause_made = false;
 				current_page = 1;
 				current_slider = 0;
 
@@ -1283,10 +1364,10 @@ namespace RaceProcessor {
 		case (0): return 0; //race
 		case (1): return 0; //body
 		case (2): return 4; //head
-		case (3): return 24 + has_facial_hair(); //face
+		case (3): return 23 + has_facial_hair() + has_brow_type(); //face
 		case (4): return 12 + has_facial_hair(); //eyes
 		case (5): return 20 + has_facial_hair(); //brow
-		case (6): return 39 + has_facial_hair(); //mouth
+		case (6): return 38 + has_facial_hair() + has_brow_type(); //mouth
 		case (7): return 10; //hair
 		case (8): return 0;
 		}
@@ -1430,7 +1511,18 @@ namespace RaceProcessor {
 						add_category_info(current_page, current_slider, slider_name);
 					}
 
-					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
+					
+					int current_slider_value = get_generic_slider_selected_index();
+
+					std::string current_value = "";
+
+					if (current_slider_value == 1)
+						current_value = "Female";
+					else
+						current_value = "Male";
+
+
+					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options. Current value: " + current_value;
 					break;
 				}
 
@@ -1443,7 +1535,9 @@ namespace RaceProcessor {
 						add_category_info(current_page, current_slider, slider_name);
 					}
 
-					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
+					std::string current_value = std::to_string(get_generic_slider_selected_index());
+
+					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options. Current value: " + current_value;
 					break;
 				}
 
@@ -1456,7 +1550,10 @@ namespace RaceProcessor {
 						add_category_info(current_page, current_slider, slider_name);
 					}
 
-					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
+					std::string current_value = std::to_string(get_generic_slider_selected_index());
+
+
+					result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options. Current value: " + current_value;
 					break;
 				}
 			}
@@ -1479,7 +1576,9 @@ namespace RaceProcessor {
 				add_category_info(current_page, current_slider, slider_name);
 			}
 
-			result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options";
+			std::string current_value = std::to_string(get_generic_slider_selected_index());
+
+			result = "You are creating your character in Skyrim. Select your character's " + slider_name + " from provided options. Current value: " + current_value;
 
 			break;
 		}
@@ -1888,6 +1987,7 @@ namespace RaceProcessor {
 	}
 
 
+	
 
 	void move_gender_slider(int gender_choice)
 	{
@@ -1896,7 +1996,12 @@ namespace RaceProcessor {
 		if (selected_gender_index > gender_choice)
 		{
 			if (last_cursor_move == 2)
-				missing_item_detected = true;
+			{
+				cursor_jumps++;
+				if (cursor_jumps > 3)
+					missing_item_detected = true;
+			}
+				
 
 			left();
 			last_cursor_move = 1;
@@ -1905,7 +2010,11 @@ namespace RaceProcessor {
 		if (selected_gender_index < gender_choice)
 		{
 			if (last_cursor_move == 1)
-				missing_item_detected = true;
+			{
+				cursor_jumps++;
+				if (cursor_jumps > 3)
+					missing_item_detected = true;
+			}
 
 			right();
 
@@ -1921,7 +2030,11 @@ namespace RaceProcessor {
 		if (selected_preset_index > preset_choice)
 		{
 			if (last_cursor_move == 2)
-				missing_item_detected = true;
+			{
+				cursor_jumps++;
+				if (cursor_jumps > 3)
+					missing_item_detected = true;
+			}
 
 			left();
 			last_cursor_move = 1;
@@ -1929,7 +2042,11 @@ namespace RaceProcessor {
 		if (selected_preset_index < preset_choice)
 		{
 			if (last_cursor_move == 1)
-				missing_item_detected = true;
+			{
+				cursor_jumps++;
+				if (cursor_jumps > 3)
+					missing_item_detected = true;
+			}
 
 			right();
 
@@ -1946,7 +2063,11 @@ namespace RaceProcessor {
 		if (selected_generic_slider_index > generic_slider_choice)
 		{
 			if (last_cursor_move == 2)
-				missing_item_detected = true;
+			{
+				cursor_jumps++;
+				if (cursor_jumps > 3)
+					missing_item_detected = true;
+			}
 
 			left();
 			last_cursor_move = 1;
@@ -1955,7 +2076,11 @@ namespace RaceProcessor {
 		if (selected_generic_slider_index < generic_slider_choice)
 		{
 			if (last_cursor_move == 1)
-				missing_item_detected = true;
+			{
+				cursor_jumps++;
+				if (cursor_jumps > 3)
+					missing_item_detected = true;
+			}
 
 			right();
 
@@ -1998,10 +2123,6 @@ namespace RaceProcessor {
 
 	void processor(float dtime)
 	{
-		//int test123 = get_selected_slider();
-		//bool stop_here = false;
-		//return;
-
 
 		RE::UI* ui = RE::UI::GetSingleton();
 
@@ -2039,9 +2160,20 @@ namespace RaceProcessor {
 					reset_category();
 
 					if (!is_inside_of_category(current_page, current_slider))
+					{
 						move_to_category(current_page, current_slider);
+
+						if (change_slider_timeout0 > 15.0f)
+						{
+							next_page();
+						}
+						else
+							change_slider_timeout0 += dtime;
+					}
 					else
 					{
+						change_slider_timeout0 = 0.0f;
+
 						if (!items_list_valid)
 						{
 							if (!filling_items)
@@ -2073,9 +2205,20 @@ namespace RaceProcessor {
 									if ((selected_index != race_choice))
 									{
 										if (!missing_item_detected)
+										{
+											if (change_slider_timeout1 > 15.0f)
+											{
+												next_page();
+											}
+											else
+												change_slider_timeout1 += dtime;
+
 											move_to_item(race_choice);
+										}
 										else
 										{
+											change_slider_timeout1 = 0.0f;
+
 											//this should never happen
 											confirm_race = false;
 											race_defined = true;
@@ -2091,6 +2234,8 @@ namespace RaceProcessor {
 									}
 									else
 									{
+										change_slider_timeout1 = 0.0f;
+
 										//confirm_race = true;
 
 										confirm_race = false;
@@ -2111,6 +2256,8 @@ namespace RaceProcessor {
 				}
 				else
 				{
+					change_slider_timeout1 = 0.0f;
+
 					if (current_page < 8)
 					{
 						if (!generic_slider_defined)
@@ -2118,9 +2265,27 @@ namespace RaceProcessor {
 							if (!is_category_defined(current_page, current_slider))
 							{
 								if (!is_inside_of_category(current_page, current_slider))
+								{
+									if (change_slider_timeout2 > 5.0f)
+									{
+										next_page();
+									}
+									else
+										change_slider_timeout2 += dtime;
+
 									move_to_category(current_page, current_slider);
+								}
 								else
 								{
+									if (false && !pause_made)
+									{
+										set_universal_block(0.5f);
+										pause_made = true;
+										return;
+									}
+
+
+									change_slider_timeout2 = 0.0f;
 
 									if (!generic_slider_request_sent)
 									{
@@ -2135,9 +2300,21 @@ namespace RaceProcessor {
 											if ((selected_index != generic_slider_choice))
 											{
 												if (!missing_item_detected)
+												{
+													if (change_slider_timeout3 > 15.0f)
+													{
+														next_page();
+													}
+													else
+														change_slider_timeout3 += dtime;
+
 													move_generic_slider(generic_slider_choice);
+												}
 												else
 												{
+													cursor_jumps = 0;
+													pause_made = false;
+													change_slider_timeout3 = 0.0f;
 													//this might happen. something about truncating floats
 
 													//generic_slider_defined = true;
@@ -2157,6 +2334,9 @@ namespace RaceProcessor {
 											}
 											else
 											{
+												cursor_jumps = 0;
+												pause_made = false;
+												change_slider_timeout3 = 0.0f;
 												//generic_slider_defined = true;
 
 												generic_slider_defined = false;

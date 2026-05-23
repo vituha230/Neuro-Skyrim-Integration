@@ -3363,7 +3363,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::JournalMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -3435,7 +3435,7 @@ if (const auto menu = ui->GetMenu<RE::JournalMenu>(); menu) {
                             }
 
                             search_var = "focused";
-                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -3485,9 +3485,9 @@ if (const auto menu = ui->GetMenu<RE::JournalMenu>(); menu) {
                             }
                             */
 
-                            search_var = "QUICKSAVE";
+                            search_var = "Complexion";
                             //search_var = "Skin Tone";
-                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
