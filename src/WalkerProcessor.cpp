@@ -4557,7 +4557,7 @@ namespace WalkerProcessor {
 
                 //float distance = player->GetDistance(target_ref, true, true);
 
-                if (distance.Length() < 3000.0f)
+                if (distance.Length() < 1500.0f)
                     return true;
             }
         }

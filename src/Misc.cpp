@@ -1496,6 +1496,34 @@ namespace MiscThings {
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
     {
+
+        auto walk_to_riverwood_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ102");
+
+        if (quest == walk_to_riverwood_quest)
+        {
+            auto riverwood_stage = walk_to_riverwood_quest->GetCurrentStageID();
+
+            if (riverwood_stage == 17)
+            {
+                auto player = RE::PlayerCharacter::GetSingleton();
+                auto riverwood_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x162a4);
+
+                if (player && riverwood_marker)
+                {
+                    float distance = player->GetDistance(riverwood_marker);
+                    if (distance > 17870.0f)
+                    {
+                        auto redirect_flower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700efdd);
+
+                        if (redirect_flower)
+                            return redirect_flower;
+                    }
+                }
+            }
+        }
+
+
+
         auto riften_bad_door1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x53057); //house door
         auto riften_bad_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x42286); //south big gate
         auto riften_good_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x42284); //north big gate
