@@ -555,7 +555,7 @@ namespace WalkerProcessor {
             auto extra22 = (RE::ExtraAction*)gate2->extraList.GetByType(RE::ExtraDataType::kAction);
             auto extra32 = (RE::ExtraAction*)gate3->extraList.GetByType(RE::ExtraDataType::kAction);
 
-            if (extra1 && extra2 && extra3)
+            //if (extra1 && extra2 && extra3)
             {
                 //auto gate1_door = (RE::TESObjectDOOR*)gate1;
                 //auto gate2_door = (RE::TESObjectDOOR*)gate2;
@@ -590,8 +590,8 @@ namespace WalkerProcessor {
 
 
             }
-            else
-                return false;
+            //else
+            //    return false;
 
 
             //}
@@ -2421,8 +2421,11 @@ namespace WalkerProcessor {
 
         std::vector<RE::TESObjectREFR*> dont_cut_list =
         {
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee), //idk
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b0a5) //helgen door
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x361ee), //embassy door1
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b0a5), //helgen door
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x33f0f), //malborn door1
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x33f4b), //malborn door1
+
         };
 
         if (MiscThings::get_door_teleport(target) != "")
@@ -2433,6 +2436,9 @@ namespace WalkerProcessor {
             if (target == dont_cut)
                 return;
         }
+
+        if (target && WalkerProcessor::is_door(target) && MiscThings::is_door_superlocked(target))
+            return;
 
 
         auto avoidsphere_form = RE::TESObjectREFR::LookupByID(0x7002dbf);
@@ -2482,18 +2488,23 @@ namespace WalkerProcessor {
     {
         //'' (04026b75)
         auto avoidsphere_form = RE::TESObjectREFR::LookupByID(0x7002dbf);
-        auto qasmoke_chest_form = RE::TESObjectREFR::LookupByID(0x4026b75);
+        //auto qasmoke_chest_form = RE::TESObjectREFR::LookupByID(0x4026b75);
 
-        if (!avoidsphere_form || !qasmoke_chest_form)
+        if (!avoidsphere_form)// || !qasmoke_chest_form)
             return;
 
         auto avoidsphere_refr = avoidsphere_form->AsReference();
-        auto qasmoke_chest_refr = qasmoke_chest_form->AsReference();
+        //auto qasmoke_chest_refr = qasmoke_chest_form->AsReference();
 
-        if (!avoidsphere_refr || !qasmoke_chest_refr)
+        if (!avoidsphere_refr)// || !qasmoke_chest_refr)
             return;
 
-        avoidsphere_refr->MoveTo(qasmoke_chest_refr);
+        auto old_pos = avoidsphere_refr->GetPosition();
+        old_pos.z += 5000.0f;
+
+        MiscThings::SetPosition_moveto(avoidsphere_refr, old_pos);
+
+        //avoidsphere_refr->MoveTo(qasmoke_chest_refr);
     }
 
     bool is_targeted_door_closed()
@@ -4606,7 +4617,13 @@ namespace WalkerProcessor {
         if (!can_fight && player && player->GetParentCell() == RE::TESForm::LookupByID(0x5de24))
             helgen_keep_condition = true;
 
-        if (MiscThings::is_intro2() || helgen_keep_condition)
+        bool malborn_condition = false;
+        RE::TESObjectREFR* malborn = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x33f46);
+        if (target_ref && malborn && target_ref == malborn)
+            malborn_condition = true;
+
+
+        if (MiscThings::is_intro2() || helgen_keep_condition || malborn_condition)
         {
             auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos;
 
@@ -12303,6 +12320,7 @@ namespace WalkerProcessor {
                                                             Observer::detect_interesting_objects(0.016, true);
                                                     }
 
+                                                    remove_navmesh_cutter();
                                                     send_random_context(fail_text, false);
                                                     reset_walker();
                                                 }
@@ -13320,6 +13338,7 @@ namespace WalkerProcessor {
                                                         Observer::detect_interesting_objects(0.016, true);
                                                 }
 
+                                                remove_navmesh_cutter();
                                                 send_random_context(fail_text, false);
                                                 reset_walker();
                                             }
@@ -13397,6 +13416,7 @@ namespace WalkerProcessor {
                                                             Observer::detect_interesting_objects(0.016, true);
                                                     }
 
+                                                    remove_navmesh_cutter();
                                                     send_random_context(fail_text, false);
                                                     reset_walker();
                                                 }

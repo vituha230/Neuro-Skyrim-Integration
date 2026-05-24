@@ -1496,6 +1496,17 @@ namespace MiscThings {
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
     {
+        auto diplomatic_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ201");
+
+        if (quest == diplomatic_quest)
+        {
+            auto the_cook = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x353be);
+            auto redirect_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd0f06);
+
+            if (redirect_door && the_cook && target == the_cook)
+                return redirect_door;
+
+        }
 
         auto walk_to_riverwood_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ102");
 

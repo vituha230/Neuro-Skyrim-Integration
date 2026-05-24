@@ -34,7 +34,7 @@ namespace WalkerProcessor {
 
 	bool has_staff_equipped(bool right);
 
-
+	bool is_door(RE::TESObjectREFR* refr);
 
 	std::pair<bool, std::string> set_multiple_path_quest_choice(int id);
 
