@@ -792,6 +792,7 @@ bool neuro::NeuroSocket::action_register_watchdog(float dtime)
 
             action_watchdog_timer = 0.0f;
             register_allowed_actions();
+            WalkerProcessor::reset_walker();//in case some custom walk path glitched
             return true;
         }
         else
