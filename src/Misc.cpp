@@ -11423,11 +11423,8 @@ namespace MiscThings {
 
     bool player_has_spell(RE::SpellItem* spell)
     {
-        
-        if (std::size(spells) <= 0)
-        {
-            auto get_spells_result = get_available_spells();
-        }
+        //REFRESH SPELLS. MIGHT HAVE SOMETHING NEW AND IT WILL NOT SEE REQUIRED SPELL
+        auto get_spells_result = get_available_spells();
 
         for (auto spell_from_list : spells)
         {
