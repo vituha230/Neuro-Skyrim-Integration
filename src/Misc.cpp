@@ -3741,6 +3741,16 @@ namespace MiscThings {
                 return true;
         }
 
+
+        object_p = General::Script::GetObject(pillar, "dunKarthspirePillarPuzzle");
+
+        if (object_p)
+        {
+            if (get_pillar_face_name(pillar) == 2)
+                return true;
+        }
+
+
         return result;
 
     }
