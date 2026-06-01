@@ -2471,6 +2471,62 @@ namespace MiscThings {
         return false;
     }
 
+    bool is_ore(RE::TESObjectREFR* object)
+    {
+        if (!object)
+            return false;
+
+        auto base_obj = object->GetBaseObject();
+        auto base_type = base_obj->GetFormType();
+
+        if (base_type == RE::FormType::Activator)
+        {
+            auto activator = (RE::TESObjectACTI*)base_obj;
+
+            std::string model = activator->GetModel();
+
+            if (model.find("MineOre") != std::string::npos)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    bool is_flora(RE::TESObjectREFR* object)
+    {
+        if (!object)
+            return false;
+
+        auto base_obj = object->GetBaseObject();
+        auto base_type = base_obj->GetFormType();
+
+        if (base_type == RE::FormType::Flora)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool is_tree(RE::TESObjectREFR* object)
+    {
+        if (!object)
+            return false;
+
+        auto base_obj = object->GetBaseObject();
+        auto base_type = base_obj->GetFormType();
+
+        if (base_type == RE::FormType::Tree)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 
 
 

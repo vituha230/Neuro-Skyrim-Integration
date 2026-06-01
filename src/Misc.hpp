@@ -13,6 +13,9 @@ namespace MiscThings {
     void reset_prelast_save_load();
     bool is_prelast_saveloading();
 
+    bool is_flora(RE::TESObjectREFR* object);
+    bool is_tree(RE::TESObjectREFR* object);
+    bool is_ore(RE::TESObjectREFR* object);
 
     struct interesting_places {
         std::string settlement_name;
