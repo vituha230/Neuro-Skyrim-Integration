@@ -119,6 +119,9 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> escape_prison();
 
 	void walk_whiterun_prison_grate();
+	void walk_soltsheim_prison_grate();
+	void walk_soltsheim_prison_grate2();
+
 	bool is_concentration_spell(bool right);
 	float get_spell_cost(bool right);
 	std::string get_equipped_spell_name(bool right);
@@ -126,6 +129,7 @@ namespace WalkerProcessor {
 	RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target, bool sit_correction = true);
 
 	float get_attack_time(bool right);
+	
 
 	int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective = nullptr);
 

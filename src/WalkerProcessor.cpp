@@ -10282,6 +10282,66 @@ namespace WalkerProcessor {
     }
 
 
+    void walk_soltsheim_prison_grate()
+    {
+        if (have_target_to_walk)
+        {
+            Observer::reset_threats();
+            reset_walker();
+        }
+
+        auto soltsteim_grate_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40337d2);
+
+        unregister_all_actions();
+        using_custom_path = true;
+        custom_path = CustomWalkerPaths::soltsheim_prison_grate;
+        path_valid = true;
+        path = CustomWalkerPaths::soltsheim_prison_grate;
+
+
+
+        target_ref = soltsteim_grate_1;
+
+        reset_after_walk = true;
+        have_target_to_walk = true;
+        interaction_after_walk = -1;
+
+        right_attack_cancel();
+        left_attack_cancel();
+
+    }
+
+
+    void walk_soltsheim_prison_grate2()
+    {
+        if (have_target_to_walk)
+        {
+            Observer::reset_threats();
+            reset_walker();
+        }
+
+        auto soltsteim_grate_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4037b19);
+
+
+        unregister_all_actions();
+        using_custom_path = true;
+        custom_path = CustomWalkerPaths::soltsheim_prison_grate2;
+        path_valid = true;
+        path = CustomWalkerPaths::soltsheim_prison_grate2;
+
+
+
+        target_ref = soltsteim_grate_2;
+
+        reset_after_walk = true;
+        have_target_to_walk = true;
+        interaction_after_walk = -1;
+
+        right_attack_cancel();
+        left_attack_cancel();
+
+    }
+
 
 
     void walk_karthspire_plates()
@@ -11528,6 +11588,13 @@ namespace WalkerProcessor {
                         }
                     }
 
+                    auto soltsteim_grate_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4037b19);
+
+                    if (!using_custom_path && target_ref && soltsteim_grate_2 != target_ref && MiscThings::player_inside_of_soltsteim_midgates())
+                    {
+                        walk_to_object_by_refr(soltsteim_grate_2, 1);
+                        return;
+                    }
 
 
                     //riften ratway bridge

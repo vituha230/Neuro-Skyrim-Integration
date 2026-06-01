@@ -248,6 +248,8 @@ namespace MiscThings {
     bool is_new_object_valid(RE::TESObjectREFR* a_ref);
     bool in_soltsheim();
     bool in_skuldafn();
+    bool player_inside_of_soltsteim_midgates();
+
 
     bool have_force_only_menu_open();
 

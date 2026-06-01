@@ -2572,10 +2572,25 @@ namespace Observer {
 
 												if (model.find("WRPrisonCellFloorGrate01Door") != std::string::npos)
 												{
-													std::string name = MiscThings::insert_object_into_list_custom_name("Secret stone wall door", a_ref);
+													std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 
 													if (activation == 2 && MiscThings::player_escaping_jail() && player_cell && player_cell->GetFormID() == 0x4A376)
 														WalkerProcessor::walk_whiterun_prison_grate();
+
+												}
+
+												if (model.find("RRJailGrate01") != std::string::npos)
+												{
+													std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+													auto soltsteim_grate_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40337d2);
+													auto soltsteim_grate_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4037b19);
+
+													if (a_ref == soltsteim_grate_1 && activation == 0 && MiscThings::player_escaping_jail() && player_cell && player_cell->GetFormID() == 0x04019AD8)
+														WalkerProcessor::walk_soltsheim_prison_grate();
+
+													if (a_ref == soltsteim_grate_2 && activation == 0 && MiscThings::player_escaping_jail() && player_cell && player_cell->GetFormID() == 0x04019AD8)
+														WalkerProcessor::walk_soltsheim_prison_grate2();
 
 												}
 

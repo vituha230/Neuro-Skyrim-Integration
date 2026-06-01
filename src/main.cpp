@@ -4,7 +4,6 @@
 //crucial:
 
 //TODO change face fix or remove dialogue option
-//TODO ravenrock prison (custom shift for grate, autowalk like in whiterun throguh 2 grates on successful lockpick)
 //TODO soltsheim enter fix ship climb
 //TODO sidequests + soltstheim tests
 

@@ -2810,6 +2810,39 @@ namespace MiscThings {
         return false;
     }
 
+    bool player_inside_of_soltsteim_midgates()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            auto player_pos = player->GetPosition();
+
+            auto player_cell = player->GetParentCell();
+
+            if (player_cell && player_cell->GetFormID() == 0x04019AD8)
+            {
+                RE::NiPoint2 a = { -136.172562,  1702.44800 }; //242
+                RE::NiPoint2 b = { -136.172562,  2364.24829 }; //242
+                RE::NiPoint2 c = { 1637.52136, 2364.24829 }; //242
+                RE::NiPoint2 d = { 1637.52136, 1702.44800 }; //242
+
+                float z = 242.0f;
+
+                if (abs(player_pos.z - z) < 150.0f)
+                {
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+            }
+
+        }
+
+        return false;
+    }
+
+
+
     bool player_inside_of_ustengrev_gate_puzzle()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -5326,6 +5359,12 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("RRJailGrate01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 160.0f, 6.0f }; //thats a very weird shift
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (result == RE::NiPoint3::Zero())
                         {
