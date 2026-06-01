@@ -19,6 +19,7 @@ namespace MiscThings {
 
     RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target);
 
+    RE::TESObjectREFR* get_nearest_door_to_object(RE::TESObjectREFR* object, float range = 5000.0f);
 
     struct interesting_places {
         std::string settlement_name;
@@ -242,7 +243,7 @@ namespace MiscThings {
     bool player_hp_more_than(float val_percent);
     bool player_hp_less_than(float val_percent);
 
-    bool is_object_valid(RE::TESObjectREFR* a_ref);
+    bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state = true);
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
     bool is_new_object_valid(RE::TESObjectREFR* a_ref);
 

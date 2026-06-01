@@ -605,6 +605,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                     if (MiscThings::have_any_quests() && !MiscThings::is_serving_jail())
                     {
+                        actions_to_register[action_pos] = Capabilities::ExitDungeon::Action; action_pos++; //REMOVE THIS!!!!!
                         actions_to_register[action_pos] = Capabilities::FollowQuest::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::GetCurrentQuests::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::ChangeQuest::Action; action_pos++;

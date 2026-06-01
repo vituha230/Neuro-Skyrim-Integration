@@ -17,6 +17,41 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
+    //OBJECT MUST BE VALID. WE CANT CHECK IT HERE BECAUSE ITS DESIGNED FOR VERY DISTANT LOCATION MARKERS THAT HAVE MODEL STATE = 0 ON CALL
+    //use with caution
+    RE::TESObjectREFR* get_nearest_door_to_object(RE::TESObjectREFR* object, float range)
+    {
+        RE::TESObjectREFR* result = nullptr;
+
+        if (object && MiscThings::is_object_valid(object, false))
+        {
+            float min_distance = FLT_MAX;
+
+            RE::TES::GetSingleton()->ForEachReferenceInRange(object, range,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref)
+                    {
+                        if (WalkerProcessor::is_door(a_ref))
+                        {
+                            float distance = a_ref->GetDistance(object);
+
+                            if (distance < min_distance)
+                            {
+                                min_distance = distance;
+                                result = a_ref;
+                            }
+                        }
+                    }
+
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+        }
+        
+
+        return result;
+    }
+
 
 
 
@@ -12731,7 +12766,7 @@ namespace MiscThings {
 
 
 
-    bool is_object_valid(RE::TESObjectREFR* a_ref)
+    bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state)
     {
         if (!a_ref || !a_ref->data.objectReference || !a_ref->data.objectReference->formID)
             return false;
@@ -12743,7 +12778,7 @@ namespace MiscThings {
             return false;
 
 
-        if (a_ref->AsReference()->modelState == 0)
+        if (use_model_state && a_ref->AsReference()->modelState == 0)
             return false;
 
         if (a_ref->IsDisabled())

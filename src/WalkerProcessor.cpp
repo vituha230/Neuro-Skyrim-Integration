@@ -268,7 +268,7 @@ namespace WalkerProcessor {
 
 
     bool location_mode = false;
-
+    bool location_mode_redirected_to_a_door = false;
 
     float time_blind_walk = 0.0f;
 
@@ -4325,7 +4325,17 @@ namespace WalkerProcessor {
 
             
             
-
+            if (location_mode && !location_mode_redirected_to_a_door)
+            {
+                //check if some doors appeared nearby
+                auto redirect_door = MiscThings::get_nearest_door_to_object(target_ref);
+                if (redirect_door)
+                {
+                    target_ref = redirect_door;
+                    interaction_after_walk = 1;
+                    location_mode_redirected_to_a_door = true;
+                }
+            }
             
             
 
@@ -4561,7 +4571,7 @@ namespace WalkerProcessor {
         }
 
 
-        if (location_mode)
+        if (location_mode && !location_mode_redirected_to_a_door)
         {
             if (target_ref && player)
             {
@@ -5887,6 +5897,14 @@ namespace WalkerProcessor {
                     reminder_start_pos = player->GetPosition();
                     reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
 
+                    auto redirect_door = MiscThings::get_nearest_door_to_object(target_ref);
+                    if (redirect_door)
+                    {
+                        target_ref = redirect_door;
+                        interaction_after_walk = 1;
+                        location_mode_redirected_to_a_door = true;
+                    }
+
                     right_attack_cancel();
                     left_attack_cancel();
 
@@ -5955,6 +5973,14 @@ namespace WalkerProcessor {
                 have_target_to_walk = true;
                 interaction_after_walk = -1;
 
+                auto redirect_door = MiscThings::get_nearest_door_to_object(target_ref);
+                if (redirect_door)
+                {
+                    target_ref = redirect_door;
+                    interaction_after_walk = 1;
+                    location_mode_redirected_to_a_door = true;
+                }
+
                 right_attack_cancel();
                 left_attack_cancel();
 
@@ -6022,7 +6048,7 @@ namespace WalkerProcessor {
                 solitude_prison_out_of_bounds_check();
 
                 location_mode = true;
-                target_ref = location;
+                target_ref = target_location;// location;
                 have_target_to_walk = true;
                 interaction_after_walk = -1;
 
@@ -6031,7 +6057,15 @@ namespace WalkerProcessor {
 
                 reminder_start_pos = player->GetPosition();
 
+                auto redirect_door = MiscThings::get_nearest_door_to_object(target_ref);
 
+                if (redirect_door)
+                {
+                    target_ref = redirect_door;
+                    interaction_after_walk = 1;
+                    location_mode_redirected_to_a_door = true;
+                }
+                
                 //clear_input_queue();
 
                // set_universal_block(1.0f);
@@ -12422,6 +12456,18 @@ namespace WalkerProcessor {
                                             correct_marker_pos();
                                             //cast_pathfinding(dtime); //rebuild path
                                             make_clairvoyance_cast = true;
+
+                                            if (location_mode && !location_mode_redirected_to_a_door)
+                                            {
+                                                //check if some doors appeared nearby
+                                                auto redirect_door = MiscThings::get_nearest_door_to_object(target_ref);
+                                                if (redirect_door)
+                                                {
+                                                    target_ref = redirect_door;
+                                                    interaction_after_walk = 1;
+                                                    location_mode_redirected_to_a_door = true;
+                                                }
+                                            }
                                         }
                                         
                                     }
