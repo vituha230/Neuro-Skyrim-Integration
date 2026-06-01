@@ -4,11 +4,13 @@
 //crucial:
 
 
-//TODO check map undiscovered choice
 //TODO fix arvel spider room pathfinding
-//TODO rename "touch" word
 //TODO try fixing target-behind-town-falls
 //TODO check followers triggering "someone sees you" check when stealing
+
+//TODO sidequests + soltstheim tests
+
+//TODO try to fix bows
 
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)

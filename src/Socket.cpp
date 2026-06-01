@@ -1661,7 +1661,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
             if (failed_to_parse_json)
             {
                 RespondToAction(action_result.value.action_result.id,
-                    "Failed to parse action data JSON.",
+                    "Failed to parse action data JSON. Check if structure and object names are correct for this action",
                     false
                 );
             }

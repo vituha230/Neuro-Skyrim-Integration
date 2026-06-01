@@ -11933,7 +11933,7 @@ namespace WalkerProcessor {
 
                             unregister_all_actions();
 
-                            if (force_choice(options, "It is already in correct position. Are you sure you want to touch it?", force_type::confirm_pillar))
+                            if (force_choice(options, "It is already in correct position. Are you sure you want to change it?", force_type::confirm_pillar))
                             {
                                 fuckup_pillar_confirm_request_sent = true;
                             }
