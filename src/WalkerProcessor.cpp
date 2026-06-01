@@ -12685,7 +12685,7 @@ namespace WalkerProcessor {
                                                             result_target = target_ref;
                                                         }
 
-                                                        if (explore_mode && lock_camera_onto_target(target_ref, dtime))
+                                                        if (explore_mode && !MiscThings::is_insect(target_ref) && lock_camera_onto_target(target_ref, dtime))
                                                             result_target = target_ref;
 
 
