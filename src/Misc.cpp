@@ -1492,6 +1492,39 @@ namespace MiscThings {
 
 
 
+    //get_generic_redirect WILL CONFLICT WITH QUEST REDIRECT - ONLY USE IN NON-QUEST MODE
+    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player && target)
+        {
+            auto player_cell = player->GetParentCell();
+            auto bleak_falls_cell = RE::TESForm::LookupByID(0x371de);
+            auto player_pos = player->GetPosition();
+            auto target_pos = target->GetPosition();
+
+            if (player_cell == bleak_falls_cell)
+            {
+                if (player_pos.z < -1118.0 && target_pos.z < -1118.0)
+                {
+                    if (player_pos.y > -2875.0 && target_pos.y <= -2875.0)
+                    {
+                        //redirect to egg sac
+                        auto spider_eggs = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3E63E);
+
+                        if (spider_eggs)
+                        {
+                            return spider_eggs;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return nullptr;
+    }
 
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
@@ -1598,7 +1631,6 @@ namespace MiscThings {
                 }
             }
         }
-
 
 
 

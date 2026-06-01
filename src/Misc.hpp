@@ -17,6 +17,9 @@ namespace MiscThings {
     bool is_tree(RE::TESObjectREFR* object);
     bool is_ore(RE::TESObjectREFR* object);
 
+    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target);
+
+
     struct interesting_places {
         std::string settlement_name;
         RE::TESObjectREFR* trader;

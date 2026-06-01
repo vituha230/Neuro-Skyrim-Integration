@@ -33,6 +33,11 @@ namespace WalkerProcessor {
 
     RE::TESObjectREFR* target_before_markarth_redirect = nullptr;
     RE::TESObjectREFR* target_before_danstar_redirect = nullptr;
+
+    RE::TESObjectREFR* target_before_generic_redirect = nullptr;
+
+    bool generic_redirect_active = false;
+
     
 
     bool must_use_bounds = false;
@@ -3898,7 +3903,9 @@ namespace WalkerProcessor {
 
         target_before_markarth_redirect = nullptr;
         target_before_danstar_redirect = nullptr;
+        target_before_generic_redirect = nullptr;
 
+        generic_redirect_active = false; 
 
         must_use_bounds = false;
 
@@ -11655,10 +11662,35 @@ namespace WalkerProcessor {
                     }
 
 
+                    if (!quest_mode)
+                    {
+                        auto redirect_ref = MiscThings::get_generic_redirect(target_ref);
 
-
-
-
+                        if (redirect_ref && !generic_redirect_active)
+                        {
+                            //initiate redirect
+                            target_before_generic_redirect = target_ref;
+                            target_ref = redirect_ref;
+                            generic_redirect_active = true;
+                            walk_again();
+                            return;
+                        }
+                        else
+                        {
+                            if (generic_redirect_active)
+                            {
+                                //check for cancel
+                                if (!redirect_ref)
+                                {
+                                    generic_redirect_active = false;
+                                    target_ref = target_before_generic_redirect;
+                                    walk_again();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    
 
 
                     auto hrothgar_chair = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x28e36);

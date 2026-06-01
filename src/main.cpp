@@ -4,7 +4,6 @@
 //crucial:
 
 
-//TODO fix arvel spider room pathfinding
 //TODO try fixing target-behind-town-falls
 //TODO check followers triggering "someone sees you" check when stealing
 
