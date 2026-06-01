@@ -246,8 +246,8 @@ namespace MiscThings {
     bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state = true);
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
     bool is_new_object_valid(RE::TESObjectREFR* a_ref);
-    bool is_in_soltsheim();
-
+    bool in_soltsheim();
+    bool in_skuldafn();
 
     bool have_force_only_menu_open();
 

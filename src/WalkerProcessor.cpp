@@ -404,18 +404,6 @@ namespace WalkerProcessor {
 
     bool last_dragon_was_flying = false;
 
-    bool in_skuldafn()
-    {
-        auto player = RE::PlayerCharacter::GetSingleton();
-        auto skuldafn_worldspace = RE::TESForm::LookupByID(0x278dd);
-        auto player_worldspace = player->GetWorldspace();
-
-        if (player_worldspace == skuldafn_worldspace && skuldafn_worldspace)
-            return true;
-
-        return false;
-    }
-
 
     void invalidate_path()
     {
@@ -848,7 +836,7 @@ namespace WalkerProcessor {
 
     RE::TESObjectREFR* get_runaway_target()
     {
-        if (in_skuldafn())
+        if (MiscThings::in_skuldafn())
             return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x700ea7a); //runaway marker skuldafn
         else
         {
@@ -863,7 +851,7 @@ namespace WalkerProcessor {
             {
                 //additional check for interior cells. they might be in soltsheim but worldspace will not show it
 
-                if (MiscThings::is_in_soltsheim())
+                if (MiscThings::in_soltsheim())
                     return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7012408); //runaway marker soltsheim
             }
 

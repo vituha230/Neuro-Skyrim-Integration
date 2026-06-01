@@ -17,7 +17,51 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
-    bool is_in_soltsheim() 
+    bool in_skuldafn()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto skuldafn_worldspace = RE::TESForm::LookupByID(0x278dd);
+        auto player_worldspace = player->GetWorldspace();
+
+        if (player_worldspace == skuldafn_worldspace && skuldafn_worldspace)
+            return true;
+
+        if (!player_worldspace)
+        {
+            //might be interior cell in skuldafn, check locs
+            auto loc = player->GetCurrentLocation();
+
+            RE::BGSLocation* skuldafn_top = (RE::BGSLocation*)RE::TESForm::LookupByID(0x000192AB);
+
+            if (loc)
+            {
+                if (loc == skuldafn_top)
+                {
+                    return true;
+                }
+
+                unsigned int safeguard = 0;
+
+                auto* parent = loc->parentLoc;
+
+                while (parent && safeguard < 100)
+                {
+                    if (parent == skuldafn_worldspace)
+                    {
+                        return true;
+                    }
+                    parent = parent->parentLoc;
+
+                    safeguard++;
+                }
+            }
+
+        }
+
+        return false;
+    }
+
+    bool in_soltsheim() 
     {
 
         auto player = RE::PlayerCharacter::GetSingleton();
