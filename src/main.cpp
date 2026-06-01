@@ -3,10 +3,9 @@
 
 //crucial:
 
-
-//TODO try fixing target-behind-town-falls
-
-
+//TODO check skuldafn runaway while in interior cell
+//TODO ravenrock prison (custom shift for grate, autowalk like in whiterun throguh 2 grates on successful lockpick)
+//TODO soltsheim enter fix ship climb
 //TODO sidequests + soltstheim tests
 
 //TODO try to fix bows
@@ -1565,7 +1564,7 @@ namespace Hooks {
 
 
                 //auto player = RE::PlayerCharacter::GetSingleton();
-                auto target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
+                auto target = WalkerProcessor::get_runaway_target();
                 if (target)
                 {
                     RE::TESWorldSpace* worldSpace = target->GetWorldspace();
@@ -1596,7 +1595,9 @@ namespace Hooks {
                     //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUpdateUsesCursor); //works
 
                     //auto player = RE::PlayerCharacter::GetSingleton();
-                    auto target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
+                    auto target = WalkerProcessor::get_runaway_target();
+
+                        //(RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
                     if (target)
                     {
                         RE::TESWorldSpace* worldSpace = target->GetWorldspace();

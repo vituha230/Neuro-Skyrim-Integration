@@ -22,6 +22,7 @@ namespace WalkerProcessor {
 
 	void reset_multiple_paths_quest();
 
+	RE::TESObjectREFR* get_runaway_target();
 
 	bool get_just_teleported();
 	void clear_just_teleported();

@@ -851,7 +851,26 @@ namespace WalkerProcessor {
         if (in_skuldafn())
             return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x700ea7a); //runaway marker skuldafn
         else
-            return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_worldspace = player->GetWorldspace();
+            auto soltsheim_worldspace = RE::TESForm::LookupByID(0x4000800);
+
+            if (player_worldspace == soltsheim_worldspace)
+                return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7012408); //runaway marker soltsheim
+
+            if (player_worldspace == 0)
+            {
+                //additional check for interior cells. they might be in soltsheim but worldspace will not show it
+
+                if (MiscThings::is_in_soltsheim())
+                    return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7012408); //runaway marker soltsheim
+            }
+
+
+            return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker default skyrim
+        }
+            
     }
 
 

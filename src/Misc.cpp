@@ -17,6 +17,57 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
+    bool is_in_soltsheim() 
+    {
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto loc = player->GetCurrentLocation();
+
+            RE::BGSLocation* soltsheim_top = (RE::BGSLocation*)RE::TESForm::LookupByID(0x04016E2A);
+
+            if (loc)
+            {
+                if (loc == soltsheim_top)
+                {
+                    return true;
+                }
+
+                unsigned int safeguard = 0;
+
+                auto* parent = loc->parentLoc;
+
+                while (parent && safeguard < 100)
+                {
+                    if (parent == soltsheim_top)
+                    {
+                        return true;
+                    }
+                    parent = parent->parentLoc;
+
+                    safeguard++;
+                }
+
+                if (safeguard == 100)
+                {
+                    //gamble checking if its 0x04
+
+                    auto parent_formid = parent->formID;
+
+                    return (parent_formid & 0xFF000000) == 0x04000000;
+                }
+            }
+        }
+        
+
+        
+        return false;
+    }
+
+
+
     //OBJECT MUST BE VALID. WE CANT CHECK IT HERE BECAUSE ITS DESIGNED FOR VERY DISTANT LOCATION MARKERS THAT HAVE MODEL STATE = 0 ON CALL
     //use with caution
     RE::TESObjectREFR* get_nearest_door_to_object(RE::TESObjectREFR* object, float range)
