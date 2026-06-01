@@ -5,7 +5,7 @@
 
 
 //TODO try fixing target-behind-town-falls
-//TODO check followers triggering "someone sees you" check when stealing
+
 
 //TODO sidequests + soltstheim tests
 

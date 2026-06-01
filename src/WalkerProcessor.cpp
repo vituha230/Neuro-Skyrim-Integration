@@ -12565,6 +12565,9 @@ namespace WalkerProcessor {
                                                             result_target = target_ref;
                                                         }
 
+                                                        if (explore_mode && lock_camera_onto_target(target_ref, dtime))
+                                                            result_target = target_ref;
+
 
                                                         //
 
@@ -12733,7 +12736,10 @@ namespace WalkerProcessor {
 
                                                                                     }
                                                                                     if (explore_mode)
-                                                                                        explore_mode = false; //so we can explore again
+                                                                                    {
+                                                                                        reset_walker(); //success
+                                                                                    }
+                                                                                       // explore_mode = false; //so we can explore again
                                                                                 }
                                                                             }
                                                                         }
@@ -12750,7 +12756,7 @@ namespace WalkerProcessor {
                                                             //maybe its a door?
                                                             //if its an object that can be moved - move it 
                                                             //TODO: if not movable - try to wiggle around or walk around
-
+                                                            
                                                             if (confirming_closed_door_interaction)
                                                             {
                                                                 if (door_is_closed_choice_valid)
