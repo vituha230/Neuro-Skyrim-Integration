@@ -1899,7 +1899,7 @@ namespace Observer {
 
 				std::sort(sortable_copy.begin(), sortable_copy.end(), [&](std::pair<RE::TESObjectREFR*, std::string> left, std::pair<RE::TESObjectREFR*, std::string> right) {
 					//return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
-					if (left.first->data.objectReference && right.first->data.objectReference)
+					if (left.first && right.first && left.first->formID && right.first->formID && left.first->data.objectReference && right.first->data.objectReference)
 					{
 						RE::NiPoint3 pos_left = left.first->GetPosition();
 						RE::NiPoint3 pos_right = right.first->GetPosition();
@@ -1924,7 +1924,7 @@ namespace Observer {
 
 				for (auto result_entry : sortable_copy)
 				{
-					if (result_entry.first && result_entry.first->data.objectReference)
+					if (result_entry.first && result_entry.first->formID && result_entry.first->data.objectReference)
 					{
 						auto this_object = result_entry.first->data.objectReference;
 						auto distance = player_ref->GetDistance(result_entry.first);
@@ -2094,7 +2094,7 @@ namespace Observer {
 
 		std::sort(activator_candidates.begin(), activator_candidates.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
 			if (left && right && left->data.objectReference && left->data.objectReference &&
-				right->data.objectReference)
+				right->data.objectReference && left->formID && right->formID)
 				return left->GetDistance(a_ref) < right->GetDistance(a_ref); //switch > to < for inversed order. this is last->closest
 			else
 				return false;

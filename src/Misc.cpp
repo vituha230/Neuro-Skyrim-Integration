@@ -3476,7 +3476,7 @@ namespace MiscThings {
                     if (!left || !right)
                         return false;
 
-                    if (left->data.objectReference && right->data.objectReference)
+                    if (left->data.objectReference && right->data.objectReference && left->formID && right->formID)
                         return left->GetDistance(blocking_object) < right->GetDistance(blocking_object); //switch > to < for inversed order. this is last->closest
                     else
                         return false;
@@ -6731,7 +6731,7 @@ namespace MiscThings {
             {
                 auto object = object_around.second.object;
 
-                if (object && object->data.objectReference)
+                if (object && object->data.objectReference && object->formID)
                 {
                     if (MiscThings::is_dragon(object) && !object->IsDead())
                     {
@@ -12867,7 +12867,7 @@ namespace MiscThings {
 
             std::sort(candidates.begin(), candidates.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
                 if (left && right && left->data.objectReference && left->data.objectReference &&
-                    right->data.objectReference)
+                    right->data.objectReference && left->formID && right->formID)
                     return left->GetDistance(player_ref) < right->GetDistance(player_ref); //switch > to < for inversed order. this is last->closest
                 else
                     return false;
@@ -12902,7 +12902,7 @@ namespace MiscThings {
 
     bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state)
     {
-        if (!a_ref || !a_ref->data.objectReference || !a_ref->data.objectReference->formID)
+        if (!a_ref || !a_ref->data.objectReference || !a_ref->formID || !a_ref->data.objectReference->formID)
             return false;
 
         RE::ObjectRefHandle my_handle{};
@@ -13472,7 +13472,7 @@ namespace MiscThings {
         std::sort(local_copy.begin(), local_copy.end(), [&](std::pair<int, object_data> left, std::pair<int, object_data> right) {
             //if (decltype(left.second) != RE::TESObjectREFR*)
 
-            if (left.second.object->data.objectReference && right.second.object->data.objectReference)
+            if (left.second.object && right.second.object && left.second.object->data.objectReference && right.second.object->data.objectReference && left.second.object->formID && right.second.object->formID)
                 return left.second.object->GetDistance(player) < right.second.object->GetDistance(player); //switch > to < for inversed order. this is last->closest
             else
                 return false;
@@ -13497,7 +13497,7 @@ namespace MiscThings {
         {
             auto this_object = object.second.object;
 
-            if (this_object->data.objectReference)
+            if (this_object->data.objectReference && this_object->formID)
             {
                 if (player_ref != this_object)
                 {

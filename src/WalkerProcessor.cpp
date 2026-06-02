@@ -11292,7 +11292,7 @@ namespace WalkerProcessor {
 
 
 
-                if (target_ref && (!target_ref->data.objectReference || target_ref == player_ref))
+                if (target_ref && (!target_ref->formID || !target_ref->data.objectReference || target_ref == player_ref))
                     reset_walker();
 
                 RE::ObjectRefHandle my_handle{};
