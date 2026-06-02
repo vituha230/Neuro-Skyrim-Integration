@@ -2816,6 +2816,16 @@ namespace Observer {
 																	result.push_back("[ " + name + " closed]");
 															}
 
+															if (anim_name == "WRTempleTree02Root")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Elder Tree Roots", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " lifted]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " fell, blocking the path]");
+															}
 
 															if (anim_name.find("PuzzleDoorKeyHole") != std::string::npos && anim_name.find("PuzzleDoorKeyHoleIvory") == std::string::npos)
 															{
@@ -2838,6 +2848,7 @@ namespace Observer {
 																	result.push_back("[" + name + " didn't move... Seems like the puzzle rings on it must be rotated in correct positions for the key to work]");
 															}
 															//
+
 
 														}
 													}
@@ -4195,6 +4206,8 @@ namespace Observer {
 
 
 
+
+					auto test123 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5b611);
 
 
 

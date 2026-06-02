@@ -2221,6 +2221,45 @@ namespace WalkerProcessor {
                         }
                     }
 
+                    if (model.find("WRTempleTree02Root") != std::string::npos)
+                    {
+                        auto compare_pos = MiscThings::get_looking_point_shift(target_ref, false) + target_ref->GetPosition();
+                        auto player_pos = player_ref->GetPosition();
+
+                        auto distance = compare_pos.GetDistance(player_pos);
+
+                        if (distance < 400.0f)
+                        {
+                            return target_ref;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (player_ref && base_obj)
+                {
+                    auto base_type = base_obj->GetFormType();
+
+                    if (base_type == RE::FormType::Activator)
+                    {
+                        auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+                        std::string model = static_obj->GetModel();
+
+                        if (model.find("WRTempleTree02Root") != std::string::npos)
+                        {
+                            auto compare_pos = MiscThings::get_looking_point_shift(target_ref, false) + target_ref->GetPosition();
+                            auto player_pos = player_ref->GetPosition();
+
+                            auto distance = compare_pos.GetDistance(player_pos);
+
+                            if (distance < 400.0f)
+                            {
+                                return target_ref;
+                            }
+                        }
+                    }
                 }
             }
         
@@ -4561,6 +4600,12 @@ namespace WalkerProcessor {
     {
         if (generic_redirect_active)
             return false;
+
+
+        if (MiscThings::weird_close_enough_checks(target_ref))
+            return true;
+
+
 
         auto player = RE::PlayerCharacter::GetSingleton();
 

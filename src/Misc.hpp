@@ -34,6 +34,9 @@ namespace MiscThings {
         RE::TESObjectREFR* church;
     };
 
+    bool weird_close_enough_checks(RE::TESObjectREFR* target);
+
+
     std::string get_shout_known_words_text(RE::TESShout* shout);
 
     bool object_inside_of_helgen_keep_cage(RE::TESObjectREFR* object);

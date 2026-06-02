@@ -2119,6 +2119,42 @@ namespace MiscThings {
             }
         }
 
+
+        auto elder_tree_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("T03");
+        auto the_tree = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x79af9);
+
+
+        if (quest == elder_tree_quest)
+        {
+            auto stage = elder_tree_quest->GetCurrentStageID();
+
+            auto root1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5b611);
+            auto root2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7873e);
+            auto root3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15cb2);
+            auto root4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x41511);
+
+            auto root5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15cb7); //this is redirect-only root
+
+
+            if (root1 && root2 && root3 && root4 && stage == 40)
+            {
+                if (MiscThings::two_state_activator_state(root1) == 1)
+                    return root2;
+
+                if (MiscThings::two_state_activator_state(root2) == 1)
+                    return root3;
+
+                if (MiscThings::two_state_activator_state(root3) == 1)
+                    return root4;
+
+                if (MiscThings::two_state_activator_state(root4) == 1)
+                    return root5;
+
+            }
+        }
+
+
+
         //replaced with generic completely
         /*
         auto get_to_soltstheim_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC2MQ01");
@@ -3304,6 +3340,11 @@ namespace MiscThings {
                 result = name;
             }
 
+            if (model.find("WRTempleTree02Root") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Elder Tree Roots", a_ref);
+                result = name;
+            }
         }
 
         if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
@@ -3861,7 +3902,7 @@ namespace MiscThings {
                     auto acti = (RE::TESObjectACTI*)base_obj;
                     std::string model = acti->GetModel();
 
-                    if (model.find("SldJailWallCollapse01"))
+                    if (model.find("SldJailWallCollapse01") != std::string::npos)
                     {
                         auto extra_action = activator->extraList.GetByType(RE::ExtraDataType::kAction);
 
@@ -3869,6 +3910,36 @@ namespace MiscThings {
                             result = 1;
 
                     }
+
+                    if (model.find("WRTempleTree02Root") != std::string::npos)
+                    {
+
+                        auto extra = activator->extraList.GetByType(RE::ExtraDataType::kStartingPosition);
+
+                        if (extra)
+                            result = 0;
+                        else
+                            result = 1;
+
+                        /*
+                            auto extra_linked = (RE::ExtraLinkedRef*)extra;
+
+                            for (auto linked_ref : extra_linked->linkedRefs)
+                            {
+                                if (linked_ref.refr)
+                                {
+                                    auto linked_ref_ref = linked_ref.refr;
+
+                                    if (linked_ref_ref->IsDisabled()) //collision box disabled/enabled
+                                        
+                                    else
+                                        result = 1;
+                                }
+                            }
+                        }
+                        */
+                    }
+
                 }
             }
         }
@@ -4923,6 +4994,22 @@ namespace MiscThings {
                         result = rotated_shift_vector;
                     }
                 }
+
+                if (base_obj->GetFormType() == RE::FormType::Activator)
+                {
+
+                    auto activator = (RE::TESObjectACTI*)base_obj;
+
+                    std::string model = activator->GetModel();
+                    auto object_angles = object->data.angle;
+
+                    if (model.find("WRTempleTree02Root") != std::string::npos)
+                    {
+                        RE::NiPoint3 base_shift_vector = { -330.0f, 0.0f, 180.0f };
+                        RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                        result = rotated_shift_vector;
+                    }
+                }
             }
         }
 
@@ -4930,6 +5017,44 @@ namespace MiscThings {
     }
 
 
+    bool weird_close_enough_checks(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto base_obj = object->GetBaseObject();
+
+            if (base_obj->GetFormType() == RE::FormType::Activator)
+            {
+                auto player = RE::PlayerCharacter::GetSingleton();
+                if (player)
+                {
+                    auto player_ref = player->AsReference();
+
+                    if (player_ref)
+                    {
+                        auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+                        std::string model = static_obj->GetModel();
+
+                        if (model.find("WRTempleTree02Root") != std::string::npos)
+                        {
+                            auto compare_pos = MiscThings::get_looking_point_shift(object, false) + object->GetPosition();
+                            auto player_pos = player_ref->GetPosition();
+
+                            auto distance = compare_pos.GetDistance(player_pos);
+
+                            if (distance < 400.0f)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
     RE::NiPoint3 get_looking_point_shift(RE::TESObjectREFR* object, bool pickpocket_mode)
     {
@@ -5270,6 +5395,15 @@ namespace MiscThings {
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+
+
+                        if (model.find("WRTempleTree02Root") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { -330.0f, 0.0f, 180.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
 
                     }
 
