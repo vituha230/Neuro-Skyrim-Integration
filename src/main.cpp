@@ -3,7 +3,6 @@
 
 //crucial:
 
-//TODO soltsheim enter fix ship climb
 //TODO sidequests + soltstheim tests
 
 //TODO try to fix bows

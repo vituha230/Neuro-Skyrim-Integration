@@ -1622,36 +1622,66 @@ namespace MiscThings {
 
 
 
-    //get_generic_redirect WILL CONFLICT WITH QUEST REDIRECT - ONLY USE IN NON-QUEST MODE
-    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target)
+    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target, bool quest_mode)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
+
         if (player && target)
         {
+            auto player_worldspace = player->GetWorldspace();
+            auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
             auto player_cell = player->GetParentCell();
             auto bleak_falls_cell = RE::TESForm::LookupByID(0x371de);
             auto player_pos = player->GetPosition();
             auto target_pos = target->GetPosition();
+            auto player_ref = player->AsReference();
 
-            if (player_cell == bleak_falls_cell)
+            if (!quest_mode)
             {
-                if (player_pos.z < -1118.0 && target_pos.z < -1118.0)
-                {
-                    if (player_pos.y > -2875.0 && target_pos.y <= -2875.0)
-                    {
-                        //redirect to egg sac
-                        auto spider_eggs = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3E63E);
+                //non-quest only
 
-                        if (spider_eggs)
+                if (player_cell == bleak_falls_cell)
+                {
+                    if (player_pos.z < -1118.0 && target_pos.z < -1118.0)
+                    {
+                        if (player_pos.y > -2875.0 && target_pos.y <= -2875.0)
                         {
-                            return spider_eggs;
+                            //redirect to egg sac
+                            auto spider_eggs = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3E63E);
+
+                            if (spider_eggs)
+                            {
+                                return spider_eggs;
+                            }
                         }
                     }
                 }
             }
-        }
 
+
+            //including quests
+            if (player_worldspace && player_worldspace == tamriel_worldspace)
+            {
+                auto redirect_water = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d2);
+                auto redirect_dock = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d1);
+
+                if (player_pos.z < -14000.0f && (target_pos.z > -14000.0f || target == redirect_water) && object_inside_of_windhelm_redirect_box(player_ref) && object_inside_of_windhelm_redirect_box(target))
+                {
+                    if (redirect_water)
+                    {
+                        auto redirect_water_distance = redirect_water->GetDistance(player);
+
+                        if (redirect_water_distance < 150.0f)
+                        {
+                            return redirect_dock; //so it doesnt try to swim through boat
+                        }
+                        else
+                            return redirect_water;
+                    }
+                }
+            }
+        }
 
         return nullptr;
     }
@@ -2089,7 +2119,45 @@ namespace MiscThings {
             }
         }
 
+        //replaced with generic completely
+        /*
+        auto get_to_soltstheim_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC2MQ01");
 
+        if (quest == get_to_soltstheim_quest)
+        {
+            auto stage = get_to_soltstheim_quest->GetCurrentStageID();
+
+            auto soltsheim_boat_driver = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x040182AF);
+
+            if (stage == 10 && target == soltsheim_boat_driver)
+            {
+                auto player_worldspace = player->GetWorldspace();
+                auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+                auto player_pos = player->GetPosition();
+
+                if (player_worldspace && player_worldspace == tamriel_worldspace)
+                {
+                    if (player_pos.z < -14000.0f)
+                    {
+                        auto redirect_water = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d2);
+                        auto redirect_dock = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d1);
+
+                        if (redirect_water)
+                        {
+                            auto redirect_water_distance = redirect_water->GetDistance(player);
+
+                            if (redirect_water_distance < 150.0f)
+                            {
+                                return redirect_dock; //so it doesnt try to swim through boat
+                            }
+                            else
+                                return redirect_water;
+                        }
+                    }
+                }
+            }
+        }
+        */
 
         return target;
     }
@@ -2781,6 +2849,34 @@ namespace MiscThings {
         return nullptr;
     }
 
+
+    bool object_inside_of_windhelm_redirect_box(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto player_pos = object->GetPosition();
+
+            auto player_worldspace = object->GetWorldspace();
+
+            auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+            if (player_worldspace && player_worldspace == tamriel_worldspace)
+            {
+                RE::NiPoint2 a = { 139748.0156, 31356.5215 }; //-5733.7241
+                RE::NiPoint2 b = { 135511.3906, 35718.7227 }; //-5633.2554
+                RE::NiPoint2 c = { 139265.0781, 39366.6172 }; //-5640.6494
+                RE::NiPoint2 d = { 143502.7969, 35001.8555 }; //-5724.9077
+
+                RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                    return true;
+            }
+            
+        }
+
+
+        return false;
+    }
 
 
 

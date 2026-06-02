@@ -4559,6 +4559,9 @@ namespace WalkerProcessor {
 
     bool close_enough()
     {
+        if (generic_redirect_active)
+            return false;
+
         auto player = RE::PlayerCharacter::GetSingleton();
 
         auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
@@ -11362,6 +11365,38 @@ namespace WalkerProcessor {
 
                         }
                     }
+
+                    auto redirect_dock = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d1);
+                    auto redirect_water = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d2);
+
+                    if (target_ref == redirect_dock)
+                    {
+                        auto player_pos = player->GetPosition();
+
+                        if (player_pos.z < -13978.0f)
+                        {
+                            if (alftand_counter == 0)
+                            {
+                                //reset_walker();
+                                unregister_all_actions();
+                                //target_ref = redirect_dock;
+                                have_target_to_walk = true;
+                                using_custom_path = true;
+                                //dont_quicksave_after_custom_path = true;
+                                dont_use_bounds_for_close_enough = true;
+                                walk_again_when_finished = true;
+                                custom_path = { redirect_water->GetPosition(), redirect_dock->GetPosition() };
+                                path = custom_path;
+                                path_valid = true;
+                                return;
+                            }
+                            else
+                                alftand_counter--;
+                        }
+
+                    }
+
+
                 }
                 
 
@@ -11769,15 +11804,18 @@ namespace WalkerProcessor {
                         }
                     }
 
+                        auto redirect_ref = MiscThings::get_generic_redirect(target_ref, quest_mode);
 
-                    if (!quest_mode)
-                    {
-                        auto redirect_ref = MiscThings::get_generic_redirect(target_ref);
-
-                        if (redirect_ref && !generic_redirect_active)
+                        if (redirect_ref && (!generic_redirect_active || (redirect_ref != target_ref)))
                         {
                             //initiate redirect
-                            target_before_generic_redirect = target_ref;
+                            dont_check_quest_target_change = true;
+
+                            auto redirect_water = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d2);
+
+                            if (target_ref != redirect_water) //its a chain redirect of 2 points, current target ref is invalid either
+                                target_before_generic_redirect = target_ref;
+
                             target_ref = redirect_ref;
                             generic_redirect_active = true;
                             walk_again();
@@ -11790,6 +11828,7 @@ namespace WalkerProcessor {
                                 //check for cancel
                                 if (!redirect_ref)
                                 {
+                                    dont_check_quest_target_change = false;
                                     generic_redirect_active = false;
                                     target_ref = target_before_generic_redirect;
                                     walk_again();
@@ -11797,7 +11836,6 @@ namespace WalkerProcessor {
                                 }
                             }
                         }
-                    }
                     
 
 

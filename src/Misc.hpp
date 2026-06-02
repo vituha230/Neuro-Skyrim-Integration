@@ -17,9 +17,11 @@ namespace MiscThings {
     bool is_tree(RE::TESObjectREFR* object);
     bool is_ore(RE::TESObjectREFR* object);
 
-    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target);
+    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target, bool quest_mode);
 
     RE::TESObjectREFR* get_nearest_door_to_object(RE::TESObjectREFR* object, float range = 5000.0f);
+
+    bool object_inside_of_windhelm_redirect_box(RE::TESObjectREFR* object);
 
     struct interesting_places {
         std::string settlement_name;
