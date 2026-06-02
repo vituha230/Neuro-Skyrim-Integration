@@ -7341,10 +7341,42 @@ namespace MiscThings {
                                 leads_to = target_cell->GetName();
 
                                 if (leads_to == "")
-                                    leads_to = "outside";
+                                {
+                                    //worldspace name
+                                    auto target_worldspace = teleport_target_refr->GetWorldspace();
+
+                                    if (target_worldspace)
+                                    {
+                                        std::string worldspace_name = target_worldspace->GetName();
+
+                                        if (worldspace_name == "" || worldspace_name == "Skyrim")
+                                            leads_to = "outside";
+                                        else
+                                            leads_to = worldspace_name;
+                                    }
+                                    else
+                                        leads_to = "outside";
+
+                                }
+
                             }
                             else
-                                leads_to = "outside";
+                            {
+                                //worldspace name
+                                auto target_worldspace = teleport_target_refr->GetWorldspace();
+
+                                if (target_worldspace)
+                                {
+                                    std::string worldspace_name = target_worldspace->GetName();
+
+                                    if (worldspace_name == "" || worldspace_name == "Skyrim")
+                                        leads_to = "outside";
+                                    else
+                                        leads_to = worldspace_name;
+                                }
+                                else
+                                    leads_to = "outside";
+                            }
             }
         }
         
