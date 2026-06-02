@@ -36,6 +36,8 @@ namespace MiscThings {
 
     bool weird_close_enough_checks(RE::TESObjectREFR* target);
 
+    bool is_aurora_borealis_in_the_sky();
+
 
     std::string get_shout_known_words_text(RE::TESShout* shout);
 

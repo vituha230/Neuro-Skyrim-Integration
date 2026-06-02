@@ -4248,8 +4248,9 @@ namespace Observer {
 					
 					auto blackreach_worldspace = RE::TESForm::LookupByID(0x1ee62);
 					auto player_worldspace = player->GetWorldspace();
+					auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
 
-					if (!MiscThings::is_interior_cell() && player_worldspace != blackreach_worldspace)
+					if (!MiscThings::is_interior_cell() && player_worldspace == tamriel_worldspace)
 					{
 						auto weather = sky->currentWeather;
 

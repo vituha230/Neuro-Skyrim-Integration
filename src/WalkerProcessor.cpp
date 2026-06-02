@@ -1376,6 +1376,12 @@ namespace WalkerProcessor {
                         direction_vector.z -= 0.08f;
 
 
+                    if (MiscThings::is_aurora_borealis_in_the_sky())
+                    {
+                        direction_vector.z += 0.15f;
+                    }
+
+
                     /*
                     if (direction_vector.z < -0.4)
                         direction_vector.z = -0.4;
@@ -1430,6 +1436,12 @@ namespace WalkerProcessor {
                             direction_vector.z -= 0.2f;
                         else
                             direction_vector.z -= 0.08f;
+
+
+                        if (MiscThings::is_aurora_borealis_in_the_sky())
+                        {
+                            direction_vector.z += 0.15f;
+                        }
 
                         /*
                         if (direction_vector.z < -0.4)

@@ -381,7 +381,37 @@ namespace MiscThings {
 
 
 
+    bool is_aurora_borealis_in_the_sky()
+    {
+        auto sky = RE::Sky::GetSingleton();
+        auto player = RE::PlayerCharacter::GetSingleton();
 
+        if (sky && player)
+        {
+            auto hour = sky->currentGameHour;
+
+            auto weather = sky->currentWeather;
+
+            if (weather)
+            {
+                auto player_worldspace = player->GetWorldspace();
+                auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+                if (!MiscThings::is_interior_cell() && player_worldspace == tamriel_worldspace)
+                {
+                    std::string aurora_model = "";
+                    aurora_model = weather->aurora.model;
+                    if (aurora_model != "" && (hour < 3 || hour > 19.6))
+                    {
+                        return true;
+                    }
+                }
+
+            }
+        }
+
+        return false;
+    }
 
 
     RE::TESForm* get_closest_settlement()
