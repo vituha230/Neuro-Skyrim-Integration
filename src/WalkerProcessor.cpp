@@ -4617,6 +4617,9 @@ namespace WalkerProcessor {
         if (MiscThings::weird_close_enough_checks(target_ref))
             return true;
 
+        if (MiscThings::is_cave_autoloader_door(target_ref))
+            return false; //it must pass using weird_close check
+
 
 
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -4898,7 +4901,7 @@ namespace WalkerProcessor {
                         auto bound_min = target_ref->GetBoundMin() * target_ref->GetScale();
                         auto bound_dif = bound_max - bound_min;
 
-                        if (dont_use_bounds_for_close_enough)
+                        if (dont_use_bounds_for_close_enough || MiscThings::is_cave_autoloader_door(target_ref))
                         {
                             bound_dif = RE::NiPoint3::Zero();
                         }
@@ -4979,7 +4982,7 @@ namespace WalkerProcessor {
                         }
                             
                         
-                        if (!dont_use_bounds_for_close_enough)
+                        if (!dont_use_bounds_for_close_enough && !MiscThings::is_cave_autoloader_door(target_ref))
                         {
                             if (must_use_bounds)
                                 threshold = 0.0f;
@@ -5005,7 +5008,7 @@ namespace WalkerProcessor {
                             distance.z = 0.0f;
                         }
 
-                        if (!MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
+                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
                         {
                             if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f)))
                                 return true;
@@ -7644,7 +7647,7 @@ namespace WalkerProcessor {
                     if (cast_type == RE::MagicSystem::CastingType::kConcentration)
                         result = 10.0f;
                     else
-                        result = 1.3f + spell->avEffectSetting->data.spellmakingChargeTime;
+                        result = 1.4f + spell->avEffectSetting->data.spellmakingChargeTime;
                 }
             }
             else
@@ -7652,7 +7655,7 @@ namespace WalkerProcessor {
                 //not a spell..
 
                 if (has_bow_equipped(true) && !no_ammo())
-                    result = 2.4f;//result = 2.7f;
+                    result = 2.6f;//result = 2.7f;
                 else
                     if (has_staff_equipped(right) && !no_charge(right))
                     {
@@ -12731,7 +12734,8 @@ namespace WalkerProcessor {
                                                     {
                                                         using_custom_path = false;
                                                         register_allowed_actions();
-                                                        quicksave();
+                                                        if (!dont_quicksave_after_custom_path)
+                                                            quicksave();
                                                         walk_again();
                                                         return; //REMOVE IF BROKE
                                                     }
@@ -12741,6 +12745,30 @@ namespace WalkerProcessor {
 
                                             if (got_close_for_pickpocket || close_enough() || MiscThings::is_intro() || looking_mode)
                                             {
+
+                                                if (MiscThings::is_cave_autoloader_door(target_ref))
+                                                {
+                                                    //we came to nearest navmesh node. not do custom path to the loader
+
+                                                    auto player_pos = player->GetPosition();
+
+                                                    //reset_walker();
+                                                    unregister_all_actions();
+                                                    //target_ref = redirect_dock;
+                                                    have_target_to_walk = true;
+                                                    using_custom_path = true;
+                                                    dont_quicksave_after_custom_path = true;
+                                                    dont_use_bounds_for_close_enough = true;
+                                                    walk_again_when_finished = true;
+                                                    custom_path = { player_pos, target_ref->GetPosition()};
+                                                    path = custom_path;
+                                                    path_valid = true;
+                                                    return;
+                                                }
+
+
+
+
                                                 if (interaction_after_walk == 2)
                                                 {
                                                     got_close_for_pickpocket = true;

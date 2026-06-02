@@ -3,12 +3,19 @@
 
 //crucial:
 
-//TODO sidequests + soltstheim tests
+//TODO thief guild
+//TODO mage guild
+//TODO dark brotherhood
+//TODO companions
+//TODO bards
+//TODO civil war
+//TODO dragonborn dlc
+//TODO dawnguard dlc
 
+//TODO random sidequests sidequests
 //TODO try to fix bows
 
 
-//TODO IMPORTANT: test ALL caves in-out model-less doors, some of them might be placed so pathfinding cant reach it (ALTERNATIVE: figure out how to get nearest node, upon reach - walk into door
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 

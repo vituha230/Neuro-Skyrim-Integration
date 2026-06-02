@@ -6,6 +6,8 @@
 namespace MiscThings {
 
 
+    RE::NiPoint3 get_nearest_navmesh_node(RE::TESObjectREFR* object);
+    bool is_cave_autoloader_door(RE::TESObjectREFR* object);
 
     std::string get_timestamp_string();
 

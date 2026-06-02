@@ -17,6 +17,177 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
+
+    bool is_cave_autoloader_door(RE::TESObjectREFR* object)
+    {
+
+        if (object)
+        {
+            auto base_obj = object->GetBaseObject();
+
+            if (base_obj)
+            {
+                auto base_type = base_obj->GetFormType();
+
+                if (base_type == RE::FormType::Door)
+                {
+                    auto door = (RE::TESObjectDOOR*)base_obj;
+
+                    std::string model = door->GetModel();
+
+                    if (model == "AutoLoadMarker01.nif")
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+
+    RE::NiPoint3 get_nearest_navmesh_node_in_cell(RE::TESObjectREFR* object, RE::TESObjectCELL* cell)
+    {
+        RE::NiPoint3 result = RE::NiPoint3::Zero();
+
+        if (object)
+        {
+            auto pos = object->GetPosition();
+
+            if (cell)
+            {
+                //must check adjacent cells if in overworld
+
+                auto navmeshes_array = cell->navMeshes;
+
+                if (navmeshes_array)
+                {
+                    float min_distance = FLT_MAX;
+
+                    RE::BSTArray<RE::BSTSmartPointer<RE::NavMesh>>* navmeshes_bs_array = &navmeshes_array->navMeshes;
+
+                    for (auto& navmesh : *navmeshes_bs_array)
+                    {
+                        if (navmesh)
+                        {
+                            auto vertices = navmesh->vertices;
+
+
+                            auto triangles = navmesh->triangles;
+
+                            for (RE::BSNavmeshTriangle triangle : triangles)
+                            {
+                                auto vertex_id0 = triangle.vertices[0];
+                                auto vertex_id1 = triangle.vertices[1];
+                                auto vertex_id2 = triangle.vertices[2];
+
+                                auto size_vertices = std::size(vertices);
+
+                                if (vertex_id0 < size_vertices && vertex_id1 < size_vertices && vertex_id2 < size_vertices)
+                                {
+                                    RE::BSNavmeshVertex vertex0 = vertices[vertex_id0];
+                                    RE::BSNavmeshVertex vertex1 = vertices[vertex_id1];
+                                    RE::BSNavmeshVertex vertex2 = vertices[vertex_id2];
+
+                                    auto v0 = vertex0.location;
+                                    auto v1 = vertex1.location;
+                                    auto v2 = vertex2.location;
+
+                                    RE::NiPoint3 centre = { (v0.x + v1.x + v2.x) / 3.0f, (v0.y + v1.y + v2.y) / 3.0f, (v0.z + v1.z + v2.z) / 3.0f };
+
+                                    auto pos_dif = centre - pos;
+
+                                    pos_dif.z = pos_dif.z * 1.5f; //too low/high are low priority
+
+                                    float distance = pos_dif.Length();
+
+                                    if (distance < min_distance)
+                                    {
+                                        min_distance = distance;
+                                        result = centre;
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+    RE::NiPoint3 get_nearest_navmesh_node(RE::TESObjectREFR* object)
+    {
+        RE::NiPoint3 result = RE::NiPoint3::Zero();
+
+        if (object)
+        {
+            auto parent_cell = object->GetParentCell();
+
+            if (parent_cell)
+            {
+                float min_distance = FLT_MAX;
+
+                bool interiorCell = parent_cell->IsInteriorCell();
+
+                if (interiorCell)
+                {
+                    return get_nearest_navmesh_node_in_cell(object, parent_cell);
+                }
+                else 
+                {
+                    auto gridCells = RE::TES::GetSingleton()->gridCells;
+
+                    if (gridCells)
+                    {
+                        //check all cells within 1 cell radius
+                        auto parent_cell_coords_raw = parent_cell->GetCoordinates();
+
+                        RE::NiPoint2 parent_cell_coords = { parent_cell_coords_raw->worldX, parent_cell_coords_raw->worldY };
+
+                        for (int x = 0; x < gridCells->length; x++)
+                            for (int y = 0; y < gridCells->length; y++)
+                            {
+                                auto adjacent_cell = gridCells->GetCell(x, y);
+
+                                if (adjacent_cell && adjacent_cell->IsAttached())
+                                {
+                                    auto adjacent_cell_coords_raw = adjacent_cell->GetCoordinates();
+
+                                    RE::NiPoint2 adjacent_cell_coords = { adjacent_cell_coords_raw->worldX, adjacent_cell_coords_raw->worldY };
+
+                                    auto cell_distance = adjacent_cell_coords - parent_cell_coords;
+
+                                    if (cell_distance.Length() < 4100.0f)
+                                    {
+                                        auto nearest_in_cell = get_nearest_navmesh_node_in_cell(object, adjacent_cell);
+                                        auto distance = nearest_in_cell.GetDistance(object->GetPosition());
+
+                                        if (distance < min_distance)
+                                        {
+                                            min_distance = distance;
+                                            result = nearest_in_cell;
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+
+
+
     bool in_skuldafn()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -5053,15 +5224,19 @@ namespace MiscThings {
         {
             auto base_obj = object->GetBaseObject();
 
-            if (base_obj->GetFormType() == RE::FormType::Activator)
+            auto player = RE::PlayerCharacter::GetSingleton();
+            
+            if (player)
             {
-                auto player = RE::PlayerCharacter::GetSingleton();
-                if (player)
-                {
-                    auto player_ref = player->AsReference();
+                auto player_ref = player->AsReference();
 
-                    if (player_ref)
+                if (player_ref)
+                {
+                    auto player_pos = player_ref->GetPosition();
+
+                    if (base_obj->GetFormType() == RE::FormType::Activator)
                     {
+
                         auto static_obj = (RE::TESObjectACTI*)base_obj;
 
                         std::string model = static_obj->GetModel();
@@ -5069,7 +5244,7 @@ namespace MiscThings {
                         if (model.find("WRTempleTree02Root") != std::string::npos)
                         {
                             auto compare_pos = MiscThings::get_looking_point_shift(object, false) + object->GetPosition();
-                            auto player_pos = player_ref->GetPosition();
+
 
                             auto distance = compare_pos.GetDistance(player_pos);
 
@@ -5078,6 +5253,17 @@ namespace MiscThings {
                                 return true;
                             }
                         }
+                    }
+
+                    if (is_cave_autoloader_door(object))
+                    {
+                        //auto pos = object->GetPosition();
+                        auto nearest_navmesh_pos = MiscThings::get_nearest_navmesh_node(object);
+
+                        auto distance = player_pos.GetDistance(nearest_navmesh_pos);
+
+                        if (distance < 300.0f)
+                            return true;
                     }
                 }
             }
@@ -5625,6 +5811,16 @@ namespace MiscThings {
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+
+
+                        if (model == "AutoLoadMarker01.nif")
+                        {
+                            auto pos = object->GetPosition();
+                            auto nearest_navmesh_pos = MiscThings::get_nearest_navmesh_node(object);
+                            result = nearest_navmesh_pos - pos;
+                        }
+
+
 
                         if (result == RE::NiPoint3::Zero())
                         {
