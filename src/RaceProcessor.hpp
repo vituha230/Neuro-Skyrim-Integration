@@ -16,6 +16,7 @@ namespace RaceProcessor {
 	int get_max_generic_slider();
 	int get_generic_slider_selected_index();
 
+	bool has_sex();
 
 	std::pair<bool, std::string> confirm_change_character(int confirm);
 	std::pair<bool, std::string> set_change_categories_choice(std::vector<int> ids);

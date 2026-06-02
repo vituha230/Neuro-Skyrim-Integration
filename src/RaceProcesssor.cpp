@@ -99,6 +99,10 @@ namespace RaceProcessor {
 	{
 		current_page++;
 		current_slider = 0;
+
+		if (current_page == 1 && !has_sex())
+			current_slider = 1; //skip preset for face change variant of menu
+
 		change_slider_timeout0 = 0.0f;
 		change_slider_timeout1 = 0.0f;
 		change_slider_timeout2 = 0.0f;
@@ -114,6 +118,80 @@ namespace RaceProcessor {
 		change_slider_timeout2 = 0.0f;
 		change_slider_timeout3 = 0.0f;
 	}
+
+
+
+	bool has_race()
+	{
+		bool result = false;
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::RaceSexMenu>();
+		RE::GFxValue var1;
+
+		if (ui && menu && ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._CategoriesList.EntriesA"))
+					if (!var1.IsNull() && var1.IsArray())
+					{
+						auto array_size = var1.GetArraySize();
+
+						for (int i = 0; i < array_size; i++)
+						{
+							RE::GFxValue array_entry;
+
+							if (var1.GetElement(i, &array_entry))
+							{
+								RE::GFxValue name_var;
+								if (array_entry.GetMember("text", &name_var))
+								{
+									std::string name_var_text = name_var.GetString();
+
+									if (name_var_text.find("Race") != std::string::npos)
+										return true;
+								}
+							}
+						}
+					}
+
+		return result;
+	}
+
+
+	bool has_sex()
+	{
+		bool result = false;
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::RaceSexMenu>();
+		RE::GFxValue var1;
+
+		if (ui && menu && ui->IsMenuOpen(RE::RaceSexMenu::MENU_NAME))
+			if (menu->uiMovie)
+				if (menu->uiMovie->GetVariable(&var1, "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.EntriesA"))
+					if (!var1.IsNull() && var1.IsArray())
+					{
+						auto array_size = var1.GetArraySize();
+
+						for (int i = 0; i < array_size; i++)
+						{
+							RE::GFxValue array_entry;
+
+							if (var1.GetElement(i, &array_entry))
+							{
+								RE::GFxValue name_var;
+								if (array_entry.GetMember("text", &name_var))
+								{
+									std::string name_var_text = name_var.GetString();
+
+									if (name_var_text.find("Sex") != std::string::npos)
+										return true;
+								}
+							}
+						}
+					}
+
+		return result;
+	}
+
 
 
 	bool has_facial_hair()
@@ -289,12 +367,16 @@ namespace RaceProcessor {
 		{
 			current_page = 1;
 			current_slider = 0;
+
+			if (!has_sex())
+				current_slider = 1; //skip presets for face change variant of menu, it works weirdly
+
 			return;
 		}
 
 		if (current_page == 1)
 		{
-			if (current_slider < 3)
+			if (current_slider < 2 + has_sex())
 			{
 				current_slider++;
 			}
@@ -916,12 +998,22 @@ namespace RaceProcessor {
 				pause_made = false;
 				current_page = 1;
 				current_slider = 0;
+				if (!has_sex())
+					current_slider = 1;
 
 				confirm_change_registered = false;
 				character_confirmed = false;
 				character_needs_change = false;
 				unregistered_change_confirm = false;
 				change_character_request_sent = false;
+
+
+				change_slider_timeout0 = 0.0f;
+				change_slider_timeout1 = 0.0f;
+				change_slider_timeout2 = 0.0f;
+				change_slider_timeout3 = 0.0f;
+
+
 			}
 
 			result.first = true;
@@ -1376,12 +1468,12 @@ namespace RaceProcessor {
 		{
 		case (0): return 0; //race
 		case (1): return 0; //body
-		case (2): return 4; //head
-		case (3): return 23 + has_facial_hair() + has_brow_type(); //face
-		case (4): return 12 + has_facial_hair(); //eyes
-		case (5): return 20 + has_facial_hair(); //brow
-		case (6): return 38 + has_facial_hair() + has_brow_type(); //mouth
-		case (7): return 10; //hair
+		case (2): return 3 + has_sex(); //head
+		case (3): return 22 + has_sex() + has_facial_hair() + has_brow_type(); //face
+		case (4): return 11 + has_sex() + has_facial_hair(); //eyes
+		case (5): return 19 + has_sex() + has_facial_hair(); //brow
+		case (6): return 37 + has_sex() + has_facial_hair() + has_brow_type(); //mouth
+		case (7): return 9 + has_sex(); //hair
 		case (8): return 0;
 		}
 
@@ -1434,7 +1526,23 @@ namespace RaceProcessor {
 			if (selected_page == page)
 			{
 				if (selected_slider < category)
-					cursor_down();
+				{
+					if (!has_sex() && page == 1 && category == 1)
+					{
+						//menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.BottomHalf.Entry1.SliderInstance.thumb.onRollOver", nullptr, nullptr, 0);
+						//menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.BottomHalf.Entry1.SliderInstance.thumb.onPress", nullptr, nullptr, 0);
+						//menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance._SubList2.BottomHalf.Entry1.SliderInstance.thumb.onRelease", nullptr, nullptr, 0);
+
+						menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.TopHalf.Entry1.SliderInstance.thumb.onRollOver", nullptr, nullptr, 0);
+						menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.TopHalf.Entry1.SliderInstance.thumb.onPress", nullptr, nullptr, 0);
+						menu->uiMovie->Invoke("_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.TopHalf.Entry1.SliderInstance.thumb.onRelease", nullptr, nullptr, 0);
+						cursor_down();
+						set_universal_block(0.5f);
+					}
+					else
+						cursor_down();
+				}
+					
 
 				if (selected_slider > category)
 					cursor_up();
@@ -1513,6 +1621,9 @@ namespace RaceProcessor {
 
 		case (1):
 		{
+			if (!has_sex())
+				category += 1;
+
 			switch (category)
 			{
 				case (0):
@@ -1741,6 +1852,9 @@ namespace RaceProcessor {
 
 			case (1):
 			{
+				if (!has_sex())
+					category += 1;
+
 				switch (category)
 				{
 					case (0):
@@ -2171,14 +2285,16 @@ namespace RaceProcessor {
 			{
 				if (!race_defined)
 				{
-					reset_category();
+					if (current_page != 0 || current_slider != 0)
+						reset_category();
 
 					if (!is_inside_of_category(current_page, current_slider))
 					{
 						move_to_category(current_page, current_slider);
 
-						if (change_slider_timeout0 > 15.0f)
+						if (change_slider_timeout0 > 15.0f || !has_race())
 						{
+							race_defined = true; //this is important for "change face" variant of menu
 							next_page();
 						}
 						else
@@ -2280,7 +2396,7 @@ namespace RaceProcessor {
 							{
 								if (!is_inside_of_category(current_page, current_slider))
 								{
-									if (change_slider_timeout2 > 5.0f)
+									if (change_slider_timeout2 > 15.0f) //needs to be high for change-mode working properly (we might move all the way from hair to body)
 									{
 										next_page();
 									}
@@ -2428,7 +2544,7 @@ namespace RaceProcessor {
 									}
 									else
 									{
-										if (!name_request_sent)
+										if (!name_request_sent && has_sex())
 										{
 
 											if (force_choice({}, get_force_message(current_page, current_slider), force_type::character_name))
@@ -2441,9 +2557,9 @@ namespace RaceProcessor {
 										{
 
 
-											if (name_choice_valid)
+											if (name_choice_valid || !has_sex())
 											{
-												if (name_choice.length() > 0)
+												if (name_choice.length() > 0 && has_sex())
 												{
 
 													set_universal_block(0.3f);
@@ -2478,6 +2594,7 @@ namespace RaceProcessor {
 							{
 								if (character_needs_change)
 								{
+									allow_poking = false;
 									if (!unregistered_change_confirm)
 									{
 										unregistered_change_confirm = true;

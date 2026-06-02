@@ -3,7 +3,6 @@
 
 //crucial:
 
-//TODO change face fix or remove dialogue option
 //TODO soltsheim enter fix ship climb
 //TODO sidequests + soltstheim tests
 

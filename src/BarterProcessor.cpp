@@ -3428,7 +3428,7 @@ if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu) {
 
                             //search_var = "sliderMax";
                             search_var = "onPress";
-                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -3485,9 +3485,9 @@ if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu) {
                             }
                             */
 
-                            search_var = "Complexion";
+                            search_var = "Body";
                             //search_var = "Skin Tone";
-                            search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
+                            //search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
                             {
                                 auto test = var1.GetType();
