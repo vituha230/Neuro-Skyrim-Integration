@@ -10373,7 +10373,35 @@ namespace MiscThings {
                                 if (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow())
                                     equip_hand = " in both hands";
 
-                                actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot);
+
+
+                                auto entry = inventory.find(object);
+
+                                if (entry != inventory.end() && entry->second.second.get())
+                                {
+                                    RE::InventoryEntryData* entry_entry = entry->second.second.get();
+
+                                    RE::ExtraDataList* extra = nullptr;
+
+                                    if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
+                                    {
+                                        extra = *entry_entry->extraLists->begin();
+
+                                        actor_equip->EquipObject((RE::Actor*)player_ref, object, extra, 1, slot); //equip with extra for scripts to trigger
+                                    }
+                                    else
+                                        actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot); //normal equip
+                                }
+                                else
+                                    actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot); //normal equip
+
+
+
+
+                                
+
+
+
 
                                 if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
                                 {
@@ -10382,7 +10410,29 @@ namespace MiscThings {
                                     
                             }
                             else
-                                actor_equip->EquipObject((RE::Actor*)player_ref, object);
+                            {
+                                auto entry = inventory.find(object);
+
+                                if (entry != inventory.end() && entry->second.second.get())
+                                {
+                                    RE::InventoryEntryData* entry_entry = entry->second.second.get();
+
+                                    RE::ExtraDataList* extra = nullptr;
+
+                                    if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
+                                    {
+                                        extra = *entry_entry->extraLists->begin();
+
+                                        actor_equip->EquipObject((RE::Actor*)player_ref, object, extra); //equip with extra for scripts to trigger
+                                    }
+                                    else
+                                        actor_equip->EquipObject((RE::Actor*)player_ref, object); //normal equip
+                                }
+                                else
+                                    actor_equip->EquipObject((RE::Actor*)player_ref, object); //normal equip
+
+                            }
+                                
 
 
 
