@@ -1761,49 +1761,53 @@ namespace Observer {
 										//FXspiderWebKitDoorSpecialDest - destroyed
 
 
-										if (a_ref->IsActor() && a_ref != player_ref)
+										if (!MiscThings::is_intro())
 										{
-											//may be ghost targets of greybeards
+											if (a_ref->IsActor() && a_ref != player_ref)
+											{
+												//may be ghost targets of greybeards
 
-											if (!MiscThings::is_object_in_the_list(a_ref))
-												if (a_ref->GetDistance(player_ref) < 200.0f || (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 5000.0f, false)))
-												{
-													auto actor = (RE::Actor*)a_ref;
-													auto npc = (RE::TESNPC*)a_ref->data.objectReference;
-
-													auto model3d = actor->GetCurrent3D();
-
-
-													//no name = ghost (i guess)
-													// 
-													//if (actor->IsGhost())
+												if (!MiscThings::is_object_in_the_list(a_ref))
+													if (a_ref->GetDistance(player_ref) < 200.0f || (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 5000.0f, false)))
 													{
-														std::string info = MiscThings::insert_object_into_list_custom_name(" Ghost", a_ref);
-														if (info != "")
+														auto actor = (RE::Actor*)a_ref;
+														auto npc = (RE::TESNPC*)a_ref->data.objectReference;
+
+														auto model3d = actor->GetCurrent3D();
+
+
+														//no name = ghost (i guess)
+														// 
+														//if (actor->IsGhost())
 														{
-															//give it immidiately
-															send_random_context("You see: " + info, false);
-
-
-															auto ghost_shouting_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ105");
-
-															if (ghost_shouting_quest)
+															std::string info = MiscThings::insert_object_into_list_custom_name(" Ghost", a_ref);
+															if (info != "")
 															{
-																int quest_stage = ghost_shouting_quest->GetCurrentStageID();
+																//give it immidiately
+																send_random_context("You see: " + info, false);
 
-																if (quest_stage == 85 || quest_stage == 80)
+
+																auto ghost_shouting_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ105");
+
+																if (ghost_shouting_quest)
 																{
-																	active_puzzle = 1;
-																	puzzle_target = a_ref;
+																	int quest_stage = ghost_shouting_quest->GetCurrentStageID();
+
+																	if (quest_stage == 85 || quest_stage == 80)
+																	{
+																		active_puzzle = 1;
+																		puzzle_target = a_ref;
+																	}
 																}
+
 															}
-
+															//interesting_buffer.insert_or_assign(a_ref, info);
 														}
-														//interesting_buffer.insert_or_assign(a_ref, info);
 													}
-												}
 
+											}
 										}
+										
 
 										if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
 										{
