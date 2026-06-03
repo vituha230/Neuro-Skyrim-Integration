@@ -5,7 +5,6 @@
 
 //TODO when several subquests in one quests - follow quest command always redirects to first one or smth
 
-//TODO thief guild
 //TODO mage guild
 //TODO dark brotherhood
 //TODO companions
@@ -3029,7 +3028,17 @@ class MyHook {
 
                         if (autolook_at_speakers_on_afk)
                         {
-                            if (WalkerProcessor::get_walker_inactive_time() > 4.0f && MiscThings::raycastable(speaker, 5000.0f, false) && !WalkerProcessor::walker_active() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1)
+
+                            bool skip_raycast = false;
+
+                            std::string speaker_name = MiscThings::insert_object_into_list_and_get_info(speaker);//speaker->GetName();
+
+                            if (speaker_name[0] == '\0')
+                            {
+                                skip_raycast = true;
+                            }
+
+                            if (speaker && WalkerProcessor::get_walker_inactive_time() > 4.0f && (skip_raycast || MiscThings::raycastable(speaker, 5000.0f, false)) && !WalkerProcessor::walker_active() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1)
                             {
                                 WalkerProcessor::look_at_object_by_refr(speaker);
                             }

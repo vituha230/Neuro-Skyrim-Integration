@@ -14,6 +14,7 @@
 
 namespace WalkerProcessor {
 
+    bool dont_invalidate_path_on_walk_again = false;
 
     bool start_pathfinding_quest = false;
 
@@ -1895,7 +1896,8 @@ namespace WalkerProcessor {
 
                 float stamina_state = MiscThings::get_player_stamina() / MiscThings::get_player_max_stamina();
 
-                if (!silly_walk_mode && !MiscThings::is_interior_cell() && may_sprint())
+
+                if (!silly_walk_mode && (!MiscThings::is_interior_cell() || MiscThings::is_running_allowed_in_current_cell()) && may_sprint())
                 {
                     //sprint();
                     if (stamina_state > 0.6f)
@@ -3957,6 +3959,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        dont_invalidate_path_on_walk_again = false;
+
         attack_was_not_banned = false;
         raycast_was_on = false;
         last_dragon_was_flying = false;
@@ -4346,8 +4351,16 @@ namespace WalkerProcessor {
             too_high_notified = false;
 
             lock_camera_wants_to_crouch = false;
-            path_valid = false;
-            current_path_point = -1;
+
+            if (!dont_invalidate_path_on_walk_again)
+            {
+                path_valid = false;
+                current_path_point = -1;
+            }
+                
+
+
+            
             is_casting_clairvoyance = false;
             start_casting_time = 0.0f;
             walk_timeout = 0.0f;
@@ -6959,10 +6972,40 @@ namespace WalkerProcessor {
 
                                     }
                                     else
+                                    {
                                         conditions_met = true;
+
+                                        RE::ObjectRefHandle quest_ref_handle{};
+                                        target->GetTrackingRef(quest_ref_handle, quest); //try tracked
+                                        if (!quest_ref_handle)
+                                            target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
+
+                                        if (quest_ref_handle)
+                                            if (quest_ref_handle.get())
+                                            {
+                                                auto quests_target_ref = quest_ref_handle.get().get();
+                                                if (target_ref == quests_target_ref && conditions_met)
+                                                    return false; //dont check if old objective is still valid
+                                            }
+                                    }
+                                        
                                 }
                                 catch (...) {
-                                    conditions_met = true;//met ?
+
+                                    conditions_met = true;
+
+                                    RE::ObjectRefHandle quest_ref_handle{};
+                                    target->GetTrackingRef(quest_ref_handle, quest); //try tracked
+                                    if (!quest_ref_handle)
+                                        target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
+
+                                    if (quest_ref_handle)
+                                        if (quest_ref_handle.get())
+                                        {
+                                            auto quests_target_ref = quest_ref_handle.get().get();
+                                            if (target_ref == quests_target_ref && conditions_met)
+                                                return false; //dont check if old objective is still valid
+                                        }
                                 }
 
                             }
@@ -7373,34 +7416,8 @@ namespace WalkerProcessor {
 
     bool target_is_interactive()
     {
-        if (target_ref)
-        {
-            auto base_obj = target_ref->GetBaseObject();
-
-            auto base_type = base_obj->GetFormType();
-
-            if (target_ref->modelState != 0 && base_obj && base_type != RE::FormType::Static)
-            {
-                auto player = RE::PlayerCharacter::GetSingleton();
-                auto player_ref = player->AsReference();
-                RE::BSString result_string = "";
-
-                RE::TESNPC* player_npc = (RE::TESNPC*)RE::TESForm::LookupByID(0x7); //left hand
-                player_npc->GetActivateText(target_ref, result_string);
-
-                //base_obj->GetActivateText(player_ref, result_string);
-
-                if (result_string != "" && result_string != "Search\n")
-                    return true;
-            }
-        }
-
-        return false;
+        return MiscThings::object_is_interactive(target_ref);
     }
-
-
-
-
 
 
 
@@ -9647,6 +9664,16 @@ namespace WalkerProcessor {
                     return "";
                 }
 
+                auto tg09_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7020df8);
+
+                if (target_ref == tg09_redirect_marker)
+                {
+                    send_random_context("You walked up to some kind of pit with a skeleton inside... you jump into it", false);
+                    auto temp_result = walk_to_object_by_refr(tg09_redirect_marker, -1);
+                    walk_forward_a_little = true;
+                    return "";
+                }
+
                 result = "You walked up to " + target_name; //default
 
                 switch (interaction_after_walk)
@@ -11391,6 +11418,22 @@ namespace WalkerProcessor {
 
 
 
+
+                auto test_targeted_ref = get_targeted_ref();
+
+                if (test_targeted_ref)
+                {
+                    auto nocturnal_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10c5f0);
+
+                    if (nocturnal_portal && test_targeted_ref == nocturnal_portal && target_ref && target_ref != nocturnal_portal)
+                    {
+                        auto temp_result = walk_to_object_by_refr(nocturnal_portal, 1);
+                        return;
+                    }
+                }
+
+
+
                 //700af26 - cut sphere
                 //700af27 - xmarker
                 //15d48 - door
@@ -11536,6 +11579,9 @@ namespace WalkerProcessor {
                                     target_ref = target_to_remember;
                                     have_target_to_walk = true;
                                     using_custom_path = true;
+
+                                    dont_invalidate_path_on_walk_again = true; //so wiggle_body does not reset it, some levers have shit alignment and it will help (example:  irkngthand)
+
                                     custom_path = { player_pos, target_ref_pos };
                                     //walk_again_when_finished = true;
                                     lock_and_interact_when_finished = true;

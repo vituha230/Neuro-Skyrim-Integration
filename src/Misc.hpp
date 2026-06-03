@@ -115,6 +115,7 @@ namespace MiscThings {
 
     bool is_on_horse();
 
+    bool is_running_allowed_in_current_cell();
 
     std::pair<bool, std::string> GetInventory();
     std::pair<bool, std::string> GetGold();
@@ -147,7 +148,7 @@ namespace MiscThings {
     bool player_has_spell(RE::SpellItem* spell);
 
     //int insert_ref_into_obj_list(RE::TESObjectREFR* refr);
-    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr);
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains = false);
     std::string insert_quest_into_list_and_get_info(std::string quest_text);
     std::string insert_object_into_list_custom_name(std::string name, RE::TESObjectREFR* refr);
 
@@ -246,6 +247,13 @@ namespace MiscThings {
     std::string get_potential_blocking_object(float range = 1400.0f, RE::TESObjectREFR* ignore_ref = nullptr);
 
     float get_weird_threshold(float original_threshold, RE::TESObjectREFR* target);
+
+    bool object_is_interactive(RE::TESObjectREFR* object);
+
+    bool ignore_faraway_interior(RE::TESObjectREFR* object);
+
+    std::string get_special_text(RE::TESObjectREFR* object);
+
 
     std::string lever_interaction_advice(RE::TESObjectREFR* lever);
 

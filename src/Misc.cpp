@@ -17,6 +17,25 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
+    void chain_insert_twin_object(RE::TESObjectREFR* object)
+    {
+        auto tg08_lever1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xfdcda);
+        auto tg08_lever2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xfdcd7);
+
+        if (object == tg08_lever1)
+        {
+            auto temp_result = insert_object_into_list_and_get_info(tg08_lever2, true);
+        }
+  
+        if (object == tg08_lever2)
+        {
+            auto temp_result = insert_object_into_list_and_get_info(tg08_lever1, true);
+        }
+
+    }
+
+
+
 
     float get_weird_threshold(float original_threshold, RE::TESObjectREFR* target)
     {
@@ -25,6 +44,26 @@ namespace MiscThings {
         if (target == meadery_door)
             return 300.0f;
 
+
+        auto nightingale_sanctum_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x47cd7);
+
+        if (target == nightingale_sanctum_marker)
+            return 50.0f;
+
+
+        auto nocturnal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a2eb);
+
+        if (target == nocturnal)
+            return 200.0f;
+
+        auto nocturnal_circle1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a3b7);
+        auto nocturnal_circle2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a3b9);
+        auto nocturnal_circle3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a3ba);
+
+        if (target == nocturnal_circle1 || target == nocturnal_circle2 || target == nocturnal_circle3)
+        {
+            return 40.0f;
+        }
 
         return original_threshold;
     }
@@ -1834,6 +1873,23 @@ namespace MiscThings {
     */
 
 
+    bool is_running_allowed_in_current_cell()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto player_cell = player->GetParentCell();
+
+            auto irkngthand_2_cell = RE::TESForm::LookupByID(0x7614C);
+
+            if (player_cell == irkngthand_2_cell)
+                return true;
+        }
+
+        return false;
+    }
+
 
     RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target, bool quest_mode)
     {
@@ -1919,6 +1975,24 @@ namespace MiscThings {
 
                 if (redirect_button)
                     return redirect_button;
+            }
+        }
+
+
+        auto twilight_sanct_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG09");
+
+        if (quest == twilight_sanct_quest)
+        {
+            auto stage = twilight_sanct_quest->GetCurrentStageID();
+
+            if (stage == 30)
+            {
+                //actual target is fake - meant to be 100% redirected. original quest has no target here
+
+                auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7020df8);
+
+                if (redirect_marker)
+                    return redirect_marker;
             }
         }
 
@@ -3555,6 +3629,35 @@ namespace MiscThings {
 
 
 
+    bool object_is_interactive(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto base_obj = object->GetBaseObject();
+
+            auto base_type = base_obj->GetFormType();
+
+            if (object->modelState != 0 && base_obj && base_type != RE::FormType::Static)
+            {
+                auto player = RE::PlayerCharacter::GetSingleton();
+                auto player_ref = player->AsReference();
+                RE::BSString result_string = "";
+
+                RE::TESNPC* player_npc = (RE::TESNPC*)RE::TESForm::LookupByID(0x7); //left hand
+                player_npc->GetActivateText(object, result_string);
+
+                //base_obj->GetActivateText(player_ref, result_string);
+
+                if (result_string != "" && result_string != "Search\n")
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
 
     std::string get_blocking_object_name(RE::TESObjectREFR* a_ref)
     {
@@ -3643,8 +3746,12 @@ namespace MiscThings {
 
             if (model.find("DwePtnDoor01") != std::string::npos)
             {
-                std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal gate", a_ref);
-                result = name;
+                if (!MiscThings::object_is_interactive(a_ref)) //these gates can be interactive and can be not interactive, using same model. interactive - are not blocking in style of this function
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal gate", a_ref);
+                    result = name;
+                }
+
             }
         }
 
@@ -4499,6 +4606,80 @@ namespace MiscThings {
         return result;
 
     }
+
+
+    std::string get_special_text(RE::TESObjectREFR* object)
+    {
+        std::string result = "";
+
+        bool solved = false;
+
+        if (!object)
+            return "";
+
+
+        auto object_p = General::Script::GetObject(object, "TG08LeverPuzzle");
+
+        if (object_p)
+        {
+            std::string prop_name = "::puzzleSolved_var";
+
+            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (!solved)
+            {
+                //{name="::leverActivated_var" type={_rawType=kBool } }
+
+                bool activated = false;
+
+                std::string current_state = "";
+
+                current_state = object_p->currentState;
+
+                if (current_state == "pushedposition")
+                    activated = true;
+
+                result = "[Timed lever]";
+
+                if (activated)
+                    result += "[Is pulled. Quickly pull another timed lever!]";
+                else
+                    result += "[Not pulled]";
+            }
+            else
+            {
+                result = "[Solved]";
+            }
+
+
+        }
+
+
+        return result;
+    }
+
+
+    bool ignore_faraway_interior(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto base_object = object->GetBaseObject();
+
+            auto base_type = base_object->GetFormType();
+
+            if (base_type == RE::FormType::Activator)
+            {
+                auto object_p = General::Script::GetObject(object, "TG08LeverPuzzle");
+
+                if (object_p)
+                    return true;
+
+            }
+        }
+
+        return false;
+    }
+
 
 
 
@@ -7986,6 +8167,14 @@ namespace MiscThings {
 
                 }
 
+
+                std::string generic_solved_text = MiscThings::get_special_text(object);
+
+                if (generic_solved_text != "")
+                    result += " " + generic_solved_text;
+
+
+
             }
                 
 
@@ -8433,12 +8622,16 @@ namespace MiscThings {
 
 
 
-    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr)
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains)
     {
         std::string result = "";
 
         if (refr)
         {
+            if (!no_chains)
+                chain_insert_twin_object(refr);
+
+
             auto base_obj = refr->GetBaseObject();
             auto base_type = base_obj->GetFormType();
 
@@ -14222,7 +14415,7 @@ namespace MiscThings {
                     {
                         std::string probe_name = insert_object_into_list_and_get_info(this_object);
 
-                        if (probe_name.find("Word of Power") == std::string::npos)
+                        if (probe_name.find("Word of Power") == std::string::npos && !MiscThings::ignore_faraway_interior(this_object))
                             no_faraways = true;
                     }
 
