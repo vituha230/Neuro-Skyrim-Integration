@@ -245,6 +245,8 @@ namespace MiscThings {
     int get_destructible_state(RE::TESObjectREFR* web);
     std::string get_potential_blocking_object(float range = 1400.0f, RE::TESObjectREFR* ignore_ref = nullptr);
 
+    float get_weird_threshold(float original_threshold, RE::TESObjectREFR* target);
+
     std::string lever_interaction_advice(RE::TESObjectREFR* lever);
 
     std::pair<bool, std::string> unlock_shout_level(int shout_id);

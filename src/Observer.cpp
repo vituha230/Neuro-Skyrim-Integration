@@ -2634,6 +2634,18 @@ namespace Observer {
 														auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
 														if (extra_anim_graph->animGraphMgr)
 														{
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "RTMercerRamp01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Ramp Mechanism", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " opened]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " closed]");
+															}
+
+
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
 															{
 																std::string name = MiscThings::insert_object_into_list_custom_name("Large wooden bridge", a_ref);

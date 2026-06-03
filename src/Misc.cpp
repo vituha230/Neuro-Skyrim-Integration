@@ -18,6 +18,18 @@ namespace MiscThings {
 
 
 
+    float get_weird_threshold(float original_threshold, RE::TESObjectREFR* target)
+    {
+        auto meadery_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3cf65);
+
+        if (target == meadery_door)
+            return 300.0f;
+
+
+        return original_threshold;
+    }
+
+
     bool is_cave_autoloader_door(RE::TESObjectREFR* object)
     {
 
@@ -1890,6 +1902,26 @@ namespace MiscThings {
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
     {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+
+
+        auto thief_guild_hatch = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2d2dd);
+
+        if (thief_guild_hatch && target == thief_guild_hatch && player_pos.z > 11030.0f)
+        {
+            //check if mausoleum is open, if not - redirect to button
+            auto mausoleum_blocker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc730a);
+
+            if (mausoleum_blocker && MiscThings::two_state_activator_state(mausoleum_blocker) == 1)
+            {
+                auto redirect_button = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc730a);
+
+                if (redirect_button)
+                    return redirect_button;
+            }
+        }
+
 
         auto thief_guild_mansion = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG02");
 
@@ -1906,6 +1938,24 @@ namespace MiscThings {
                     return redirect_door;
             }
         }
+
+        /* //this is useless - both doors are inaccessible. must break that bridge thingy
+        auto thief_guild_mansion_mercer = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG07");
+
+        if (quest == thief_guild_mansion_mercer)
+        {
+            auto stage = thief_guild_mansion_mercer->GetCurrentStageID();
+
+            if (stage <= 40)
+            {
+                auto bad_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x27eed);
+                auto redirect_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x27eec);
+
+                if (bad_door && redirect_door && target == bad_door)
+                    return redirect_door;
+            }
+        }
+        */
 
         auto diplomatic_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ201");
 
@@ -2056,7 +2106,7 @@ namespace MiscThings {
         auto elder_scroll_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ205");
         auto elder_lexicon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA04");
 
-        auto player = RE::PlayerCharacter::GetSingleton();
+        
 
         bool player_in_tower_of_mzark = player && player->GetParentCell() == RE::TESForm::LookupByID(0x2d4e3);
 
@@ -3549,6 +3599,13 @@ namespace MiscThings {
 
                 result = name;
             }
+
+            if (model.find("RTMercerRamp01") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible (with Shout or Ranged Weapon)] Ramp Mechanism", a_ref);
+
+                result = name;
+            }
             
 
             if (model.find("RTMausoleumDoor01") != std::string::npos)
@@ -4073,8 +4130,18 @@ namespace MiscThings {
                 return -1;
         }
 
+        object_p = General::Script::GetObject(activator, "tg07RampScript");
+        if (object_p)
+        {
+            if (object_p->currentState == "Done")
+                return 0;
 
-        
+            if (object_p->currentState == "Waiting")
+                return 1;
+
+            if (object_p->currentState == "busy")
+                return -1;
+        }
 
 
         object_p = General::Script::GetObject(activator, "HallofStoriesKeyholeScript");
@@ -5538,6 +5605,25 @@ namespace MiscThings {
 
                         std::string model = activator->GetModel();
 
+                        if (model.find("MeaderyBrewer01Act") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 300.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("RTMercerRamp01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            //need to replace coordinates completely its just too far away
+                            auto actual_position_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc04b9);
+                            if (actual_position_marker)
+                            {
+                                auto actual_position = actual_position_marker->GetPosition();
+                                auto shit_position = object->GetPosition();
+                                result = actual_position - shit_position;
+
+                            }
+                        }
 
                         if (model.find("NorPullChain01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
@@ -5679,12 +5765,7 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
-                        if (model.find("RiftenRWHallSewerHole") != std::string::npos)
-                        {
-                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, -10.0f };
-                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
-                            result = rotated_shift_vector;
-                        }
+
                     }
 
                     if (base_obj->GetFormType() == RE::FormType::Door)
@@ -5876,6 +5957,12 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("RiftenRWHallSewerHole") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 1.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (model == "AutoLoadMarker01.nif")
                         {
@@ -5883,6 +5970,8 @@ namespace MiscThings {
                             auto nearest_navmesh_pos = MiscThings::get_nearest_navmesh_node(object);
                             result = nearest_navmesh_pos - pos;
                         }
+
+
 
 
 

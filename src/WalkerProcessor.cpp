@@ -2233,6 +2233,15 @@ namespace WalkerProcessor {
                         }
                     }
 
+
+                    if (model.find("RTMercerRamp01") != std::string::npos)
+                    {
+                        if (target_ref->GetDistance(player_ref, true) < 300.0f)
+                        {
+                            return target_ref;
+                        }
+                    }
+
                     if (model.find("WRTempleTree02Root") != std::string::npos)
                     {
                         auto compare_pos = MiscThings::get_looking_point_shift(target_ref, false) + target_ref->GetPosition();
@@ -2616,7 +2625,7 @@ namespace WalkerProcessor {
 
             float radius = wiggle_camera_time*12;
             float x = 8*radius*cos(wiggle_camera_time*2.0f * std::numbers::pi);
-            float y = 2*radius*sin(wiggle_camera_time * std::numbers::pi); //was 1* before, revert if bad
+            float y = 3*radius*sin(wiggle_camera_time * std::numbers::pi); //was 1* before, revert if bad
 
             mouse_look(x, y);
             //mouse_mouse_x_y(x, y);
@@ -4982,6 +4991,9 @@ namespace WalkerProcessor {
                         }
                             
                         
+                        threshold2 = MiscThings::get_weird_threshold(threshold2, target_ref);
+
+
                         if (!dont_use_bounds_for_close_enough && !MiscThings::is_cave_autoloader_door(target_ref))
                         {
                             if (must_use_bounds)
@@ -5008,13 +5020,15 @@ namespace WalkerProcessor {
                             distance.z = 0.0f;
                         }
 
+                        threshold2 = MiscThings::get_weird_threshold(threshold2, target_ref);
+
                         if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
                         {
                             if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f)))
                                 return true;
                         }
                         else
-                            if (distance.Length() < 150.0f * (1 + MiscThings::is_on_horse() * 3.0f))
+                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f))
                                 return true;
                     }
                 }
@@ -5124,8 +5138,13 @@ namespace WalkerProcessor {
     {
         std::pair<bool, std::string> result{};
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_cell = player->GetParentCell();
 
-        if (MiscThings::is_objects_around_valid() && MiscThings::is_serving_jail())
+        auto markarth_prison_cell = RE::TESForm::LookupByID(0x16203);
+
+
+        if (MiscThings::is_objects_around_valid() && (markarth_prison_cell && MiscThings::is_serving_jail() && player_cell != markarth_prison_cell))
         {
             auto p_normal_objects_around = MiscThings::get_p_objects_around();
 
@@ -5166,7 +5185,6 @@ namespace WalkerProcessor {
             return result;
         }
 
-        auto player = RE::PlayerCharacter::GetSingleton();
         auto player_actor = (RE::Actor*)player->AsReference();
 
         auto control_map = RE::ControlMap::GetSingleton();
@@ -6906,7 +6924,7 @@ namespace WalkerProcessor {
 
             if (objective)
             {
-                if (objective->numTargets != 0)
+                if (objective->numTargets != 0 && (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed)))
                 {
                     auto quest_targets = objective->targets;
 
@@ -6950,7 +6968,6 @@ namespace WalkerProcessor {
                             }
                         }
                     }
-
 
                     //old objective conditions are not met anymore. reset walker if no new targets found.
 
@@ -7040,6 +7057,7 @@ namespace WalkerProcessor {
 
                                                 backup_interaction_made = false;
 
+                                                //last_quest_objective = objective;
                                                 current_quest_target_followed = target;
                                                 current_quest_followed = quest;
 
@@ -7059,6 +7077,11 @@ namespace WalkerProcessor {
                         result = true;
                         reset_walker();
                     }
+                }
+                else
+                {
+                    result = true;
+                    reset_walker();
                 }
             }
         }
@@ -12380,7 +12403,7 @@ namespace WalkerProcessor {
                                                                     if (subvar.IsString())
                                                                     {
                                                                         std::string result_string = subvar.GetString();
-                                                                        if (result_string.find("You are out of lockpicks") != std::string::npos || result_string.find("This lock cannot be picked") != std::string::npos) //no lockpicks or no key //TODO: GET FULL MESSAGES
+                                                                        if (result_string.find("You are out of lockpicks") != std::string::npos || result_string.find("This lock cannot be picked") != std::string::npos || result_string.find("This door is barred from the other side") != std::string::npos) //no lockpicks or no key //TODO: GET FULL MESSAGES
                                                                         {
                                                                             if (result_string != "")
                                                                                 MiscThings::update_old_topleft_nofification(result_string);

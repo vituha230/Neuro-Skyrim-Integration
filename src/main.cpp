@@ -708,6 +708,10 @@ void send_random_context(std::string context, bool silent)
     if (Observer::not_informing_inventory() && context.find("Quest Items cannot be removed") != std::string::npos)
         return;
 
+
+    if (context.find("You don't have the items required to make a copy of the inscription") != std::string::npos)
+        context += " (You need a Paper Roll and a Charcoal)";
+
     //context = "[" + MiscThings::get_timestamp_string() + "] " + context;
 
     context_chars_sent += context.length();
