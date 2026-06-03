@@ -406,6 +406,13 @@ namespace WalkerProcessor {
     bool last_dragon_was_flying = false;
 
 
+
+    void reset_attacking_inanimate_object_time()
+    {
+        attacking_inanimate_object_time = 0.0f;
+    }
+
+
     void invalidate_path()
     {
         path_valid = false;

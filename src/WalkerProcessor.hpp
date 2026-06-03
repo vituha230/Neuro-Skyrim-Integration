@@ -87,6 +87,8 @@ namespace WalkerProcessor {
 	bool is_casting_walker(bool right);
 	void stop_casting_hand(bool right);
 
+	void reset_attacking_inanimate_object_time();
+
 
 	bool pause_attacking(float dtime);
 	void unpause_attacking();

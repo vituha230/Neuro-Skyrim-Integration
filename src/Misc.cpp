@@ -99,6 +99,18 @@ namespace MiscThings {
 
 
 
+    std::vector<RE::NiPoint3> test_navmesh_path(RE::TESObjectREFR* source, RE::TESObjectREFR* target)
+    {
+        std::vector<RE::NiPoint3> result{};
+
+        if (source && target)
+        {
+            ;//for later
+        }
+
+        return result;
+    }
+
 
     RE::NiPoint3 get_nearest_navmesh_node_in_cell(RE::TESObjectREFR* object, RE::TESObjectCELL* cell)
     {
@@ -10590,7 +10602,7 @@ namespace MiscThings {
 
 
 
-
+                                WalkerProcessor::reset_attacking_inanimate_object_time();
                                 
 
 
@@ -12819,7 +12831,7 @@ namespace MiscThings {
                             }
                                 
 
-
+                            WalkerProcessor::reset_attacking_inanimate_object_time();
 
                             equip_manager->EquipSpell(player_actor, spell, slot);
                             result.first = true;
