@@ -1828,6 +1828,21 @@ namespace Observer {
 													}
 												}
 
+
+												if (model.find("BeeHive01.nif") != std::string::npos)
+												{
+													if (a_ref->GetDistance(player_ref) < 600.0f)
+													{
+														if (!MiscThings::is_object_in_the_list(a_ref))
+														{
+															std::string info = MiscThings::insert_object_into_list_custom_name("[Flammable] Big beehive ", a_ref);
+															if (info != "")
+																interesting_buffer.insert_or_assign(a_ref, info);
+														}
+													}
+												}
+
+
 												if (model.find("TG01DwemerUrn") != std::string::npos)
 												{
 													if (a_ref->GetDistance(player_ref) < 300.0f)
@@ -2792,6 +2807,17 @@ namespace Observer {
 
 															}
 
+															if (anim_name == "RTMausoleumDoor01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Secret Sliding Altar Door", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " opened]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " closed]");
+															}
+
 
 															if (anim_name == "PortGatePole06")
 															{
@@ -3057,6 +3083,13 @@ namespace Observer {
 												std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Dwemer Urn", a_ref);
 
 												result.push_back(name + " was destroyed");
+											}
+
+											if (new_state.destructible_state == 4)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("[Flammable] Big beehive", a_ref);
+
+												result.push_back(name + " is on fire");
 											}
 										}
 

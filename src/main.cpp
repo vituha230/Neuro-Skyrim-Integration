@@ -3,6 +3,8 @@
 
 //crucial:
 
+//TODO when several subquests in one quests - follow quest command always redirects to first one or smth
+
 //TODO thief guild
 //TODO mage guild
 //TODO dark brotherhood
@@ -12,7 +14,7 @@
 //TODO dragonborn dlc
 //TODO dawnguard dlc
 
-//TODO random sidequests sidequests
+//TODO random sidequests
 //TODO try to fix bows
 
 

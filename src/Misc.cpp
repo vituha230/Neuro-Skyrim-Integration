@@ -1890,6 +1890,23 @@ namespace MiscThings {
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
     {
+
+        auto thief_guild_mansion = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG02");
+
+        if (quest == thief_guild_mansion)
+        {
+            auto stage = thief_guild_mansion->GetCurrentStageID();
+
+            if (stage <= 40)
+            {
+                auto bad_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa38c6);
+                auto redirect_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa01ba);
+
+                if (bad_door && redirect_door && target == bad_door)
+                    return redirect_door;
+            }
+        }
+
         auto diplomatic_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ201");
 
         if (quest == diplomatic_quest)
@@ -3532,7 +3549,15 @@ namespace MiscThings {
 
                 result = name;
             }
+            
 
+            if (model.find("RTMausoleumDoor01") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("[Secret door] Secret Sliding Altar Door", a_ref);
+
+                result = name;
+            }
+            
 
 
             if (model.find("PuzzleDoorKeyHole") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
@@ -3911,6 +3936,20 @@ namespace MiscThings {
                         result = -1;
                 }
 
+                if (model.find("BeeHive01.nif") != std::string::npos)
+                {
+                    auto extralist = &web->extraList;
+                    auto extra_swap = extralist->GetByType(RE::ExtraDataType::kObjectHealth);
+                    if (extra_swap)
+                    {
+                        auto extra_health = (RE::ExtraObjectHealth*)extra_swap;
+
+                        if (extra_health->health <= 60.0f)
+                            result = 4;
+                    }
+                    else
+                        result = -1;
+                }
 
             }
         }
@@ -3976,6 +4015,24 @@ namespace MiscThings {
             }
 
 
+            object_p = General::Script::GetObject(activator, "RiftenCasketDoorScript");
+
+            if (object_p)
+            {
+                //RE::BSFixedString prop_name = "isClosing";
+
+                //bool is_closing = General::Script::GetProperty<bool>(object_p, prop_name);
+
+                RE::BSFixedString prop_name = "::isOpen_var";
+
+                if (General::Script::GetVariable<bool>(object_p, prop_name))
+                    result = 0;
+                else
+                    result = 1;
+
+            }
+
+            //
 
 
         object_p = General::Script::GetObject(activator, "DA04HubScript");
@@ -4016,6 +4073,8 @@ namespace MiscThings {
                 return -1;
         }
 
+
+        
 
 
         object_p = General::Script::GetObject(activator, "HallofStoriesKeyholeScript");
@@ -5620,7 +5679,12 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
-
+                        if (model.find("RiftenRWHallSewerHole") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, -10.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
                     }
 
                     if (base_obj->GetFormType() == RE::FormType::Door)

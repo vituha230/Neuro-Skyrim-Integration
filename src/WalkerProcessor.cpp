@@ -6205,7 +6205,8 @@ namespace WalkerProcessor {
                                         if (objective->numTargets > 0)
                                         {
                                             result = quest_entry.id;
-                                            break;
+                                            return result;
+                                            //break;
                                         }
                                     }
                                 }
