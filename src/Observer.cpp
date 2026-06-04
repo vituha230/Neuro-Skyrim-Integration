@@ -321,24 +321,36 @@ namespace Observer {
 				
 				if (!puzzle_request_was_sent)
 				{
-					std::vector<MenuOption> options{};
-					options.push_back({ 1, "Stare at the ghost" });
-					options.push_back({ 2, "Attack the ghost with currently equipped weapons" });
-					options.push_back({ 3, "Use Unrelenting Force shout at the ghost" });
-					options.push_back({ 4, "Do nothing" });
-					options.push_back({ 5, "Do some spins" });
 
-					//unregister_all_actions(); //causes pause - no need to unregister here
-
-					if (force_choice(options, "The greybeards want you to demonstrate that you are able to use the power of the voice. They summoned a ghost as a dummy target for you. What will you do?", force_type::timed_quest_puzzle))
+					if (puzzle_target)
 					{
-						if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+						WalkerProcessor::reset_walker();
+
+						if (WalkerProcessor::lock_camera_onto_target(puzzle_target, dtime))
 						{
-							puzzle_request_was_sent = true;
-							puzzle_pause_was_made = true;
-							MiscThings::pause_game();
+							std::vector<MenuOption> options{};
+							options.push_back({ 1, "Stare at the ghost" });
+							options.push_back({ 2, "Attack the ghost with currently equipped weapons" });
+							options.push_back({ 3, "Use Unrelenting Force shout at the ghost" });
+							options.push_back({ 4, "Do nothing" });
+							options.push_back({ 5, "Do some spins" });
+
+							//unregister_all_actions(); //causes pause - no need to unregister here
+
+							if (force_choice(options, "The greybeards want you to demonstrate that you are able to use the power of the voice. They summoned a ghost as a dummy target for you. What will you do?", force_type::timed_quest_puzzle))
+							{
+								if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+								{
+									puzzle_request_was_sent = true;
+									puzzle_pause_was_made = true;
+									MiscThings::pause_game();
+								}
+							}
 						}
 					}
+					else
+						reset_quest_puzzles();
+					
 				}
 				else
 				{
@@ -414,24 +426,37 @@ namespace Observer {
 			{
 				if (!puzzle_request_was_sent)
 				{
-					std::vector<MenuOption> options{};
-					options.push_back({ 1, "Stare at the gate" });
-					options.push_back({ 2, "Use Whirlwind Sprint shout to fly through the gate" });
-					options.push_back({ 3, "Do nothing" });
-					options.push_back({ 4, "Jump" });
-					options.push_back({ 5, "Attack the gate" });
+					RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3FAFB);
 
-					//unregister_all_actions(); //causes pause - no need to unregister here
-
-					if (force_choice(options, "The greybeards want you to demonstrate that you are able to use the power of the voice once again. In this trial you have to use a shout to quickly fly through a gate, before it closes. What will you do?", force_type::timed_quest_puzzle))
+					if (gate)
 					{
-						if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+						WalkerProcessor::reset_walker();
+
+						if (WalkerProcessor::lock_camera_onto_target(gate, dtime))
 						{
-							puzzle_request_was_sent = true;
-							puzzle_pause_was_made = true;
-							MiscThings::pause_game();
+							std::vector<MenuOption> options{};
+							options.push_back({ 1, "Stare at the gate" });
+							options.push_back({ 2, "Use Whirlwind Sprint shout to fly through the gate" });
+							options.push_back({ 3, "Do nothing" });
+							options.push_back({ 4, "Jump" });
+							options.push_back({ 5, "Attack the gate" });
+
+							//unregister_all_actions(); //causes pause - no need to unregister here
+
+							if (force_choice(options, "The greybeards want you to demonstrate that you are able to use the power of the voice once again. In this trial you have to use a shout to quickly fly through a gate, before it closes. What will you do?", force_type::timed_quest_puzzle))
+							{
+								if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+								{
+									puzzle_request_was_sent = true;
+									puzzle_pause_was_made = true;
+									MiscThings::pause_game();
+								}
+							}
 						}
 					}
+					else
+						reset_quest_puzzles();
+					
 				}
 				else
 				{
@@ -505,24 +530,40 @@ namespace Observer {
 			{
 				if (!puzzle_request_was_sent)
 				{
-					std::vector<MenuOption> options{};
-					//options.push_back({ 1, "Run around a keystone" });
-					options.push_back({ 1, "Use Whirlwind Sprint shout to fly near the keystones first, and then run through gates" });
-					options.push_back({ 2, "Jump off the nearest cliff" });
-					options.push_back({ 3, "Run through the keystones to open the gates first, then quickly use Whirlwind Sprint shout to fly through the gates" });
-					options.push_back({ 4, "Run through the keystones and then continue running through the gates without using a shout" });
+					RE::TESObjectREFR* gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2656b);
 
-					//unregister_all_actions(); //causes pause - no need to unregister here
-
-					if (force_choice(options, "The path is blocked by some kind of gate puzzle. There are 3 keystones and 3 gates. When you run past a keystone, it opens 1 gate. But in short period of time the gate closes again. Looks you will need to use the Whirlwind shout because gates close too fast. What will you do?", force_type::timed_quest_puzzle))
+					if (gate1)
 					{
-						if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+						WalkerProcessor::reset_walker();
+
+						if (WalkerProcessor::lock_camera_onto_target(gate1, dtime))
 						{
-							puzzle_request_was_sent = true;
-							puzzle_pause_was_made = true;
-							MiscThings::pause_game();
+							std::vector<MenuOption> options{};
+							//options.push_back({ 1, "Run around a keystone" });
+							options.push_back({ 1, "Use Whirlwind Sprint shout to fly near the keystones first, and then run through gates" });
+							options.push_back({ 2, "Jump off the nearest cliff" });
+							options.push_back({ 3, "Run through the keystones to open the gates first, then quickly use Whirlwind Sprint shout to fly through the gates" });
+							options.push_back({ 4, "Run through the keystones and then continue running through the gates without using a shout" });
+
+							//unregister_all_actions(); //causes pause - no need to unregister here
+
+							unregister_all_actions(); //no pause - unregister here
+
+							if (force_choice(options, "The path is blocked by some kind of gate puzzle. There are 3 keystones and 3 gates. When you run past a keystone, it opens 1 gate. But in short period of time the gate closes again. Looks you will need to use the Whirlwind shout because gates close too fast. What will you do?", force_type::timed_quest_puzzle))
+							{
+								if (!puzzle_pause_was_made && !MiscThings::is_game_paused())
+								{
+									puzzle_request_was_sent = true;
+
+									//puzzle_pause_was_made = true;
+									//MiscThings::pause_game();
+								}
+							}
 						}
 					}
+					else
+						reset_quest_puzzles();
+					
 				}
 				else
 				{

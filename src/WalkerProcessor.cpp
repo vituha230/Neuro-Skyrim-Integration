@@ -5056,6 +5056,7 @@ namespace WalkerProcessor {
 
                         float on_time = 0.4f;
                         float off_time = 0.2f;
+                        //float off_time = 0.01f;
                         bool dragon_coef = false;
 
                         //dragons raycasting sucks for some reason even though they are huge; make time windows easier
@@ -8421,7 +8422,8 @@ namespace WalkerProcessor {
         bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
 
 
-        lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
+        if (shout_mode)
+            lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
 
 
 

@@ -4,7 +4,8 @@
 //crucial:
 
 
-//TODO threat detection - replace (is_player_hidden) with proper checks specifically for enemies
+//TODO test mainquest up to ustengrav end (changed observer's puzzles)
+
 
 //TODO mage guild
 //TODO dark brotherhood

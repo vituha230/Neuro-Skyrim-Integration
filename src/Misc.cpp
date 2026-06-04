@@ -8687,7 +8687,7 @@ namespace MiscThings {
 
             if (base_type == RE::FormType::Container && name == "Draugr")
             {
-                name = "Draugr mummy";
+                name = "Mummified draugr";
             }
 
             std::string category = get_object_category(refr);
