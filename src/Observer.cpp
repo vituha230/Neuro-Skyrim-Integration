@@ -1171,7 +1171,7 @@ namespace Observer {
 								}
 								else
 								{
-									if (player_was_hit || threat_active_time > 3.0f || WalkerProcessor::has_ranged_weapon_equipped(true))
+									if (player_was_hit || threat_active_time > 3.0f || (WalkerProcessor::has_ranged_weapon_equipped(true) && !MiscThings::is_player_hidden()))
 									{
 										if (!pause_was_made && !MiscThings::is_game_paused())
 										{

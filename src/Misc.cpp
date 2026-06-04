@@ -7819,6 +7819,17 @@ namespace MiscThings {
     }
 
 
+    bool does_see_player(RE::TESObjectREFR* enemy)
+    {
+        if (enemy)
+        {
+
+        }
+
+        return false;
+    }
+
+
     bool is_player_hidden()
     {
         if (auto ProcessLists = RE::ProcessLists::GetSingleton())
@@ -13244,9 +13255,9 @@ namespace MiscThings {
     }
 
 
-    bool is_enemy_to_actor(RE::TESObjectREFR* object)
+    bool is_enemy_to_actor(RE::TESObjectREFR* object, bool only_fighting)
     {
-        if (object && object->IsActor())
+        if (object && object->IsActor() && !object->IsDead())
         {
             auto actor_refr = (RE::Actor*)object;
 
@@ -13277,6 +13288,30 @@ namespace MiscThings {
                         }
                     }
                 }
+            }
+            else
+            {
+                if (!only_fighting && WalkerProcessor::has_bow_equipped(WalkerProcessor::get_current_active_hand()) || WalkerProcessor::has_crossbow_equipped(WalkerProcessor::get_current_active_hand()))
+                {
+                    bool aggressive = false;
+
+                    auto base_object = actor_refr->GetBaseObject();
+
+                    if (base_object)
+                    {
+                        auto npc = (RE::TESNPC*)base_object;
+
+                        if (npc->aiData.aggression2)
+                            aggressive = true;
+                    }
+
+                    if (aggressive && actor_refr->IsHostileToActor(player_actor))
+                        return true;
+
+
+
+                }
+
             }
         }
 
@@ -13340,7 +13375,7 @@ namespace MiscThings {
     }
 
 
-    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only, RE::TESObjectREFR* exclude_ref)
+    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only, RE::TESObjectREFR* exclude_ref, bool only_fighting)
     {
         std::vector<RE::Actor*> result{};
 
@@ -13371,7 +13406,7 @@ namespace MiscThings {
 
                 if (a_ref && a_ref->IsActor())
                 {
-                    if (is_enemy_to_actor(a_ref) && (!raycastable_only || raycastable(a_ref, 9000.0f, false)))
+                    if (is_enemy_to_actor(a_ref, only_fighting) && (!raycastable_only || raycastable(a_ref, 9000.0f, false)))
                     {
                         auto target_actor = (RE::Actor*)a_ref;
 

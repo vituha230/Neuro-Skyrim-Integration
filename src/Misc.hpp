@@ -142,7 +142,7 @@ namespace MiscThings {
 
     std::vector<quest>* get_p_quest_list();
 
-    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false, RE::TESObjectREFR* exclude_ref = nullptr);
+    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false, RE::TESObjectREFR* exclude_ref = nullptr, bool only_fighting = false);
 
     bool is_pillar_solved(RE::TESObjectREFR* pillar);
 
@@ -277,7 +277,7 @@ namespace MiscThings {
     RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist);
 
 
-    bool is_enemy_to_actor(RE::TESObjectREFR* object);
+    bool is_enemy_to_actor(RE::TESObjectREFR* object, bool only_fighting = false);
     bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest, RE::TESQuestTarget* target);
 
     bool have_any_quests();

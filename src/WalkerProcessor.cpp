@@ -3184,7 +3184,7 @@ namespace WalkerProcessor {
             if (target_actor->currentProcess)
                 if (target_actor->currentProcess->middleHigh)
                 {
-                    if (is_pickpocketing())
+                    if (is_pickpocketing() || (is_fighting() && has_ranged_weapon_equipped(get_current_active_hand())))
                     {
                         if (target_actor->currentProcess->middleHigh->torsoNode)
                         {
@@ -3268,7 +3268,7 @@ namespace WalkerProcessor {
                 {
                     if (target_actor->currentProcess)
                         if (target_actor->currentProcess->middleHigh)
-                            if (target_actor->currentProcess->middleHigh->headNode)
+                            if (target_actor->currentProcess->middleHigh->torsoNode)
                             {
                                 auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
 
@@ -3417,7 +3417,7 @@ namespace WalkerProcessor {
             float arc_shift = arc_coef1 * distance * distance + arc_coef2 * distance;
 
 
-            if (!shout_mode && !force_speed_correction)
+            if (shout_mode && !force_speed_correction)
                 arc_shift = 0.0f;
 
 
@@ -3467,6 +3467,26 @@ namespace WalkerProcessor {
             //RE::NiTransform a_transform{};
             //auto old_pos = target_ref->GetPosition();
 
+
+            bool stealth_arching = false;
+
+            if ((is_fighting() || Observer::threat_response_choice_pending()) && has_ranged_weapon_equipped(get_current_active_hand()))
+            {
+                stealth_arching = MiscThings::is_player_hidden();
+            }
+
+            if (!lookat_used || stealth_arching)
+                if (stealth_arching || (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead())))
+                    if (!stop_sneaking && !player->IsSneaking() && !using_custom_path && !location_mode && !(quest_mode && target->IsActor() && !target->IsDead()))
+                    {
+                        lock_camera_wants_to_crouch = true;
+                        crouch(); //if target is very low - sneak on it
+                    }
+                    else
+                        lock_camera_wants_to_crouch = false;
+
+
+
             if (!lookat_used)
             {
                 if (specific_shift != RE::NiPoint3::Zero())
@@ -3491,16 +3511,7 @@ namespace WalkerProcessor {
 
                     if (player)
                     {
-                        if (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead()))
-                            if (!stop_sneaking && !player->IsSneaking() && !using_custom_path && !location_mode && !(quest_mode && target->IsActor() && !target->IsDead()))
-                            {
-                                lock_camera_wants_to_crouch = true;
-                                crouch(); //if target is very low - sneak on it
-                            }
-                            else
-                                lock_camera_wants_to_crouch = false;
-
-
+                        
                         if (target_center.z > player->GetHeight() * 1.5 + player->GetPosition().z)
                         {
                             //if (get_targeted_ref() == target_ref)
@@ -5064,6 +5075,8 @@ namespace WalkerProcessor {
                                 target_visible = true;
                                 if (dragon_coef)
                                     successful_raycast_time = 2.0f;
+                                else
+                                    successful_raycast_time = 1.0f;
                             } 
                             else
                                 successful_raycast_time += dtime_better;
@@ -9171,7 +9184,7 @@ namespace WalkerProcessor {
 
                     if (MiscThings::is_immortal(target_actor) && target_actor->GetActorValue(RE::ActorValue::kHealth) < 2)
                     {
-                        auto attackers = MiscThings::get_player_attackers(false, target_ref);
+                        auto attackers = MiscThings::get_player_attackers(false, target_ref, true);
 
                         if (std::size(attackers) > 0)
                         {
@@ -9367,7 +9380,7 @@ namespace WalkerProcessor {
                     {
                         
 
-                        auto attackers = MiscThings::get_player_attackers();
+                        auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
                         if (std::size(attackers) > 0)
                         {
                             confirm(); //lockpick it
@@ -10472,7 +10485,7 @@ namespace WalkerProcessor {
 
         auto player = RE::PlayerCharacter::GetSingleton();
 
-        auto attackers = MiscThings::get_player_attackers();
+        auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
 
         bool player_can_be_arrested = false;
         RE::TESObjectREFR* closest_guard = nullptr;
@@ -11383,7 +11396,7 @@ namespace WalkerProcessor {
 
                 if (search_next_fight_target)
                 {
-                    auto next_targets = MiscThings::get_player_attackers(false, target_ref);
+                    auto next_targets = MiscThings::get_player_attackers(false, target_ref, true);
 
                     if (std::size(next_targets) > 0)
                     {
@@ -13334,7 +13347,7 @@ namespace WalkerProcessor {
                                                                     
                                                                     
                                                                     {
-                                                                        auto attackers = MiscThings::get_player_attackers();
+                                                                        auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
                                                                         if (std::size(attackers) > 0)
                                                                         {
                                                                             confirm(); //lockpick it
@@ -13418,7 +13431,7 @@ namespace WalkerProcessor {
                                                                                 if (interaction_after_walk == 3)
                                                                                 {
                                                                                     reset_walker();
-                                                                                    auto next_targets = MiscThings::get_player_attackers();
+                                                                                    auto next_targets = MiscThings::get_player_attackers(false, nullptr, true);
 
                                                                                     if (std::size(next_targets) > 0)
                                                                                     {
@@ -13476,7 +13489,7 @@ namespace WalkerProcessor {
                                                                                         if (interaction_after_walk == 3)
                                                                                         {
                                                                                             reset_walker();
-                                                                                            auto next_targets = MiscThings::get_player_attackers();
+                                                                                            auto next_targets = MiscThings::get_player_attackers(false, nullptr, true);
 
                                                                                             if (std::size(next_targets) > 0)
                                                                                             {
@@ -13628,7 +13641,7 @@ namespace WalkerProcessor {
                                                                 {
                                                                     //send_random_context("The path is blocked by a locked door!");
                                                                     
-                                                                    auto attackers = MiscThings::get_player_attackers();
+                                                                    auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
                                                                     if (std::size(attackers) > 0)
                                                                     {
                                                                         confirm(); //lockpick it
@@ -13990,7 +14003,7 @@ namespace WalkerProcessor {
                                                     
                                                     //send_random_context("The path is blocked by a locked door!");
                                                     
-                                                    auto attackers = MiscThings::get_player_attackers();
+                                                    auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
                                                     if (std::size(attackers) > 0 && runaway_mode)
                                                     {
                                                         confirm(); //lockpick it

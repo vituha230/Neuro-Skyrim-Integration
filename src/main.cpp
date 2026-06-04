@@ -3,7 +3,8 @@
 
 //crucial:
 
-//TODO when several subquests in one quests - follow quest command always redirects to first one or smth
+
+//TODO threat detection - replace (is_player_hidden) with proper checks specifically for enemies
 
 //TODO mage guild
 //TODO dark brotherhood
