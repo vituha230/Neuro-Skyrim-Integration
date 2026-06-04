@@ -43,6 +43,7 @@ You'll need to use neuro-api-compatible engine ([Gary](https://github.com/Govoru
 
 
 ### Launching the game
+## IMPORTANT: for NPC speech context and dialogue lines to work and reach the player - subtitles must be turned on. Both `general` and `dialogue` subtitles in game settings.
 Launching through xmake:
 ```bat
 xmake launch
