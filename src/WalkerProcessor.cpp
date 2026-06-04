@@ -1077,7 +1077,9 @@ namespace WalkerProcessor {
                     ////////////////////////////////////////////////////////
                     /////////// EXPERIMENT /////////////////////////////////
 
-                    if (loop_evasion_mode && player->GetDistance(target_ref, true, true) > 15000.0f && !is_fighting())
+                    auto marker_pathfinder = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7001834);
+
+                    if (loop_evasion_mode && marker_pathfinder && player->GetDistance(target_ref) > 15000.0f && !is_fighting())
                     {
                         if (!MiscThings::is_interior_cell())
                         {
@@ -2177,7 +2179,9 @@ namespace WalkerProcessor {
 
 
 
-                if (mulY < -0.5f && !MiscThings::is_interior_cell() && player->GetDistance(target_ref, true, true) > 15000.0f && !is_fighting())
+                auto marker_pathfinder = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7001834);
+
+                if (mulY < -0.5f && !MiscThings::is_interior_cell() && marker_pathfinder && player->GetDistance(target_ref) > 15000.0f && !is_fighting())
                 {
                     auto player_pos = player->GetPosition();
 
