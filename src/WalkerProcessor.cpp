@@ -14,6 +14,13 @@
 
 namespace WalkerProcessor {
 
+
+
+    std::vector<std::pair<RE::NiPoint3, bool>> potential_loop_points{};
+    RE::NiPoint3 confirmed_loop_points[2];
+    bool loop_evasion_mode = false;
+
+
     bool dont_invalidate_path_on_walk_again = false;
 
     bool start_pathfinding_quest = false;
@@ -410,6 +417,15 @@ namespace WalkerProcessor {
     void reset_attacking_inanimate_object_time()
     {
         attacking_inanimate_object_time = 0.0f;
+    }
+
+
+
+    void clear_loop_evasion()
+    {
+        potential_loop_points.clear();
+        confirmed_loop_points[0] = RE::NiPoint3::Zero();
+        loop_evasion_mode = false;
     }
 
 
@@ -995,8 +1011,6 @@ namespace WalkerProcessor {
                                 MiscThings::SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
 
 
-
-
                             //correct_marker_pos();
                         }
                         else
@@ -1057,6 +1071,77 @@ namespace WalkerProcessor {
                     auto marker_path = player->playerMarkerPath;
 
                     player->playerMarkerPath = nullptr;
+
+
+
+                    ////////////////////////////////////////////////////////
+                    /////////// EXPERIMENT /////////////////////////////////
+
+                    if (loop_evasion_mode && player->GetDistance(target_ref, true, true) > 15000.0f)
+                    {
+                        if (!MiscThings::is_interior_cell())
+                        {
+                            RE::ObjectRefHandle temp_target_handle;
+
+                            my_quest->objectives.front()->targets[0]->GetTrackingRef(temp_target_handle, my_quest);
+
+                            if (!temp_target_handle.get().get())
+                                my_quest->objectives.front()->targets[0]->GetTargetRef(temp_target_handle, true, my_quest);
+
+                            if (temp_target_handle.get().get())
+                            {
+                                auto temp_target = temp_target_handle.get().get();
+
+                                RE::NiPoint3 loop1_test = confirmed_loop_points[0];
+                                RE::NiPoint3 loop2_test = confirmed_loop_points[1];
+
+                                loop1_test.z = 0.0f;
+                                loop2_test.z = 0.0f;
+
+                                auto test_loop_evasion_dir = loop1_test - loop2_test;
+
+                                auto test_target_pos = target_ref->GetPosition();
+
+                                test_target_pos.z = 0.0f;
+
+                                auto test_delta = test_target_pos - loop1_test;
+
+                                test_delta.Unitize();
+                                test_loop_evasion_dir.Unitize();
+
+                                //now find if test_delta and test_loop_evasion dir are in opposite directions
+
+                                auto dot_product = test_loop_evasion_dir.Dot(test_delta);
+
+                                bool inverse = false;
+
+                                if (dot_product < 0.0f)
+                                    inverse = true;
+
+                                if (inverse)
+                                {
+                                    auto buffer1 = loop2_test;
+                                    loop2_test = loop1_test;
+                                    loop1_test = buffer1;
+                                }
+                                
+                                auto test_point = MiscThings::EXP_get_nearest_navmesh_node(temp_target, loop1_test, loop2_test);
+
+                                auto marker_ref = marker->AsReference();
+
+                                if (test_point != RE::NiPoint3::Zero())
+                                    MiscThings::SetPosition_moveto(marker_ref, test_point);
+                            }
+
+                        }
+                    }
+
+                    ////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////
+
+
+
 
                     //saved_guide_effect = a_guideEffect;
                     originalStart(a_guideEffect); //call original function, let it read fake target, then restore original quest flags
@@ -1620,6 +1705,7 @@ namespace WalkerProcessor {
 
 
 
+
     float last_walk_reminded_time = 0.0f;
 
     void walk_to_point(float dtime_maybe_bad)
@@ -2072,6 +2158,89 @@ namespace WalkerProcessor {
             {
                 turning_around = true;
                 mouse_y = 0.0f; //maybe this can be fixed some other way
+
+
+                /////////////////////////////////////////////////////////////////////////////
+                //loop evasion trigger
+
+                int valid_points = 0;
+
+                for (auto& existing_point : potential_loop_points)
+                {
+                    if (existing_point.first != RE::NiPoint3::Zero())
+                        valid_points++;
+                }
+
+
+                if (valid_points <= 0 && loop_evasion_mode)
+                    clear_loop_evasion();
+
+
+
+                if (mulY < -0.5f && !MiscThings::is_interior_cell() && player->GetDistance(target_ref, true, true) > 15000.0f)
+                {
+                    auto player_pos = player->GetPosition();
+
+                    bool old_point = false;
+                    bool pending_point = false;
+
+                    for (auto& existing_point : potential_loop_points)
+                    {
+                        if (existing_point.second)
+                        {
+                            if (existing_point.first.GetDistance(player_pos) > 11000.0f)
+                                existing_point.first = RE::NiPoint3::Zero(); //disable the point
+                        }
+                        else
+                        {
+                            if (existing_point.first.GetDistance(player_pos) > 300.0f)
+                                existing_point.second = true; //point was escaped
+                            else
+                                pending_point = true; //wait for it to get escaped
+                        }
+                    }
+
+                    if (!pending_point && !old_point)
+                    {
+                        potential_loop_points.push_back({ player_pos, false }); //new point
+                    }
+
+                    //we are already in try/catch by out_of_bounds so it should be safe (vector is cleared by loading menu open event which is a hook so it could clear it in the middle of this loop)
+                    RE::NiPoint3 first_edge = RE::NiPoint3::Zero();
+                    for (int i = 0; i < std::size(potential_loop_points); i++)
+                        for (int j = i + 1; j < std::size(potential_loop_points); j++)
+                        {
+                            if (potential_loop_points.at(i).first != RE::NiPoint3::Zero() && potential_loop_points.at(j).first != RE::NiPoint3::Zero())
+                            {
+                                if (potential_loop_points.at(i).first.GetDistance(potential_loop_points.at(j).first) < 300.0f)
+                                {
+                                    if (first_edge != RE::NiPoint3::Zero() && first_edge.GetDistance(potential_loop_points.at(j).first) > 500.0f)
+                                    {
+                                        if (!loop_evasion_mode)
+                                        {
+                                            confirmed_loop_points[0] = first_edge;
+                                            confirmed_loop_points[1] = potential_loop_points.at(j).first;
+                                            loop_evasion_mode = true;
+                                        }
+                                        else
+                                        {
+                                            //loop evasion created a loop, remove loop evasion hoping it will pathfind normally from here
+                                            if (player_pos.GetDistance(confirmed_loop_points[1]) > 10000.0f)
+                                            {
+                                                auto remember_point = confirmed_loop_points[1];
+                                                clear_loop_evasion();
+                                                potential_loop_points.push_back({ remember_point, true });
+                                            }
+
+                                        }
+                                    }
+                                    else
+                                        first_edge = potential_loop_points.at(i).first;
+                                }
+                            }
+                        }
+                }
+                /////////////////////////////////////////////////////////////////////////////
 
 
             }

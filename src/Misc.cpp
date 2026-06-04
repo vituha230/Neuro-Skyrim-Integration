@@ -118,7 +118,20 @@ namespace MiscThings {
 
         if (object)
         {
-            auto pos = object->GetPosition();
+            auto object_pos = object->GetPosition();
+        }
+
+        return result;
+    }
+
+
+    RE::NiPoint3 get_nearest_navmesh_node_in_cell(RE::NiPoint3 object_pos, RE::TESObjectCELL* cell)
+    {
+        RE::NiPoint3 result = RE::NiPoint3::Zero();
+
+        if (object_pos != RE::NiPoint3::Zero())
+        {
+            auto pos = object_pos;
 
             if (cell)
             {
@@ -248,7 +261,115 @@ namespace MiscThings {
     }
 
 
+    RE::NiPoint3 EXP_get_nearest_navmesh_node(RE::TESObjectREFR* object, RE::NiPoint3 loop1, RE::NiPoint3 loop2)
+    {
+        RE::NiPoint3 result = RE::NiPoint3::Zero();
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        //vector from loop2 to loop1 is evasion vector
+
+        RE::NiPoint3 evasion_direction = { loop1.x - loop2.x, loop1.y - loop2.y, 0.0f };
+
+
+        if (player)
+        {
+            auto parent_cell = player->GetParentCell();
+
+            if (parent_cell)
+            {
+                float min_distance = FLT_MAX;
+
+                bool interiorCell = parent_cell->IsInteriorCell();
+
+                if (interiorCell)
+                {
+                    return RE::NiPoint3::Zero(); //this function must not work in interior cells
+                        //get_nearest_navmesh_node_in_cell(object, parent_cell);
+                }
+                else
+                {
+                    auto gridCells = RE::TES::GetSingleton()->gridCells;
+
+                    if (gridCells)
+                    {
+                        //check all cells within 1 cell radius
+                        auto parent_cell_coords_raw = parent_cell->GetCoordinates();
+
+                        RE::NiPoint2 parent_cell_coords = { parent_cell_coords_raw->worldX, parent_cell_coords_raw->worldY };
+
+                        for (int x = 0; x < gridCells->length; x++)
+                            for (int y = 0; y < gridCells->length; y++)
+                            {
+                                auto adjacent_cell = gridCells->GetCell(x, y);
+
+                                if (adjacent_cell && adjacent_cell->IsAttached())
+                                {
+                                    auto adjacent_cell_coords_raw = adjacent_cell->GetCoordinates();
+
+                                    RE::NiPoint2 adjacent_cell_coords = { adjacent_cell_coords_raw->worldX, adjacent_cell_coords_raw->worldY };
+
+                                    auto cell_distance = adjacent_cell_coords - parent_cell_coords;
+
+                                    //if (cell_distance.Length() < 4100.0f)
+                                    {
+
+                                        evasion_direction.Unitize();
+
+                                        evasion_direction = evasion_direction * 30000.0f;
+
+                                        
+
+                                        auto delta1 = object->GetPosition() - player->GetPosition();
+
+                                        RE::NiPoint3 orth1 = { -1.0f * delta1.y, delta1.x, 0.0f };
+                                        RE::NiPoint3 orth2 = {delta1.y, -1.0f * delta1.x, 0.0f };
+
+                                        orth1.Unitize();
+                                        orth2.Unitize();
+
+                                        auto player_noZ_position = player->GetPosition();
+                                        player_noZ_position.z = 0.0f;
+
+                                        auto object_noZ_position = object->GetPosition();
+                                        object_noZ_position.z = 0.0f;
+
+
+                                        auto test1 = player_noZ_position + evasion_direction;
+                                        auto test2 = object_noZ_position + orth1;
+                                        auto test3 = object_noZ_position + orth2;
+
+                                        RE::NiPoint3 result_orth;
+
+                                        if (test2.GetDistance(test1) < test3.GetDistance(test1))
+                                            result_orth = orth2;
+                                        else
+                                            result_orth = orth1;
+
+                                        evasion_direction = evasion_direction + result_orth * 20000.0f;
+
+
+
+                                        RE::NiPoint3 evasion_far_point = player->GetPosition() + evasion_direction;
+
+                                        auto nearest_in_cell = get_nearest_navmesh_node_in_cell(evasion_far_point, adjacent_cell);
+                                        auto distance = nearest_in_cell.GetDistance(evasion_far_point);
+
+                                        if (distance < min_distance)
+                                        {
+                                            min_distance = distance;
+                                            result = nearest_in_cell;
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
 
 
     bool in_skuldafn()

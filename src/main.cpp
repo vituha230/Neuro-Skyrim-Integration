@@ -1093,6 +1093,8 @@ namespace Hooks {
 
                 //menu->menuFlags.reset(RE::UI_MENU_FLAGS::kUsesCursor);
 
+                WalkerProcessor::clear_loop_evasion();
+
                 unregister_all_actions();
 
                 auto time_of_death = MiscThings::get_time_of_death();

@@ -89,6 +89,7 @@ namespace WalkerProcessor {
 
 	void reset_attacking_inanimate_object_time();
 
+	void clear_loop_evasion();
 
 	bool pause_attacking(float dtime);
 	void unpause_attacking();
