@@ -4,9 +4,6 @@
 //crucial:
 
 
-//TODO test mainquest up to ustengrav end (changed observer's puzzles)
-
-
 //TODO mage guild
 //TODO dark brotherhood
 //TODO companions
@@ -16,8 +13,6 @@
 //TODO dawnguard dlc
 
 //TODO random sidequests
-//TODO try to fix bows
-
 
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)

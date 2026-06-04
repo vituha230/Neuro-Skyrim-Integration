@@ -2203,7 +2203,19 @@ namespace WalkerProcessor {
                         if (existing_point.second)
                         {
                             if (existing_point.first.GetDistance(player_pos) > 11000.0f)
+                            {
+                                if (loop_evasion_mode)
+                                {
+                                    if (existing_point.first.GetDistance(confirmed_loop_points[0]) < 300.0f || existing_point.first.GetDistance(confirmed_loop_points[1]) < 300.0f)
+                                    {
+                                        clear_loop_evasion();
+                                    }
+                                }
+                                
+
                                 existing_point.first = RE::NiPoint3::Zero(); //disable the point
+                            }
+                                
                         }
                         else
                         {
