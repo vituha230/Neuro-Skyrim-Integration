@@ -1713,6 +1713,15 @@ namespace WalkerProcessor {
     void walk_to_point(float dtime_maybe_bad)
     {
 
+        bool stealth_arching = false;
+
+        if ((is_fighting() || Observer::threat_response_choice_pending()) && has_ranged_weapon_equipped(get_current_active_hand()))
+        {
+            if (target_ref && target_ref->IsActor())
+                stealth_arching = !MiscThings::sees_player(target_ref);
+        }
+
+
 
 
         if (path_valid || use_last_point_of_last_path)
@@ -1721,7 +1730,8 @@ namespace WalkerProcessor {
 
             if (player && player->IsSneaking())
             {
-                crouch(); //uncrouch
+                if (!stealth_arching)
+                    crouch(); //uncrouch
             }
 
             try {

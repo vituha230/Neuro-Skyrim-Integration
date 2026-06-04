@@ -17,6 +17,8 @@ namespace Observer {
 	RE::TESForm* old_left_hand = nullptr;
 
 
+	RE::TESObjectREFR* first_detected_threat = nullptr;
+
 
 	bool surroundings_scanned = false;
 
@@ -905,6 +907,7 @@ namespace Observer {
 		player_was_hit = false;
 		threat_active_time = 0.0f;
 
+		first_detected_threat = nullptr;
 	}
 
 
@@ -1090,9 +1093,15 @@ namespace Observer {
 				dont_check_threats_timer -= dtime;
 			else
 			{
+
+				bool first_detected_threat_is_valid = false;
+
+				if (first_detected_threat && first_detected_threat->IsActor() && !first_detected_threat->IsDead())
+					first_detected_threat_is_valid = true;
+
 				auto attackers = MiscThings::get_player_attackers(true, nullptr, false, 5000.0f); //initially trigger with 5k max
 
-				if (std::size(attackers) != 0)
+				if (std::size(attackers) > 0 || first_detected_threat_is_valid)
 				{
 					no_threats_timer = 0.0f;
 					if (!WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open())
@@ -1102,16 +1111,25 @@ namespace Observer {
 						if (detect_threats_time > 1.0f || player_was_hit)
 						{
 
-
 							if (!threats_response_request_sent)
 							{
 								player_can_be_arrested = false;
 
 								bool any_attacker_sees_player = false;
 
+								bool first = true;
+
 								std::string attacked_by = "";
 								for (auto attacker : attackers)
 								{
+									if (first)
+									{
+										first_detected_threat = attacker;
+										first = false;
+									}
+										
+
+
 									attacked_by += MiscThings::insert_object_into_list_and_get_info(attacker);
 									attacked_by += "; ";
 									auto crime_faction = attacker->GetCrimeFaction();
@@ -1174,7 +1192,24 @@ namespace Observer {
 											runaway_in_a_row = 0;
 											if (DialogueProcessor::is_in_dialogue(nullptr))
 												DialogueProcessor::quit_menu();
-											WalkerProcessor::walk_to_object_by_refr(attackers.at(0), 3);
+
+
+											RE::TESObjectREFR* attack_target = nullptr;
+
+											if (std::size(attackers) > 0)
+												attack_target = attackers.at(0);
+											else
+												if (first_detected_threat_is_valid)
+													attack_target = first_detected_threat;
+
+											if (!attack_target)
+											{
+												//abort, no targets
+												reset_threats();
+												return;
+											}
+
+											WalkerProcessor::walk_to_object_by_refr(attack_target, 3);
 											action_taken = true;
 
 
