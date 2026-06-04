@@ -965,10 +965,15 @@ namespace Observer {
 		dont_inform_inventory = false;
 	}
 
-	std::vector<MenuOption> get_threat_options()
+	std::vector<MenuOption> get_threat_options(bool any_attacker_sees_player)
 	{
 		std::vector<MenuOption> threat_options;
-		threat_options.push_back({ 1, "Fight back" });
+
+		if (any_attacker_sees_player)
+			threat_options.push_back({ 1, "Fight back" });
+		else
+			threat_options.push_back({ 1, "Attack them" });
+
 		threat_options.push_back({ 2, "Run" });
 		threat_options.push_back({ 3, "Ignore" });
 		if (player_can_be_arrested && closest_guard)
@@ -1044,7 +1049,7 @@ namespace Observer {
 				dont_check_threats_timer -= dtime;
 			else
 			{
-				auto attackers = MiscThings::get_player_attackers(true);
+				auto attackers = MiscThings::get_player_attackers(true, nullptr, false, 5000.0f); //initially trigger with 5k max
 
 				if (std::size(attackers) != 0)
 				{
@@ -1061,6 +1066,7 @@ namespace Observer {
 							{
 								player_can_be_arrested = false;
 
+								bool any_attacker_sees_player = false;
 
 								std::string attacked_by = "";
 								for (auto attacker : attackers)
@@ -1085,11 +1091,16 @@ namespace Observer {
 											closest_guard = attacker;
 									}
 
+									if (MiscThings::sees_player(attacker))
+										any_attacker_sees_player = true;
 								}
 
+								std::string force_message_start = "There are enemies around you. Choose what to do. ";
 
+								if (!any_attacker_sees_player)
+									force_message_start += " They dont see you yet. ";
 
-								if (force_choice(get_threat_options(), "There are enemies around you. Choose what to do. Enemies: " + attacked_by, force_type::threat_response, true))
+								if (force_choice(get_threat_options(any_attacker_sees_player), force_message_start + "Enemies: " + attacked_by, force_type::threat_response, true))
 								{
 									threats_response_request_sent = true;
 
@@ -1171,7 +1182,21 @@ namespace Observer {
 								}
 								else
 								{
-									if (player_was_hit || threat_active_time > 3.0f || (WalkerProcessor::has_ranged_weapon_equipped(true) && !MiscThings::is_player_hidden()))
+
+									auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
+
+									bool any_attacker_sees_player = false;
+
+									for (auto attacker : attackers)
+									{
+										if (MiscThings::sees_player(attacker))
+										{
+											any_attacker_sees_player = true;
+											break;
+										}
+									}
+
+									if (player_was_hit || threat_active_time > 3.0f || (WalkerProcessor::has_ranged_weapon_equipped(true) && any_attacker_sees_player))
 									{
 										if (!pause_was_made && !MiscThings::is_game_paused())
 										{

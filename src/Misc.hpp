@@ -142,7 +142,10 @@ namespace MiscThings {
 
     std::vector<quest>* get_p_quest_list();
 
-    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false, RE::TESObjectREFR* exclude_ref = nullptr, bool only_fighting = false);
+    bool sees_player(RE::TESObjectREFR* actor_ref);
+
+
+    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false, RE::TESObjectREFR* exclude_ref = nullptr, bool only_fighting = false, float range = 9000.0f);
 
     bool is_pillar_solved(RE::TESObjectREFR* pillar);
 

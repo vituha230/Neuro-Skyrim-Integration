@@ -17,6 +17,32 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
+
+    bool sees_player(RE::TESObjectREFR* actor_ref)
+    {
+        if (actor_ref && actor_ref->IsActor())
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_actor = (RE::Actor*)player->AsReference();
+
+            auto actor = (RE::Actor*)actor_ref;
+
+            auto detection1 = actor->RequestDetectionLevel(player_actor, RE::DETECTION_PRIORITY::kCritical);
+            auto detection2 = actor->RequestDetectionLevel(player_actor, RE::DETECTION_PRIORITY::kHigh);
+            auto detection3 = actor->RequestDetectionLevel(player_actor, RE::DETECTION_PRIORITY::kLow);
+            auto detection4 = actor->RequestDetectionLevel(player_actor, RE::DETECTION_PRIORITY::kNone);
+            auto detection5 = actor->RequestDetectionLevel(player_actor, RE::DETECTION_PRIORITY::kNormal);
+            auto detection6 = actor->RequestDetectionLevel(player_actor, RE::DETECTION_PRIORITY::kVeryLow);
+            
+
+            return detection5 > 0;
+        }
+
+        return false;
+    }
+
+
+
     void chain_insert_twin_object(RE::TESObjectREFR* object)
     {
         auto tg08_lever1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xfdcda);
@@ -7819,17 +7845,6 @@ namespace MiscThings {
     }
 
 
-    bool does_see_player(RE::TESObjectREFR* enemy)
-    {
-        if (enemy)
-        {
-
-        }
-
-        return false;
-    }
-
-
     bool is_player_hidden()
     {
         if (auto ProcessLists = RE::ProcessLists::GetSingleton())
@@ -13301,7 +13316,9 @@ namespace MiscThings {
                     {
                         auto npc = (RE::TESNPC*)base_object;
 
-                        if (npc->aiData.aggression2)
+
+
+                        if (npc->aiData.aggression2 || npc->aiData.aggression1 || (npc->aiData.aggroRadiusBehaviour && ((npc->aiData.aggroRadius[1] + 1000) > player->GetDistance(actor_refr))))
                             aggressive = true;
                     }
 
@@ -13375,7 +13392,7 @@ namespace MiscThings {
     }
 
 
-    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only, RE::TESObjectREFR* exclude_ref, bool only_fighting)
+    std::vector<RE::Actor*> get_player_attackers(bool raycastable_only, RE::TESObjectREFR* exclude_ref, bool only_fighting, float range)
     {
         std::vector<RE::Actor*> result{};
 
@@ -13394,26 +13411,40 @@ namespace MiscThings {
         if (!can_walk && !can_look)
             return result;
 
+        
+        //float scan_distance = 3000.0f;
+        //auto player_cell = player->GetParentCell();
+        //if (player_cell && player_cell->IsInteriorCell())
+        //    range = 5000.0f;
 
-        float scan_distance = 3000.0f;
-        auto player_cell = player->GetParentCell();
-        if (player_cell && player_cell->IsInteriorCell())
-            scan_distance = 1000.0f;
-
-        RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 9000.0,
+        RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 9000.0f,
             //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
             [&](RE::TESObjectREFR* a_ref) {
 
                 if (a_ref && a_ref->IsActor())
                 {
-                    if (is_enemy_to_actor(a_ref, only_fighting) && (!raycastable_only || raycastable(a_ref, 9000.0f, false)))
+                    if (is_enemy_to_actor(a_ref, only_fighting) && (!raycastable_only || raycastable(a_ref, range, false)))
                     {
+
                         auto target_actor = (RE::Actor*)a_ref;
 
                         bool not_a_threat = MiscThings::is_immortal(target_actor) && target_actor->GetActorValue(RE::ActorValue::kHealth) < 2;
 
                         if (!not_a_threat && (a_ref != exclude_ref) && !a_ref->IsChild())
-                            result.push_back((RE::Actor*)a_ref);
+                        {
+                            if (MiscThings::is_dragon(a_ref))
+                            {
+                                result.push_back((RE::Actor*)a_ref);
+                            }
+                            else
+                            {
+                                auto distance = player_ref->GetDistance(a_ref);
+
+                                if (distance < range)
+                                    result.push_back((RE::Actor*)a_ref);
+                            }
+                        }
+                            
                     }
                         
                 }

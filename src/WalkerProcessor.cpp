@@ -3472,12 +3472,12 @@ namespace WalkerProcessor {
 
             if ((is_fighting() || Observer::threat_response_choice_pending()) && has_ranged_weapon_equipped(get_current_active_hand()))
             {
-                stealth_arching = MiscThings::is_player_hidden();
+                stealth_arching = !MiscThings::sees_player(target);
             }
 
             if (!lookat_used || stealth_arching)
                 if (stealth_arching || (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead())))
-                    if (!stop_sneaking && !player->IsSneaking() && !using_custom_path && !location_mode && !(quest_mode && target->IsActor() && !target->IsDead()))
+                    if (!stop_sneaking && !player->IsSneaking() && !using_custom_path && !location_mode && !(!stealth_arching && quest_mode && target->IsActor() && !target->IsDead()))
                     {
                         lock_camera_wants_to_crouch = true;
                         crouch(); //if target is very low - sneak on it
@@ -9119,6 +9119,54 @@ namespace WalkerProcessor {
                     left_attack_cancel();
                     
 
+                    //if its far away - need to notify player because detect_events has low range
+
+                    if (target_ref && target_ref->IsActor() && target_ref->GetDistance(player) > 2000.0f)
+                    {
+                        bool dont_add = false;
+
+                        std::string victim_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
+                        std::string message_text = "[" + victim_name + " died]";
+
+                        auto target_actor = (RE::Actor*)target_ref;
+                        auto killer = target_actor->myKiller;
+                        if (killer)
+                        {
+                            if (target_ref == player_ref) //have dedicated message for that
+                                dont_add = true;
+
+                            auto killer_ptr = killer.get();
+                            if (killer_ptr)
+                            {
+                                auto killer_actor = killer_ptr.get();
+
+
+                                if (MiscThings::is_intro2() && killer_actor == target_ref && target_actor->race->fullName == "Dragon Race")
+                                    dont_add = true;
+
+                                if (killer_actor)
+                                {
+                                    std::string killer_name = MiscThings::insert_object_into_list_and_get_info(killer_actor);
+                                    if (killer_actor == player_actor)
+                                        killer_name = "You";
+
+                                    message_text = "[" + killer_name + " killed " + victim_name + "]";
+
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (target_ref == player_ref) //have dedicated message for that
+                                dont_add = true;
+                        }
+
+                        if (!dont_add)
+                        {
+                            send_random_context(message_text);
+                        }
+                    }
+
 
                     result = true;
                 }
@@ -11041,7 +11089,7 @@ namespace WalkerProcessor {
         {
             //if (!looking_mode)
             {
-                auto enemies = MiscThings::get_player_attackers(false, target_ref);
+                auto enemies = MiscThings::get_player_attackers(true, target_ref, false);
 
                 if (std::size(enemies) > 0)
                 {
