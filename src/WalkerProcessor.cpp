@@ -15,6 +15,11 @@
 namespace WalkerProcessor {
 
 
+    std::vector<std::pair<RE::TESObjectREFR*, long long>> potential_loop_doors{};
+    RE::TESObjectREFR* looping_door = nullptr;
+    RE::TESQuest* looping_door_quest = nullptr;
+    RE::BGSQuestObjective* looping_door_quest_objective = nullptr;
+
 
     std::vector<std::pair<RE::NiPoint3, bool>> potential_loop_points{};
     RE::NiPoint3 confirmed_loop_points[2];
@@ -6827,6 +6832,18 @@ namespace WalkerProcessor {
 
                                                 }
                                             }
+
+                                            auto test_quests_target_ref = quest_ref_handle.get().get();
+
+                                            if (looping_door && test_quests_target_ref && test_quests_target_ref == looping_door && quest_entry.quest == looping_door_quest && quest_entry.objective == looping_door_quest_objective)
+                                            {
+                                                reset_walker();
+                                                result.first = false;
+                                                result.second = "[This quest does not have any target in this location... try exploring, waiting, or do another quest]";
+                                                do_delayed_poke();
+                                                return result;
+                                            }
+
                                         }
 
 
@@ -7313,6 +7330,91 @@ namespace WalkerProcessor {
 
                                                 
                                                 target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref); //i think something is excessive here
+
+
+                                                long long now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+
+                                                bool any_doors_left = false;
+
+                                                for (auto& potential_loop_door : potential_loop_doors)
+                                                {
+                                                    float delta_change = (double)(now - potential_loop_door.second) / 1000000000.0;
+
+                                                    if (delta_change > 300.0f)
+                                                    {
+                                                        if (potential_loop_door.first && looping_door == potential_loop_door.first)// && MiscThings::is_object_valid(potential_loop_door.first))
+                                                        {
+                                                            potential_loop_doors.clear();
+                                                            looping_door = nullptr;
+                                                            looping_door_quest = nullptr;
+                                                            looping_door_quest_objective = nullptr;
+                                                        }
+
+                                                        potential_loop_door.first = nullptr;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (potential_loop_door.first)// && MiscThings::is_object_valid(potential_loop_door.first))
+                                                            any_doors_left = true;
+                                                    }
+                                                }
+
+                                                if (!any_doors_left)
+                                                {
+                                                    potential_loop_doors.clear();
+                                                    looping_door = nullptr;
+                                                    looping_door_quest = nullptr;
+                                                    looping_door_quest_objective = nullptr;
+                                                }
+
+
+                                                if (!looping_door)
+                                                {
+                                                    if (target_ref && is_door(target_ref))
+                                                    {
+                                                        potential_loop_doors.push_back({ target_ref, now });
+
+                                                        RE::TESObjectREFR* first = nullptr;
+                                                        for (int i = 0; i < std::size(potential_loop_doors); i++)
+                                                            for (int j = i + 1; j < std::size(potential_loop_doors); j++)
+                                                            {
+                                                                auto& door1 = potential_loop_doors.at(i);
+                                                                auto& door2 = potential_loop_doors.at(j);
+
+                                                                if (door1.first && door2.first)// && MiscThings::is_object_valid(door1.first) && MiscThings::is_object_valid(door2.first))
+                                                                {
+                                                                    float delta_change = (double)(abs(door1.second - door2.second)) / 1000000000.0;
+
+                                                                    if (door1.first == door2.first && delta_change < 15.0f)
+                                                                    {
+                                                                        if (!first || door1.first == first)
+                                                                        {
+                                                                            first = door1.first;
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            //2 looping doors detected
+                                                                            looping_door = first;
+                                                                            looping_door_quest = quest;
+                                                                            looping_door_quest_objective = objective;
+                                                                               
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (target_ref == looping_door)
+                                                    {
+                                                        reset_walker();
+                                                        send_random_context("[This quest does not have any target in this location... try exploring, waiting, or do another quest]", false);
+                                                        return true;
+                                                    }
+                                                }
+                                                
 
                                                 backup_interaction_made = false;
 

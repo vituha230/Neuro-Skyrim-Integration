@@ -8362,7 +8362,7 @@ namespace MiscThings {
 
                 }
 
-                if (actor_object->IsAMount())
+                if (actor_object->IsAMount() && !actor_object->IsDead())
                 {
                     RE::ActorPtr mounter = nullptr;
                     bool is_mounted = actor_object->GetMountedBy(mounter);
