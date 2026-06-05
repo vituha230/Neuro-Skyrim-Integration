@@ -3407,11 +3407,26 @@ namespace WalkerProcessor {
                 //RE::NiPoint3 v = pos_dif / pos_dif.Length() *arc_coef3;
                 if (last_u_valid)
                 {
-                    auto u_new = delta_target_pos / dtime_better;
-                    auto delta_new = u_new - last_u;
+                    /*
+                    auto u_new = delta_target_pos / dtime_better; //speed in current frame
+                    auto delta_new = u_new - last_u; //difference in speed compared to last frame
                     delta_new *= 0.3;
                     u = last_u + delta_new;
                     last_u = u;
+                    */
+                    //test
+
+                    auto u_new = delta_target_pos / dtime_better; //speed in current frame
+                   
+                    //u = 0.75f * (u_new + last_u);
+
+                    u = u_new;
+
+                    //u *= 1.2f;
+
+                    //u = u_new;
+                    last_u = u_new;
+
                 }
                 else
                 {
@@ -3421,6 +3436,8 @@ namespace WalkerProcessor {
                 }
 
                 auto projectile_speed = get_weapon_projectile_speed(get_current_active_hand());
+
+                projectile_speed *= 0.85f;
 
                 if (force_speed_correction || (shout_mode && shout_to_use))
                 {
