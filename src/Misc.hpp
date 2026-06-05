@@ -146,6 +146,8 @@ namespace MiscThings {
 
     bool is_equipped(RE::TESBoundObject* object);
 
+    bool is_known_shit_door(RE::TESObjectREFR* door);
+
     std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false, RE::TESObjectREFR* exclude_ref = nullptr, bool only_fighting = false, float range = 9000.0f);
 
     bool is_pillar_solved(RE::TESObjectREFR* pillar);

@@ -10,6 +10,9 @@ namespace WalkerProcessor {
 
 	void stop_casting();
 
+	bool have_doors_nearby(float range = 800.0f);
+	RE::TESObjectREFR* get_nearest_door();
+
 
 	void install_hook();
 

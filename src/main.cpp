@@ -4,6 +4,8 @@
 //crucial:
 
 
+//TODO check unstuck triggering on tolfdir when he is walking around magnus eye
+
 //TODO fix tolfdir autospeak in saartal (ONLY CERTAIN STAGES)
 
 //TODO mage guild

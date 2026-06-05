@@ -12,6 +12,8 @@
 namespace Observer {
 
 
+	std::map<RE::TESObjectREFR*, bool> objects_for_extra_notification{};
+
 
 	RE::TESForm* old_right_hand = nullptr;
 	RE::TESForm* old_left_hand = nullptr;
@@ -927,6 +929,8 @@ namespace Observer {
 
 	void reset_observer()
 	{
+		objects_for_extra_notification.clear();
+
 		if (!hitmap_lock)
 			player_hit_info.clear();
 
@@ -1380,6 +1384,10 @@ namespace Observer {
 
 
 
+
+
+
+
 	void detect_interesting_objects(float dtime, bool ignore_raycast)
 	{
 		if (observers_green_light && !MiscThings::have_force_only_menu_open())
@@ -1414,13 +1422,6 @@ namespace Observer {
 
 							if (a_ref)
 							{
-								auto roadblock = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x52f7a);
-
-								if (a_ref == roadblock)
-								{
-									bool stop_here = false;
-								}
-
 
 								auto base_obj = a_ref->GetBaseObject();
 								RE::FormType base_type{};
@@ -1435,12 +1436,13 @@ namespace Observer {
 									bool no_base_object = true;
 								}
 
-								auto pos111 = dbg_test.find(base_type);
 
-								if (pos111 != dbg_test.end())
-									pos111->second++;
-								else
-									dbg_test.insert({ base_type, 1 });
+								//auto pos111 = dbg_test.find(base_type);
+
+								//if (pos111 != dbg_test.end())
+								//	pos111->second++;
+								//else
+								//	dbg_test.insert({ base_type, 1 });
 
 
 								if (base_type == RE::FormType::Hazard)
@@ -1449,6 +1451,20 @@ namespace Observer {
 								if (base_type == RE::FormType::Static)
 									return RE::BSContainer::ForEachResult::kContinue;
 
+
+
+
+								auto saartal_orb = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51aec);
+
+								if (a_ref == saartal_orb)
+								{
+									if (!MiscThings::is_object_in_the_list(a_ref) && player_ref->GetDistance(a_ref) < 1800.0f)
+									{
+										std::string info = MiscThings::insert_object_into_list_custom_name("Huge Glowing Spinning Magical Orb", a_ref);
+										if (info != "")
+											interesting_buffer.insert_or_assign(a_ref, info);
+									}
+								}
 
 
 								if (base_type == RE::FormType::Activator)
@@ -1462,6 +1478,27 @@ namespace Observer {
 											std::string info = MiscThings::insert_object_into_list_custom_name("Word of Power, calling for you", a_ref);
 											if (info != "")
 												interesting_buffer.insert_or_assign(a_ref, info);
+										}
+									}
+									else
+									{
+										
+										auto word_of_power = MiscThings::get_word_of_power(a_ref);
+
+										if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
+										{
+											if (objects_for_extra_notification.find(a_ref) == objects_for_extra_notification.end())
+											{
+												if (player_ref->GetDistance(a_ref) < 800.0f)
+												{
+													objects_for_extra_notification.insert({ a_ref, true });
+
+													std::string info = MiscThings::insert_object_into_list_custom_name("Word of Power, calling for you", a_ref);
+
+													if (info != "")
+														send_random_context("You hear something... " + info, false);
+												}
+											}
 										}
 									}
 
@@ -2180,6 +2217,8 @@ namespace Observer {
 
 
 	std::map<RE::TESObjectREFR*, old_object_state> objects_to_track{};
+
+	
 
 
 	long long last_periodic_info = 0;

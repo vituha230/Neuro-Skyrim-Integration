@@ -15,6 +15,13 @@
 namespace WalkerProcessor {
 
 
+    RE::NiPoint3 wiggle_body_start_pos{};
+    int failed_wiggles = 0;
+
+    RE::TESObjectREFR* detected_shit_door = nullptr; //reset only on saveload
+    bool shit_door_locked = false;
+
+
     std::vector<std::pair<RE::TESObjectREFR*, long long>> potential_loop_doors{};
     RE::TESObjectREFR* looping_door = nullptr;
     RE::TESQuest* looping_door_quest = nullptr;
@@ -426,11 +433,14 @@ namespace WalkerProcessor {
 
 
 
-    void clear_loop_evasion()
+    void clear_loop_evasion() //basically load of save reset
     {
         potential_loop_points.clear();
         confirmed_loop_points[0] = RE::NiPoint3::Zero();
         loop_evasion_mode = false;
+
+        detected_shit_door = nullptr; //reset only on saveload
+        shit_door_locked = false;
     }
 
 
@@ -526,7 +536,7 @@ namespace WalkerProcessor {
         return (bool)target_ref;
     }
 
-
+    
 
     bool gate_shout_condition()
     {
@@ -2335,8 +2345,68 @@ namespace WalkerProcessor {
     }
 
 
+    RE::TESObjectREFR* get_nearest_door()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_ref = player->AsReference();
 
-    bool have_doors_nearby()
+        RE::TESObjectREFR* result = nullptr;
+
+        if (player_ref)
+        {
+
+            float min_distance = FLT_MAX;
+
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 500.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref)
+                    {
+                        std::string name = a_ref->GetName();
+                        std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
+
+                        if (!MiscThings::is_object_valid(a_ref))
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        auto base_obj = a_ref->GetBaseObject();
+                        RE::FormType base_type{};
+
+                        if (base_obj)
+                        {
+                            base_type = base_obj->GetFormType();
+                            bool debug_type = true;
+                        }
+                        else
+                        {
+                            bool no_base_object = true;
+                        }
+
+                        if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
+                        {
+                            if (MiscThings::raycastable(a_ref, 500.0f))
+                            {
+                                auto distance = player->GetDistance(a_ref);
+
+                                if (distance < min_distance)
+                                {
+                                    min_distance = distance;
+                                    result = a_ref;
+                                }
+                            }
+
+                        }
+                    }
+
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+        }
+
+        return result;
+    }
+
+    bool have_doors_nearby(float range)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
@@ -2345,7 +2415,7 @@ namespace WalkerProcessor {
 
         if (player_ref)
         {
-            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 800.0f,
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, range,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
 
@@ -4194,6 +4264,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        wiggle_body_start_pos = RE::NiPoint3::Zero();
+        failed_wiggles = 0;
 
         dont_invalidate_path_on_walk_again = false;
 
@@ -4678,7 +4750,12 @@ namespace WalkerProcessor {
 
             if (target_ref)
                 if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                {
+                    failed_wiggles = 0;
+                    lock_camera_onto_target(target_ref, dtime);
                     return false; //just wait its pointless there is no path
+                }
+                    
 
 
             /*
@@ -9225,7 +9302,7 @@ namespace WalkerProcessor {
             finalize_attack:
 
 
-            if (target_ref->IsActor() && !was_already_dead)
+            if (target_ref->IsActor() && !was_already_dead && !target_ref->IsDisabled())
             {
                 if (target_ref->IsDead())
                 {
@@ -12856,7 +12933,7 @@ namespace WalkerProcessor {
                                                                     if (subvar.IsString())
                                                                     {
                                                                         std::string result_string = subvar.GetString();
-                                                                        if (result_string.find("You are out of lockpicks") != std::string::npos || result_string.find("This lock cannot be picked") != std::string::npos || result_string.find("This door is barred from the other side") != std::string::npos) //no lockpicks or no key //TODO: GET FULL MESSAGES
+                                                                        if (result_string.find("You are out of lockpicks") != std::string::npos || result_string.find("This lock cannot be picked") != std::string::npos || result_string.find("This door is barred from the other side") != std::string::npos || result_string.find("You must raise the bar to open this door") != std::string::npos) //no lockpicks or no key //TODO: GET FULL MESSAGES
                                                                         {
                                                                             if (result_string != "")
                                                                                 MiscThings::update_old_topleft_nofification(result_string);
@@ -12906,13 +12983,79 @@ namespace WalkerProcessor {
                     {
                         
 
-                        //if (walk_fixed_time(true, 0.2f, dtime))
-                        if (walk_unstuck(dtime))
+                        if (shit_door_locked)
                         {
-                            walk_unstuck_time = 0.0f;
-                            wiggle_body_then_walk_again = false;
-                            walk_again();
+
+                            auto targeted_ref = get_targeted_ref();
+
+                            if (targeted_ref && is_door(targeted_ref) && !is_targeted_door_closed())
+                            {
+                                confirm();
+                                set_universal_block(1.5f);
+                                return;
+                            }
+                            else
+                            {
+                                unstuck_direction = 1;
+                                if (walk_unstuck(dtime))
+                                {
+                                    auto shit_door = get_nearest_door();
+
+                                    if (shit_door)
+                                        walk_retries = 0;
+
+                                    detected_shit_door = shit_door;
+                                    
+                                    shit_door_locked = false;
+
+                                    walk_unstuck_time = 0.0f;
+                                    wiggle_body_then_walk_again = false;
+                                    walk_again();
+
+                                    
+                                }
+                                else
+                                {
+                                    return;
+                                }
+                            }
                         }
+                        else
+                        {
+                            //if (walk_fixed_time(true, 0.2f, dtime))
+                            if (walk_unstuck(dtime))
+                            {
+                                if (player->GetPosition().GetDistance(wiggle_body_start_pos) < 50.0f)
+                                    failed_wiggles++;
+                                else
+                                    failed_wiggles = 0;
+
+                                if (failed_wiggles >= 4)
+                                {
+                                    if (have_doors_nearby(200.0f))
+                                    {
+                                        auto shit_door = get_nearest_door();
+
+                                        if (shit_door)
+                                        {
+                                            if (lock_camera_onto_target(shit_door, dtime))
+                                            {
+                                                shit_door_locked = true;
+                                                walk_unstuck_time = 0.0f;
+                                            }
+                                            else
+                                                return;
+                                        }
+                                    }
+                                }
+
+                                walk_unstuck_time = 0.0f;
+                                wiggle_body_then_walk_again = false;
+                                walk_again();
+                            }
+                        }
+                        
+
                             
 
                         return;
@@ -12952,6 +13095,8 @@ namespace WalkerProcessor {
                                             if (!close_enough())
                                             {
                                                 wiggle_body_then_walk_again = true;
+
+                                                wiggle_body_start_pos = player->GetPosition();
 
                                                 if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
                                                 {
@@ -13066,6 +13211,8 @@ namespace WalkerProcessor {
                                             if (!its_a_flying_dragon && (int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
                                             {
                                                 wiggle_body_then_walk_again = true;
+
+                                                wiggle_body_start_pos = player->GetPosition();
 
                                                 walk_retries++;
                                                 //walk_again();
@@ -13621,11 +13768,13 @@ namespace WalkerProcessor {
                                                                         opening_door_attempts++;
                                                                         confirm(); //open the door
 
-                                                                        auto bad_ratway_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9fb92);
-                                                                        if (get_targeted_ref() == bad_ratway_door)
+                                                                        if (MiscThings::is_known_shit_door(get_targeted_ref()) || (detected_shit_door && get_targeted_ref() == detected_shit_door))
                                                                         {
                                                                             //must wiggle back-right 
                                                                             wiggle_body_then_walk_again = true;
+
+                                                                            wiggle_body_start_pos = player->GetPosition();
+
                                                                             unstuck_direction = 1;
                                                                             return;
                                                                         }
@@ -13847,11 +13996,13 @@ namespace WalkerProcessor {
                                                                     
                                                                     confirm(); //just unlock it
 
-                                                                    auto bad_ratway_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9fb92);
-                                                                    if (get_targeted_ref() == bad_ratway_door)
+                                                                    if (MiscThings::is_known_shit_door(get_targeted_ref()) || (detected_shit_door && get_targeted_ref() == detected_shit_door))
                                                                     {
                                                                         //must wiggle back-right 
                                                                         wiggle_body_then_walk_again = true;
+
+                                                                        wiggle_body_start_pos = player->GetPosition();
+
                                                                         unstuck_direction = 1;
                                                                         return;
                                                                     }
@@ -14036,6 +14187,8 @@ namespace WalkerProcessor {
                                                         {
                                                             wiggle_body_then_walk_again = true;
                                                             
+                                                            wiggle_body_start_pos = player->GetPosition();
+
                                                             walk_retries++;
                                                             //walk_again();
                                                             
@@ -14209,11 +14362,14 @@ namespace WalkerProcessor {
                                                 {
                                                     confirm(); //just unlock it
 
-                                                    auto bad_ratway_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9fb92);
-                                                    if (get_targeted_ref() == bad_ratway_door)
+                                                    
+                                                    if (MiscThings::is_known_shit_door(get_targeted_ref()) || (detected_shit_door && get_targeted_ref() == detected_shit_door))
                                                     {
                                                         //must wiggle back-right 
                                                         wiggle_body_then_walk_again = true;
+
+                                                        wiggle_body_start_pos = player->GetPosition();
+
                                                         unstuck_direction = 1;
                                                         return;
                                                     }

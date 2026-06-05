@@ -17,6 +17,27 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
+    bool is_known_shit_door(RE::TESObjectREFR* door)
+    {
+        if (door)
+        {
+            
+            auto bad_ratway_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9fb92);
+
+            if (door == bad_ratway_door)
+                return true;
+
+            auto bad_mage_quest_book_dungeon_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x73e1a);
+
+            if (door == bad_mage_quest_book_dungeon_door)
+                return true;
+
+        }
+
+        return false;
+    }
+
+
 
     bool sees_player(RE::TESObjectREFR* actor_ref)
     {
@@ -104,6 +125,19 @@ namespace MiscThings {
         {
             return 300.0f;
         }
+
+        auto saartal_orb = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51aec);
+
+        if (target == saartal_orb)
+        {
+            return 300.0f;
+        }
+
+        auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+        {
+            return 300.0f;
+        }
+
 
         return original_threshold;
     }
@@ -2170,6 +2204,30 @@ namespace MiscThings {
                 {
                     return redirect_door;
                 }
+
+                auto saartall_cell2 = RE::TESForm::LookupByID(0x1aec3);
+
+                if (saartall_cell2 && parent_cell == saartall_cell2)
+                {
+                    auto redirect_thing1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x72469);
+                    auto redirect_thing2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x724fd);
+
+                    auto test_door1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x72434);
+                    auto test_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x725b5);
+
+                    if (test_door1 && MiscThings::two_state_activator_state(test_door1) == 1 && redirect_thing1)
+                    {
+                        return redirect_thing1;
+                    }
+                    else
+                    {
+                        if (test_door2 && MiscThings::two_state_activator_state(test_door2) == 1 && redirect_thing2)
+                        {
+                            return redirect_thing2;
+                        }
+                    }
+                }
+
             }
         }
 
@@ -6082,6 +6140,13 @@ namespace MiscThings {
 
                         std::string model = activator->GetModel();
 
+                        if (model.find("DoorDeadBolt01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 55.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
                         if (model.find("MeaderyBrewer01Act") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 300.0f };
@@ -6161,9 +6226,22 @@ namespace MiscThings {
 
                         if (model.find("NorPullBar01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
-                            RE::NiPoint3 base_shift_vector = { 7.0f, 0.0f, 10.0f };
-                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
-                            result = rotated_shift_vector;
+                            RE::TESObjectREFR* weird_handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe730f);
+
+                            if (object == weird_handle)
+                            {
+                                RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 1.0f };
+                                RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                                result = rotated_shift_vector;
+                            }
+                            else
+                            {
+                                RE::NiPoint3 base_shift_vector = { 7.0f, 0.0f, 10.0f };
+                                RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                                result = rotated_shift_vector;
+                            }
+
+
                         }
 
                         if (model.find("NorLever01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
@@ -6312,7 +6390,7 @@ namespace MiscThings {
 
                         if (model.find("ImpWoodDoorDoubleLoad01") != std::string::npos)
                         {
-                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 250.0f, 100.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
@@ -6906,6 +6984,10 @@ namespace MiscThings {
                                                 target_name = get_alias_name_by_id(the_quest, target->alias);
 
                                                 this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+
+                                                this_quest.displaytext = MiscThings::fix_book_description(this_quest.displaytext);
+
 
                                                 if (this_quest.name == "Unbound" && target->alias == 124)
                                                     target_name = "Go with Hadvar (Imperials)";
