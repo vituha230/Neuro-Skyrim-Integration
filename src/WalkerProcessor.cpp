@@ -3211,7 +3211,7 @@ namespace WalkerProcessor {
             if (target_actor->currentProcess)
                 if (target_actor->currentProcess->middleHigh)
                 {
-                    if (is_pickpocketing() || (is_fighting() && has_ranged_weapon_equipped(get_current_active_hand())))
+                    if (is_pickpocketing() || (player->GetDistance(target) > 400.0f && is_fighting() && has_ranged_weapon_equipped(get_current_active_hand())))
                     {
                         if (target_actor->currentProcess->middleHigh->torsoNode)
                         {
@@ -8563,7 +8563,7 @@ namespace WalkerProcessor {
         bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
 
 
-        if (shout_mode)
+        if (shout_mode || player->GetDistance(target_ref) < 400.0f)
             lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
 
 
