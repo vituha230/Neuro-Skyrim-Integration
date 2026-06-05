@@ -2947,6 +2947,17 @@ namespace Observer {
 																	result.push_back("[ " + name + " closed]");
 															}
 
+															if (anim_name == "PortGatePole01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal pole gate", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " opened]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " closed]");
+															}
+
 
 															if (anim_name == "PortGatePoleDwemer01")
 															{
@@ -3172,6 +3183,19 @@ namespace Observer {
 											if (new_state.trap_firing == 16)
 											{
 												result.push_back("[Battering ram log swings from the ceiling!]");
+											}
+
+											if (new_state.trap_firing == 17)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Strange Wall", a_ref);
+												result.push_back(name + " starged glowing...");
+											}
+
+											if (new_state.trap_firing == 18)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Strange Wall", a_ref);
+
+												result.push_back(name + " stopped glowing...");
 											}
 											//only when close.
 

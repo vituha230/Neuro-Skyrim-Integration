@@ -972,7 +972,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
     if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
     {
         ready_weapon();
-        set_universal_block(1.0f);
+        set_universal_block(1.3f);
         return false;
     }
 
@@ -995,6 +995,11 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
     if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (MiscThings::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
     {
+
+        if (low_mana_check)
+        {
+            send_random_context("You dont have enough mana to cast this spell!", false);
+        }
 
         //set_universal_block(1.0f);
         if (right)
@@ -1081,6 +1086,13 @@ bool is_casting_ult()
 {
     return long_cast_ult;
 }
+
+
+bool is_casting_cast()
+{
+    return do_cast;
+}
+
 
 
 float fishing_reaction_time = 0.5f;

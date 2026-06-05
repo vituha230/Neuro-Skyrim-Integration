@@ -61,6 +61,7 @@ bool launching_sprint();
 
 void use_ult();
 
+bool is_casting_cast();
 
 void walk_forward();
 

@@ -6115,7 +6115,6 @@ namespace WalkerProcessor {
                 }
 
 
-
                 right_attack_cancel();
                 left_attack_cancel();
 
@@ -10010,6 +10009,10 @@ namespace WalkerProcessor {
         std::string result = "";
         std::string target_name = target_ref->GetDisplayFullName();
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        auto player_actor = (RE::Actor*)player->AsReference();
+
         if (MiscThings::is_intro())
         {
             if (location_mode)
@@ -10047,6 +10050,27 @@ namespace WalkerProcessor {
                     reset_walker();
                     return "";
                 }
+
+                RE::TESObjectREFR* college_ward_spell_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf9363);
+
+                if (target_ref == college_ward_spell_marker)
+                {
+                    send_random_context("You walked to the point. When Tolfdir is ready, cast the Ward spell", false);
+                    reset_walker();
+
+                    RE::TESObjectREFR* tolfdir = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1a1);
+
+                    look_at_object_by_refr(tolfdir);
+
+                    if (player->IsSneaking())
+                        crouch(); //uncrouch
+
+                       
+                    //stop_sneaking = true; //doesnt work in this situation its only checked in some other place
+
+                    return "";
+                }
+
 
                 auto tg09_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7020df8);
 
@@ -10111,7 +10135,6 @@ namespace WalkerProcessor {
         RE::TESObjectREFR* timewound = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x430a3);
         RE::TESObjectREFR* timewound2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbf4dd);
 
-        auto player = RE::PlayerCharacter::GetSingleton();
 
         if (target_ref && (target_ref == timewound || target_ref == timewound2))
         {
@@ -13404,6 +13427,19 @@ namespace WalkerProcessor {
                                                                                                 dont_autointerract = true;
                                                                                             
                                                                                         }
+                                                                                        
+                                                                                        auto saartal_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG02");
+
+                                                                                        if (last_quest == saartal_quest)
+                                                                                        {
+                                                                                            auto objective1 = (RE::BGSQuestObjective*)RE::TESForm::LookupByID(0x45921);
+                                                                                            auto objective2 = (RE::BGSQuestObjective*)RE::TESForm::LookupByID(0x45921);
+
+                                                                                            if (last_quest_objective && (last_quest_objective->index == 40 || last_quest_objective->index == 60))
+                                                                                                dont_autointerract = true;
+                                                                                        }
+
+
 
                                                                                         RE::TESObjectREFR* college_entrance_spell_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51190);
 

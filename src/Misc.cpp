@@ -91,6 +91,20 @@ namespace MiscThings {
             return 40.0f;
         }
 
+        RE::TESObjectREFR* college_ward_spell_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf9363);
+
+        if (target == college_ward_spell_marker)
+        {
+            return 40.0f;
+        }
+
+        auto saartal_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b24d);
+
+        if (target == saartal_door)
+        {
+            return 300.0f;
+        }
+
         return original_threshold;
     }
 
@@ -2120,6 +2134,8 @@ namespace MiscThings {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_pos = player->GetPosition();
 
+        auto parent_cell = player->GetParentCell();
+
 
         auto thief_guild_hatch = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2d2dd);
 
@@ -2137,6 +2153,25 @@ namespace MiscThings {
             }
         }
 
+
+        auto saartal_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG02");
+
+        if (quest == saartal_quest)
+        {
+            auto stage = saartal_quest->GetCurrentStageID();
+
+            if (stage == 60)
+            {
+                auto saartall_cell1 = RE::TESForm::LookupByID(0x15220);
+
+                auto redirect_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b24d);
+
+                if (redirect_door && parent_cell == saartall_cell1)
+                {
+                    return redirect_door;
+                }
+            }
+        }
 
         auto twilight_sanct_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG09");
 
@@ -3962,6 +3997,12 @@ namespace MiscThings {
                     result = name;
                 }
 
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePole01")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal pole gate", a_ref);
+                    result = name;
+                }
+
                 if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePoleDwemer01")
                 {
                     std::string name = MiscThings::insert_object_into_list_custom_name("Wide dwemer metal pole gate", a_ref);
@@ -4457,9 +4498,6 @@ namespace MiscThings {
                 }
             }
 
-
-
-
         }
 
 
@@ -4540,6 +4578,8 @@ namespace MiscThings {
         return result;
     }
 
+
+    std::string var_name123 = "enable";
 
 
     int trap_firing(RE::TESObjectREFR* trap)
@@ -4687,6 +4727,85 @@ namespace MiscThings {
 
 
 
+        auto saartal_fx = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x106bba);
+
+        if (trap == saartal_fx)
+        {
+
+            auto saartal_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG02");
+
+
+            if (saartal_quest)
+            {
+                auto stage = saartal_quest->GetCurrentStageID();
+
+                if (stage == 40)
+                {
+                    auto amulet = (RE::TESBoundObject*)RE::TESForm::LookupByID(0x233d0);
+
+                    if (amulet)
+                    {
+                        if (is_equipped(amulet))
+                        {
+                            return 17;
+                        }
+                    }
+                }
+            }
+
+            return 18;
+
+            /*
+            RE::BSAnimationGraphManagerPtr p_manager = nullptr;
+
+            bool test = trap->GetAnimationGraphManager(p_manager);
+
+            bool result = false;
+
+            
+
+
+            bool test2 = trap->GetGraphVariableBool(var_name123, result);
+
+            if (test && p_manager)
+            {
+                if (p_manager->activeGraph < std::size(p_manager->graphs))
+                {
+                    auto& graph = p_manager->graphs[p_manager->activeGraph];
+
+                    bool stop_here = false;
+                }
+
+                bool stop_here = false;
+            }
+
+            bool stop_here = false;
+
+            if (saartal_quest)
+            {
+                object_p = General::Script::GetObject(saartal_quest, "MG02QuestScript");
+                if (object_p)
+                {
+                    RE::BSFixedString prop_name = "::WallTrigger_var";
+
+                    int test1 = General::Script::GetVariable<int>(object_p, prop_name);
+
+                    prop_name = "::WallTrigger_var";
+
+
+                    if (false)
+                    {
+                        result = 1; //dart trap firing
+                    }
+
+                    bool stop_here = false;
+                }
+            }
+            */
+        }
+
+
+
         return result;
     }
 
@@ -4813,6 +4932,13 @@ namespace MiscThings {
 
         }
 
+
+        auto saartal_pole_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xde086);
+
+        if (object == saartal_pole_gate && saartal_pole_gate)
+        {
+            result = "[Linked to pole gate, blocking the path]";
+        }
 
         return result;
     }
@@ -5792,6 +5918,17 @@ namespace MiscThings {
                 */
 
 
+                auto saartal_fx = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x106bba);
+
+                if (saartal_fx && object == saartal_fx)
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 100.0f, 0.0f, 40.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    result = rotated_shift_vector;
+                    return result;
+                }
+
 
                 auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
 
@@ -5948,6 +6085,13 @@ namespace MiscThings {
                         if (model.find("MeaderyBrewer01Act") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 300.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("NorSecRmSmDoorSm02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { -100.0f, 0.0f, 140.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }

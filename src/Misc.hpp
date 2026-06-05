@@ -144,6 +144,7 @@ namespace MiscThings {
 
     bool sees_player(RE::TESObjectREFR* actor_ref);
 
+    bool is_equipped(RE::TESBoundObject* object);
 
     std::vector<RE::Actor*> get_player_attackers(bool raycastable_only = false, RE::TESObjectREFR* exclude_ref = nullptr, bool only_fighting = false, float range = 9000.0f);
 

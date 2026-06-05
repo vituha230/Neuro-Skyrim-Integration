@@ -4,6 +4,8 @@
 //crucial:
 
 
+//TODO fix tolfdir autospeak in saartal (ONLY CERTAIN STAGES)
+
 //TODO mage guild
 //TODO dark brotherhood
 //TODO companions
@@ -3037,7 +3039,7 @@ class MyHook {
                                 skip_raycast = true;
                             }
 
-                            if (speaker && WalkerProcessor::get_walker_inactive_time() > 4.0f && (skip_raycast || MiscThings::raycastable(speaker, 5000.0f, false)) && !WalkerProcessor::walker_active() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1)
+                            if (!is_casting_cast() && !is_casting_ult() && speaker && WalkerProcessor::get_walker_inactive_time() > 4.0f && (skip_raycast || MiscThings::raycastable(speaker, 5000.0f, false)) && !WalkerProcessor::walker_active() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1)
                             {
                                 WalkerProcessor::look_at_object_by_refr(speaker);
                             }
