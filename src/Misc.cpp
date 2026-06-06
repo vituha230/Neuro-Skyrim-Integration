@@ -134,6 +134,8 @@ namespace MiscThings {
         }
 
         auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+
+        if (target == magnus_eye)
         {
             return 300.0f;
         }
