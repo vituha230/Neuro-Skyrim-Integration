@@ -866,16 +866,6 @@ namespace MapProcessor {
 			return result;
 		}
 
-
-		if (choice == -1)
-		{
-			quit_menu();
-			result.first = true;
-			result.second = "[Closed map]";
-			return result;
-		}
-
-
 		if (choice != 0 && choice != 1)
 		{
 			result.first = false;

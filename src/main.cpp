@@ -23,6 +23,8 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+//TODO fix take all command for followers
+//TODO fix map (fast travel 
 //TODO spells in both hands
 //TODO dualcasting + attacking with both hands if 2 melee weapons
 //TODO sneak toggle
