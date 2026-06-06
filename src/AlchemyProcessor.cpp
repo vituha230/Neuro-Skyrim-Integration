@@ -292,7 +292,7 @@ std::vector<MenuOption> get_ingredient_options()
 			i++;
 		}
 
-		result.push_back({ -1, "[QUIT ALCHEMY]" });
+		result.push_back({ -1, "[QUIT ALCHEMY (put this as id1 or id2 if you want to quit)]" });
 	}
 
 	return result;
