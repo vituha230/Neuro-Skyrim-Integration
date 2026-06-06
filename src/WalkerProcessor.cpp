@@ -2284,8 +2284,8 @@ namespace WalkerProcessor {
                                                         for (int m = n + 1; m < std::size(potential_loop_points); m++)
                                                         {
                                                             if (confirmed_loop_points[0].GetDistance(potential_loop_points.at(n).first) > 400.0f &&
-                                                                confirmed_loop_points[0].GetDistance(potential_loop_points.at(n).first) > 400.0f &&
-                                                                confirmed_loop_points[1].GetDistance(potential_loop_points.at(m).first) > 400.0f &&
+                                                                confirmed_loop_points[1].GetDistance(potential_loop_points.at(n).first) > 400.0f &&
+                                                                confirmed_loop_points[0].GetDistance(potential_loop_points.at(m).first) > 400.0f &&
                                                                 confirmed_loop_points[1].GetDistance(potential_loop_points.at(m).first) > 400.0f)
                                                             {
                                                                 if (potential_loop_points.at(n).first != RE::NiPoint3::Zero() && potential_loop_points.at(m).first != RE::NiPoint3::Zero())
