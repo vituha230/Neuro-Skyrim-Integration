@@ -10,6 +10,8 @@
 //////////////////////////////////////////////////////
 // QUESTLINES
 
+//TODO polish thief guild
+
 //TODO mage guild
 //TODO dark brotherhood
 //TODO companions
@@ -23,8 +25,13 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO fix take all command for followers
-//TODO fix map (fast travel 
+//TODO map disable when enemies nearby (dont unregister command so its not highlighted, just fail it)
+//TODO map cooldown?
+//TODO adhd fix?
+//TODO go-to-location-by-foot follows quest if there is quest
+//TODO owned beds ignore raycast (for taverns)
+
+//TODO test malborn and klimek chest and maybe all container types 
 //TODO spells in both hands
 //TODO dualcasting + attacking with both hands if 2 melee weapons
 //TODO sneak toggle

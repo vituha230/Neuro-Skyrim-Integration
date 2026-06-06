@@ -107,6 +107,46 @@ way_to_fill way{};
 
 
 
+bool has_take_all_button()
+{
+	bool result = false;
+	RE::UI* ui = RE::UI::GetSingleton();
+	auto menu = ui->GetMenu<RE::ContainerMenu>();
+	RE::GFxValue var1;
+
+	if (ui && menu && ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
+		if (menu->uiMovie)
+			if (menu->uiMovie->GetVariable(&var1, "_root.Menu_mc.BottomBar_mc.Buttons"))
+				if (!var1.IsNull() && var1.IsArray())
+				{
+					auto size = var1.GetArraySize();
+					for (int i = 0; i < size; i++)
+					{
+						RE::GFxValue member{};
+						if (var1.GetElement(i, &member))
+						{
+							if (!member.IsNull())
+							{
+								RE::GFxValue label{};
+								
+								if (member.GetMember("_label", &label))
+								{
+									if (!label.IsNull() && label.IsString())
+									{
+										std::string label_text = label.GetString();
+
+										if (label_text == "$Take All")
+											return true;
+									}
+								}
+							}
+						}
+					}
+				}
+
+	return false;
+}
+
 
 
 bool is_inside_of_category()
@@ -270,7 +310,7 @@ std::vector<MenuOption> get_items_options()
 		}
 	}
 
-	if (!is_pickpocketing())
+	if (!is_pickpocketing() && has_take_all_button())
 		result.push_back({ -2, "[TAKE ALL]" });
 
 
@@ -311,7 +351,7 @@ std::vector<MenuOption> get_items_options()
 
 	bool is_possessions = is_possessions_chest();
 
-	if (is_possessions && !is_pickpocketing())
+	if (is_possessions && !is_pickpocketing() && has_take_all_button())
 	{
 		result.clear();
 		result.push_back({ -2, "[TAKE ALL]" });
@@ -1078,14 +1118,14 @@ void process_next_item()
 
 
 
-		if (item_choice == -2 && is_pickpocketing())
+		if (item_choice == -2 && (is_pickpocketing() || !has_take_all_button()))
 		{
 			item_choice_valid = false;
 			process_next_item();
 			return;
 		}
 
-		if (item_choice == -2)
+		if (item_choice == -2 && has_take_all_button())
 		{
 			//take all
 			set_universal_block(1.0f);
@@ -1136,7 +1176,7 @@ std::pair<bool, std::string> set_item_choice_array(std::vector<int> ids)
 	//check take all
 	for (auto id : ids)
 	{
-		if (id == -2 && !is_pickpocketing())
+		if (id == -2 && !is_pickpocketing() && has_take_all_button())
 		{
 			set_universal_block(1.0f);
 			ready_weapon();
@@ -1169,6 +1209,8 @@ std::pair<bool, std::string> set_item_choice_array(std::vector<int> ids)
 
 
 
+
+
 std::pair<bool, std::string> set_item_choice(int id)
 {
 	std::pair<bool, std::string> result{};
@@ -1189,7 +1231,7 @@ std::pair<bool, std::string> set_item_choice(int id)
 		return result;
 	}
 
-	if (id == -2 && is_pickpocketing())
+	if (id == -2 && (is_pickpocketing() || has_take_all_button()))
 	{
 		result.first = false;
 		result.second = "Invalid item ID";
@@ -1197,7 +1239,7 @@ std::pair<bool, std::string> set_item_choice(int id)
 	}
 
 
-	if (id == -2)
+	if (id == -2 && has_take_all_button())
 	{
 		//take all
 		
@@ -1660,7 +1702,7 @@ void processor(float dtime)
 							auto options = get_items_options();
 
 							int minimum = 2;
-							if (is_pickpocketing())
+							if (is_pickpocketing() || !has_take_all_button())
 								minimum = 1;
 
 							if (!madesi_mode && !klimmek_mode && std::size(options) <= minimum && !is_possessions_chest())
