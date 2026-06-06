@@ -335,7 +335,7 @@ namespace MiscThings {
     }
 
 
-    RE::NiPoint3 EXP_get_nearest_navmesh_node(RE::TESObjectREFR* object, RE::NiPoint3 loop1, RE::NiPoint3 loop2)
+    RE::NiPoint3 EXP_get_nearest_navmesh_node(RE::TESObjectREFR* object, RE::NiPoint3 loop1, RE::NiPoint3 loop2, bool inverse_orth_loop_evasion)
     {
         RE::NiPoint3 result = RE::NiPoint3::Zero();
 
@@ -416,9 +416,19 @@ namespace MiscThings {
                                         RE::NiPoint3 result_orth;
 
                                         if (test2.GetDistance(test1) < test3.GetDistance(test1))
-                                            result_orth = orth2;
+                                        {
+                                            if (inverse_orth_loop_evasion)
+                                                result_orth = orth1;
+                                            else
+                                                result_orth = orth2;
+                                        }
                                         else
-                                            result_orth = orth1;
+                                        {
+                                            if (inverse_orth_loop_evasion)
+                                                result_orth = orth2;
+                                            else
+                                                result_orth = orth1;
+                                        }
 
                                         evasion_direction = evasion_direction + result_orth * 20000.0f;
 

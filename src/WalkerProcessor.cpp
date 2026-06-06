@@ -31,6 +31,8 @@ namespace WalkerProcessor {
     std::vector<std::pair<RE::NiPoint3, bool>> potential_loop_points{};
     RE::NiPoint3 confirmed_loop_points[2];
     bool loop_evasion_mode = false;
+    bool inverse_orth_loop_evasion = false;
+
 
 
     bool dont_invalidate_path_on_walk_again = false;
@@ -441,6 +443,8 @@ namespace WalkerProcessor {
 
         detected_shit_door = nullptr; //reset only on saveload
         shit_door_locked = false;
+
+        inverse_orth_loop_evasion = false;
     }
 
 
@@ -1142,7 +1146,7 @@ namespace WalkerProcessor {
                                     loop1_test = buffer1;
                                 }
                                 
-                                auto test_point = MiscThings::EXP_get_nearest_navmesh_node(temp_target, loop1_test, loop2_test);
+                                auto test_point = MiscThings::EXP_get_nearest_navmesh_node(temp_target, loop1_test, loop2_test, inverse_orth_loop_evasion);
 
                                 auto marker_ref = marker->AsReference();
 
@@ -2206,7 +2210,7 @@ namespace WalkerProcessor {
 
                 auto marker_pathfinder = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7001834);
 
-                if (mulY < -0.5f && !MiscThings::is_interior_cell() && marker_pathfinder && player->GetDistance(target_ref) > 15000.0f && !is_fighting())
+                if (abs(mulX) > 0.5f && mulY < 0.0f  && !MiscThings::is_interior_cell() && marker_pathfinder && player->GetDistance(target_ref) > 15000.0f && !is_fighting())
                 {
                     auto player_pos = player->GetPosition();
 
@@ -2272,6 +2276,34 @@ namespace WalkerProcessor {
                                                 clear_loop_evasion();
                                                 potential_loop_points.push_back({ remember_point, true });
                                             }
+                                            else
+                                                if (!inverse_orth_loop_evasion)
+                                                {
+                                                    RE::NiPoint3 first_edge2 = RE::NiPoint3::Zero();
+                                                    for (int n = 0; n < std::size(potential_loop_points); n++)
+                                                        for (int m = n + 1; m < std::size(potential_loop_points); m++)
+                                                        {
+                                                            if (confirmed_loop_points[0].GetDistance(potential_loop_points.at(n).first) > 400.0f &&
+                                                                confirmed_loop_points[0].GetDistance(potential_loop_points.at(n).first) > 400.0f &&
+                                                                confirmed_loop_points[1].GetDistance(potential_loop_points.at(m).first) > 400.0f &&
+                                                                confirmed_loop_points[1].GetDistance(potential_loop_points.at(m).first) > 400.0f)
+                                                            {
+                                                                if (potential_loop_points.at(n).first != RE::NiPoint3::Zero() && potential_loop_points.at(m).first != RE::NiPoint3::Zero())
+                                                                {
+                                                                    if (potential_loop_points.at(n).first.GetDistance(potential_loop_points.at(m).first) < 300.0f)
+                                                                    {
+                                                                        if (first_edge2 != RE::NiPoint3::Zero() && first_edge2.GetDistance(potential_loop_points.at(m).first) > 350.0f)
+                                                                        {
+                                                                            inverse_orth_loop_evasion = true;
+                                                                        }
+                                                                        else
+                                                                            first_edge2 = potential_loop_points.at(n).first;
+                                                                    }
+                                                                }
+                                                            }
+
+                                                        }
+                                                }
 
                                         }
                                     }

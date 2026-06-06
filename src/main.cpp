@@ -6,7 +6,9 @@
 
 //TODO check unstuck triggering on tolfdir when he is walking around magnus eye
 
-//TODO fix tolfdir autospeak in saartal (ONLY CERTAIN STAGES)
+
+//////////////////////////////////////////////////////
+// QUESTLINES
 
 //TODO mage guild
 //TODO dark brotherhood
@@ -15,8 +17,20 @@
 //TODO civil war
 //TODO dragonborn dlc
 //TODO dawnguard dlc
-
 //TODO random sidequests
+
+
+//////////////////////////////////////////////////////
+// RANDOM STUFF
+
+//TODO spells in both hands
+//TODO dualcasting + attacking with both hands if 2 melee weapons
+//TODO sneak toggle
+//TODO conjuration should not summon if already summoned
+//TODO optional argument to equip function so player can specify hand
+
+
+
 
 
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
