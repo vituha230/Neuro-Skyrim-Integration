@@ -26,10 +26,11 @@
 // RANDOM STUFF
 
 //TODO map disable when enemies nearby (dont unregister command so its not highlighted, just fail it)
-//TODO map cooldown?
+//TODO map cooldown? map only available when there are quests to fast travel?
 //TODO adhd fix?
 //TODO go-to-location-by-foot follows quest if there is quest
 //TODO owned beds ignore raycast (for taverns)
+
 
 //TODO test malborn and klimek chest and maybe all container types 
 //TODO spells in both hands

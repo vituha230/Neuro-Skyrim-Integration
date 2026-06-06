@@ -404,7 +404,10 @@ namespace MapProcessor {
 		if (player->actorState1.swimming)
 			return false;
 
-		if (player->GetParentCell() && player->GetParentCell()->IsInteriorCell())
+		//if (player->GetParentCell() && player->GetParentCell()->IsInteriorCell())
+		//	return false;
+
+		if (!player->GetWorldspace() || player->GetWorldspace()->flags.all(RE::TESWorldSpace::Flag::kCantFastTravel))
 			return false;
 
 
@@ -1011,10 +1014,24 @@ namespace MapProcessor {
 					send_random_context("[Successfully travelled]", false);
 				}
 				else
+				{
+					if (catch_result.find("enemies are nearby") != std::string::npos || catch_result.find("guards are pursuing") != std::string::npos || catch_result.find("jumping or falling") != std::string::npos)
+					{
+						catch_result += ". Closing the map";
+						quit_menu();
+					}
+						
+
 					send_random_context("[" + catch_result + "]", false);
+
+
+				}
+					
 
 				set_universal_block(1.0f);
 				reset_menu();
+
+				return;
 			}
 
 			catch_result_timer += dtime;
