@@ -140,16 +140,22 @@ std::pair<bool, std::string> choose_ingredients(std::vector<int> ingredients)
 		auto alchemy_menu = (RE::CraftingSubMenus::AlchemyMenu*)menu->subMenu;
 		int size = std::size(alchemy_menu->ingredientEntries);
 
+		int i = 0;
 		for (auto ingredient : ingredients)
 		{
 			if (ingredient < size && ingredient >= 0)
 				ingredient_choice.push_back(ingredient);
 			else
 			{
-				result.first = false;
-				result.second = "Invalid ingredient ID";
-				return result;
+				if (std::size(ingredients) < 2 || i < 2)
+				{
+					result.first = false;
+					result.second = "Invalid ingredient ID";
+					return result;
+				}
 			}
+
+			i++;
 		}
 
 		ingredient_choice_valid = true;
@@ -583,7 +589,16 @@ void processor(float dtime)
 								if (!alchemy_request_sent)
 								{
 									
-									if (force_choice(get_ingredient_options(), "You are in alchemy menu in Skyrim. Choose 2 or 3 ingredients to combine. Ingredients must be different.", force_type::alchemy_ingredients))
+									auto options = get_ingredient_options();
+
+									if (std::size(options) <= 2)
+									{
+										send_random_context("You dont have enough ingredients to combine. Quitting alchemy...", false);
+										quit_menu();
+										return;
+									}
+
+									if (force_choice(options, "You are in alchemy menu in Skyrim. Choose 2 or 3 ingredients to combine. Ingredients must be different.", force_type::alchemy_ingredients))
 										alchemy_request_sent = true;
 								}
 								else
