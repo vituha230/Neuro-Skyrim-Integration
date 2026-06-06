@@ -1734,7 +1734,7 @@ namespace WalkerProcessor {
 
         bool stealth_arching = false;
 
-        if ((is_fighting() || Observer::threat_response_choice_pending()) && has_ranged_weapon_equipped(get_current_active_hand()))
+        if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true))
         {
             if (target_ref && target_ref->IsActor())
                 stealth_arching = !MiscThings::sees_player(target_ref);
@@ -3616,7 +3616,7 @@ namespace WalkerProcessor {
 
             bool stealth_arching = false;
 
-            if ((is_fighting() || Observer::threat_response_choice_pending()) && has_ranged_weapon_equipped(get_current_active_hand()))
+            if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true))
             {
                 stealth_arching = !MiscThings::sees_player(target);
             }
