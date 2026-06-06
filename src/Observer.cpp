@@ -1100,7 +1100,7 @@ namespace Observer {
 
 				bool first_detected_threat_is_valid = false;
 
-				if (first_detected_threat && first_detected_threat->IsActor() && !first_detected_threat->IsDead())
+				if (first_detected_threat && MiscThings::is_object_valid(first_detected_threat) && first_detected_threat->IsActor() && !first_detected_threat->IsDead())
 					first_detected_threat_is_valid = true;
 
 				auto attackers = MiscThings::get_player_attackers(true, nullptr, false, 5000.0f); //initially trigger with 5k max
