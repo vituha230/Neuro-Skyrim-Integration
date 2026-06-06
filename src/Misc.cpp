@@ -6542,7 +6542,9 @@ namespace MiscThings {
                         {
                             auto pos = object->GetPosition();
                             auto nearest_navmesh_pos = MiscThings::get_nearest_navmesh_node(object);
-                            result = nearest_navmesh_pos - pos;
+
+                            if (nearest_navmesh_pos != RE::NiPoint3::Zero())
+                                result = nearest_navmesh_pos - pos;
                         }
 
 
