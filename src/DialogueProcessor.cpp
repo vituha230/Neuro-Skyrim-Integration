@@ -42,6 +42,9 @@ namespace DialogueProcessor {
     float no_options_counter_time = 0.0f;
 
 
+    float no_subtitles_timeout = 0.0f;
+
+
     RE::MenuTopicManager::Dialogue old_dialogue;
 
     void clean_old_dialogue()
@@ -421,6 +424,9 @@ namespace DialogueProcessor {
             fix_cursor();
             WalkerProcessor::reset_walker();
         }
+        else
+            no_subtitles_timeout = 0.0f;
+
             
 
 
@@ -546,7 +552,11 @@ namespace DialogueProcessor {
                 }
 
             auto speaker_ref = topic_manager->speaker.get().get();
-            auto speaker_actor = (RE::Actor*)speaker_ref;
+
+            RE::Actor* speaker_actor = nullptr;
+
+            if (speaker_ref && speaker_ref->IsActor())
+                speaker_actor = (RE::Actor*)speaker_ref;
 
             //auto test = speaker_actor->boolBits;
 
@@ -554,18 +564,55 @@ namespace DialogueProcessor {
             if (topic_manager->dialogueList)
                 if (!topic_manager->dialogueList->empty() && topic_manager->dialogueList->front())
                 {
+                        bool finished_speaking = false;
 
-                        bool finished_speaking = speaker_actor->boolBits.any(RE::Actor::BOOL_BITS::kVoiceFileDone);
+                        if (speaker_actor)
+                            finished_speaking = speaker_actor->boolBits.any(RE::Actor::BOOL_BITS::kVoiceFileDone);
+
+                            
+                        
+                        if (!finished_speaking)
+                        {
+                            RE::SubtitleManager* sub_manager = RE::SubtitleManager::GetSingleton();
+                            if (sub_manager)
+                                if (sub_manager->subtitles.data())
+                                {
+                                    std::string subtitle_msg = sub_manager->subtitles.data()->subtitle.c_str();
+                                    if (subtitle_msg == "")
+                                    {
+                                        if (no_subtitles_timeout > 3.0f)
+                                            finished_speaking = true;
+                                        else
+                                            no_subtitles_timeout += dtime;
+                                    }
+                                    else
+                                        no_subtitles_timeout = 0.0f;
+
+                                }
+                                else
+                                {
+                                    if (no_subtitles_timeout > 3.0f)
+                                        finished_speaking = true;
+                                    else
+                                        no_subtitles_timeout += dtime;
+                                }
+                        }
+                        else
+                            no_subtitles_timeout = 0.0f;
+
+
                         //if (!finished_speaking)
                         //    pause_time = 0.0f;
 
                         if (finished_speaking)
                         {
+                            
+
                             if (old_dialogue.topicText != topic_manager->dialogueList->front()->topicText)
                             {
                                 if (pause_time > 0.5f)
                                 {
-
+                                    no_subtitles_timeout = 0.0f;
 
 
                                     /*

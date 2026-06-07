@@ -5,6 +5,11 @@
 
 namespace MiscThings {
 
+    int mage_quest_armillary_state();
+
+    RE::TESObjectREFR* get_alias_ref_by_name(RE::TESQuest* quest, std::string name);
+
+    bool is_door_closed(RE::TESObjectREFR* door);
 
     RE::NiPoint3 get_nearest_navmesh_node(RE::TESObjectREFR* object);
     RE::NiPoint3 EXP_get_nearest_navmesh_node(RE::TESObjectREFR* object, RE::NiPoint3 loop1, RE::NiPoint3 loop2, bool inverse_orth_loop_evasion);
@@ -277,6 +282,7 @@ namespace MiscThings {
     bool in_skuldafn();
     bool player_inside_of_soltsteim_midgates();
 
+    bool player_has_item(RE::TESBoundObject* item);
 
     bool have_force_only_menu_open();
 

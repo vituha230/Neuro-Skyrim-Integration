@@ -678,7 +678,16 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text, bo
     {
         speaker_name = "...";
             
-        if (!force_display)
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        bool ignore_force = false;
+
+        if (player->GetParentCell() && player->GetParentCell()->GetFormID() == 0xae783)
+            ignore_force = true;
+        //auto augur_speaker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4fa15);
+
+        if (!force_display && !ignore_force)
             return;//it gave subtitles to things that appear very far across the map and are not actually visible yet
     }
         

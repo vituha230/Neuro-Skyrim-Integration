@@ -1388,7 +1388,7 @@ namespace Observer {
 
 
 
-	void detect_interesting_objects(float dtime, bool ignore_raycast)
+	void detect_interesting_objects(float dtime, bool ignore_raycast, float special_range)
 	{
 		if (observers_green_light && !MiscThings::have_force_only_menu_open())
 		{
@@ -1875,7 +1875,12 @@ namespace Observer {
 												}
 											}
 
-											if (a_ref->GetDistance(player_ref) < 500.0f)
+											float inventory_range = 500.0f;
+
+											if (special_range > 0.0f)
+												inventory_range = special_range;
+
+											if (a_ref->GetDistance(player_ref) < inventory_range)
 											{
 												if (base_obj->IsInventoryObject())
 												{
@@ -2827,12 +2832,35 @@ namespace Observer {
 															}
 
 
+															std::string string_name = "";
+															string_name = extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName;
+
+															if (string_name.find("DweObservatoryDome") != std::string::npos)
+															{
+																std::string name = "Dwemer Dome Mechanism";
+
+																if (activation != 0)
+																{
+																	result.push_back("[" + name + " turned to position " + std::to_string(activation) + "...]" + MiscThings::get_pillar_solved_text(a_ref));
+																}
+																else
+																{
+																	silent = true;
+																	result.push_back("[" + name + " started rotating...");
+																	WalkerProcessor::look_at_object_by_refr(a_ref, true, 0.25f);
+																}
+
+
+															}
+
+
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweAstrolabeArmillary01")
 															{
 																std::string name = "Dwemer armillary mechanism";
 
 																if (activation == 10)
 																{
+																	silent = true;
 																	result.push_back("[" + name + " started rotating...]");
 																	WalkerProcessor::look_at_object_by_refr(a_ref, true, 0.25f);
 																}
@@ -2847,6 +2875,7 @@ namespace Observer {
 
 																if (activation == 10)
 																{
+																	silent = true;
 																	result.push_back("[" + name + " started rotating...]");
 																	WalkerProcessor::look_at_object_by_refr(a_ref, true);
 																}
@@ -3105,6 +3134,13 @@ namespace Observer {
 												else
 												{
 													result.push_back("[" + activator_name + " triggered " + name + "!]");
+												}
+
+												auto magequest_plate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xaf341);
+
+												if (a_ref == magequest_plate && a_ref)
+												{
+													jump();
 												}
 
 											}

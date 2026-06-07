@@ -17,6 +17,22 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
 
 
+
+    bool player_has_item(RE::TESBoundObject* item)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (item && item->IsBoundObject())
+        {
+            return player->GetItemCount(item) > 0;
+        }
+
+        return false;
+    }
+
+
+
+
     bool is_known_shit_door(RE::TESObjectREFR* door)
     {
         if (door)
@@ -86,6 +102,8 @@ namespace MiscThings {
 
     float get_weird_threshold(float original_threshold, RE::TESObjectREFR* target)
     {
+        float result = 0.0f;
+
         auto meadery_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3cf65);
 
         if (target == meadery_door)
@@ -140,8 +158,22 @@ namespace MiscThings {
             return 300.0f;
         }
 
+        auto augur = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x108d7c);
 
-        return original_threshold;
+        if (target == augur)
+        {
+            return 300.0f;
+        }
+
+        auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
+
+        if (target == mzulft_crystal_pickup_fake)
+        {
+            return 180.0f;
+        }
+
+
+        return 0.0f;
     }
 
 
@@ -2174,6 +2206,35 @@ namespace MiscThings {
         return nullptr;
     }
 
+    bool is_door_closed(RE::TESObjectREFR* door)
+    {
+        bool result = false;
+
+        if (door)
+        {
+            auto base_obj = door->GetBaseObject();
+
+            if (base_obj)
+            {
+                auto base_type = base_obj->GetFormType();
+
+                if (base_type == RE::FormType::Door)
+                {
+                    auto door_refr = (RE::TESObjectDOOR*)door;
+
+                    if (door_refr->GetOpenState(door) == RE::BGSOpenCloseForm::OPEN_STATE::kClosed)
+                        result = true;
+                }
+            }
+
+            
+        }
+
+        return result;
+
+    }
+
+
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
     {
@@ -2181,6 +2242,164 @@ namespace MiscThings {
         auto player_pos = player->GetPosition();
 
         auto parent_cell = player->GetParentCell();
+
+
+        auto mage_quest_mzulft = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG06");
+
+        if (quest == mage_quest_mzulft)
+        {
+            auto stage = mage_quest_mzulft->GetCurrentStageID();
+
+            if (stage == 30)
+            {
+                if (parent_cell && parent_cell->GetFormID() == 0x1523f)
+                {
+                    auto redirect_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1ed31);
+                    auto dead_mage = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1ed2f);
+
+                    if (redirect_door && is_door_locked(redirect_door))
+                    {
+                        return dead_mage;
+                    }
+
+                    //it stops being locked when we obtain the key 
+
+                    if (redirect_door && is_door_closed(redirect_door))
+                    {
+                        return redirect_door;
+                    }
+                }
+
+
+                if (parent_cell && parent_cell->GetFormID() == 0x54b6f)
+                {
+                    auto redirect_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x57b65);
+                    auto key_chest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xb0b56);
+
+                    if (redirect_door2 && is_door_locked(redirect_door2))
+                    {
+                        return key_chest;
+                    }
+
+                    if (redirect_door2 && is_door_closed(redirect_door2))
+                    {
+                        return redirect_door2;
+                    }
+
+
+                    //if door is locked - redirect to door
+                    auto redirect_door3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+
+                    if (redirect_door3 && is_door_locked(redirect_door3))
+                        return redirect_door3;
+
+                    auto focusing_crystal_ref = get_alias_ref_by_name(mage_quest_mzulft, "MG06Crystal");
+                    
+                    if (focusing_crystal_ref)
+                    {
+                        auto focusing_crystal = focusing_crystal_ref->GetBaseObject();
+
+                        if (focusing_crystal && !MiscThings::player_has_item(focusing_crystal))
+                        {
+                            //redirect to npc
+                            auto paratus = get_alias_ref_by_name(mage_quest_mzulft, "MG06ParatusAlias");
+                            if (paratus)
+                                return paratus;
+
+                        }
+                    }
+
+                }
+
+            }
+
+            if (stage >= 30 && stage < 60)
+            {
+
+                if (mage_quest_armillary_state() != 2)
+                {
+                    auto mzulft_crystal_pickup = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x102ed3);
+
+                    if (target == mzulft_crystal_pickup)
+                    {
+                        auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
+
+                        if (mzulft_crystal_pickup_fake)
+                            return mzulft_crystal_pickup_fake;
+                    }
+                }
+                else
+                {
+                    if (parent_cell && parent_cell->GetFormID() == 0x54b6f)
+                    {
+                        auto dome1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x94abc);
+                        auto dome2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x94abb);
+                        auto dome3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x94aba);
+
+                        bool dome1_solved = MiscThings::is_pillar_solved(dome1);
+                        bool dome2_solved = MiscThings::is_pillar_solved(dome2);
+                        bool dome3_solved = MiscThings::is_pillar_solved(dome3);
+
+                        auto button3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9bc59);
+                        auto button2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9bc58);
+                        auto button1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9bc57);
+
+                        if (!dome1_solved && button1)
+                            return button1;
+
+                        if (!dome2_solved && button2)
+                            return button2;
+
+                        if (!dome3_solved && button3)
+                            return button3;
+                            
+                    }
+                }
+
+            }
+
+            if (stage == 60)
+            {
+                if (parent_cell && parent_cell->GetFormID() == 0x54b6f)
+                {
+                    auto redirect_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x55ef0);
+
+                    if (redirect_door)
+                        return redirect_door;
+                }
+
+                if (parent_cell && (parent_cell->GetFormID() == 0xb9da || parent_cell->GetFormID() == 0xb9fb))
+                {
+                    auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a56);
+                    if (redirect_marker)
+                        return redirect_marker;
+                }
+
+            }
+
+        }
+
+
+        auto mage_quest_4 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG04");
+
+        if (quest == mage_quest_4)
+        {
+            auto stage = mage_quest_4->GetCurrentStageID();
+
+            if (stage == 45)
+            {
+                auto augur = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x108d7c);
+
+                auto redirect_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7284d);
+
+                if (augur && target == augur && redirect_door && is_door_locked(redirect_door))
+                {
+                    return redirect_door;
+                }
+
+            }
+        }
+
 
 
         auto thief_guild_hatch = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2d2dd);
@@ -3011,6 +3230,42 @@ namespace MiscThings {
             }
         }
         return 0;
+    }
+
+
+
+    int mage_quest_armillary_state()
+    {
+        auto armillary = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x94abd);
+
+        if (armillary)
+        {
+            auto object_p = General::Script::GetObject(armillary, "MG06ArmillaryScript");
+
+            if (object_p)
+            {
+                //RE::BSFixedString prop_name = "::ReadyForSpells_var";
+                //bool some_shit = General::Script::GetVariable<int>(object_p, prop_name);
+
+
+                std::string state = "";
+                state = object_p->currentState;
+
+                //4 is correct. frost gives +1, fire gives -1
+
+                if (state == "position01" || state == "position02" || state == "position03")
+                    return 0;//needs cold
+
+                if (state == "position05" || state == "Position06")
+                    return 1;//needs hot
+
+                if (state == "Position04")
+                    return 2; //correct temperature
+
+            }
+        }
+
+        return -1;
     }
 
 
@@ -4483,6 +4738,40 @@ namespace MiscThings {
             result = current_pos;
         }
 
+
+        object_p = General::Script::GetObject(activator, "MG06Dome01Script");
+        if (object_p)
+        {
+
+            std::string state = "";
+            state = object_p->currentState;
+
+            if (state.length() > 0)
+            {
+                auto num_string_p = state.back();
+
+                if (state.find("osition") != std::string::npos)
+                {
+                    if (num_string_p != std::string::npos)
+                    {
+                        char last_char = num_string_p;
+
+                        int num_int = (int)last_char - '0';
+
+                        return num_int;
+                    }
+                }
+                else
+                {
+                    return 0;
+                }
+
+            }
+        }
+
+
+
+
         object_p = General::Script::GetObject(activator, "DA04ArmillaryScript");
         if (object_p)
         {
@@ -4887,6 +5176,7 @@ namespace MiscThings {
 
         bool result = false;
 
+
         auto object_p = General::Script::GetObject(pillar, "defaultPuzzlePillarScript");
         bool solved = false;
 
@@ -4926,6 +5216,30 @@ namespace MiscThings {
 
             if (solved)
                 return true;
+        }
+
+
+        object_p = General::Script::GetObject(pillar, "MG06Dome01Script");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "::DomeNumber_var";
+
+            int dome_number = General::Script::GetVariable<int>(object_p, prop_name);
+
+            std::string state = "";
+
+            state = object_p->currentState;
+
+            if (dome_number == 1)
+                return state == "Position06";
+
+            if (dome_number == 2)
+                return state == "position07";
+
+            if (dome_number == 3)
+                return state == "position02";
+
         }
 
 
@@ -5119,6 +5433,20 @@ namespace MiscThings {
             else
                 result = "[Is wrong position]";
                 
+        }
+
+
+
+        object_p = General::Script::GetObject(pillar, "MG06Dome01Script");
+
+        if (object_p)
+        {
+            bool solved_dome = MiscThings::is_pillar_solved(pillar);
+
+            if (solved_dome)
+                result = "[Is correct position]";
+            else
+                result = "[Is wrong position]";
         }
 
 
@@ -6332,6 +6660,14 @@ namespace MiscThings {
                         }
 
 
+                        if (model.find("DweObservatoryDome") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 550.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
                         if (model.find("WRTempleTree02Root") != std::string::npos)
                         {
                             RE::NiPoint3 base_shift_vector = { -330.0f, 0.0f, 180.0f };
@@ -6538,6 +6874,13 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("WinterholdTrapdoor01") != std::string::npos)
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 1.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
                         if (model == "AutoLoadMarker01.nif")
                         {
                             auto pos = object->GetPosition();
@@ -6676,6 +7019,32 @@ namespace MiscThings {
         return &quests;
     }
 
+
+    RE::TESObjectREFR* get_alias_ref_by_name(RE::TESQuest* quest, std::string name)
+    {
+
+        if (quest && quest->GetFormType() == RE::FormType::Quest)
+        {
+            for (auto alias : quest->aliases)
+            {
+                if (alias)
+                {
+                    std::string this_name = "";
+                    this_name = alias->aliasName;
+
+                    if (this_name == name)
+                    {
+                        auto ref_handle = quest->GetAliasedRef(alias->aliasID);
+
+                        if (ref_handle && ref_handle.get() && ref_handle.get().get())
+                            return ref_handle.get().get();
+                    }
+                }
+            }
+        }
+
+        return nullptr;
+    }
 
 
     std::string get_alias_name_by_id(RE::TESQuest* quest, int alias_id)

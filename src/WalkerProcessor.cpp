@@ -1631,6 +1631,8 @@ namespace WalkerProcessor {
 
     bool needs_jump()
     {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
         bool result = false;
         try {
 
@@ -1647,6 +1649,14 @@ namespace WalkerProcessor {
 
                 if (max_diff > 70.0f)
                     result = true;
+
+
+
+                auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
+                auto parent_cell = player->GetParentCell();
+
+                if (parent_cell && parent_cell->GetFormID() == 0x54b6f && mzulft_crystal_pickup_fake && target_ref != mzulft_crystal_pickup_fake && player->GetDistance(mzulft_crystal_pickup_fake) < 400.0f && player->GetDistance(mzulft_crystal_pickup_fake) > 300.0f)
+                    return true;
 
             }
         }
@@ -2909,6 +2919,8 @@ namespace WalkerProcessor {
         return result;
 
     }
+
+
     bool is_targeted_door_locked()
     {
         bool result = false;
@@ -5351,7 +5363,15 @@ namespace WalkerProcessor {
                         }
                             
                         
-                        threshold2 = MiscThings::get_weird_threshold(threshold2, target_ref);
+                        float weird_threshold2 = MiscThings::get_weird_threshold(threshold2, target_ref);
+
+                        if (weird_threshold2 != 0.0f)
+                        {
+                            dont_use_bounds_for_close_enough = true;
+                            threshold2 = weird_threshold2;
+                        }
+                            
+
 
 
                         if (!dont_use_bounds_for_close_enough && !MiscThings::is_cave_autoloader_door(target_ref))
@@ -5380,7 +5400,12 @@ namespace WalkerProcessor {
                             distance.z = 0.0f;
                         }
 
-                        threshold2 = MiscThings::get_weird_threshold(threshold2, target_ref);
+                        float weird_threshold2 = MiscThings::get_weird_threshold(threshold2, target_ref);
+
+                        if (weird_threshold2 != 0.0f)
+                        {
+                            threshold2 = weird_threshold2;
+                        }
 
                         if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
                         {
@@ -8129,7 +8154,14 @@ namespace WalkerProcessor {
                 {
                     auto cast_type = spell->avEffectSetting->data.castingType;
                     if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                        result = 10.0f;
+                    {
+                        auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
+
+                        if (mzulft_crystal_pickup_fake && player->GetDistance(mzulft_crystal_pickup_fake) < 300.0f)
+                            result = 2.3f;
+                        else
+                            result = 10.0f;
+                    } 
                     else
                         result = 1.4f + spell->avEffectSetting->data.spellmakingChargeTime;
                 }
@@ -8153,7 +8185,14 @@ namespace WalkerProcessor {
                             {
                                 auto cast_type = ench->formEnchanting->avEffectSetting->data.castingType;
                                 if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                                    result = 10.0f;
+                                {
+                                    auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
+
+                                    if (mzulft_crystal_pickup_fake && player->GetDistance(mzulft_crystal_pickup_fake) < 300.0f)
+                                        result = 2.3f;
+                                    else
+                                        result = 10.0f;
+                                }
                                 else
                                     result = 0.3f;
                             }
@@ -9659,9 +9698,19 @@ namespace WalkerProcessor {
                 {
                     if (MiscThings::is_door_superlocked(target_ref))
                     {
-                        send_random_context("Cannot lockpick this door. It requires a key", false);
-                        reset_walker();
-                        return true;
+                        auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+
+                        if (target_ref == mzulft_door && mzulft_door)
+                        {
+                            ;
+                        }
+                        else
+                        {
+                            send_random_context("Cannot lockpick this door. It requires a key", false);
+                            reset_walker();
+                            return true;
+                        }
+
                     }
 
                     if (MiscThings::get_picks_amount_int() <= 0)
@@ -9678,9 +9727,10 @@ namespace WalkerProcessor {
                     if (!confirming_closed_door_interaction)
                     {
                         
+                        auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
 
                         auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
-                        if (std::size(attackers) > 0)
+                        if (std::size(attackers) > 0 || (mzulft_door && target_ref == mzulft_door))
                         {
                             confirm(); //lockpick it
                             return true;
@@ -9923,36 +9973,87 @@ namespace WalkerProcessor {
                                     }
                                 }
 
+                                auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
 
-
-                                std::string no_result = "";
-                                if (!dont_tell_result)
+                                if (target_ref == mzulft_crystal_pickup_fake)
                                 {
-                                    if (!target_is_interactive())
-                                        no_result = " Nothing happens...";
+                                    auto mage_quest_mzulft = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG06");
 
-                                    if (MiscThings::get_pillar_face_name(target_ref, 1) == "") // for pillars there is separate message outside of interaction
+                                    if (mage_quest_mzulft)
                                     {
-                                        std::string lever_advice = MiscThings::lever_interaction_advice(target_ref);
+                                        auto stage = mage_quest_mzulft->GetCurrentStageID();
 
-                                        if (backup_pickup_attempts <= 1)
+                                        if (stage == 40)
                                         {
-                                            RE::TESObjectREFR* skuldafn_web = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab25b);
-
-                                            if (target_ref == skuldafn_web)
+                                            send_random_context("[You place Focusing Crystal into Crystal Socket...]", true);
+                                        }
+                                        else
+                                        {
+                                            if (stage == 50)
                                             {
-                                                send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "... You need to destroy it to proceed]", false);
+                                                int armillary_state = MiscThings::mage_quest_armillary_state();
+                              
+                                                if (armillary_state == 0)
+                                                {
+                                                    send_random_context("[Looks like something is not right. Paratus thinks the Crystal is still too warm... Maybe try Frost spells?]", false);
+                                                }
+
+                                                if (armillary_state == 1)
+                                                {
+                                                    send_random_context("[Looks like something is not right. Paratus thinks the Crystal is too cold... Maybe try Fire spells?]", false);
+                                                }
+
+                                                if (armillary_state == 2)
+                                                {
+                                                    send_random_context("[Looks like the Crystal temperature is correct now. But the mechanism still is not working. Maybe try those buttons nearby?]", false);
+                                                }
+                                                    
+
+                                                if (armillary_state == -1)
+                                                {
+                                                    send_random_context("Nothing happens...", true);
+                                                    
+                                                }
+
                                                 reset_walker();
+                                                Observer::detect_interesting_objects(0.016, true, 1500.0f); //so we can detect spell books
+                                                return true;
                                             }
-                                            else
-                                                send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    std::string no_result = "";
+                                    if (!dont_tell_result)
+                                    {
+                                        if (!target_is_interactive())
+                                            no_result = " Nothing happens...";
+
+                                        if (MiscThings::get_pillar_face_name(target_ref, 1) == "") // for pillars there is separate message outside of interaction
+                                        {
+                                            std::string lever_advice = MiscThings::lever_interaction_advice(target_ref);
+
+                                            if (backup_pickup_attempts <= 1)
+                                            {
+                                                RE::TESObjectREFR* skuldafn_web = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab25b);
+
+                                                if (target_ref == skuldafn_web)
+                                                {
+                                                    send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "... You need to destroy it to proceed]", false);
+                                                    reset_walker();
+                                                }
+                                                else
+                                                    send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
+
+                                            }
 
                                         }
-                                            
+
+
                                     }
-
-
                                 }
+                                
 
                             }
                                 
@@ -10150,6 +10251,16 @@ namespace WalkerProcessor {
                         walk_backward_a_little = true;
                     }
                 }
+
+                auto post_mzulft_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a56);
+
+                if (post_mzulft_redirect_marker && target_ref == post_mzulft_redirect_marker)
+                {
+                    send_random_context("You are outside, near some cliff. You can now fast travel to the Winterhold College", false);
+                    reset_walker();
+                    return "";
+                }
+
 
                 RE::TESObjectREFR* college_entrance_spell_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51190);
 
@@ -12111,6 +12222,35 @@ namespace WalkerProcessor {
                             }
                         }
                     }
+                    
+                    auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
+
+                    auto mzulft_crystal_pickup_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a54);
+
+                    if (mzulft_crystal_pickup_redirect_marker && mzulft_crystal_pickup_fake && target_ref == mzulft_crystal_pickup_fake)
+                    {
+                        auto mzulft_crystal_pickup_redirect_marker_pos = mzulft_crystal_pickup_redirect_marker->GetPosition();
+
+                        float distance = player_pos.GetDistance(mzulft_crystal_pickup_redirect_marker_pos);
+
+                        if (distance < 120.0f)
+                        {
+                            auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = target_to_remember;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { player_pos, target_ref_pos };
+                            //walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
+                        }
+                    }
 
 
                     auto elder_scroll_pickup = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x88268);
@@ -13618,6 +13758,15 @@ namespace WalkerProcessor {
                                                                                                 dont_autointerract = true;
                                                                                         }
 
+                                                                                        if (last_quest_objective)
+                                                                                        {
+                                                                                            std::string objective_name = "";
+                                                                                            objective_name = last_quest_objective->displayText;
+
+                                                                                            if (objective_name.find("Follow ") != std::string::npos)
+                                                                                                dont_autointerract = true;
+                                                                                        }
+
 
 
                                                                                         RE::TESObjectREFR* college_entrance_spell_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51190);
@@ -13753,8 +13902,11 @@ namespace WalkerProcessor {
                                                                     
                                                                     
                                                                     {
+
+                                                                        auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+
                                                                         auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
-                                                                        if (std::size(attackers) > 0)
+                                                                        if (std::size(attackers) > 0 || (target_ref == mzulft_door && mzulft_door))
                                                                         {
                                                                             confirm(); //lockpick it
                                                                         }
@@ -14051,8 +14203,10 @@ namespace WalkerProcessor {
                                                                 {
                                                                     //send_random_context("The path is blocked by a locked door!");
                                                                     
+                                                                    auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+
                                                                     auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
-                                                                    if (std::size(attackers) > 0)
+                                                                    if (std::size(attackers) > 0 || (get_targeted_ref() == mzulft_door && mzulft_door))
                                                                     {
                                                                         confirm(); //lockpick it
                                                                     }
@@ -14417,9 +14571,10 @@ namespace WalkerProcessor {
                                                 {
                                                     
                                                     //send_random_context("The path is blocked by a locked door!");
-                                                    
+                                                    auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+
                                                     auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
-                                                    if (std::size(attackers) > 0 && runaway_mode)
+                                                    if ((std::size(attackers) > 0 && runaway_mode) || (mzulft_door && get_targeted_ref() == mzulft_door))
                                                     {
                                                         confirm(); //lockpick it
                                                     }
