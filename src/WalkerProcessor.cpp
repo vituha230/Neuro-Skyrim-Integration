@@ -5370,6 +5370,13 @@ namespace WalkerProcessor {
                         }
                             
                         
+                        if (target_ref->IsActor() && ((RE::Actor*)target_ref)->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSleeping)
+                        {
+                            dont_use_bounds_for_close_enough = true; //to force 110 threshold which will probably work?
+                            threshold2 = 130.0f;
+                        }
+
+
                         float weird_threshold2 = MiscThings::get_weird_threshold(threshold2, target_ref);
 
                         if (weird_threshold2 != 0.0f)
@@ -5886,7 +5893,7 @@ namespace WalkerProcessor {
                 {
                     //already fighting and current target isnt dead, but new target is dead or isnt an actor
 
-                    if (object->second.object && eye_of_magnus && object->second.object == eye_of_magnus)
+                    if (object->second.object == target_ref || (object->second.object && eye_of_magnus && object->second.object == eye_of_magnus))
                     {
                         ;//dont block this
                     }

@@ -1455,6 +1455,10 @@ namespace Observer {
 								}
 
 
+								std::string name = a_ref->GetDisplayFullName();
+
+								if (name.find("Ghostly") != std::string::npos)
+									bool stop_here = false;
 								//auto pos111 = dbg_test.find(base_type);
 
 								//if (pos111 != dbg_test.end())
@@ -1681,6 +1685,18 @@ namespace Observer {
 													scan_distance = 130.0f;
 
 												bool local_ignore_raycast = false;
+
+												auto object_acti = (RE::TESObjectACTI*)base_obj;
+
+												std::string model = object_acti->GetModel();
+
+												model = MiscThings::lowercase_string(model);
+
+												if (model.find("effects\\ashpile") != std::string::npos)
+												{
+													local_ignore_raycast = true;
+												}
+
 
 												if (name.find("Nirnroot") != std::string::npos || name.find("Ashpile") != std::string::npos || (MiscThings::is_insect(a_ref) && distance < 1000.0f))
 													local_ignore_raycast = true;
@@ -2440,7 +2456,7 @@ namespace Observer {
 									if (actor_ref->combatController)
 										is_fleeing = actor_ref->combatController->IsFleeing();//actor_ref->currentProcess->middleHigh->unk326;
 
-									bool ghost_state = actor_ref->IsGhost();
+									bool ghost_state = false;
 									auto ancano = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1e79d);
 									if (a_ref == ancano && ancano)
 										ghost_state = actor_ref->IsGhost();
@@ -2462,7 +2478,7 @@ namespace Observer {
 										new_target = actor_ref->currentProcess->target;
 
 
-									bool ghost_state = actor_ref->IsGhost();
+									bool ghost_state = false;
 									auto ancano = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1e79d);
 									if (a_ref == ancano && ancano)
 										ghost_state = actor_ref->IsGhost();

@@ -394,7 +394,7 @@ namespace MiscThings {
 
     RE::TESObjectREFR::InventoryItemMap get_filtered_inventory();
 
-
+    bool is_sleeping();
 
     std::pair<bool, std::string> activate_array_of_inventory_objects(std::vector<int> ids);
 
