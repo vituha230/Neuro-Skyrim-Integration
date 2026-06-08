@@ -7121,7 +7121,7 @@ namespace WalkerProcessor {
 
                                                 if (have_target_to_walk)
                                                 {
-                                                    if (target_ref != quests_target_ref || backup_interaction_made)
+                                                    if (target_ref != quests_target_ref || last_quest != quest_entry.quest || looping_door_quest_objective != quest_entry.objective || backup_interaction_made)
                                                         reset_walker();
                                                     else
                                                     {
