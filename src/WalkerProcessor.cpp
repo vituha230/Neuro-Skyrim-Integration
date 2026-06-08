@@ -5826,6 +5826,27 @@ namespace WalkerProcessor {
                 }
 
                 
+                bool staff_of_magnus = false;
+
+                auto left_hand_contents = MiscThings::get_hand_contents(false);
+
+                if (left_hand_contents && left_hand_contents->GetFormID() == 0x35369) //staff of magnus
+                {
+                    staff_of_magnus = true;
+                }
+
+                RE::TESObjectREFR* eye_of_magnus = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+
+                if (object->second.object && object->second.object == eye_of_magnus && staff_of_magnus && MiscThings::magnus_eye_attack_condition())
+                {
+                    auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+                    if (magnus_eye)
+                        interaction = 3; //force attacking
+                }
+
+
+
+
                 if (interaction == 1 && MiscThings::is_intro2())
                 {
                     /*
@@ -5865,26 +5886,34 @@ namespace WalkerProcessor {
                 {
                     //already fighting and current target isnt dead, but new target is dead or isnt an actor
 
-                    std::string reason = "";
-                    if (object->second.object->IsActor() && object->second.object->IsDead())
+                    if (object->second.object && eye_of_magnus && object->second.object == eye_of_magnus)
                     {
-                        reason = ". New target is already dead!";
+                        ;//dont block this
                     }
-
-                    if (!object->second.object->IsActor())
+                    else
                     {
-                        reason = ". This object isnt a threat";
+                        std::string reason = "";
+                        if (object->second.object->IsActor() && object->second.object->IsDead())
+                        {
+                            reason = ". New target is already dead!";
+                        }
+
+                        if (!object->second.object->IsActor())
+                        {
+                            reason = ". This object isnt a threat";
+                        }
+
+
+                        if (object->second.object->IsActor() && !MiscThings::is_enemy_to_actor(object->second.object))
+                        {
+                            reason = ". This object is not an enemy";
+                        }
+
+                        result.first = false;
+                        result.second = "You are in the middle of a fight" + reason;
+                        return result;
                     }
-
-
-                    if (object->second.object->IsActor() && !MiscThings::is_enemy_to_actor(object->second.object))
-                    {
-                        reason = ". This object is not an enemy";
-                    }
-
-                    result.first = false;
-                    result.second = "You are in the middle of a fight" + reason;
-                    return result;
+                    
                 }
 
 
@@ -8167,7 +8196,16 @@ namespace WalkerProcessor {
                         if (mzulft_crystal_pickup_fake && player->GetDistance(mzulft_crystal_pickup_fake) < 300.0f)
                             result = 2.3f;
                         else
-                            result = 10.0f;
+                        {
+                            auto left_hand_contents = MiscThings::get_hand_contents(right);
+                            if (left_hand_contents && left_hand_contents->GetFormID() == 0x35369) //staff of magnus
+                            {
+                                result = 10.0f;
+                            }
+                            else
+                                result = 7.0f;
+                        }
+                            
                     } 
                     else
                         result = 1.4f + spell->avEffectSetting->data.spellmakingChargeTime;
@@ -8198,7 +8236,15 @@ namespace WalkerProcessor {
                                     if (mzulft_crystal_pickup_fake && player->GetDistance(mzulft_crystal_pickup_fake) < 300.0f)
                                         result = 2.3f;
                                     else
-                                        result = 10.0f;
+                                    {
+                                        auto left_hand_contents = MiscThings::get_hand_contents(right);
+                                        if (left_hand_contents && left_hand_contents->GetFormID() == 0x35369) //staff of magnus
+                                        {
+                                            result = 10.0f;
+                                        }
+                                        else
+                                            result = 7.0f;
+                                    }
                                 }
                                 else
                                     result = 0.3f;
@@ -8600,6 +8646,21 @@ namespace WalkerProcessor {
 
     bool get_current_active_hand()
     {
+
+        bool staff_of_magnus_in_left = false;
+        auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+        auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+        auto left_weapon = MiscThings::get_hand_contents(false);
+        if (left_weapon && left_weapon->GetFormID() == 0x35369)
+            staff_of_magnus_in_left = true;
+
+        if (target_ref && (target_ref == magnus_eye || target_ref == redirect_force_field2))
+            if (staff_of_magnus_in_left)
+                attack_action = 1;
+
+
+
         if (attack_action == 1)
             return false;
         else
@@ -8779,6 +8840,16 @@ namespace WalkerProcessor {
                 bool dont_use_right = false;
 
                 dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && (no_ammo() || no_charge(true))) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
+
+
+                auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+                auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+                if (target_ref && (target_ref == magnus_eye || target_ref == redirect_force_field2))
+                {
+                    auto left_weapon = MiscThings::get_hand_contents(false);
+                    if (left_weapon && left_weapon->GetFormID() == 0x35369)
+                        dont_use_right = true;
+                }
 
 
                 attack_action = dont_use_right;
@@ -9091,7 +9162,24 @@ namespace WalkerProcessor {
                             dont_use_left |= has_staff_equipped(false) && no_charge(false);
 
 
-                            if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
+                            bool staff_of_magnus_in_left = false;
+                            auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+                            auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+                            auto left_weapon = MiscThings::get_hand_contents(false);
+                            if (left_weapon && left_weapon->GetFormID() == 0x35369)
+                                staff_of_magnus_in_left = true;
+
+                            if (target_ref && (target_ref == magnus_eye || target_ref == redirect_force_field2))
+                                if (staff_of_magnus_in_left)
+                                    dont_use_right = true;  
+
+                            float chance = 0.2f;
+
+                            if (staff_of_magnus_in_left)
+                                chance = 0.03;
+
+                            if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
                                 attack_action = 1;
                             else
                                 attack_action = 0;
@@ -9137,7 +9225,7 @@ namespace WalkerProcessor {
                         if (attack_action_time1 < get_attack_time(false) && !(MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
                         {
                             std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
-                            
+
                             std::string attacking_info = "";
 
                             std::string start_attacking_info = "[You are attacking ";
@@ -9153,95 +9241,105 @@ namespace WalkerProcessor {
                             bool no_weapon = false;
                             bool silent = true;
 
-                            if (MiscThings::has_spell_equipped(false))
+                            if (has_staff_equipped(false))
                             {
+                                //if (attack_action_time0 > 0.9f);
+                                   // was_charging_ranged = true;
 
-                                bool skip_cast = false;
+                                left_attack_spell();
 
-                                if (!is_casting_walker(false))
-                                {
-                                    float timeout_val = get_spell_timeout(false);
-
-                                    if (attack_spell_cast_timeout > timeout_val)
-                                    {
-                                        skip_cast = true;
-                                        attack_spell_cast_timeout = 0.0f;
-                                        left_attack_cancel();
-                                        attack_action_time1 = 0.0f;
-                                    }
-                                        
-                                    else
-                                        attack_spell_cast_timeout += dtime;
-                                }
-                                else
-                                {
-                                    if (attack_action_time1 > 0.7f);
-                                    ;//was_charging_ranged = true;
-
-                                    attack_spell_cast_timeout = 0.0f;
-                                }
-                                    
-
-                                if (!skip_cast)
-                                {
-                                    left_attack_spell();
-                                    if (!MiscThings::is_offensive_spell(left))
-                                    {
-                                        casting = true;
-                                        start_attacking_info = "[You are casting ";
-                                    }
-
-                                    attacking_weapon += get_equipped_spell_name(false) + ". ";
-                                }
-
+                                attacking_weapon = get_equipped_weapon_name(false) + ". ";
                             }
                             else
-                            {
-                                attack_spell_cast_timeout = 0.0f;
-
-
-                                bool can_power_attack = !MiscThings::has_spell_equipped(false) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f && !left_is_block();
-
-                                if (can_power_attack && try_power_attack)
-                                    left_attack_bow();
-                                else
-                                    left_attack();
-
-                                
-
-                                auto left_contents = MiscThings::get_hand_contents(false);
-
-                                if ((!MiscThings::has_something_equipped(false) && MiscThings::has_something_equipped(true) && is_melee_weapon(true)) || (left_contents && left_contents->IsArmor()))
+                                if (MiscThings::has_spell_equipped(false))
                                 {
-                                    attacking_info = "[You are blocking";
-                                    if (player->GetDistance(target_ref, true) > 100.0f)
-                                        cursor_up();
+
+                                    bool skip_cast = false;
+
+                                    if (!is_casting_walker(false))
+                                    {
+                                        float timeout_val = get_spell_timeout(false);
+
+                                        if (attack_spell_cast_timeout > timeout_val)
+                                        {
+                                            skip_cast = true;
+                                            attack_spell_cast_timeout = 0.0f;
+                                            left_attack_cancel();
+                                            attack_action_time1 = 0.0f;
+                                        }
+
+                                        else
+                                            attack_spell_cast_timeout += dtime;
+                                    }
+                                    else
+                                    {
+                                        if (attack_action_time1 > 0.7f);
+                                        ;//was_charging_ranged = true;
+
+                                        attack_spell_cast_timeout = 0.0f;
+                                    }
+
+
+                                    if (!skip_cast)
+                                    {
+                                        left_attack_spell();
+                                        if (!MiscThings::is_offensive_spell(left))
+                                        {
+                                            casting = true;
+                                            start_attacking_info = "[You are casting ";
+                                        }
+
+                                        attacking_weapon += get_equipped_spell_name(false) + ". ";
+                                    }
+
                                 }
                                 else
                                 {
-                                    if (!MiscThings::has_something_equipped(false))
+                                    attack_spell_cast_timeout = 0.0f;
+
+
+                                    bool can_power_attack = !MiscThings::has_spell_equipped(false) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f && !left_is_block();
+
+                                    if (can_power_attack && try_power_attack)
+                                        left_attack_bow();
+                                    else
+                                        left_attack();
+
+
+
+                                    auto left_contents = MiscThings::get_hand_contents(false);
+
+                                    if ((!MiscThings::has_something_equipped(false) && MiscThings::has_something_equipped(true) && is_melee_weapon(true)) || (left_contents && left_contents->IsArmor()))
                                     {
-                                        no_weapon = true;
-                                        attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                        if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
+                                        attacking_info = "[You are blocking";
+                                        if (player->GetDistance(target_ref, true) > 100.0f)
                                             cursor_up();
                                     }
                                     else
                                     {
-                                        if (has_ranged_weapon_equipped(true) && no_ammo())
+                                        if (!MiscThings::has_something_equipped(false))
                                         {
                                             no_weapon = true;
-                                            attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                            attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                            if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
+                                                cursor_up();
                                         }
                                         else
-                                            attacking_weapon = get_equipped_weapon_name(false) + ". ";
+                                        {
+                                            if (has_ranged_weapon_equipped(true) && no_ammo())
+                                            {
+                                                no_weapon = true;
+                                                attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                            }
+                                            else
+                                                attacking_weapon = get_equipped_weapon_name(false) + ". ";
 
-                                        if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
-                                            cursor_up();
+                                            if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
+                                                cursor_up();
+                                        }
+
                                     }
-
                                 }
-                            }
 
                             if (!gave_attacking_info)
                             {
@@ -9363,7 +9461,25 @@ namespace WalkerProcessor {
 
                             dont_use_left |= has_staff_equipped(false) && no_charge(false);
 
-                            if ((choose_next_action < 0.2f && !dont_use_left) || dont_use_right)
+
+                            bool staff_of_magnus_in_left = false;
+                            auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+                            auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+                            auto left_weapon = MiscThings::get_hand_contents(false);
+                            if (left_weapon && left_weapon->GetFormID() == 0x35369)
+                                staff_of_magnus_in_left = true;
+
+                            if (target_ref && (target_ref == magnus_eye || target_ref == redirect_force_field2))
+                                if (staff_of_magnus_in_left)
+                                    dont_use_right = true;
+
+                            float chance = 0.2f;
+
+                            if (staff_of_magnus_in_left)
+                                chance = 0.03;
+
+                            if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
                                 attack_action = 1;
                             else
                                 attack_action = 0;
@@ -10328,6 +10444,15 @@ namespace WalkerProcessor {
                        
                     //stop_sneaking = true; //doesnt work in this situation its only checked in some other place
 
+                    return "";
+                }
+
+                RE::TESObjectREFR* redirect_force_field2_mage = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+                if (target_ref == redirect_force_field2_mage && interaction_after_walk != 3)
+                {
+                    send_random_context("You walked up to the Magical Force Field. You need to attack it with your Staff of Magnus", false);
+                    reset_walker();
                     return "";
                 }
 
@@ -12905,6 +13030,13 @@ namespace WalkerProcessor {
                         }
 
                         last_dragon_was_flying = dragon_is_flying;
+                    }
+
+                    auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+
+                    if (magnus_eye && target_ref == magnus_eye && interaction_after_walk == 3)
+                    {
+                        ignore_raycast = true;
                     }
 
 

@@ -32,6 +32,34 @@ namespace MiscThings {
 
 
 
+    bool magnus_eye_attack_condition()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto parent_cell = player->GetParentCell();
+
+        if (parent_cell && parent_cell->GetFormID() == 0x1380e)
+        {
+            auto mage_final_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG08");
+            if (mage_final_quest)
+            {
+                auto stage = mage_final_quest->GetCurrentStageID();
+
+                if (stage == 30)
+                {
+                    bool staff_of_magnus_in_left = false;
+                    auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+                    auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+                    auto left_weapon = MiscThings::get_hand_contents(false);
+                    if (left_weapon && left_weapon->GetFormID() == 0x35369)
+                        return true; //we are in hall with eye of magnus, current quest is to defeat ancano, we have magnus staff equipped. call this function to redirect to attacking the eye when needed
+                }
+            }
+        }
+
+        return false;
+    }
+
 
     bool is_known_shit_door(RE::TESObjectREFR* door)
     {
@@ -172,6 +200,14 @@ namespace MiscThings {
             return 180.0f;
         }
 
+        /*
+        RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
+
+        if (target == mage_force_field_2) //it should never reach it, its redirected to a marker in 1st frame. this is just to not let it count as arrived on first frame
+        {
+            return 180.0f;
+        }
+        */
 
         return 0.0f;
     }
@@ -2027,8 +2063,7 @@ namespace MiscThings {
         auto player_worldspace = player->GetWorldspace();
 
 
-
-        if (is_interior_cell() || player_worldspace == blackreach_worldspace)
+        if (is_interior_cell() || !MapProcessor::map_is_allowed())
             return "";
 
         float min_distance = FLT_MAX;
@@ -2279,6 +2314,18 @@ namespace MiscThings {
                 return redirect_marker;
         }
 
+
+
+        RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
+        RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+        if (target == mage_force_field_2)
+        {
+            if (redirect_marker2)
+                return redirect_marker2;
+        }
+
+
         return nullptr;
     }
 
@@ -2322,6 +2369,23 @@ namespace MiscThings {
         auto parent_cell = player->GetParentCell();
         auto player_worldspace = player->GetWorldspace();
 
+        RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
+
+        auto mage_final_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG08");
+
+        if (quest == mage_final_quest && mage_final_quest)
+        {
+            auto stage = mage_final_quest->GetCurrentStageID();
+
+            RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
+            RE::TESObjectREFR* original_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x177F9);
+            RE::TESObjectREFR* redirect_force_field2_mage = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+            if (stage == 10 && (target == original_target || target == redirect_force_field2_mage || target == mage_force_field_2) && mage_force_field_2)
+            {
+                return redirect_force_field2_mage;
+            }
+        }
 
         auto mage_labyrinthian_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG07");
 
@@ -5022,6 +5086,24 @@ namespace MiscThings {
             }
 
         }
+
+
+
+        /*
+        auto test = RE::TESForm::GetAllForms();
+
+        auto test2 = test.first;
+
+        for (auto form : *test2)
+        {
+            object_p = General::Script::GetObject(form.second, "MG08EyeScript");
+
+            if (object_p)
+            {
+                bool stop_here = false;
+            }
+        }
+        */
 
 
 
@@ -9147,7 +9229,12 @@ namespace MiscThings {
                 }
 
                 if (actor_object->IsGhost())
-                    ghost = "[Ghost]";
+                {
+                    //TODO probably better to filter actual ghosts here
+                   // auto ancano = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1e79d);
+                   // ghost = "[Ghost]";
+                }
+                    
 
 
                 if (actor_object->IsAMount() && !actor_object->IsDead())
@@ -11482,6 +11569,22 @@ namespace MiscThings {
                         
                         if (is_equipped(object))
                         {
+
+                            bool staff_of_magnus = false;
+
+                            if (object->GetFormID() == 0x35369) //staff of magnus
+                            {
+                                staff_of_magnus = true;
+                            }
+
+                            if (staff_of_magnus && magnus_eye_attack_condition())
+                            {
+                                auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+                                if (magnus_eye)
+                                    return WalkerProcessor::walk_to_object_by_refr(magnus_eye, 3);
+                            }
+
+
                             result.first = actor_equip->UnequipObject((RE::Actor*)player_ref, object);
                             result.second = "[Unequipped [id " + std::to_string(item_id) + "] " + object_name + "]";
 
@@ -11497,6 +11600,18 @@ namespace MiscThings {
                             {
                                 auto slot = get_free_slot();
                                 
+                                bool staff_of_magnus = false;
+
+                                if (object->GetFormID() == 0x35369) //staff of magnus
+                                {
+                                    slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //always left hand
+                                    staff_of_magnus = true;
+                                }
+                                    
+
+
+
+
                                 bool left_hand = false;
 
                                 if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
@@ -11538,9 +11653,15 @@ namespace MiscThings {
 
 
 
+
                                 WalkerProcessor::reset_attacking_inanimate_object_time();
                                 
-
+                                if (staff_of_magnus && magnus_eye_attack_condition())
+                                {
+                                    auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+                                    if (magnus_eye)
+                                        WalkerProcessor::walk_to_object_by_refr(magnus_eye, 3);
+                                }
 
 
 

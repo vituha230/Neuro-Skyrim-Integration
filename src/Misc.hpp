@@ -257,6 +257,8 @@ namespace MiscThings {
 
     std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest);
 
+    bool magnus_eye_attack_condition();
+
     int get_player_gold();
 
     int trap_firing(RE::TESObjectREFR* trap);

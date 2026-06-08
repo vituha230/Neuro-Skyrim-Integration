@@ -1093,6 +1093,22 @@ namespace Observer {
 				backup_register = true;
 		}
 
+		bool dont_check_threats = false;
+
+		auto parent_cell = player->GetParentCell();
+
+		if (parent_cell && parent_cell->GetFormID() == 0x1380e)
+		{
+			auto mage_final_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG08");
+			if (mage_final_quest)
+			{
+				auto stage = mage_final_quest->GetCurrentStageID();
+
+				if (stage == 30)
+					dont_check_threats = true;
+			}
+		}
+
 
 
 		if (observers_green_light)
@@ -1101,7 +1117,6 @@ namespace Observer {
 				dont_check_threats_timer -= dtime;
 			else
 			{
-
 				bool first_detected_threat_is_valid = false;
 
 				if (first_detected_threat && MiscThings::is_object_still_valid(first_detected_threat) && first_detected_threat->IsActor() && !first_detected_threat->IsDead())
@@ -1109,7 +1124,7 @@ namespace Observer {
 
 				auto attackers = MiscThings::get_player_attackers(true, nullptr, false, 5000.0f); //initially trigger with 5k max
 
-				if (std::size(attackers) > 0 || first_detected_threat_is_valid)
+				if ((std::size(attackers) > 0 || first_detected_threat_is_valid) && !dont_check_threats)
 				{
 					no_threats_timer = 0.0f;
 					if (!WalkerProcessor::is_fighting() && !MiscThings::have_force_only_menu_open())
@@ -1426,7 +1441,6 @@ namespace Observer {
 
 							if (a_ref)
 							{
-
 								auto base_obj = a_ref->GetBaseObject();
 								RE::FormType base_type{};
 
@@ -2024,6 +2038,19 @@ namespace Observer {
 											}
 										}
 
+										RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
+
+										if (a_ref == mage_force_field_2 && mage_force_field_2)
+										{
+											RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a57);
+											if (!MiscThings::is_object_in_the_list(a_ref))
+											{
+												std::string info = MiscThings::insert_object_into_list_custom_name("Large Magical Force Field around entire College", a_ref);
+												if (info != "")
+													interesting_buffer.insert_or_assign(a_ref, info);
+											}
+										}
+
 
 										RE::TESObjectREFR* mage_force_field_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf0ea9);
 
@@ -2037,6 +2064,8 @@ namespace Observer {
 													interesting_buffer.insert_or_assign(a_ref, info);
 											}
 										}
+
+
 
 
 
@@ -2411,7 +2440,12 @@ namespace Observer {
 									if (actor_ref->combatController)
 										is_fleeing = actor_ref->combatController->IsFleeing();//actor_ref->currentProcess->middleHigh->unk326;
 
-									old_object_state state = { a_ref->IsDead(), is_fleeing,  new_target, (int)actor_ref->actorState1.flyState, 0, -1, -1, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState };
+									bool ghost_state = actor_ref->IsGhost();
+									auto ancano = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1e79d);
+									if (a_ref == ancano && ancano)
+										ghost_state = actor_ref->IsGhost();
+
+									old_object_state state = { a_ref->IsDead(), is_fleeing,  new_target, (int)actor_ref->actorState1.flyState, ghost_state, -1, -1, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState};
 									objects_to_track.insert({ a_ref, state });
 								}
 								else
@@ -2427,7 +2461,32 @@ namespace Observer {
 									if (actor_ref->currentProcess)
 										new_target = actor_ref->currentProcess->target;
 
-									old_object_state new_state = { a_ref->IsDead(), is_fleeing, new_target, old_state.action_flags, old_state.pillar_face_code, old_state.trap_firing , old_state.destructible_state, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState };
+
+									bool ghost_state = actor_ref->IsGhost();
+									auto ancano = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1e79d);
+									if (a_ref == ancano && ancano)
+										ghost_state = actor_ref->IsGhost();
+
+									old_object_state new_state = { a_ref->IsDead(), is_fleeing, new_target, old_state.action_flags, ghost_state, old_state.trap_firing , old_state.destructible_state, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState };
+
+
+									if (old_state.pillar_face_code != new_state.pillar_face_code) //used this flag for ghosts
+									{
+										objects_to_track.insert_or_assign(a_ref, new_state);
+
+										std::string actor_name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+										if (new_state.pillar_face_code)
+										{
+											std::string message_text = "[" + actor_name + " became invulnerable!]";
+											result.push_back(message_text);
+										}
+										else
+										{
+											std::string message_text = "[" + actor_name + " became vulnerable!]";
+											result.push_back(message_text);
+										}
+									}
 
 
 									if (old_state.dead != new_state.dead)
