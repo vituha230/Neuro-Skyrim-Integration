@@ -16,10 +16,11 @@ bool madesi_ring_found = false;
 int madesi_ring_id = -1;
 bool madesi_done = false;
 
-bool klimmek_mode = false;
-bool klimmek_supplies_found = false;
-int klimmek_supplies_id = -1;
-bool klimmek_done = false;
+RE::TESBoundObject* plant_object = nullptr;
+bool plant_mode = false;
+bool plant_object_found = false;
+int plant_object_id = -1;
+bool plant_done = false;
 
 
 
@@ -236,12 +237,56 @@ bool is_possessions_chest()
 }
 
 
+RE::TESBoundObject* get_plant_mode_object(RE::TESObjectREFR* container)
+{
+	auto player = RE::PlayerCharacter::GetSingleton();
+
+
+	RE::TESObjectREFR* klimmek_chest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9c614);
+
+	if (container == klimmek_chest && klimmek_chest)
+	{
+		auto klimmek_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("FreeformIvarstead04");
+		if (klimmek_quest)
+		{
+			auto klimmek_stage = klimmek_quest->GetCurrentStageID();
+
+			if (klimmek_stage == 20)
+			{
+				auto supplies = (RE::TESBoundObject*)RE::TESBoundObject::LookupByID(0xdab04);
+				if (supplies)
+					return supplies;
+			}
+		}
+	}
+
+	RE::TESObjectREFR* penitus_guy = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x44051);
+
+	if (container == penitus_guy && penitus_guy)
+	{
+		auto plant_thing_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DB06");
+		if (plant_thing_quest)
+		{
+			auto plant_thing_quest_stage = plant_thing_quest->GetCurrentStageID();
+
+			if (plant_thing_quest_stage == 20 || plant_thing_quest_stage == 10) //this is strange, it should be 20 only
+			{
+				auto plant_thing = (RE::TESBoundObject*)RE::TESBoundObject::LookupByID(0x749b5);
+				if (plant_thing)
+					return plant_thing;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+
 std::vector<MenuOption> get_items_options()
 {
 	std::vector<MenuOption> result{};
 
 	RE::TESObjectREFR* brandshei = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19ddc);
-	RE::TESObjectREFR* klimmek_chest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9c614);
 
 	RE::UI* ui = RE::UI::GetSingleton();
 	RE::GFxValue var1;
@@ -264,7 +309,7 @@ std::vector<MenuOption> get_items_options()
 				if (container_ref == brandshei)
 				{
 					auto ring = (RE::TESBoundObject*)RE::TESBoundObject::LookupByID(0x76f12);
-					
+
 
 					if (ring && player)
 					{
@@ -280,32 +325,26 @@ std::vector<MenuOption> get_items_options()
 				}
 
 
+				auto potential_plant_object = get_plant_mode_object(container_ref);
 
-				if (container_ref == klimmek_chest)
+
+				if (potential_plant_object && player)
 				{
-					auto klimmek_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("FreeformIvarstead04");
-					if (klimmek_quest)
+					if (player->GetItemCount(potential_plant_object) > 0)
 					{
-						auto klimmek_stage = klimmek_quest->GetCurrentStageID();
+						plant_object = potential_plant_object;
+						plant_mode = true;
+						refresh_items_list = true;
 
-						if (klimmek_stage == 20)
-						{
-							auto supplies = (RE::TESBoundObject*)RE::TESBoundObject::LookupByID(0xdab04);
+						std::string plant_object_name = plant_object->GetName();
+						std::string container_name = container_ref->GetDisplayFullName();
 
-							if (supplies && player)
-							{
-								if (player->GetItemCount(supplies) > 0)
-								{
-									klimmek_mode = true;
-									refresh_items_list = true;
-									result.push_back({ 1, "[PUT SUPPLIES INTO THE CHEST]" });
-									result.push_back({ -1, "[STOP LOOTING]" });
-									return result;
-								}
-							}
-						}
+						result.push_back({ 1, "[Put " + plant_object_name + " into " + container_name + "]" });
+						result.push_back({ -1, "[STOP LOOTING]" });
+						return result;
 					}
 				}
+
 			}
 		}
 	}
@@ -619,13 +658,25 @@ void update_items_list()
 												}
 											}
 
-											if (klimmek_mode && !klimmek_supplies_found)
+											if (plant_mode && !plant_object_found)
 											{
-												if (name.find("Klimmek's Supplies") != std::string::npos)
+												if (plant_object)
 												{
-													klimmek_supplies_found = true;
-													klimmek_supplies_id = result.id;
+													std::string plant_object_name = plant_object->GetName();
+
+													if (name.find(plant_object_name) != std::string::npos)
+													{
+														plant_object_found = true;
+														plant_object_id = result.id;
+													}
 												}
+												else
+												{
+													reset_container();
+													quit_menu();
+													return;
+												}
+													
 											}
 
 
@@ -1015,11 +1066,11 @@ void reset_container()
 	madesi_ring_id = -1;
 	madesi_done = false;
 
-
-	klimmek_mode = false;
-	klimmek_supplies_found = false;
-	klimmek_supplies_id = -1;
-	klimmek_done = false;
+	plant_object = nullptr;
+	plant_mode = false;
+	plant_object_found = false;
+	plant_object_id = -1;
+	plant_done = false;
 
 
 	close_empty_container = false;
@@ -1101,7 +1152,7 @@ void process_next_item()
 
 
 
-		if (madesi_mode || klimmek_mode)
+		if (madesi_mode || plant_mode)
 		{
 			if (item_choice == 1)
 			{
@@ -1264,9 +1315,9 @@ std::pair<bool, std::string> set_item_choice(int id)
 	}
 	else
 	{
-		if (items_list_valid || madesi_mode || klimmek_mode)
+		if (items_list_valid || madesi_mode || plant_mode)
 		{
-			if (!madesi_mode && !klimmek_mode && items_list.find(id) == items_list.end())
+			if (!madesi_mode && !plant_mode && items_list.find(id) == items_list.end())
 			{
 				result.first = false;
 				result.second = "Invalid item ID";
@@ -1593,7 +1644,7 @@ void processor(float dtime)
 			if (madesi_mode)
 				category_choice = 2;
 
-			if (klimmek_mode)
+			if (plant_mode)
 				category_choice = 2;
 
 
@@ -1651,7 +1702,7 @@ void processor(float dtime)
 
 					else
 					{
-						if ((madesi_mode && !madesi_ring_found) || (klimmek_mode && !klimmek_supplies_found))
+						if ((madesi_mode && !madesi_ring_found) || (plant_mode && !plant_object_found))
 						{
 							quit_menu();
 							return;
@@ -1705,7 +1756,7 @@ void processor(float dtime)
 							if (is_pickpocketing() || !has_take_all_button())
 								minimum = 1;
 
-							if (!madesi_mode && !klimmek_mode && std::size(options) <= minimum && !is_possessions_chest())
+							if (!madesi_mode && !plant_mode && std::size(options) <= minimum && !is_possessions_chest())
 							{
 								//add_delayed_message("[Container is empty. Closing container...]");
 
@@ -1769,12 +1820,12 @@ void processor(float dtime)
 										item_choice = madesi_ring_id;
 								}
 
-								if (klimmek_mode)
+								if (plant_mode)
 								{
-									if (!klimmek_supplies_found)
+									if (!plant_object_found)
 										return;
 									else
-										item_choice = klimmek_supplies_id;
+										item_choice = plant_object_id;
 								}
 
 
@@ -1853,7 +1904,7 @@ void processor(float dtime)
 										}
 										else
 										{
-											if (madesi_mode || klimmek_mode)
+											if (madesi_mode || plant_mode)
 											{
 												close_empty_container = true;
 												ready_weapon();
