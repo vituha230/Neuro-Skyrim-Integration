@@ -1105,7 +1105,7 @@ namespace Observer {
 				auto stage = mage_final_quest->GetCurrentStageID();
 
 				if (stage == 30)
-					dont_check_threats = true;
+					;// dont_check_threats = true;
 			}
 		}
 
