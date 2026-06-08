@@ -14,6 +14,8 @@ namespace Observer {
 
 	std::map<RE::TESObjectREFR*, bool> objects_for_extra_notification{};
 
+	int old_mg6_quest_stage = 0;
+
 
 	RE::TESForm* old_right_hand = nullptr;
 	RE::TESForm* old_left_hand = nullptr;
@@ -942,6 +944,8 @@ namespace Observer {
 		player_dead_sent = false;
 
 		old_unbound_quest_stage = false;
+		old_mg6_quest_stage = 0;
+
 		first_cycle = true;
 		first_cycle2 = true;
 		last_saved_time = 0.0f;
@@ -2018,11 +2022,23 @@ namespace Observer {
 												}
 
 											}
-
-
-
-
 										}
+
+
+										RE::TESObjectREFR* mage_force_field_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf0ea9);
+
+										if (a_ref == mage_force_field_1 && mage_force_field_1)
+										{
+											RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a57);
+											if (!MiscThings::is_object_in_the_list(a_ref))
+											{
+												std::string info = MiscThings::insert_object_into_list_custom_name("Magical Force Field", a_ref);
+												if (info != "")
+													interesting_buffer.insert_or_assign(a_ref, info);
+											}
+										}
+
+
 
 									}
 								}
@@ -2775,6 +2791,31 @@ namespace Observer {
 											{
 
 
+												auto ice_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf4973);
+
+												if (a_ref == ice_door && ice_door)
+												{
+													if (activation == 0)
+													{
+														std::string name = MiscThings::insert_object_into_list_custom_name("Magical Ice Door", a_ref);
+														if (name != "")
+															result.push_back("[ " + name + " opened]");
+													}
+												}
+
+												auto fire_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf4986);
+
+												if (a_ref == fire_door && fire_door)
+												{
+													if (activation == 0)
+													{
+														std::string name = MiscThings::insert_object_into_list_custom_name("Magical Fire Door", a_ref);
+														if (name != "")
+															result.push_back("[ " + name + " opened]");
+													}
+												}
+
+
 												if (true)//(action_data & (int)RE::OBJECT_ACTION::kOpen)
 												{
 													auto extra_anim = extralist->GetByType(RE::ExtraDataType::kAnimGraphManager);
@@ -2792,6 +2833,18 @@ namespace Observer {
 
 																if (activation == 1)
 																	result.push_back("[ " + name + " closed]");
+															}
+
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortImpGate01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Pole Gate", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " closed]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " opened]");
 															}
 
 
@@ -3889,6 +3942,13 @@ namespace Observer {
 					old_furniture_name = "";
 
 
+					auto force_field_ancano_1_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG06");
+
+					if (force_field_ancano_1_quest)
+						old_mg6_quest_stage = force_field_ancano_1_quest->GetCurrentStageID();
+
+
+
 				}
 				else
 				{
@@ -3964,6 +4024,22 @@ namespace Observer {
 						}
 					}
 				}
+
+
+				auto force_field_ancano_1_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG06");
+				if (force_field_ancano_1_quest)
+				{
+					auto current_stage = force_field_ancano_1_quest->GetCurrentStageID();
+
+					if (old_mg6_quest_stage < 99 && current_stage == 99)
+					{
+						send_random_context("[Ancano summons some magical explosion and you get pushed away from him]", true);
+						WalkerProcessor::reset_walker();
+					}
+
+					old_mg6_quest_stage = current_stage;
+				}
+
 
 
 				state_monitor_timer = 0.0f;

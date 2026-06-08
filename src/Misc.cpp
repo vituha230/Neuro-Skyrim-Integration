@@ -2142,7 +2142,30 @@ namespace MiscThings {
     }
 
 
-    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target, bool quest_mode)
+    bool target_is_behind_labyrinthian_gate(RE::TESObjectREFR* target)
+    {
+        if (target)
+        {
+            auto runaway_target = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker default skyrim
+
+            if (target == runaway_target)
+                return true;
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto player_cell = player->GetParentCell();
+
+            if (player_cell && player_cell->GetFormID() == 0x83559)
+            {
+                auto target_pos = target->GetPosition();
+
+                return target_pos.x >= -5276.0f;
+            }
+        }
+
+        return false;
+    }
+
+    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target, bool quest_mode, bool runaway_mode, bool already_redirecting)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
@@ -2201,10 +2224,65 @@ namespace MiscThings {
                     }
                 }
             }
+
+
+            if (player_cell && player_cell->GetFormID() == 0x83559)
+            {
+                //labyrinthian 1
+
+                auto redirect_marker1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a5a);
+                auto redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a59);
+
+                auto labyrinth_lever1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187f);
+                auto labyrinth_lever2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187e);
+
+
+                if (redirect_marker1 && redirect_marker2 && labyrinth_lever1 && labyrinth_lever2)
+                {
+                    //we need to walk to marker before gate, pull lever, walk to another marker
+                    if (target == redirect_marker2 || target == redirect_marker1 || ((target == labyrinth_lever1 || target == labyrinth_lever2)))// && already_redirecting))
+                        return target; //continue redirections
+                    else
+                    {
+                        if (target_is_behind_labyrinthian_gate(target) && !target_is_behind_labyrinthian_gate(player))
+                        {
+                            return redirect_marker1; //initialize redirection
+                        }
+
+                        if ((!target_is_behind_labyrinthian_gate(target) || runaway_mode) && target_is_behind_labyrinthian_gate(player))
+                        {
+                            return redirect_marker2; //initialize redirection
+                        }
+                    }
+                }
+            }
+
+
+
+
         }
 
         return nullptr;
     }
+
+
+    //this fully redirects to new object without any further conditions. good for aiming at some giant shit like mage forcefields using redirect xmarkers
+
+    RE::TESObjectREFR* get_generic_full_redirect(RE::TESObjectREFR* target)
+    {
+        RE::TESObjectREFR* mage_force_field_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf0ea9);
+        RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a57);
+
+        if (target == mage_force_field_1)
+        {
+            if (redirect_marker)
+                return redirect_marker;
+        }
+
+        return nullptr;
+    }
+
+
 
     bool is_door_closed(RE::TESObjectREFR* door)
     {
@@ -2242,7 +2320,53 @@ namespace MiscThings {
         auto player_pos = player->GetPosition();
 
         auto parent_cell = player->GetParentCell();
+        auto player_worldspace = player->GetWorldspace();
 
+
+        auto mage_labyrinthian_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG07");
+
+        if (quest == mage_labyrinthian_quest && mage_labyrinthian_quest)
+        {
+            if (player_worldspace && player_worldspace->GetFormID() == 0x21edb)
+            {
+                auto stage = mage_labyrinthian_quest->GetCurrentStageID();
+
+                if (stage >= 50 && stage < 80)
+                {
+                    auto gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x86d9e);
+                    auto redirect_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2289f);
+                    //(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x86d8b); //REPLACE THIS
+
+                    return redirect_door;
+
+                    //
+                    //if (MiscThings::two_state_activator_state(gate) == 1)
+                    //    return redirect_door;
+                    //else
+                    //{
+                    //
+                    //}
+                }
+                else
+                {
+                    auto dragonpriest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x86CF4);
+
+                    if (target == dragonpriest)
+                    {
+                        auto mage1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf4927);
+                        auto mage2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf496f);
+
+                        if (mage1 && mage1->IsActor() && !mage1->IsDead())
+                            return mage1;
+
+                        if (mage2 && mage2->IsActor() && !mage2->IsDead())
+                            return mage2;
+                    }
+                }
+            }
+            
+
+        }
 
         auto mage_quest_mzulft = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG06");
 
@@ -4274,6 +4398,21 @@ namespace MiscThings {
             }
         }
 
+            auto fire_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf4986);
+
+            if (a_ref == fire_door && fire_door)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Magical Fire Door", a_ref);
+                result = name;
+            }
+
+            auto ice_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf4973);
+
+            if (a_ref == ice_door && ice_door)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Magical Ice Door", a_ref);
+                result = name;
+            }
 
 
 
@@ -4284,6 +4423,14 @@ namespace MiscThings {
             auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
             if (extra_anim_graph->animGraphMgr)
             {
+
+                if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortImpGate01")
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Pole Gate", a_ref);
+                    result = name;
+                }
+
+
                 if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
                 {
                     std::string name = MiscThings::insert_object_into_list_custom_name("Large wooden bridge", a_ref);
@@ -4672,6 +4819,23 @@ namespace MiscThings {
                 result = 1;
 
         }
+
+        
+
+        object_p = General::Script::GetObject(activator, "dunLabyrinthianElementalDoor");
+
+        if (object_p)
+        {
+            std::string state = "";
+            state = object_p->currentState;
+
+            if (state == "inactive")
+                return 0;
+            else
+                return 1;
+        }
+
+
 
         object_p = General::Script::GetObject(activator, "dunUstenPuzGateSCRIPT");
         
@@ -5879,6 +6043,13 @@ namespace MiscThings {
                                                         old_topleft_notification = result_string;
                                                         if (result_string != "Autosaving..." && result_string != "Quicksaving..." && result_string != "Quickloading..." && result_string.find("is too powerful") == std::string::npos)
                                                         {
+
+                                                            if (result_string.find("You must raise the bar to open this door.") != std::string::npos)
+                                                            {
+                                                                WalkerProcessor::reset_walker();
+                                                                Observer::detect_interesting_objects(0.016, true); //these bars are hard to raycast for some reason so just scan around no restrictions
+                                                            }
+
                                                             if (result_string.find("item has insufficient charge") != std::string::npos)
                                                             {
                                                                 auto temp_tesult = MiscThings::use_random_soulgem();
@@ -8714,7 +8885,7 @@ namespace MiscThings {
     }
 
 
-    std::string get_object_category(RE::TESObjectREFR* object)
+    std::string get_object_category(RE::TESObjectREFR* object, bool no_linked_chains)
     {
         if (!object)
             return "";
@@ -8817,123 +8988,127 @@ namespace MiscThings {
 
                 auto extra = object->extraList.GetByType(RE::ExtraDataType::kLinkedRef);
 
-                if (extra)
+                if (!no_linked_chains)
                 {
-                    auto extra_linked = (RE::ExtraLinkedRef*)extra;
-
-                    for (auto linked_ref : extra_linked->linkedRefs)
+                    if (extra)
                     {
-                        if (linked_ref.refr)
+                        auto extra_linked = (RE::ExtraLinkedRef*)extra;
+
+                        for (auto linked_ref : extra_linked->linkedRefs)
                         {
-                            std::string name_linked = insert_object_into_list_and_get_info(linked_ref.refr);
-                            if (name_linked != "")
+                            if (linked_ref.refr)
                             {
-                                linked_to.push_back(name_linked);
-                            }
-                        }
-                    }
-                }
-
-                extra = object->extraList.GetByType(RE::ExtraDataType::kActivateRefChildren);
-
-                if (extra)
-                {
-                    auto extra_linked = (RE::ExtraActivateRefChildren*)extra;
-
-                    for (auto linked_ref : extra_linked->children)
-                    {
-                        if (linked_ref->activateRef && linked_ref->activateRef.get() && linked_ref->activateRef.get().get())
-                        {
-                            if (std::size(linked_to) == 0)
-                            {
-                                std::string name_linked = insert_object_into_list_and_get_info(linked_ref->activateRef.get().get());
+                                std::string name_linked = insert_object_into_list_and_get_info(linked_ref.refr, false, true);
                                 if (name_linked != "")
                                 {
                                     linked_to.push_back(name_linked);
                                 }
                             }
-
                         }
                     }
-                }
 
+                    extra = object->extraList.GetByType(RE::ExtraDataType::kActivateRefChildren);
 
-                 //this gave me link to shit lever and didnt give link to actual lever
-                /*
-                extra = object->extraList.GetByType(RE::ExtraDataType::kActivateRef);
-                if (extra)
-                {
-                    auto extra_linked = (RE::ExtraActivateRef*)extra;
-
-                    for (auto linked_ref : extra_linked->parents)
+                    if (extra)
                     {
-                        if (linked_ref->activateRef && linked_ref->activateRef.get() && linked_ref->activateRef.get().get())
+                        auto extra_linked = (RE::ExtraActivateRefChildren*)extra;
+
+                        for (auto linked_ref : extra_linked->children)
                         {
-                            RE::TESObjectREFR* activate_ref = linked_ref->activateRef.get().get();
-
-                            std::string temp_name = activate_ref->GetDisplayFullName();
-
-                            if (temp_name != "" || is_object_in_the_list(activate_ref))
+                            if (linked_ref->activateRef && linked_ref->activateRef.get() && linked_ref->activateRef.get().get())
                             {
-                                std::string name_linked = insert_object_into_list_and_get_info(activate_ref);
-                                if (name_linked != "")
+                                if (std::size(linked_to) == 0)
                                 {
-                                    linked_to.push_back(name_linked);
-                                }
-                            }
-                            else
-                            {
-                                //maybe its some script marker that has some lever attatched even higher
-                                auto extra2 = activate_ref->extraList.GetByType(RE::ExtraDataType::kActivateRefChildren);
-
-                                if (extra2)
-                                {
-                                    auto extra_linked2 = (RE::ExtraActivateRefChildren*)extra2;
-
-                                    for (auto linked_ref2 : extra_linked2->children)
+                                    std::string name_linked = insert_object_into_list_and_get_info(linked_ref->activateRef.get().get(), false, true);
+                                    if (name_linked != "")
                                     {
-                                        if (linked_ref2->activateRef && linked_ref2->activateRef.get() && linked_ref2->activateRef.get().get())
-                                        {
-                                            RE::TESObjectREFR* activate_ref2 = linked_ref2->activateRef.get().get();
-
-                                            std::string temp_name2 = activate_ref2->GetDisplayFullName();
-
-                                            if (temp_name2 != "" || is_object_in_the_list(activate_ref2))
-                                            {
-                                                std::string name_linked2 = insert_object_into_list_and_get_info(activate_ref2);
-                                                if (name_linked2 != "")
-                                                {
-                                                    linked_to.push_back(name_linked2);
-                                                }
-                                            }
-                                        }
+                                        linked_to.push_back(name_linked);
                                     }
                                 }
+
                             }
                         }
                     }
-                }
-                */
 
 
-                if (std::size(linked_to) != 0)
-                {
-                    linked_to_text = "[Linked to ";
-                    bool first_linked = true;
-                    for (auto linked_to_one : linked_to)
+                    //this gave me link to shit lever and didnt give link to actual lever
+                   /*
+                   extra = object->extraList.GetByType(RE::ExtraDataType::kActivateRef);
+                   if (extra)
+                   {
+                       auto extra_linked = (RE::ExtraActivateRef*)extra;
+
+                       for (auto linked_ref : extra_linked->parents)
+                       {
+                           if (linked_ref->activateRef && linked_ref->activateRef.get() && linked_ref->activateRef.get().get())
+                           {
+                               RE::TESObjectREFR* activate_ref = linked_ref->activateRef.get().get();
+
+                               std::string temp_name = activate_ref->GetDisplayFullName();
+
+                               if (temp_name != "" || is_object_in_the_list(activate_ref))
+                               {
+                                   std::string name_linked = insert_object_into_list_and_get_info(activate_ref);
+                                   if (name_linked != "")
+                                   {
+                                       linked_to.push_back(name_linked);
+                                   }
+                               }
+                               else
+                               {
+                                   //maybe its some script marker that has some lever attatched even higher
+                                   auto extra2 = activate_ref->extraList.GetByType(RE::ExtraDataType::kActivateRefChildren);
+
+                                   if (extra2)
+                                   {
+                                       auto extra_linked2 = (RE::ExtraActivateRefChildren*)extra2;
+
+                                       for (auto linked_ref2 : extra_linked2->children)
+                                       {
+                                           if (linked_ref2->activateRef && linked_ref2->activateRef.get() && linked_ref2->activateRef.get().get())
+                                           {
+                                               RE::TESObjectREFR* activate_ref2 = linked_ref2->activateRef.get().get();
+
+                                               std::string temp_name2 = activate_ref2->GetDisplayFullName();
+
+                                               if (temp_name2 != "" || is_object_in_the_list(activate_ref2))
+                                               {
+                                                   std::string name_linked2 = insert_object_into_list_and_get_info(activate_ref2);
+                                                   if (name_linked2 != "")
+                                                   {
+                                                       linked_to.push_back(name_linked2);
+                                                   }
+                                               }
+                                           }
+                                       }
+                                   }
+                               }
+                           }
+                       }
+                   }
+                   */
+
+
+                    if (std::size(linked_to) != 0)
                     {
-                        if (first_linked)
-                            linked_to_text += linked_to_one;
-                        else
-                            linked_to_text += ", " + linked_to_one;
+                        linked_to_text = "[Linked to ";
+                        bool first_linked = true;
+                        for (auto linked_to_one : linked_to)
+                        {
+                            if (first_linked)
+                                linked_to_text += linked_to_one;
+                            else
+                                linked_to_text += ", " + linked_to_one;
 
-                        first_linked = false;
+                            first_linked = false;
+                        }
+                        linked_to_text += "]";
+
+                        result += linked_to_text;
+
                     }
-                    linked_to_text += "]";
-                    
-                    result += linked_to_text;
-
                 }
+                
 
 
                 std::string generic_solved_text = MiscThings::get_special_text(object);
@@ -8952,7 +9127,7 @@ namespace MiscThings {
                 std::string dead = "";
                 std::string child = "";
                 std::string mount_text = "";
-                
+                std::string ghost = "";
 
                 auto actor_object = (RE::Actor*)object;
                 if (actor_object->race)
@@ -8970,6 +9145,10 @@ namespace MiscThings {
                         race = ", " + race;
 
                 }
+
+                if (actor_object->IsGhost())
+                    ghost = "[Ghost]";
+
 
                 if (actor_object->IsAMount() && !actor_object->IsDead())
                 {
@@ -9076,6 +9255,7 @@ namespace MiscThings {
                 result += mount_text;
                 result += sitsleep;
                 result += enemy_text;
+                result += ghost;
                 result += driver_text;
             }
             
@@ -9258,7 +9438,7 @@ namespace MiscThings {
 
 
 
-    std::string get_object_full_info(RE::TESObjectREFR* refr)
+    std::string get_object_full_info(RE::TESObjectREFR* refr, bool no_linked_chains)
     {
         std::string result = "";
 
@@ -9299,7 +9479,7 @@ namespace MiscThings {
                 name = "Mummified draugr";
             }
 
-            std::string category = get_object_category(refr);
+            std::string category = get_object_category(refr, no_linked_chains);
             int pillar_face_code = get_pillar_face_name(refr);
             std::string pillar_face_name = get_pillar_face_name(refr, pillar_face_code);
             std::string stealing = is_stealing(refr);
@@ -9390,7 +9570,7 @@ namespace MiscThings {
 
 
 
-    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains)
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains, bool no_linked_chains)
     {
         std::string result = "";
 
@@ -9508,9 +9688,9 @@ namespace MiscThings {
                     }
                     else
                     {
-                        std::string info = get_object_full_info(refr);
+                        std::string info = get_object_full_info(refr, no_linked_chains);
                         if (info != "")
-                            result = "[id " + std::to_string(object_entry.first) + "]" + get_object_full_info(refr);
+                            result = "[id " + std::to_string(object_entry.first) + "]" + get_object_full_info(refr, no_linked_chains);
 
                     }
 
@@ -9527,9 +9707,9 @@ namespace MiscThings {
                 if (!objects_around_valid)
                     objects_around_valid = true;
 
-                std::string info = get_object_full_info(refr);
+                std::string info = get_object_full_info(refr, no_linked_chains);
                 if (info != "")
-                    result = "[id " + std::to_string(new_id) + "]" + get_object_full_info(refr);
+                    result = "[id " + std::to_string(new_id) + "]" + get_object_full_info(refr, no_linked_chains);
 
             }
         }

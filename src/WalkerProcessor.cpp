@@ -15,6 +15,8 @@
 namespace WalkerProcessor {
 
 
+    //bool dont_reset_after_interaction = false;
+
     RE::NiPoint3 wiggle_body_start_pos{};
     int failed_wiggles = 0;
 
@@ -55,8 +57,9 @@ namespace WalkerProcessor {
 
     RE::TESObjectREFR* target_before_markarth_redirect = nullptr;
     RE::TESObjectREFR* target_before_danstar_redirect = nullptr;
-
     RE::TESObjectREFR* target_before_generic_redirect = nullptr;
+
+    int interaction_before_generic_redirect = -1;
 
     bool generic_redirect_active = false;
 
@@ -4308,6 +4311,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        //dont_reset_after_interaction = false;
+
         wiggle_body_start_pos = RE::NiPoint3::Zero();
         failed_wiggles = 0;
 
@@ -4327,6 +4332,8 @@ namespace WalkerProcessor {
         target_before_markarth_redirect = nullptr;
         target_before_danstar_redirect = nullptr;
         target_before_generic_redirect = nullptr;
+
+        interaction_before_generic_redirect = -1;
 
         generic_redirect_active = false; 
 
@@ -10092,6 +10099,39 @@ namespace WalkerProcessor {
                         RE::TESObjectREFR* skuldafn_seal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe6c68);
                         if (target_ref == skuldafn_seal)
                             reset_walker();
+
+
+
+                        if (target_before_generic_redirect != nullptr)
+                        {
+                            auto labyrinth_marker1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a5a);
+                            auto labyrinth_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a59);
+                            auto labyrinth_lever1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187f);
+                            auto labyrinth_lever2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187e);
+
+
+                            if (labyrinth_marker1 && labyrinth_marker2 && labyrinth_lever1 && labyrinth_lever2)
+                            {
+                                if (target_ref == labyrinth_lever1)
+                                {
+                                    //dont_reset_after_interaction = true;
+                                    generic_redirect_active = true;
+                                    target_ref = labyrinth_marker2;
+                                    walk_again();
+                                    return false;
+                                }
+
+                                if (target_ref == labyrinth_lever2)
+                                {
+                                    //dont_reset_after_interaction = true;
+                                    generic_redirect_active = true;
+                                    target_ref = labyrinth_marker1;
+                                    walk_again();
+                                    return false;
+                                }
+                            }
+                        }
+
                     }
                         
 
@@ -12050,6 +12090,16 @@ namespace WalkerProcessor {
 
                 if (test_targeted_ref)
                 {
+
+                    auto labyr_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf498c);
+
+                    if (labyr_gate && test_targeted_ref == labyr_gate && target_ref && target_ref != labyr_gate)
+                    {
+                        auto temp_result = walk_to_object_by_refr(labyr_gate, 1);
+                        return;
+                    }
+
+
                     auto nocturnal_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10c5f0);
 
                     if (nocturnal_portal && test_targeted_ref == nocturnal_portal && target_ref && target_ref != nocturnal_portal)
@@ -12057,6 +12107,9 @@ namespace WalkerProcessor {
                         auto temp_result = walk_to_object_by_refr(nocturnal_portal, 1);
                         return;
                     }
+
+
+
                 }
 
 
@@ -12119,6 +12172,78 @@ namespace WalkerProcessor {
 
                         }
                     }
+
+
+                    if (generic_redirect_active)
+                    {
+                        auto labyrinth_marker1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a5a);
+                        auto labyrinth_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a59);
+                        auto labyrinth_lever1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187f);
+                        auto labyrinth_lever2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187e);
+
+                        if (labyrinth_marker1 && labyrinth_marker2 && labyrinth_lever1 && labyrinth_lever2)
+                        {
+                            if (target_ref == labyrinth_marker1)
+                            {
+                                if (player->GetDistance(labyrinth_marker1) < 60.0f)
+                                {
+                                    if (MiscThings::target_is_behind_labyrinthian_gate(target_before_generic_redirect) || runaway_mode)
+                                    {
+                                        interaction_after_walk = 1;
+                                        target_ref = labyrinth_lever1;
+                                        generic_redirect_active = false;  //FAKE FLAG DISABLING, SO CLOSE_ENOUGH RETURNS TRUE AND WE CAN INTERACT. the lever ineraction will check presence of target_before_generic_redirect instead
+                                        walk_again();
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        //finish redirections
+                                        dont_check_quest_target_change = false;
+                                        generic_redirect_active = false;
+                                        interaction_after_walk = interaction_before_generic_redirect;
+                                        target_ref = target_before_generic_redirect;
+                                        target_before_generic_redirect = nullptr;
+                                        //dont_reset_after_interaction = false;
+                                        walk_again();
+                                        return;
+                                    }
+                                }
+                            }
+
+                            if (target_ref == labyrinth_marker2)
+                            {
+                                if (player->GetDistance(labyrinth_marker2) < 60.0f)
+                                {
+                                    if (!MiscThings::target_is_behind_labyrinthian_gate(target_before_generic_redirect))
+                                    {
+                                        interaction_after_walk = 1;
+                                        target_ref = labyrinth_lever2;
+                                        generic_redirect_active = false; //FAKE FLAG DISABLING, SO CLOSE_ENOUGH RETURNS TRUE AND WE CAN INTERACT. the lever ineraction will check presence of target_before_generic_redirect instead
+                                        walk_again();
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        //finish redirections
+                                        dont_check_quest_target_change = false;
+                                        generic_redirect_active = false;
+                                        target_ref = target_before_generic_redirect;
+                                        interaction_after_walk = interaction_before_generic_redirect;
+                                        target_before_generic_redirect = nullptr;
+                                        //dont_reset_after_interaction = false;
+                                        walk_again();
+                                        return;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    
+
+
+
+
 
                     auto redirect_dock = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d1);
                     auto redirect_water = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d2);
@@ -12590,18 +12715,24 @@ namespace WalkerProcessor {
                         }
                     }
 
-                        auto redirect_ref = MiscThings::get_generic_redirect(target_ref, quest_mode);
+                        auto redirect_ref = MiscThings::get_generic_redirect(target_ref, quest_mode, runaway_mode, (generic_redirect_active || target_before_generic_redirect));
 
-                        if (redirect_ref && (!generic_redirect_active || (redirect_ref != target_ref)))
+                        if (redirect_ref && ((!generic_redirect_active && !target_before_generic_redirect) || (redirect_ref != target_ref)))
                         {
                             //initiate redirect
                             dont_check_quest_target_change = true;
 
                             auto redirect_water = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d2);
 
-                            if (target_ref != redirect_water) //its a chain redirect of 2 points, current target ref is invalid either
+                            auto labyrinth_marker1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a5a);
+                            auto labyrinth_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a59);
+                            auto labyrinth_lever1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187f);
+                            auto labyrinth_lever2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187e);
+
+                            if (target_ref != redirect_water && target_ref != labyrinth_marker1 && target_ref != labyrinth_marker2 && target_ref != labyrinth_lever1 && target_ref != labyrinth_lever2) //its a chain redirect of 2 points, current target ref is invalid either
                                 target_before_generic_redirect = target_ref;
 
+                            interaction_before_generic_redirect = interaction_after_walk;
                             target_ref = redirect_ref;
                             generic_redirect_active = true;
                             walk_again();
@@ -12617,10 +12748,24 @@ namespace WalkerProcessor {
                                     dont_check_quest_target_change = false;
                                     generic_redirect_active = false;
                                     target_ref = target_before_generic_redirect;
+                                    target_before_generic_redirect = nullptr;
                                     walk_again();
                                     return;
                                 }
                             }
+                        }
+
+
+
+
+
+
+                        auto redirect_full_ref = MiscThings::get_generic_full_redirect(target_ref);
+                        if (redirect_full_ref)
+                        {
+                            target_ref = redirect_full_ref;
+                            walk_again();
+                            return;
                         }
                     
 
@@ -13778,6 +13923,17 @@ namespace WalkerProcessor {
                                                                                             reset_walker();
                                                                                         }
                                                                                             
+                                                                                        if (parent_cell && parent_cell->GetFormID() == 0x1380e && target_ref && target_ref->GetFormID() == 0x1c1b8)
+                                                                                        {
+                                                                                            auto force_field_ancano_1_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG06");
+                                                                                            if (force_field_ancano_1_quest)
+                                                                                            {
+                                                                                                auto stage = force_field_ancano_1_quest->GetCurrentStageID();
+                                                                                                if (stage < 70)
+                                                                                                    dont_autointerract = false;
+                                                                                            }
+                                                                                        }
+                                                                                        
 
                                                                                         //attempts to not autointerract with npc's that want us to follow them. interaction will stop walking and start (probably useless) dialogue
                                                                                         if (!dont_autointerract)

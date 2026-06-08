@@ -25,6 +25,7 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+//TODO fix fast travel advice from labyrinthian (check if worldspace fast-travelable)
 //TODO map disable when enemies nearby (dont unregister command so its not highlighted, just fail it)
 //TODO map cooldown? map only available when there are quests to fast travel?
 //TODO adhd fix?

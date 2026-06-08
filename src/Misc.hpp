@@ -5,6 +5,10 @@
 
 namespace MiscThings {
 
+
+    RE::TESObjectREFR* get_generic_full_redirect(RE::TESObjectREFR* target);
+
+
     int mage_quest_armillary_state();
 
     RE::TESObjectREFR* get_alias_ref_by_name(RE::TESQuest* quest, std::string name);
@@ -26,7 +30,7 @@ namespace MiscThings {
     bool is_tree(RE::TESObjectREFR* object);
     bool is_ore(RE::TESObjectREFR* object);
 
-    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target, bool quest_mode);
+    RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target, bool quest_mode, bool runaway_mode, bool already_redirecting);
 
     RE::TESObjectREFR* get_nearest_door_to_object(RE::TESObjectREFR* object, float range = 5000.0f);
 
@@ -161,12 +165,13 @@ namespace MiscThings {
     bool player_has_spell(RE::SpellItem* spell);
 
     //int insert_ref_into_obj_list(RE::TESObjectREFR* refr);
-    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains = false);
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains = false, bool no_linked_chains = false);
     std::string insert_quest_into_list_and_get_info(std::string quest_text);
     std::string insert_object_into_list_custom_name(std::string name, RE::TESObjectREFR* refr);
 
     std::string check_very_interesting_objects();
 
+    std::string get_object_full_info(RE::TESObjectREFR* refr, bool no_linked_chains = false);
 
     bool raycastable(RE::TESObjectREFR* object, float range, bool only_forward = true);
 
@@ -297,7 +302,10 @@ namespace MiscThings {
 
     bool is_quest_active(RE::TESQuest* quest);
 
+    bool target_is_behind_labyrinthian_gate(RE::TESObjectREFR* target);
+
     bool has_something_equipped(bool right);
+
     std::string get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object = nullptr);
 
     void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos);
