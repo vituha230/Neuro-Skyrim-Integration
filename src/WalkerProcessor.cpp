@@ -2185,8 +2185,6 @@ namespace WalkerProcessor {
                                         clear_map_cooldown();
                                         register_open_map();
                                     }
-                                        
-
                                 }
                             }
                         }

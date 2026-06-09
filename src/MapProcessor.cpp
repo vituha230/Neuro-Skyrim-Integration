@@ -437,6 +437,11 @@ namespace MapProcessor {
 				option.id = local_id;
 				option.text = option_raw.second.text;
 				 
+
+
+				
+
+
 				std::vector<int> closest_quests{};
 
 				auto temp_p = markers_to_remember.find(option.id);
@@ -445,6 +450,24 @@ namespace MapProcessor {
 				{
 					closest_quests = temp_p->second.second;
 				}
+
+				//coordinates
+				
+				std::string coordinates_text = "";
+
+				auto marker_ref = temp_p->second.first;
+
+				if (marker_ref)
+				{
+					auto marker_pos = marker_ref->GetPosition();
+
+					RE::NiPoint2 fake_grid_pos = { marker_pos.x / 4096.0f, marker_pos.y / 4096.0f };
+
+					coordinates_text = " [X " + std::to_string((int)fake_grid_pos.x) + ", Y " + std::to_string((int)fake_grid_pos.y) + "] ";
+				}
+
+				option.text += coordinates_text;
+
 
 
 				if (can_travel.find(local_id) != can_travel.end())

@@ -25,7 +25,6 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO map coordinates for location
 //TODO advice for nearest big city that you can travel with carriage
 //TODO owned beds ignore raycast (for taverns)
 
