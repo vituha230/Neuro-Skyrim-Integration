@@ -12081,7 +12081,7 @@ namespace WalkerProcessor {
                         amount_of_spins_done++;
                         spin_step_one = false;
                         spin_step_two = false;
-                        send_random_context("[Did " + std::to_string(amount_of_spins_done) + " spins]", false);
+                        send_random_context("[Did " + std::to_string(amount_of_spins_done) + " spins]", true);
 
 
                         if (amount_of_spins_done > 4)

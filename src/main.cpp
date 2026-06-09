@@ -9,7 +9,7 @@
 // QUESTLINES
 
 //TODO polish thief guild (entrance to mistveil and shitty close_enough check for mercer's ramp + no info about being paralyzed by karlia)
-//TODO polish mage guild
+//TODO polish mage guild (maybe add context about things happening around)
 //TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
 
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
@@ -25,11 +25,8 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-
-//TODO map disable when enemies nearby (dont unregister command so its not highlighted, just fail it)
-//TODO map cooldown? map only available when there are quests to fast travel?
-//TODO adhd fix?
-//TODO go-to-location-by-foot follows quest if there is quest
+//TODO map coordinates for location
+//TODO advice for nearest big city that you can travel with carriage
 //TODO owned beds ignore raycast (for taverns)
 
 
