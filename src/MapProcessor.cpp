@@ -207,7 +207,7 @@ namespace MapProcessor {
 									}
 								}
 
-								if (id_closest_to_quest >= 0 && min_location_dist <= 15000.0f)
+								if (id_closest_to_quest >= 0 && min_location_dist <= 50000.0f)
 								{
 									markers_to_remember.at(id_closest_to_quest).second.push_back(quest_actual_id);
 								}
@@ -245,7 +245,7 @@ namespace MapProcessor {
 
 				if (can_travel.find(local_id) != can_travel.end())
 				{
-					if (local_id != closest_id || closest_distance > 10000.0f)
+					if (local_id != closest_id || closest_distance > 15000.0f)
 					{
 						std::string can_travel_text = "";
 
@@ -1158,6 +1158,12 @@ namespace MapProcessor {
 				else
 				{
 					//can put marker and travel manually...
+
+
+					//if it has quest, refuse to message box, quit menu, and follow that quest
+
+
+
 
 					if (auto menu_confirm_quit = ui->GetMenu<RE::MessageBoxMenu>(); menu_confirm_quit)
 					{
