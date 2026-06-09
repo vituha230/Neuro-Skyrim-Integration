@@ -310,6 +310,8 @@ namespace MiscThings {
 
     bool can_fast_travel();
 
+    std::string get_quest_type_text(RE::TESQuest* quest);
+
     bool is_quest_active(RE::TESQuest* quest);
 
     bool target_is_behind_labyrinthian_gate(RE::TESObjectREFR* target);

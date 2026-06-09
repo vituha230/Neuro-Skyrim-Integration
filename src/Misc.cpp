@@ -8356,7 +8356,7 @@ namespace MiscThings {
 
 
 
-            result_text += "[id " + std::to_string(sortable_quests.at(i - 1).id) + "] " + sortable_quests.at(i - 1).name + ": " + sortable_quests.at(i - 1).displaytext + target_name + big_distance;
+            result_text += "[id " + std::to_string(sortable_quests.at(i - 1).id) + "]" + get_quest_type_text(sortable_quests.at(i - 1).quest) + " " + sortable_quests.at(i - 1).name + ": " + sortable_quests.at(i - 1).displaytext + target_name + big_distance;
             result_text += "\n";
 
         }
@@ -8391,6 +8391,42 @@ namespace MiscThings {
 
 
 
+
+    std::string get_quest_type_text(RE::TESQuest* quest)
+    {
+        if (quest)
+        {
+            if (quest->data.questType == RE::QUEST_DATA::Type::kMainQuest)
+                return "[Main Quest]";
+
+            if (quest->data.questType == RE::QUEST_DATA::Type::kSideQuest || quest->data.questType == RE::QUEST_DATA::Type::kMiscellaneous)
+                return "[Side Quest]";
+
+            /*
+            if (quest->data.questType == RE::QUEST_DATA::Type::kThievesGuild)
+                return "[Thieves Guild] ";
+
+            if (quest->data.questType == RE::QUEST_DATA::Type::kDarkBrotherhood)
+                return "[Dark Brotherhood] ";
+
+
+           
+            if (quest->data.questType == RE::QUEST_DATA::Type::kMagesGuild)
+                return "[Mage College] ";
+
+            if (quest->data.questType == RE::QUEST_DATA::Type::kCivilWar)
+                return "[Civil War] ";
+
+            if (quest->data.questType == RE::QUEST_DATA::Type::kCompanionsQuest)
+                return "[Companions] ";
+
+            if (quest->data.questType == RE::QUEST_DATA::Type::kDLC02_Dragonborn)
+                return "[Dragonborn] ";
+            */
+        }
+
+        return "";
+    }
 
 
     bool is_quest_active(RE::TESQuest* quest)
@@ -8438,14 +8474,14 @@ namespace MiscThings {
 
                 if (name_lower == quest_text)
                 {
-                    result = "[id " + std::to_string(quest.id) + "] " + quest.name + ": " + quest.displaytext + quest.target_name;
+                    result = "[id " + std::to_string(quest.id) + "]" + get_quest_type_text(quest.quest) + " " + quest.name + ": " + quest.displaytext + quest.target_name;
                     found = true;
                     //break;
                 }
 
                 if (displaytext_lower == quest_text)
                 {
-                    result = "[id " + std::to_string(quest.id) + "] " + quest.name + ": " + quest.displaytext + quest.target_name;
+                    result = "[id " + std::to_string(quest.id) + "]" + get_quest_type_text(quest.quest) + " " + quest.name + ": " + quest.displaytext + quest.target_name;
                     found = true;
                     //break;
                 }
@@ -8547,7 +8583,7 @@ namespace MiscThings {
                                                         if (result != "")
                                                             result += "; ";
 
-                                                        result += "[id " + std::to_string(this_quest.id) + "] " + this_quest.name;
+                                                        result += "[id " + std::to_string(this_quest.id) + "]" + get_quest_type_text(this_quest.quest) + " " + this_quest.name;
                                                         quests.push_back(this_quest);
                                                         found = true;
 
@@ -8569,7 +8605,7 @@ namespace MiscThings {
                                                             result += "; ";
 
 
-                                                        result += "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
+                                                        result += "[id " + std::to_string(this_quest.id) + "]" + get_quest_type_text(this_quest.quest) + " " + this_quest.name + ": " + this_quest.displaytext + target_name;
                                                         quests.push_back(this_quest);
                                                         found = true;
 
