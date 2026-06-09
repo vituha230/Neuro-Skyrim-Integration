@@ -16,6 +16,8 @@
 
 long long get_last_load_timestamp();
 
+void put_explore_on_cooldown(float cooldown);
+void clear_explore_cooldown();
 
 bool is_universal_blocked();
 void set_universal_block(float time);
@@ -55,6 +57,9 @@ bool register_look_at_object();
 bool register_quest_actions();
 
 bool register_exit_dungeon();
+bool register_open_map();
+bool unregister_open_map();
+
 
 bool was_exit_dungeon_registered();
 bool unregister_explore_action();
@@ -75,6 +80,8 @@ bool get_visit_places_action_status();
 bool register_visit_interesting();
 bool unregister_visit_interesting();
 bool is_something_registered();
+
+bool get_open_map_action_status();
 
 void do_delayed_poke();
 

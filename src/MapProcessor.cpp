@@ -393,6 +393,10 @@ namespace MapProcessor {
 
 	bool map_is_allowed()
 	{
+
+		if (!MiscThings::can_fast_travel())
+			return false;
+
 		auto player = RE::PlayerCharacter::GetSingleton();
 
 		if (MiscThings::is_intro() || MiscThings::is_intro2())
@@ -410,7 +414,14 @@ namespace MapProcessor {
 		if (!player->GetWorldspace() || player->GetWorldspace()->flags.all(RE::TESWorldSpace::Flag::kCantFastTravel))
 			return false;
 
+		if (get_active_force() != -1)
+			return false;
 
+		auto control_map = RE::ControlMap::GetSingleton();
+		bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+		if (!can_fight)
+			return false;
 
 		return true;
 	}

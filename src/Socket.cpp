@@ -23,7 +23,13 @@ std::string greet_phrase = "You are playing Skyrim, an action RPG. Use commands 
 long long timestamp_greet_sent = 0;
 
 
-std::map<std::string, bool> actions_status{};
+struct action_status {
+    bool registered;
+    bool dont_autoregister;
+    float autoregister_cooldown;
+};
+
+std::map<std::string, action_status> actions_status{};
 
 
 void set_action_status(std::string action_name, bool status)
@@ -31,10 +37,45 @@ void set_action_status(std::string action_name, bool status)
     auto action_status = actions_status.find(action_name);
 
     if (action_status != actions_status.end())
-        action_status->second = status;
+        action_status->second.registered = status;
     else
     {
-        actions_status.insert({ action_name, status });
+        actions_status.insert({ action_name, {status, false, 0} });
+    }
+}
+
+
+bool is_action_on_cooldown(std::string action_name)
+{
+    auto action_status = actions_status.find(action_name);
+
+    if (action_status != actions_status.end())
+    {
+        return action_status->second.dont_autoregister;
+    }
+
+    return false;
+}
+
+void neuro::set_action_cooldown(std::string action_name, float cooldown)
+{
+    auto action_status = actions_status.find(action_name);
+
+    if (action_status != actions_status.end())
+    {
+        action_status->second.dont_autoregister = true;
+        action_status->second.autoregister_cooldown = cooldown;
+    }
+}
+
+void neuro::clear_action_cooldown(std::string action_name)
+{
+    auto action_status = actions_status.find(action_name);
+
+    if (action_status != actions_status.end())
+    {
+        action_status->second.dont_autoregister = false;
+        action_status->second.autoregister_cooldown = 0.0f;
     }
 }
 
@@ -43,7 +84,7 @@ bool neuro::get_action_status(std::string action_name)
 {
     auto action_status = actions_status.find(action_name);
     if (action_status != actions_status.end())
-        return action_status->second;
+        return action_status->second.registered;
 
     return false;
 }
@@ -639,7 +680,11 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         {
                             if (!was_exit_dungeon_registered())
                             {
-                                actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
+                                if (!is_action_on_cooldown(Capabilities::ExploreWorld::Name))
+                                {
+                                    actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
+                                }
+                                
                             }
 
                             if (!MiscThings::is_serving_jail())
@@ -651,7 +696,10 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                         if (MapProcessor::map_is_allowed() && can_fight) //must be watched to refresh
                         {
-                            actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
+                            if (!is_action_on_cooldown(Capabilities::OpenMap::Name))
+                            {
+                                actions_to_register[action_pos] = Capabilities::OpenMap::Action; action_pos++;
+                            }
                         }
 
 
@@ -663,7 +711,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                             actions_to_register[action_pos] = Capabilities::GoToLocation::Action; action_pos++;
                             //if (!MiscThings::have_any_quests())
                             {
-                                actions_to_register[action_pos] = Capabilities::GetLocations::Action; action_pos++;
+                                ;// actions_to_register[action_pos] = Capabilities::GetLocations::Action; action_pos++;
                             }
                                 
                         }
@@ -991,11 +1039,11 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                 advice = "follow some quest";
         else
         {
-            if (!MiscThings::is_interior_cell())
-            if (advice != "")
-                advice += ", explore, go to location or use map to travel";
-            else
-                advice = "explore, go to location or use map to travel";
+            if (!MiscThings::is_interior_cell() && MapProcessor::map_is_allowed())
+                if (advice != "")
+                    advice += ", explore, go to location or use map to travel";
+                else
+                    advice = "explore, go to location or use map to travel";
         }
 
 
@@ -1007,6 +1055,24 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
         time_threshold = (float)std::rand() / RAND_MAX * 4 + 6;
     }
+
+
+
+    for (auto& action_registered : actions_status)
+    {
+        if (action_registered.second.dont_autoregister)
+        {
+            action_registered.second.autoregister_cooldown -= dtime;
+
+            if (action_registered.second.autoregister_cooldown <= 0.0f)
+            {
+                clear_action_cooldown(action_registered.first);
+            }
+        }
+    }
+
+
+
 
     neurosdk_message_t* messageQueue{};
     int messageCount{};

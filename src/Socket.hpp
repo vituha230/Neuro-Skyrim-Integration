@@ -640,7 +640,7 @@ namespace neuro {
 
 
         
-
+        
 
         static void LogNeuro(neurosdk_severity_e aSeverity, char* aMsg, void* aUserData);
     };
@@ -655,6 +655,9 @@ namespace neuro {
 
     bool get_action_status(std::string action_name);
     bool is_something_registered();
+
+    void set_action_cooldown(std::string action_name, float cooldown);
+    void clear_action_cooldown(std::string action_name);
 
 }
 

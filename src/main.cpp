@@ -10,9 +10,10 @@
 
 //TODO polish thief guild (entrance to mistveil and shitty close_enough check for mercer's ramp + no info about being paralyzed by karlia)
 //TODO polish mage guild
+//TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
 
+/////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
-//TODO dark brotherhood
 //TODO companions
 //TODO bards
 //TODO civil war
@@ -173,6 +174,14 @@ bool is_something_registered()
     return neuro::is_something_registered();
 }
 
+
+
+bool get_open_map_action_status()
+{
+    std::string name = Capabilities::OpenMap::Name;
+
+    return neuro::get_action_status(name);
+}
 
 
 
@@ -520,6 +529,43 @@ bool register_exit_dungeon()
 
     return false;
 }
+
+bool register_open_map()
+{
+    neurosdk_action actions[] = { Capabilities::OpenMap::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+bool unregister_open_map()
+{
+    const char* action_names[] = { Capabilities::OpenMap::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
+
+
+void put_explore_on_cooldown(float cooldown)
+{
+    std::string action_name = Capabilities::ExploreWorld::Name;
+
+    neuro::set_action_cooldown(action_name, cooldown);
+}
+
+void clear_explore_cooldown()
+{
+    std::string action_name = Capabilities::ExploreWorld::Name;
+
+    neuro::clear_action_cooldown(action_name);
+}
+
 
 
 bool unregister_explore_action()

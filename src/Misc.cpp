@@ -18,6 +18,26 @@ namespace MiscThings {
 
 
 
+    bool CanFastTravel(RE::Actor* a_actor, bool a_arg2)
+    {
+        // SkyrimSE 1.6.318.0: 0x6C5560
+        using func_t = decltype(&CanFastTravel);
+        static REL::Relocation<func_t> func{ REL::ID(40444) };
+        return func(a_actor, a_arg2);
+    }
+
+
+    bool can_fast_travel()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+            return CanFastTravel(player, true); //true means silent (no topleft message)
+
+        return false;
+    }
+
+
     bool player_has_item(RE::TESBoundObject* item)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -14920,8 +14940,7 @@ namespace MiscThings {
 
                 if (a_ref)
                 {
-                    std::string name = a_ref->GetName();
-                    std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
 
                     auto base_obj = a_ref->GetBaseObject();
                     RE::FormType base_type{};
@@ -14935,6 +14954,22 @@ namespace MiscThings {
                     {
                         bool no_base_object = true;
                     }
+
+                    //first exclude fillaments
+                    if (base_type == RE::FormType::Hazard)
+                        return RE::BSContainer::ForEachResult::kContinue;
+
+                    if (base_type == RE::FormType::Static)
+                        return RE::BSContainer::ForEachResult::kContinue;
+
+                    //only then check if exists
+                    if (MiscThings::is_object_in_the_list(a_ref))
+                        return RE::BSContainer::ForEachResult::kContinue;
+
+
+                    std::string name = a_ref->GetName();
+                    std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
 
                     if (name[0] != '\0' && std::size(name) > 1 && name != player_name)
                     {

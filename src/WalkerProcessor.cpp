@@ -17,6 +17,7 @@ namespace WalkerProcessor {
 
     //bool dont_reset_after_interaction = false;
 
+
     bool reload_after_walk = false;
     bool reload_after_walk_quicksaved = false;
 
@@ -485,7 +486,7 @@ namespace WalkerProcessor {
         if (MiscThings::is_interior_cell())
             min_dist = 3000.0f;
         else
-            min_dist = 20000.0f;
+            min_dist = 10000.0f;
     }
 
     bool processing_ustengrev()
@@ -2173,10 +2174,16 @@ namespace WalkerProcessor {
 
                             if (good_fasttravel_location != "" && advice_counter < 2)
                             {
-                                advice_counter++;
+                                if (MapProcessor::map_is_allowed())
+                                {
+                                    advice_counter++;
+                                    //advice
+                                    big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
 
-                                //advice
-                                big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                    if (!get_open_map_action_status())
+                                        register_open_map();
+
+                                }
                             }
                         }
                         
@@ -5611,7 +5618,7 @@ namespace WalkerProcessor {
             return result;
         }
 
-        float max_dist = 50000.0f;
+        float max_dist = 10000.0f;
 
 
         
@@ -5701,6 +5708,8 @@ namespace WalkerProcessor {
         }
 
 
+        put_explore_on_cooldown(90.0f);
+        unregister_explore_action();
 
         right_attack_cancel();
         left_attack_cancel();
@@ -10531,8 +10540,11 @@ namespace WalkerProcessor {
 
                 auto post_mzulft_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a56);
 
-                if (post_mzulft_redirect_marker && target_ref == post_mzulft_redirect_marker)
+                if (post_mzulft_redirect_marker && target_ref == post_mzulft_redirect_marker && MapProcessor::map_is_allowed())
                 {
+                    if (!get_open_map_action_status())
+                        register_open_map();
+
                     send_random_context("You are outside, near some cliff. You can now fast travel to the Winterhold College", false);
                     reset_walker();
                     return "";
@@ -10589,6 +10601,14 @@ namespace WalkerProcessor {
                 }
 
                 result = "You walked up to " + target_name; //default
+
+                if (explore_mode)
+                {
+                    //successful explore. allow exploring more
+                    clear_explore_cooldown();
+                    register_allowed_actions();
+                }
+
 
                 switch (interaction_after_walk)
                 {
@@ -12320,7 +12340,16 @@ namespace WalkerProcessor {
 
 
                 if (target_ref && (!target_ref->formID || !target_ref->data.objectReference || target_ref == player_ref))
+                {
+                    if (explore_mode)
+                    {
+                        reset_walker();
+                        explore_world(true); //explore again
+                        return;
+                    }
                     reset_walker();
+                }
+                    
 
                 RE::ObjectRefHandle my_handle{};
                 if (target_ref)
@@ -14155,9 +14184,11 @@ namespace WalkerProcessor {
                                                                                 {
                                                                                     lock_camera_onto_target(target_ref, dtime); //keep camera locked in until the walker is reset externally if no action specified
                                                                                     
-                                                                                    if (quest_mode && result_target)
+                                                                                    bool dont_autointerract = false;
+
+                                                                                    if ((quest_mode || explore_mode) && result_target)
                                                                                     {
-                                                                                        bool dont_autointerract = false;
+                                                                                        
 
                                                                                         if (target_ref && target_ref->IsActor())
                                                                                         {
@@ -14233,9 +14264,13 @@ namespace WalkerProcessor {
 
 
                                                                                     }
+
                                                                                     if (explore_mode)
                                                                                     {
-                                                                                        reset_walker(); //success
+                                                                                        if (!dont_autointerract && MiscThings::object_is_interactive(target_ref) && !MiscThings::is_insect(target_ref))
+                                                                                            auto remp_result = walk_to_object_by_refr(target_ref, 1);
+                                                                                        else
+                                                                                            reset_walker(); //success  
                                                                                     }
                                                                                        // explore_mode = false; //so we can explore again
                                                                                 }

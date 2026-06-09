@@ -308,6 +308,7 @@ namespace MiscThings {
 
     bool have_any_quests();
 
+    bool can_fast_travel();
 
     bool is_quest_active(RE::TESQuest* quest);
 

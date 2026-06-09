@@ -4214,6 +4214,19 @@ namespace Observer {
 				}
 
 
+
+				//fast travel monitor
+
+				if (get_open_map_action_status())
+				{
+					//map registered
+					if (!MiscThings::can_fast_travel())
+						unregister_open_map();
+				}
+
+
+
+
 				auto force_field_ancano_1_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG06");
 				if (force_field_ancano_1_quest)
 				{
