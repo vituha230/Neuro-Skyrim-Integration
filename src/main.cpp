@@ -584,7 +584,20 @@ void clear_explore_cooldown()
     neuro::clear_action_cooldown(action_name);
 }
 
+void put_map_on_cooldown(float cooldown)
+{
+    std::string action_name = Capabilities::OpenMap::Name;
 
+    neuro::set_action_cooldown(action_name, cooldown);
+}
+
+
+void clear_map_cooldown()
+{
+    std::string action_name = Capabilities::OpenMap::Name;
+
+    neuro::clear_action_cooldown(action_name);
+}
 
 bool unregister_explore_action()
 {

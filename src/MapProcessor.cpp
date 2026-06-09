@@ -9,6 +9,9 @@
 
 namespace MapProcessor {
 
+	int last_index_chosen = -1;
+	long long last_index_chosen_timestamp = 0;
+
 
 	bool quit_menu_in_a_second = false;
 	float time_quit_menu_in_a_second = 0.0f;
@@ -77,6 +80,37 @@ namespace MapProcessor {
 	//id, marker_ref, vector of nearest quests
 
 	
+	void clear_map_adhd()
+	{
+		last_index_chosen = -1;
+		last_index_chosen_timestamp = 0;
+	}
+
+
+	void check_map_adhd()
+	{
+		if (last_index_chosen != location_choice && location_choice != -1)
+		{
+			//new index
+			last_index_chosen = location_choice;
+			auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+			last_index_chosen_timestamp = now;
+			return;
+		}
+
+		//index is different
+		auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+		float delta_last_index = (double)(now - last_index_chosen_timestamp) / 1000000000.0;
+
+		if (delta_last_index < 120.0f)
+		{
+			put_map_on_cooldown(300.0f);
+			last_index_chosen = -1;
+			last_index_chosen_timestamp = 0;
+		}
+	}
+
+
 
 	int get_nearest_quest_id_to_location(RE::TESObjectREFR* location_marker)
 	{
@@ -529,7 +563,10 @@ namespace MapProcessor {
 			result = true;
 			set_universal_block(1.0f);
 			RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
 		}
+
+		
 
 		return result;
 	}
@@ -552,8 +589,6 @@ namespace MapProcessor {
 			RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 			RE::UIMessageQueue::GetSingleton()->AddMessage(RE::CursorMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 		}
-
-
 
 
 	}
@@ -756,8 +791,11 @@ namespace MapProcessor {
 
 		if (valid)
 		{
+
 			location_choice = id;
 			location_choice_valid = true;
+
+			check_map_adhd();
 
 			auto menu = ui->GetMenu<RE::MapMenu>();
 			if (id >= 0 && id < std::size(menu->mapMarkers))
@@ -1289,7 +1327,7 @@ namespace MapProcessor {
 								{
 									menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onRollOver", nullptr, nullptr, 0);
 									rolled_over = true;
-									set_universal_block(2.0f);
+									set_universal_block(1.0f);
 								}
 								else
 								{
@@ -1297,6 +1335,7 @@ namespace MapProcessor {
 									WalkerProcessor::invalidate_path();
 
 									rolled_over = false;
+
 									menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
 									set_universal_block(1.5f);
 

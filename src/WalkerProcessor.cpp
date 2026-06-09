@@ -2181,7 +2181,11 @@ namespace WalkerProcessor {
                                     big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
 
                                     if (!get_open_map_action_status())
+                                    {
+                                        clear_map_cooldown();
                                         register_open_map();
+                                    }
+                                        
 
                                 }
                             }
@@ -7383,6 +7387,13 @@ namespace WalkerProcessor {
                                                             //advice
                                                             std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
                                                             add_delayed_message(advice);
+
+                                                            //unlock map if we can actually fast travel
+                                                            if (!get_open_map_action_status())
+                                                            {
+                                                                clear_map_cooldown();
+                                                                register_open_map();
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -10551,7 +10562,10 @@ namespace WalkerProcessor {
                 if (post_mzulft_redirect_marker && target_ref == post_mzulft_redirect_marker && MapProcessor::map_is_allowed())
                 {
                     if (!get_open_map_action_status())
+                    {
+                        clear_map_cooldown();
                         register_open_map();
+                    }
 
                     send_random_context("You are outside, near some cliff. You can now fast travel to the Winterhold College", false);
                     reset_walker();

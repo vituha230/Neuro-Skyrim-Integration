@@ -26,7 +26,7 @@ namespace MapProcessor {
 	bool map_is_allowed();
 
 
-
+	void clear_map_adhd();
 
 }
 

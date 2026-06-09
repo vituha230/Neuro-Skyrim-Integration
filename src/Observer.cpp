@@ -4606,6 +4606,7 @@ namespace Observer {
 						send_random_context("[YOU DIED. The game will resume from last save soon]", false);
 						MiscThings::set_time_of_death(std::chrono::steady_clock::now().time_since_epoch().count());
 
+						MapProcessor::clear_map_adhd();
 
 						long long last_load_timestamp = get_last_load_timestamp();
 

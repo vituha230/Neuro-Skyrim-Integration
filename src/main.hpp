@@ -22,6 +22,9 @@ void clear_explore_cooldown();
 void put_go_to_location_on_cooldown(float cooldown);
 bool unregister_go_to_location();
 
+void put_map_on_cooldown(float cooldown);
+void clear_map_cooldown();
+
 bool is_universal_blocked();
 void set_universal_block(float time);
 
