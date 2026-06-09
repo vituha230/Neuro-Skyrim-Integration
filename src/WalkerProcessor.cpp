@@ -2187,8 +2187,30 @@ namespace WalkerProcessor {
                                     }
                                 }
                             }
+
+                            
+
+                            if (good_fasttravel_location == "")
+                            {
+                                std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
+
+                                if (nearest_city != "" && advice_counter < 2)
+                                {
+                                    if (MapProcessor::map_is_allowed())
+                                    {
+                                        advice_counter++;
+                                        //advice
+                                        big_distance += " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
+
+                                        if (!get_open_map_action_status())
+                                        {
+                                            clear_map_cooldown();
+                                            register_open_map();
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        
                     }
 
                         
@@ -7393,6 +7415,31 @@ namespace WalkerProcessor {
                                                                 register_open_map();
                                                             }
                                                         }
+
+
+                                                        if (good_fasttravel_location == "")
+                                                        {
+                                                            std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
+
+                                                            if (nearest_city != "" && advice_counter < 2)
+                                                            {
+                                                                if (MapProcessor::map_is_allowed())
+                                                                {
+                                                                    advice_counter++;
+                                                                    //advice
+                                                                    std::string advice = big_distance + " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
+
+                                                                    add_delayed_message(advice);
+
+                                                                    if (!get_open_map_action_status())
+                                                                    {
+                                                                        clear_map_cooldown();
+                                                                        register_open_map();
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+
                                                     }
                                                 }
 

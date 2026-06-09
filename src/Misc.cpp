@@ -2164,6 +2164,103 @@ namespace MiscThings {
 
 
 
+
+
+
+
+    std::string get_good_carriage_city_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest)
+    {
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        RE::BSTArray<RE::ObjectRefHandle> map_markers_raw = player->currentMapMarkers;
+
+
+        auto blackreach_worldspace = RE::TESForm::LookupByID(0x1ee62);
+        auto player_worldspace = player->GetWorldspace();
+
+
+        if (is_interior_cell() || !MapProcessor::map_is_allowed())
+            return "";
+
+        float min_distance = FLT_MAX;
+
+        std::string sublocation_name = "";
+
+
+        std::vector<RE::TESObjectREFR*> city_markers =
+        {
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x177B0),
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x177EF),
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1773A),
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x17760),
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x38436),
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1C390),
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1C38A),
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x162CE),
+            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4D0F4)
+        };
+
+        for (auto marker : city_markers)
+        {
+            if (marker)
+            {
+                auto real_marker = marker;
+                auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
+                if (real_marker && !real_marker->IsDisabled() && data && data->mapData && data->mapData->flags)
+                {
+                    if (real_marker == (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x162CE) && !data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo))
+                    {
+                        return ""; //we cant even travel to whiterun its useless
+                    }
+
+                    std::string marker_name = data->mapData->locationName.GetFullName();
+                    if (marker_name != "" && marker_name.find("Military Camp") == std::string::npos)
+                    {
+
+                        RE::ObjectRefHandle quest_ref_handle{};
+                        target->GetTargetRef(quest_ref_handle, false, quest);
+
+                        RE::TESObjectREFR* quest_target_ref = nullptr;
+
+                        if (quest_ref_handle)
+                            if (quest_ref_handle.get())
+                                quest_target_ref = quest_ref_handle.get().get();
+
+
+                        //distance from target to location
+                        auto distance = get_quest_target_distance(target, quest, real_marker);
+
+                        //auto distance = real_marker->GetDistance(target, true, true);
+
+                        //distance from player to location
+                        auto player_distance = player->GetDistance(real_marker, true, true);
+
+
+                        if (player_distance > 80000.0f && distance < min_distance)
+                        {
+                            min_distance = distance;
+                            sublocation_name = marker_name;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (min_distance <= 80000.0f && sublocation_name != "")
+        {
+            return sublocation_name;
+        }
+
+        return "";
+
+    }
+
+
+
+
+
+
+
     std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest)
     {
 
