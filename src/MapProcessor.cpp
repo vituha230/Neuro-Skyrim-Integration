@@ -196,7 +196,6 @@ namespace MapProcessor {
 
 			if (p_quests)
 			{
-				int quest_actual_id = 0;
 
 				for (auto a_quest : *p_quests)
 				{
@@ -236,14 +235,12 @@ namespace MapProcessor {
 
 								if (id_closest_to_quest >= 0 && min_location_dist <= 50000.0f)
 								{
-									markers_to_remember.at(id_closest_to_quest).second.push_back(quest_actual_id);
+									markers_to_remember.at(id_closest_to_quest).second.push_back(a_quest.id);
 								}
 							}
 
 						}
 					}
-
-					quest_actual_id++;
 
 				}
 			}
@@ -856,6 +853,12 @@ namespace MapProcessor {
 		auto menu_cursor = RE::MenuCursor::GetSingleton();
 
 
+		bool has_messagebox = ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME);
+
+		if (has_messagebox)
+			return true; //dont ban moving mouse
+
+
 		if (menu_cursor && menu)
 		{
 			float cursor_posX = menu_cursor->cursorPosX / menu_cursor->screenWidthX;
@@ -1410,14 +1413,14 @@ namespace MapProcessor {
 								{
 									if (!rolled_over)
 									{
-										menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button1.onRollOver", nullptr, nullptr, 0);
+										menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onRollOver", nullptr, nullptr, 0);
 										rolled_over = true;
 										set_universal_block(1.0f);
 									}
 									else
 									{
 										rolled_over = false;
-										menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button1.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
+										menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
 
 										send_random_context("[You cannot fast travel to this location. You start walking there by foot]", true);
 
