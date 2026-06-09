@@ -14990,6 +14990,11 @@ namespace WalkerProcessor {
 
                                                     return;
                                                 }
+                                                else
+                                                {
+                                                    if (almost_stuck()) //basically no blocker but stuck - maybe terrain. will also trigger on pole-type doors though
+                                                        jump(); //experimental
+                                                }
 
                                                 walk_to_point(dtime);
                                                 //cast_pathfinding(dtime); //rebuild path

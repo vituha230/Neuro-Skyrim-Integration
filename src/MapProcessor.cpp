@@ -89,25 +89,30 @@ namespace MapProcessor {
 
 	void check_map_adhd()
 	{
-		if (last_index_chosen != location_choice && location_choice != -1)
+
+		if (location_choice != -1) //if its -1 then just ignore it. but its irrelevant because -1 in set_choice just exits before this check is even called
 		{
-			//new index
-			last_index_chosen = location_choice;
+			if (last_index_chosen != location_choice)
+			{
+				//new index
+				last_index_chosen = location_choice;
+				auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+				last_index_chosen_timestamp = now;
+				return;
+			}
+
+			//index is different
 			auto now = std::chrono::steady_clock::now().time_since_epoch().count();
-			last_index_chosen_timestamp = now;
-			return;
-		}
+			float delta_last_index = (double)(now - last_index_chosen_timestamp) / 1000000000.0;
 
-		//index is different
-		auto now = std::chrono::steady_clock::now().time_since_epoch().count();
-		float delta_last_index = (double)(now - last_index_chosen_timestamp) / 1000000000.0;
-
-		if (delta_last_index < 120.0f)
-		{
-			put_map_on_cooldown(300.0f);
-			last_index_chosen = -1;
-			last_index_chosen_timestamp = 0;
+			if (delta_last_index < 120.0f)
+			{
+				put_map_on_cooldown(300.0f);
+				last_index_chosen = -1;
+				last_index_chosen_timestamp = 0;
+			}
 		}
+		
 	}
 
 
