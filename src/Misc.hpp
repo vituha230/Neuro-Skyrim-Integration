@@ -177,7 +177,14 @@ namespace MiscThings {
 
     std::string get_blocking_object_name2(RE::TESObjectREFR* a_ref);
 
-    bool quest_is_hidden(RE::TESQuest* quest);
+    bool quest_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective = nullptr);
+
+    bool object_inside_solitude_escape_bridge(RE::TESObjectREFR* object);
+    bool object_inside_katariah_balcony(RE::TESObjectREFR* object);
+
+    bool kataria_exists();
+    bool is_object_inside_of_kataria(RE::TESObjectREFR* object);
+
 
     bool is_game_paused();
 

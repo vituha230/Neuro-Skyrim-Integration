@@ -12,6 +12,10 @@
 namespace Observer {
 
 
+	bool no_spam = false;
+	float no_spam_time = 0.0f;
+
+
 	std::map<RE::TESObjectREFR*, bool> objects_for_extra_notification{};
 
 	int old_mg6_quest_stage = 0;
@@ -931,6 +935,9 @@ namespace Observer {
 
 	void reset_observer()
 	{
+		no_spam = false;
+		no_spam_time = 0.0f;
+
 		objects_for_extra_notification.clear();
 
 		if (!hitmap_lock)
@@ -1411,6 +1418,18 @@ namespace Observer {
 	{
 		if (observers_green_light && !MiscThings::have_force_only_menu_open())
 		{
+
+			if (no_spam)
+			{
+				if (no_spam_time > 3.0f)
+				{
+					no_spam = false;
+					no_spam_time = 0.0f;
+				}
+				else
+					no_spam_time += dtime;
+			}
+
 			if (ignore_raycast || detect_interesting_time > 0.5f || (first_cycle2 && detect_interesting_time > 2.0f))
 			{
 				if (first_cycle2)
@@ -2410,6 +2429,8 @@ namespace Observer {
 
 				bool silent = false;
 
+				
+
 				RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, scan_distance,
 					//player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
 					[&](RE::TESObjectREFR* a_ref) {
@@ -2913,13 +2934,24 @@ namespace Observer {
 
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortImpGate01")
 															{
-																std::string name = MiscThings::insert_object_into_list_custom_name("Pole Gate", a_ref);
+																if (!no_spam)
+																{
+																	std::string name = MiscThings::insert_object_into_list_custom_name("Pole Gate", a_ref);
 
-																if (activation == 0)
-																	result.push_back("[ " + name + " closed]");
+																	if (activation == 0)
+																	{
+																		result.push_back("[ " + name + " closed]");
+																		no_spam = true;
+																	}
 
-																if (activation == 1)
-																	result.push_back("[ " + name + " opened]");
+
+																	if (activation == 1)
+																	{
+																		result.push_back("[ " + name + " opened]");
+																		no_spam = true;
+																	}
+
+																}
 															}
 
 
@@ -2932,6 +2964,52 @@ namespace Observer {
 
 																if (activation == 1)
 																	result.push_back("[ " + name + " opened]");
+															}
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePole04")
+															{
+
+																if (activation == 1)
+																{
+																	if (a_ref->GetFormID() == 0x3ce4b)
+																	{
+																		auto dawnstar_cutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702f7ec);
+																		if (dawnstar_cutter)
+																		{
+																			;// MiscThings::SetPosition_moveto(dawnstar_cutter, { 1913.8124, 4435.2495, 6040.7354 }); //original pos so it blocks
+																		}
+																	}
+
+																	if (!no_spam)
+																	{
+																		std::string name = MiscThings::insert_object_into_list_custom_name("Pole Gate", a_ref);
+																		result.push_back("[ " + name + " closed]");
+																		no_spam = true;
+																	}
+																}
+
+
+																if (activation == 0)
+																{
+																	if (a_ref->GetFormID() == 0x3ce4b)
+																	{
+																		auto dawnstar_cutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702f7ec);
+																		if (dawnstar_cutter)
+																		{
+																			MiscThings::SetPosition_moveto(dawnstar_cutter, { 1913.8124, 4435.2495, 7040.7354 }); //+1000 z coordinate so it doesnt block
+																		}
+																	}
+																	if (!no_spam)
+																	{
+																		std::string name = MiscThings::insert_object_into_list_custom_name("Pole Gate", a_ref);
+																		result.push_back("[ " + name + " opened]");
+																		no_spam = true;
+																	}
+
+																}
+
+
+
 															}
 
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweLexiconStandBlank01")
@@ -3134,36 +3212,71 @@ namespace Observer {
 
 															if (anim_name == "PortGatePole06")
 															{
-																std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal pole gate", a_ref);
+																if (!no_spam)
+																{
+																	std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal pole gate", a_ref);
 
-																if (activation == 0)
-																	result.push_back("[ " + name + " opened]");
+																	if (activation == 0)
+																	{
+																		result.push_back("[ " + name + " opened]");
+																		no_spam = true;
+																	}
 
-																if (activation == 1)
-																	result.push_back("[ " + name + " closed]");
+
+																	if (activation == 1)
+																	{
+																		result.push_back("[ " + name + " closed]");
+																		no_spam = true;
+																	}
+
+																}
+
 															}
 
 															if (anim_name == "PortGatePole01")
 															{
-																std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal pole gate", a_ref);
+																if (!no_spam)
+																{
+																	std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal pole gate", a_ref);
 
-																if (activation == 0)
-																	result.push_back("[ " + name + " opened]");
+																	if (activation == 0)
+																	{
+																		result.push_back("[ " + name + " opened]");
+																		no_spam = true;
+																	}
 
-																if (activation == 1)
-																	result.push_back("[ " + name + " closed]");
+
+																	if (activation == 1)
+																	{
+																		result.push_back("[ " + name + " closed]");
+																		no_spam = true;
+																	}
+																}
+
 															}
 
 
 															if (anim_name == "PortGatePoleDwemer01")
 															{
-																std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal pole gate", a_ref);
+																if (!no_spam)
+																{
+																	std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer metal pole gate", a_ref);
 
-																if (activation == 0)
-																	result.push_back("[ " + name + " opened]");
+																	if (activation == 0)
+																	{
+																		result.push_back("[ " + name + " opened]");
+																		no_spam = true;
+																	}
 
-																if (activation == 1)
-																	result.push_back("[ " + name + " closed]");
+
+																	if (activation == 1)
+																	{
+																		result.push_back("[ " + name + " closed]");
+																		no_spam = true;
+																	}
+
+																}
+
 															}
 
 															if (anim_name == "WRTempleTree02Root")

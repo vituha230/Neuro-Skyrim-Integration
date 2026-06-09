@@ -81,6 +81,8 @@ void left_attack_bow();
 
 
 void quicksave();
+void quickload();
+
 
 void mouse_look(float x, float y);
 

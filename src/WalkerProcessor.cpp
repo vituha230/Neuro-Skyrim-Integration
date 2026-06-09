@@ -17,6 +17,11 @@ namespace WalkerProcessor {
 
     //bool dont_reset_after_interaction = false;
 
+    bool reload_after_walk = false;
+    bool reload_after_walk_quicksaved = false;
+
+    bool lock_camera_while_walking = false;
+
     RE::NiPoint3 wiggle_body_start_pos{};
     int failed_wiggles = 0;
 
@@ -989,8 +994,6 @@ namespace WalkerProcessor {
 
                     if (target_ref && marker)
                     {
-
-
                         if (correct_word_of_power)
                         {
                             auto word_of_power = MiscThings::get_word_of_power(target_ref, true);
@@ -1639,6 +1642,10 @@ namespace WalkerProcessor {
         bool result = false;
         try {
 
+            if (MiscThings::object_inside_katariah_balcony(player))
+                return true;
+
+
             if (path_valid && !use_last_point_of_last_path && current_path_point < (int)std::size(path) - 3)
             {
                 float max_diff = 0.0f;
@@ -1744,6 +1751,10 @@ namespace WalkerProcessor {
 
     void walk_to_point(float dtime_maybe_bad)
     {
+
+        if (lock_camera_while_walking)
+            lock_camera_onto_target(target_ref, dtime_maybe_bad);
+
 
         bool stealth_arching = false;
 
@@ -1990,7 +2001,7 @@ namespace WalkerProcessor {
 
 
 
-                if (!dont_shift && (always_shift || is_about_to_fall() || target_is_slowwalking))
+                if (!player->IsSwimming() && !MiscThings::is_on_horse() && !dont_shift && (always_shift || is_about_to_fall() || target_is_slowwalking))
                 {
                     if (player->IsRunning() && !player->IsSneaking() && !was_slowwalking)
                     {
@@ -2002,14 +2013,14 @@ namespace WalkerProcessor {
                 else
                 {
 
-                    if (!always_shift && (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking))
+                    if (!MiscThings::is_on_horse() && !always_shift && (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking))
                     {
                         was_slowwalking = false;
                         unslow_walk();
                     }
                     else
                     {
-                        if (!player->IsRunning() && !player->IsSneaking() && !was_slowwalking && !turning_around && !always_shift)
+                        if (!MiscThings::is_on_horse() && !player->IsRunning() && !player->IsSneaking() && !was_slowwalking && !turning_around && !always_shift)
                         {
                             //test if we are slowwalking for some reason
                             anti_slowwalk_timer += dtime_maybe_bad;
@@ -4313,6 +4324,17 @@ namespace WalkerProcessor {
     {
         //dont_reset_after_interaction = false;
 
+        if (reload_after_walk)
+        {
+            //cancelled the idea, just cut navmesh around the ship
+            //quickload(); 
+        }
+
+        reload_after_walk_quicksaved = false;
+        reload_after_walk = false;
+
+        lock_camera_while_walking = false;
+
         wiggle_body_start_pos = RE::NiPoint3::Zero();
         failed_wiggles = 0;
 
@@ -4534,7 +4556,7 @@ namespace WalkerProcessor {
         have_blocking_targeted_time = 0.0f;
 
 
-        if (was_slowwalking)
+        if (!MiscThings::is_on_horse() && was_slowwalking)
         {
             was_slowwalking = false;
             unslow_walk();
@@ -4693,6 +4715,26 @@ namespace WalkerProcessor {
         //if (!using_custom_path)
         {
 
+            //the idea is to quickload on next walk_again or on reset_walker, hoping that reset_walker can never happen too soon after quicksave (because commands are not registered for couple of seconds)
+            if (reload_after_walk_quicksaved)
+            {
+                //i hope it will not break the game since it actually ads button even into queue and it will be processed as usual user input somewhere after
+                
+                //cancelled the idea, just cut navmesh around the ship
+                //quickload(); 
+                reload_after_walk = false;
+                reload_after_walk_quicksaved = false;
+            }
+
+            if (reload_after_walk)
+            {
+                reload_after_walk_quicksaved = true;
+                quicksave();
+            }
+
+
+            lock_camera_while_walking = false;
+
             pause_post_attack = 0.0f;
 
             door_refocus_timeout = 0.0f; 
@@ -4751,7 +4793,7 @@ namespace WalkerProcessor {
             //search_next_fight_target = false;
             search_next_target_timer = 0.0f;
 
-            if (was_slowwalking)
+            if (!MiscThings::is_on_horse() && was_slowwalking)
             {
                 was_slowwalking = false;
                 unslow_walk();
@@ -5701,6 +5743,50 @@ namespace WalkerProcessor {
         }
     }
 
+    void solitude_post_emperor_check(RE::TESObjectREFR* target)
+    {
+        if (target)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (MiscThings::object_inside_solitude_escape_bridge(player) && !MiscThings::object_inside_solitude_escape_bridge(target))
+            {
+                unregister_all_actions();
+                using_custom_path = true;
+                walk_again_when_finished = true;
+                custom_path = CustomWalkerPaths::solitude_post_emperor_escape;
+                path = custom_path;
+                path_valid = true;
+                dont_shift = true;
+            }
+        }
+    }
+
+
+    void katariah_post_emperor_check(RE::TESObjectREFR* target)
+    {
+        if (target)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (MiscThings::object_inside_katariah_balcony(player) && !MiscThings::object_inside_katariah_balcony(target))
+            {
+                unregister_all_actions();
+                using_custom_path = true;
+                walk_again_when_finished = true;
+                custom_path = CustomWalkerPaths::katariah_balcony_escape;
+                path = custom_path;
+                path_valid = true;
+                dont_shift = true;
+                reload_after_walk = true; //it destroys pathfinding if we jump off the ship (i think)
+
+            }
+        }
+    }
+
+
+
+
 
 
 
@@ -6041,7 +6127,8 @@ namespace WalkerProcessor {
                 have_target_to_walk = true;
 
                 solitude_prison_out_of_bounds_check();
-
+                solitude_post_emperor_check(target_ref);
+                katariah_post_emperor_check(target_ref);
 
                 reminder_start_pos = player->GetPosition();
                 reminder_start_pos = player->GetPosition();
@@ -6402,12 +6489,14 @@ namespace WalkerProcessor {
                         
 
                     solitude_prison_out_of_bounds_check();
-
+                    
 
                     location_mode = true;
                     target_ref = location;
                     have_target_to_walk = true;
                     interaction_after_walk = -1;
+
+                    
 
                     reminder_start_pos = player->GetPosition();
                     reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
@@ -6419,6 +6508,10 @@ namespace WalkerProcessor {
                         interaction_after_walk = 1;
                         location_mode_redirected_to_a_door = true;
                     }
+
+                    solitude_post_emperor_check(target_ref);
+                    katariah_post_emperor_check(target_ref);
+
 
                     right_attack_cancel();
                     left_attack_cancel();
@@ -6480,6 +6573,7 @@ namespace WalkerProcessor {
 
                 solitude_prison_out_of_bounds_check();
                 
+
                 reminder_target_name = MiscThings::insert_location_into_list_and_get_info(location);
                 reminder_start_pos = player->GetPosition();
 
@@ -6495,6 +6589,9 @@ namespace WalkerProcessor {
                     interaction_after_walk = 1;
                     location_mode_redirected_to_a_door = true;
                 }
+
+                solitude_post_emperor_check(target_ref);
+                katariah_post_emperor_check(target_ref);
 
                 right_attack_cancel();
                 left_attack_cancel();
@@ -6561,6 +6658,7 @@ namespace WalkerProcessor {
 
 
                 solitude_prison_out_of_bounds_check();
+                
 
                 location_mode = true;
                 target_ref = target_location;// location;
@@ -6580,7 +6678,10 @@ namespace WalkerProcessor {
                     interaction_after_walk = 1;
                     location_mode_redirected_to_a_door = true;
                 }
-                
+
+                solitude_post_emperor_check(target_ref);
+                katariah_post_emperor_check(target_ref);
+
                 //clear_input_queue();
 
                // set_universal_block(1.0f);
@@ -6633,7 +6734,7 @@ namespace WalkerProcessor {
 
             for (auto quest_entry : *quest_list)
             {
-                if (!MiscThings::quest_is_hidden(quest_entry.quest))
+                if (!MiscThings::quest_is_hidden(quest_entry.quest, quest_entry.objective))
                 {
                     if (quest_entry.quest == quest)
                     {
@@ -6695,7 +6796,7 @@ namespace WalkerProcessor {
 
         if (last_quest_chosen)
         {
-            if (!MiscThings::quest_is_hidden(last_quest_chosen))
+            if (!MiscThings::quest_is_hidden(last_quest_chosen, last_quest_objective))
             {
                 if (MiscThings::is_quest_list_valid())
                 {
@@ -6842,7 +6943,7 @@ namespace WalkerProcessor {
 
             for (auto quest_entry : *quest_list)
             {
-                if (!MiscThings::quest_is_hidden(quest_entry.quest))
+                if (!MiscThings::quest_is_hidden(quest_entry.quest, quest_entry.objective))
                 {
                     if (quest_entry.id == index)
                     {
@@ -6897,7 +6998,7 @@ namespace WalkerProcessor {
 
             for (auto quest_entry : *quest_list)
             {
-                if (!MiscThings::quest_is_hidden(quest_entry.quest))
+                if (!MiscThings::quest_is_hidden(quest_entry.quest, quest_entry.objective))
                 {
                     if (quest_entry.id == index)
                     {
@@ -7057,7 +7158,7 @@ namespace WalkerProcessor {
                                                 if (last_quest_chosen && quest_entry.quest != last_quest_chosen)
                                                 {
                                                     //check if last quest is still there and ask for confirmation to digress from it
-                                                    if (!MiscThings::quest_is_hidden(last_quest_chosen))
+                                                    if (!MiscThings::quest_is_hidden(last_quest_chosen, last_quest_objective))
                                                     {
                                                         bool quest_is_still_there = false;
                                                         for (auto quest_entry : *quest_list)
@@ -7194,6 +7295,7 @@ namespace WalkerProcessor {
                                                 
 
                                                 solitude_prison_out_of_bounds_check();
+                                                
 
 
                                                 have_target_to_walk = true;
@@ -7218,8 +7320,8 @@ namespace WalkerProcessor {
                                                 last_quest = quest_entry.quest;
                                                 last_quest_objective = objective;
 
-
-                                                
+                                                solitude_post_emperor_check(target_ref);
+                                                katariah_post_emperor_check(target_ref);
 
                                                 right_attack_cancel();
                                                 left_attack_cancel();
@@ -7510,6 +7612,7 @@ namespace WalkerProcessor {
                                                     
 
                                                 solitude_prison_out_of_bounds_check();
+                                                
 
 
                                                 if (quests_target_ref == RE::TESObjectREFR::LookupByID(0x3FAFB)) //greybeard gate
@@ -7524,6 +7627,8 @@ namespace WalkerProcessor {
                                                 
                                                 target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref); //i think something is excessive here
 
+                                                solitude_post_emperor_check(target_ref);
+                                                katariah_post_emperor_check(target_ref);
 
                                                 long long now = std::chrono::steady_clock::now().time_since_epoch().count();
 
@@ -7715,6 +7820,8 @@ namespace WalkerProcessor {
             reminder_target_name = MiscThings::insert_object_into_list_and_get_info(target);
             reminder_start_pos = player->GetPosition();
 
+            solitude_post_emperor_check(target_ref);
+            katariah_post_emperor_check(target_ref);
 
             result.first = true;
             result.second = "[Started walking to " + reminder_target_name + "]";
@@ -7827,6 +7934,9 @@ namespace WalkerProcessor {
             reminder_start_pos = player->GetPosition();
             result.first = true;
             result.second = "[Running away...]";
+
+            solitude_post_emperor_check(target_ref);
+            katariah_post_emperor_check(target_ref);
         }
         else
         {
@@ -10223,6 +10333,10 @@ namespace WalkerProcessor {
                         if (target_ref == skuldafn_seal)
                             reset_walker();
 
+                        RE::TESObjectREFR* katriah_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc3870);
+                        if (target_ref == katriah_door)
+                            reset_walker();
+
 
 
                         if (target_before_generic_redirect != nullptr)
@@ -12375,7 +12489,35 @@ namespace WalkerProcessor {
 
 
 
+                    RE::TESObjectREFR* redirect_katariah_anchor = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70326b6);
 
+                    if (target_ref == redirect_katariah_anchor && redirect_katariah_anchor)
+                    {
+                        if (player->GetDistance(redirect_katariah_anchor) < 3000.0f && !close_enough())
+                        {
+                            //RE::TESObjectREFR* anchor = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9939b);
+                            //if (anchor)
+                            //{
+                            auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = target_to_remember;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { player->GetPosition(), target_ref->GetPosition()};
+                            walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            lock_camera_while_walking = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
+
+                            //}
+
+                        }
+                    }
 
                     auto redirect_dock = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d1);
                     auto redirect_water = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d2);
@@ -13481,7 +13623,7 @@ namespace WalkerProcessor {
                             //if (walk_fixed_time(true, 0.2f, dtime))
                             if (walk_unstuck(dtime))
                             {
-                                if (player->GetPosition().GetDistance(wiggle_body_start_pos) < 50.0f)
+                                if (player->GetPosition().GetDistance(wiggle_body_start_pos) < 60.0f)
                                     failed_wiggles++;
                                 else
                                     failed_wiggles = 0;
@@ -14489,6 +14631,14 @@ namespace WalkerProcessor {
                                                                     if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
                                                                         just_teleported = true;
 
+                                                                    RE::TESObjectREFR* katriah_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc3870);
+                                                                    if (get_targeted_ref() == katriah_door)
+                                                                    {
+                                                                        reset_walker();
+                                                                        return;
+                                                                    }
+                                                                        
+
                                                                 }
                                                                     
                                                             }
@@ -14857,6 +15007,13 @@ namespace WalkerProcessor {
 
                                                     if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
                                                         just_teleported = true;
+
+                                                    RE::TESObjectREFR* katriah_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc3870);
+                                                    if (get_targeted_ref() == katriah_door)
+                                                    {
+                                                        reset_walker();
+                                                        return;
+                                                    }
                                                 }
                                                     
                                             }

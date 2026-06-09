@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////
 // QUESTLINES
 
-//TODO polish thief guild
+//TODO polish thief guild (entrance to mistveil and shitty close_enough check for mercer's ramp + no info about being paralyzed by karlia)
 //TODO polish mage guild
 
 

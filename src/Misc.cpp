@@ -32,6 +32,76 @@ namespace MiscThings {
 
 
 
+    bool kataria_exists()
+    {
+        //kataria sail
+        return RE::TESObjectREFR::LookupByID(0x97ed5);
+    }
+
+
+    bool is_object_inside_of_kataria(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto object_worldspace = object->GetWorldspace();
+            if (object_worldspace && object_worldspace->GetFormID() == 0x3c)
+            {
+                auto object_pos = object->GetPosition();
+
+                if (object_pos.GetDistance({ -48751.1250, 106907.523, -13562.1621 }) < 3000.0f && object_pos.z > -14000.0f)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+
+
+    bool object_inside_katariah_balcony(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto object_worldspace = object->GetWorldspace();
+            auto object_pos = object->GetPosition();
+
+            if (object_worldspace && object_worldspace->GetFormID() == 0x3c) //solitude
+            {
+                if (object_pos.GetDistance({ -47691.2500, 108715.141, -13583.8281 }) < 300.0f)
+                {
+                    return true;
+                }
+
+            }
+        }
+
+        return false;
+
+    }
+
+
+
+    bool object_inside_solitude_escape_bridge(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto object_worldspace = object->GetWorldspace();
+            auto object_pos = object->GetPosition();
+
+            if (object_worldspace && object_worldspace->GetFormID() == 0x37edf) //solitude
+            {
+                if (object_pos.GetDistance({ -60283.3633, 105597.867, -7073.46729 }) < 1800.0f)
+                {
+                    if (abs(-7073.46729 - object_pos.z) < 500.0f)
+                        return true;
+                }
+                    
+            }
+        }
+
+        return false;
+    }
+
+
     bool magnus_eye_attack_condition()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -76,6 +146,10 @@ namespace MiscThings {
             if (door == bad_mage_quest_book_dungeon_door)
                 return true;
 
+            auto dawnstar_sanct_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x919cf);
+
+            if (door == dawnstar_sanct_door)
+                return true;
         }
 
         return false;
@@ -2397,6 +2471,106 @@ namespace MiscThings {
         auto parent_cell = player->GetParentCell();
         auto player_worldspace = player->GetWorldspace();
 
+        auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+        auto katariah_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DB11");
+
+        if (quest == katariah_quest && katariah_quest)
+        {
+            RE::TESObjectREFR* anchor = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9939b);
+            RE::TESObjectREFR* door1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x985bf);
+            RE::TESObjectREFR* door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x985b9);
+            RE::TESObjectREFR* redirect_anchor = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70326b6);
+            RE::TESObjectREFR* captain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc603c);
+            RE::TESObjectREFR* emperor = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4fa39);
+
+            auto stage = katariah_quest->GetCurrentStageID();
+
+            //either board ship or kill the emperor
+            if (stage == 15 || stage == 20)
+            {
+                if (target && player_worldspace == tamriel_worldspace && tamriel_worldspace && (target == redirect_anchor || target == anchor || target == door1 || target == door2 || target == captain || target == emperor))
+                {
+                    if (redirect_anchor)
+                        return redirect_anchor;
+                }
+            }
+            
+            
+            /*
+            
+            {
+                if (target == redirect_anchor || (player_worldspace == tamriel_worldspace && tamriel_worldspace && player_pos.z < -14000.0f && player->GetDistance(anchor) < 4000.0f)) //we are in the water near ship and objective is on the ship
+                {
+                    if (redirect_anchor)
+                        return redirect_anchor;
+                }
+            }
+            */
+
+
+            //inside of the ship
+            if (parent_cell && parent_cell->GetFormID() == 0xbbb2f)
+            {
+                //redirect to captain if doors are locked
+                RE::TESObjectREFR* door1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbbbae);
+                RE::TESObjectREFR* door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbbbac);
+
+                if (door1 && door2 && (MiscThings::is_door_locked(door1) || MiscThings::is_door_locked(door2)))
+                {
+                    //RE::TESObjectREFR* captain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbbe7d); //this is actually captains chair i missclicked
+                    RE::TESObjectREFR* captain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc603c);
+                    if (captain)
+                        return captain;
+                }
+
+            }
+        }
+
+
+        //auto dawnstar_kill_cicero_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DB07");
+
+        /*
+        if (quest == dawnstar_kill_cicero_quest && dawnstar_kill_cicero_quest)
+        {
+            if (parent_cell && parent_cell->GetFormID() == 0x193ee)
+            {
+                auto stage = dawnstar_kill_cicero_quest->GetCurrentStageID();
+
+                RE::TESObjectREFR* blocking_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9430e);
+                RE::TESObjectREFR* redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x94300);
+                if (stage == 40 && blocking_gate && MiscThings::two_state_activator_state(blocking_gate) == 1)
+                {
+                    if (redirect_chain)
+                    {
+                        return redirect_chain;
+                    }
+                }
+                else
+                {
+                    if (target == redirect_chain)
+                        WalkerProcessor::reset_walker();
+                }
+
+                RE::TESObjectREFR* blocking_gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe8a7c);
+                RE::TESObjectREFR* redirect_chain2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe8a87);
+                if (stage == 40 && blocking_gate2 && MiscThings::two_state_activator_state(blocking_gate2) == 1)
+                {
+                    
+                    if (redirect_chain2)
+                    {
+                        return redirect_chain2;
+                    }
+                }
+                else
+                {
+                    if (target == redirect_chain2)
+                        WalkerProcessor::reset_walker();
+                }
+            }
+        }
+        */
+
         RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
 
         auto mage_final_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG08");
@@ -3258,7 +3432,7 @@ namespace MiscThings {
 
 
 
-    bool quest_is_hidden(RE::TESQuest* quest)
+    bool quest_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective)
     {
         auto barrow_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ103");
         auto golden_claw_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS13");
@@ -3403,6 +3577,12 @@ namespace MiscThings {
             }
         }
         */
+
+
+        auto drag_orc_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DB08");
+
+        if (quest == drag_orc_quest && objective && objective->index == 15)
+            return true; //dragging corpses to hidden places is wip
 
 
         return false;
@@ -4317,13 +4497,17 @@ namespace MiscThings {
     bool is_on_horse()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
-        auto player_actor = (RE::Actor*)player->AsReference();
-        //auto extralist = &player->extraList;
-        //auto horse_data = extralist->GetByType(RE::ExtraDataType::kHorse);
+        if (player)
+        {
+            auto player_actor = (RE::Actor*)player->AsReference();
+            //auto extralist = &player->extraList;
+            //auto horse_data = extralist->GetByType(RE::ExtraDataType::kHorse);
 
-        //if (horse_data)
-        if (player_actor->IsOnMount())
-            return true;
+            //if (horse_data)
+            if (player_actor->IsOnMount())
+                return true;
+        }
+
 
         return false;
     }
@@ -4748,14 +4932,29 @@ namespace MiscThings {
                         {
                             auto furniture = (RE::TESFurniture*)base_obj;
                             auto workbenchtype = furniture->workBenchData.benchType;
+
+                            bool found = false;
+
                             if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
                             {
                                 if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
                                 {
                                     //already checked for being valid above
                                     levers.push_back(a_ref);
+                                    found = true;
                                 }
                             }
+                            
+                            /*
+                            if (!found)
+                            {
+                                std::string model = furniture->GetModel();
+
+                                if (model.find("Lever") != std::string::npos || model.find("Chain") != std::string::npos)
+                                    levers.push_back(a_ref);
+                            }
+                            */
+
                         }
 
 
@@ -6073,6 +6272,25 @@ namespace MiscThings {
                                     {
                                         var_string = "Subquest " + var_string;
                                         WalkerProcessor::test_new_very_close_quest();
+
+                                        if (var_string == "Subquest Completed: Kill Cicero")
+                                        {
+                                            RE::TESObjectREFR* blocker_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702f7ed);
+
+                                            if (blocker_1)
+                                            {
+                                                auto old_pos = blocker_1->GetPosition();
+                                                old_pos.z += 1000.0f;
+                                                MiscThings::SetPosition_moveto(blocker_1, old_pos);
+                                            }
+
+                                            auto dawnstar_cutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702f7ec);
+                                            if (dawnstar_cutter)
+                                            {
+                                                MiscThings::SetPosition_moveto(dawnstar_cutter, { 1913.8124, 4435.2495, 7040.7354 }); //+1000 z coordinate so it doesnt block
+                                            }
+                                                
+                                        }
                                     }  
                                     else
                                     {
@@ -6174,6 +6392,12 @@ namespace MiscThings {
                                                                 WalkerProcessor::reset_walker();
                                                                 Observer::detect_interesting_objects(0.016, true); //these bars are hard to raycast for some reason so just scan around no restrictions
                                                             }
+
+                                                            if (result_string.find("This door is barred from the other side.") != std::string::npos)
+                                                            {
+                                                                WalkerProcessor::reset_walker();
+                                                            }
+
 
                                                             if (result_string.find("item has insufficient charge") != std::string::npos)
                                                             {
@@ -6817,6 +7041,14 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        if (model.find("GenPullChain01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            //RE::NiPoint3 base_shift_vector = { 0.0f, 40.0f, 100.0f };
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, -5.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
                         //PuzzleDoorSmallWheel02
                         //PuzzleDoorMediumWheel02
                         //PuzzleDoorLargeWheel02
@@ -6981,6 +7213,23 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = door->GetModel();
+
+
+                        if (model.find("SLGDoor01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, -100.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+                        if (model.find("ShipAnchorChain01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, -500.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
 
                         if (model.find("FarmhouseAnimDoor02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
@@ -7607,7 +7856,7 @@ namespace MiscThings {
             {
                 if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
                 {
-                    if (the_quest != my_quest && !MiscThings::quest_is_hidden(the_quest))
+                    if (the_quest != my_quest && !MiscThings::quest_is_hidden(the_quest, objective))
                     {
 
                         if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
@@ -7824,7 +8073,7 @@ namespace MiscThings {
 
                     if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
                     {
-                        if (the_quest != my_quest && !MiscThings::quest_is_hidden(the_quest))
+                        if (the_quest != my_quest && !MiscThings::quest_is_hidden(the_quest, objective))
                         {
 
                             if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
@@ -14376,6 +14625,10 @@ namespace MiscThings {
 
                 if (a_ref && a_ref->IsActor())
                 {
+                    if (MiscThings::kataria_exists() && MiscThings::is_object_inside_of_kataria(a_ref) && !MiscThings::is_object_inside_of_kataria(player))
+                        return RE::BSContainer::ForEachResult::kContinue; //skip kataria sailors if we escaped. this ship is cursed
+
+
                     if (is_enemy_to_actor(a_ref, only_fighting) && (!raycastable_only || raycastable(a_ref, range, false)))
                     {
 
