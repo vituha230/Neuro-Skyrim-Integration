@@ -3033,6 +3033,16 @@ namespace MiscThings {
 
                 if (bad_door && redirect_door && target == bad_door)
                     return redirect_door;
+
+
+                auto backdoor = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xbccb4);
+                auto frontdoor = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a712);
+
+                if (backdoor && frontdoor && target == backdoor && MiscThings::get_picks_amount_int() <= 0) //no lockpicks but quest still redirects to backdoor - redirect to front door
+                {
+                    return frontdoor;
+                }
+
             }
         }
 
