@@ -1105,7 +1105,7 @@ namespace WalkerProcessor {
 
                     auto marker_pathfinder = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7001834);
 
-                    if (loop_evasion_mode && marker_pathfinder && player->GetDistance(target_ref) > 15000.0f && !is_fighting())
+                    if (marker && loop_evasion_mode && marker_pathfinder && player->GetDistance(target_ref) > 15000.0f && !is_fighting())
                     {
                         if (!MiscThings::is_interior_cell())
                         {
@@ -1157,7 +1157,7 @@ namespace WalkerProcessor {
 
                                 auto marker_ref = marker->AsReference();
 
-                                if (test_point != RE::NiPoint3::Zero())
+                                if (test_point != RE::NiPoint3::Zero() && marker_ref)
                                     MiscThings::SetPosition_moveto(marker_ref, test_point);
                             }
 

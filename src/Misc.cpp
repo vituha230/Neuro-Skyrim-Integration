@@ -480,13 +480,18 @@ namespace MiscThings {
                                     if (cell_distance.Length() < 4100.0f)
                                     {
                                         auto nearest_in_cell = get_nearest_navmesh_node_in_cell(object, adjacent_cell);
-                                        auto distance = nearest_in_cell.GetDistance(object->GetPosition());
 
-                                        if (distance < min_distance)
+                                        if (nearest_in_cell != RE::NiPoint3::Zero())
                                         {
-                                            min_distance = distance;
-                                            result = nearest_in_cell;
+                                            auto distance = nearest_in_cell.GetDistance(object->GetPosition());
+
+                                            if (distance < min_distance)
+                                            {
+                                                min_distance = distance;
+                                                result = nearest_in_cell;
+                                            }
                                         }
+                                        
                                     }
                                 }
                             }
@@ -601,13 +606,18 @@ namespace MiscThings {
                                         RE::NiPoint3 evasion_far_point = player->GetPosition() + evasion_direction;
 
                                         auto nearest_in_cell = get_nearest_navmesh_node_in_cell(evasion_far_point, adjacent_cell);
-                                        auto distance = nearest_in_cell.GetDistance(evasion_far_point);
 
-                                        if (distance < min_distance)
+                                        if (nearest_in_cell != RE::NiPoint3::Zero())
                                         {
-                                            min_distance = distance;
-                                            result = nearest_in_cell;
+                                            auto distance = nearest_in_cell.GetDistance(evasion_far_point);
+
+                                            if (distance < min_distance)
+                                            {
+                                                min_distance = distance;
+                                                result = nearest_in_cell;
+                                            }
                                         }
+
                                     }
                                 }
                             }
