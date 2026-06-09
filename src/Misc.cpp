@@ -15,7 +15,7 @@ namespace MiscThings {
     bool threw_a_book_out_to_read = false;
 
     long long gave_interesting_notification_timestamp = 0;
-
+    long long settlement_advice_timestamp = 0;
 
 
     bool CanFastTravel(RE::Actor* a_actor, bool a_arg2)
@@ -1504,8 +1504,16 @@ namespace MiscThings {
                 {
                     std::string advice = "[You are in a settlement, you can use check_interesting_places action to visit trader, alchemist, or other useful NPC if you want]";
                     register_visit_interesting();
+                    
+                    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+                    float delta_settlement = (double)(now - settlement_advice_timestamp) / 1000000000.0;
 
-                    send_random_context(advice, false);
+                    if (delta_settlement > 600.0f)
+                    {
+                        settlement_advice_timestamp = now;
+                        send_random_context(advice, false);
+                    }
+
                 }
             }
             else
