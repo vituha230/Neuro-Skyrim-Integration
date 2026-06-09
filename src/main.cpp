@@ -25,8 +25,6 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO advice for nearest big city that you can travel with carriage
-//TODO owned beds ignore raycast (for taverns)
 
 
 //TODO test malborn and klimek chest and maybe all container types 

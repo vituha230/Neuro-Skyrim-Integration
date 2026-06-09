@@ -9873,12 +9873,32 @@ namespace MiscThings {
                     else
                     {
                         std::string name_furniture = object->GetDisplayFullName();
-                        if (name_furniture == "Bed")
+                        if (name_furniture != "Bed")
                             result = "[Furniture]";
                         else
                         {
                             if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-                                result = "[Furniture, Bed]";
+                            {
+                                std::string owner_text = "";
+
+                                auto owner_extra = (RE::ExtraOwnership*)object->extraList.GetByType(RE::ExtraDataType::kOwnership);
+
+                                if (owner_extra)
+                                {
+                                    if (owner_extra->owner)
+                                    {
+                                        if (owner_extra->owner->GetFormID() == 0x7)
+                                            owner_text = "[Yours]";
+                                        else
+                                        {
+                                            if (owner_extra->owner->GetFormID() != 0x0)
+                                                owner_text = "[Not yours]";
+                                        }
+                                    }
+                                }
+
+                                result = "[Furniture, Bed]" + owner_text;
+                            }
                             else
                                 result = "[Furniture]";
                         }

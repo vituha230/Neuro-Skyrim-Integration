@@ -1769,7 +1769,7 @@ namespace Observer {
 
 
 
-										if (a_ref->GetDistance(player_ref) < 1000.0f)
+										if (a_ref->GetDistance(player_ref) < 1200.0f)
 										{
 											//and now with smaller range
 
@@ -1919,12 +1919,35 @@ namespace Observer {
 												else
 												{
 													if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-														if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f, false)))
+													{
+														bool player_owned = false;
+
+														auto owner_extra = (RE::ExtraOwnership*)a_ref->extraList.GetByType(RE::ExtraDataType::kOwnership);
+
+														if (owner_extra)
+														{
+															if (owner_extra->owner)
+															{
+																if (owner_extra->owner->GetFormID() == 0x7)
+																	player_owned = true;
+															}
+														}
+
+
+														if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || player_owned || MiscThings::raycastable(a_ref, 1000.0f, false)))
 														{
 															std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 															if (info != "")
-																interesting_buffer.insert_or_assign(a_ref, info);
+															{
+																if (player_owned)
+																	send_random_context("You see: " + info, false);
+																else
+																	interesting_buffer.insert_or_assign(a_ref, info);
+															}
+																
 														}
+													}
+
 												}
 											}
 
