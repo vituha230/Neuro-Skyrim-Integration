@@ -551,6 +551,24 @@ bool unregister_open_map()
 }
 
 
+bool unregister_go_to_location()
+{
+    const char* action_names[] = { Capabilities::GoToLocation::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
+
+void put_go_to_location_on_cooldown(float cooldown)
+{
+    std::string action_name = Capabilities::GoToLocation::Name;
+
+    neuro::set_action_cooldown(action_name, cooldown);
+}
+
 
 void put_explore_on_cooldown(float cooldown)
 {

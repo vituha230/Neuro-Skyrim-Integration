@@ -19,6 +19,9 @@ long long get_last_load_timestamp();
 void put_explore_on_cooldown(float cooldown);
 void clear_explore_cooldown();
 
+void put_go_to_location_on_cooldown(float cooldown);
+bool unregister_go_to_location();
+
 bool is_universal_blocked();
 void set_universal_block(float time);
 

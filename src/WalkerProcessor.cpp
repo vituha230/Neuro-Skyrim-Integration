@@ -6529,6 +6529,9 @@ namespace WalkerProcessor {
                     float distance = player->GetDistance(target_ref, true, true);
 
 
+                    unregister_go_to_location();
+                    put_go_to_location_on_cooldown(60.0f);
+
                     //if (distance > 40000.0f)
                         big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
 
@@ -14277,10 +14280,7 @@ namespace WalkerProcessor {
                                                                             }
                                                                         }
                                                                 }
-                                                                    
-                                                            }
-
-                                                                    
+                                                            } 
                                                         }
                                                         else
                                                         {
