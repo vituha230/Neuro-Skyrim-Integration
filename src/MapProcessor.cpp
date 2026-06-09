@@ -10,6 +10,10 @@
 namespace MapProcessor {
 
 
+	bool quit_menu_in_a_second = false;
+	float time_quit_menu_in_a_second = 0.0f;
+
+
 	bool in_map = false;
 	float in_map_timer = 0.0f; //needs time to load DO NOT RESET IN RESET 
 
@@ -74,6 +78,169 @@ namespace MapProcessor {
 
 	
 
+	int get_nearest_quest_id_to_location(RE::TESObjectREFR* location_marker)
+	{
+
+		int result = -1;
+
+		std::map<int, std::pair<RE::TESObjectREFR*, std::vector<int>>> markers_to_remember{};
+
+		//markers_to_remember.clear();
+
+		std::map<int, MenuOption> pre_result{};
+		std::map<int, bool> can_travel{};
+
+		auto player = RE::PlayerCharacter::GetSingleton();
+		auto player_pos = player->GetPosition();
+
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::MapMenu>();
+
+		if (menu)
+		{
+			int id = 0;
+
+
+			int closest_id = -1;
+			float closest_distance = FLT_MAX;
+
+			for (auto& marker : menu->mapMarkers)
+			{
+				if (marker.fullName)
+				{
+					std::string name = "";
+					name = marker.fullName->fullName;
+
+					if (name != "" && name != "Current Location")
+					{
+						MenuOption option{};
+
+						RE::NiPointer<RE::TESObjectREFR> a_refrOut;
+
+						if (RE::LookupReferenceByHandle(marker.ref, a_refrOut))
+						{
+							if (a_refrOut && a_refrOut.get())
+							{
+								auto data = (RE::ExtraMapMarker*)a_refrOut->extraList.GetByType(RE::ExtraDataType::kMapMarker);
+								if (data && data->mapData && data->mapData->flags)
+								{
+									can_travel.insert({ id, data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo) });
+
+									auto distance = player->GetDistance(a_refrOut.get());
+
+									if (distance < closest_distance)
+									{
+										closest_id = id;
+										closest_distance = distance;
+									}
+
+									//if (marker.)
+									option.id = id;
+									option.text = marker.fullName->fullName;
+
+									pre_result.insert({ id, option });
+
+									markers_to_remember.insert({ id, {a_refrOut.get(), {}} });
+
+								}
+							}
+						}
+					}
+				}
+
+				id++;
+			}
+
+
+			auto temp_quest_result = MiscThings::get_current_quests(); //refresh quests
+
+			std::vector<MiscThings::quest>* p_quests = nullptr;
+
+			if (MiscThings::is_quest_list_valid())
+				p_quests = MiscThings::get_p_quest_list();
+
+
+			if (p_quests)
+			{
+				int quest_actual_id = 0;
+
+				for (auto a_quest : *p_quests)
+				{
+					RE::ObjectRefHandle quest_ref_handle{};
+					if (a_quest.target)
+					{
+						a_quest.target->GetTrackingRef(quest_ref_handle, a_quest.quest); //try tracked
+						if (!quest_ref_handle)
+							a_quest.target->GetTargetRef(quest_ref_handle, false, a_quest.quest); //no tracked - try actual target
+
+
+						if (quest_ref_handle && quest_ref_handle.get() && quest_ref_handle.get().get())
+						{
+							auto quest_ref = quest_ref_handle.get().get();
+
+							if (quest_ref->data.objectReference)
+							{
+								float min_location_dist = FLT_MAX;
+								int id_closest_to_quest = -1;
+								for (auto marker : markers_to_remember)
+								{
+									auto marker_ref = marker.second.first;
+
+									if (marker_ref && !marker_ref->IsDisabled() && marker_ref->data.objectReference)
+									{
+										//float distance = marker_ref->GetDistance(quest_ref, true, true);
+										auto distance = MiscThings::get_quest_target_distance(a_quest.target, a_quest.quest, marker_ref);
+
+
+										if (distance < min_location_dist)
+										{
+											id_closest_to_quest = marker.first;
+											min_location_dist = distance;
+										}
+									}
+								}
+
+								if (id_closest_to_quest >= 0 && min_location_dist <= 50000.0f)
+								{
+									markers_to_remember.at(id_closest_to_quest).second.push_back(quest_actual_id);
+								}
+							}
+
+						}
+					}
+
+					quest_actual_id++;
+
+				}
+			}
+
+
+
+			for (auto option_raw : pre_result)
+			{
+				MenuOption option{};
+				int local_id = option_raw.second.id;
+				option.id = local_id;
+				option.text = option_raw.second.text;
+
+				std::vector<int> closest_quests{};
+
+				auto temp_p = markers_to_remember.find(option.id);
+
+				if (temp_p != markers_to_remember.end())
+				{
+					closest_quests = temp_p->second.second;
+
+					if (std::size(closest_quests) > 0 && temp_p->second.first == location_marker)
+						return closest_quests.at(0);
+				}
+			}
+		}
+
+
+		return result;
+
+	}
 
 
 
@@ -81,6 +248,7 @@ namespace MapProcessor {
 
 
 
+	
 
 	std::vector<MenuOption> get_location_options()
 	{
@@ -833,6 +1001,10 @@ namespace MapProcessor {
 
 	void reset_menu()
 	{
+		quit_menu_in_a_second = false;
+		time_quit_menu_in_a_second = 0.0f;
+
+
 		in_map = false;
 		location_request_sent = false;
 		location_choice_valid = false;
@@ -1081,6 +1253,22 @@ namespace MapProcessor {
 
 
 
+		if (in_map)
+		{
+			if (quit_menu_in_a_second)
+			{
+				if (wait_and_quit_and_walk_to_marker_time > 1.0f)
+				{
+					quit_menu();
+				}
+				else
+					wait_and_quit_and_walk_to_marker_time += dtime;
+
+				return;
+			}
+		}
+
+
 		if (in_map && start_moving)
 		{
 			if (move_cursor_to_marker(location_choice))
@@ -1163,8 +1351,6 @@ namespace MapProcessor {
 					//if it has quest, refuse to message box, quit menu, and follow that quest
 
 
-
-
 					if (auto menu_confirm_quit = ui->GetMenu<RE::MessageBoxMenu>(); menu_confirm_quit)
 					{
 						catch_result = false;
@@ -1173,65 +1359,99 @@ namespace MapProcessor {
 						RandomMessageBoxProcessor::set_messagebox_handeled();
 
 
-						if (!undiscovered_travel_request_sent)
+
+
+						int quest_to_follow = get_nearest_quest_id_to_location(chosen_marker_refr);
+
+						if (quest_to_follow != -1)
 						{
+							RE::GFxValue var1;
+							if (menu_confirm_quit->uiMovie->GetVariable(&var1, "_root.MessageMenu.MessageText.text"))
+								if (!var1.IsNull() && var1.IsString())
+								{
+									if (!rolled_over)
+									{
+										menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button1.onRollOver", nullptr, nullptr, 0);
+										rolled_over = true;
+										set_universal_block(1.0f);
+									}
+									else
+									{
+										rolled_over = false;
+										menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button1.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
+
+										send_random_context("[You cannot fast travel to this location. You start walking there by foot]", true);
+
+										WalkerProcessor::walk_to_quest_by_index(quest_to_follow, false, true, true);
+
+										quit_menu_in_a_second = true;
+
+										return;
+										//set_universal_block(1.0f);
+									}
+								}
+
 							
-							if (force_choice(get_undiscovered_options(), get_undiscovered_message(), force_type::map_undiscovered))
-								undiscovered_travel_request_sent = true;
 						}
 						else
 						{
-							if (undiscovered_travel_choice_valid)
+							if (!undiscovered_travel_request_sent)
 							{
 
-								if (undiscovered_travel_choice == 1)
-								{
-									RE::GFxValue var1;
-									if (menu_confirm_quit->uiMovie->GetVariable(&var1, "_root.MessageMenu.MessageText.text"))
-										if (!var1.IsNull() && var1.IsString())
-										{
-											if (!rolled_over)
-											{
-												menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onRollOver", nullptr, nullptr, 0);
-												rolled_over = true;
-												set_universal_block(2.0f);
-											}
-											else
-											{
-												rolled_over = false;
-												menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
-												set_universal_block(1.5f);
-
-												wait_and_quit_and_walk_to_marker = true;
-												set_universal_block(1.5f);
-											}
-										}
-								}
-								else
-								{
-									RE::GFxValue var1;
-									if (menu_confirm_quit->uiMovie->GetVariable(&var1, "_root.MessageMenu.MessageText.text"))
-										if (!var1.IsNull() && var1.IsString())
-										{
-											if (!rolled_over)
-											{
-												menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button1.onRollOver", nullptr, nullptr, 0);
-												rolled_over = true;
-												set_universal_block(2.0f);
-											}
-											else
-											{
-												rolled_over = false;
-												menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button1.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
-
-												reset_menu();
-											}
-										}
-								}
-
-								
+								if (force_choice(get_undiscovered_options(), get_undiscovered_message(), force_type::map_undiscovered))
+									undiscovered_travel_request_sent = true;
 							}
-							
+							else
+							{
+								if (undiscovered_travel_choice_valid)
+								{
+
+									if (undiscovered_travel_choice == 1)
+									{
+										RE::GFxValue var1;
+										if (menu_confirm_quit->uiMovie->GetVariable(&var1, "_root.MessageMenu.MessageText.text"))
+											if (!var1.IsNull() && var1.IsString())
+											{
+												if (!rolled_over)
+												{
+													menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onRollOver", nullptr, nullptr, 0);
+													rolled_over = true;
+													set_universal_block(2.0f);
+												}
+												else
+												{
+													rolled_over = false;
+													menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
+													set_universal_block(1.5f);
+
+													wait_and_quit_and_walk_to_marker = true;
+													set_universal_block(1.5f);
+												}
+											}
+									}
+									else
+									{
+										RE::GFxValue var1;
+										if (menu_confirm_quit->uiMovie->GetVariable(&var1, "_root.MessageMenu.MessageText.text"))
+											if (!var1.IsNull() && var1.IsString())
+											{
+												if (!rolled_over)
+												{
+													menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button1.onRollOver", nullptr, nullptr, 0);
+													rolled_over = true;
+													set_universal_block(1.0f);
+												}
+												else
+												{
+													rolled_over = false;
+													menu_confirm_quit->uiMovie->Invoke("_root.MessageMenu.Buttons.Button1.onPress", nullptr, nullptr, 0); //this seems to have immidiate 100% result so do everything here, next cycle we are not getting in this menu at all
+
+													reset_menu();
+												}
+											}
+									}
+								}
+							}
 						}
 						
 					}

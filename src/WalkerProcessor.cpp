@@ -6900,7 +6900,7 @@ namespace WalkerProcessor {
 
 
 
-    std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target, bool skip_confirm)
+    std::pair<bool, std::string> walk_to_quest_by_index(int index, bool ignore_specified_target, bool skip_confirm, bool from_map)
     {
 
         std::pair<bool, std::string> result{};
@@ -6913,22 +6913,27 @@ namespace WalkerProcessor {
         bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
         bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
 
-        //if (player_actor && !player_actor->movementController->controlsDriven)
-        if (!can_walk && !can_look)
-        {
-            result.first = false;
-            result.second = "You cannot walk yet";
-            return result;
-        }
 
-        auto cant_walk_reason = get_cant_walk_reason();
-
-        if (cant_walk_reason != "")
+        if (!from_map)
         {
-            result.first = false;
-            result.second = cant_walk_reason;
-            return result;
+            //if (player_actor && !player_actor->movementController->controlsDriven)
+            if (!can_walk && !can_look)
+            {
+                result.first = false;
+                result.second = "You cannot walk yet";
+                return result;
+            }
+
+            auto cant_walk_reason = get_cant_walk_reason();
+
+            if (cant_walk_reason != "")
+            {
+                result.first = false;
+                result.second = cant_walk_reason;
+                return result;
+            }
         }
+        
 
 
         if (!MiscThings::is_quest_list_valid())
@@ -7234,7 +7239,7 @@ namespace WalkerProcessor {
 
                                                 if (have_target_to_walk)
                                                 {
-                                                    if (target_ref != quests_target_ref || last_quest != quest_entry.quest || looping_door_quest_objective != quest_entry.objective || backup_interaction_made)
+                                                    if (target_ref != quests_target_ref || last_quest != quest_entry.quest || last_quest_objective != quest_entry.objective || backup_interaction_made)
                                                         reset_walker();
                                                     else
                                                     {

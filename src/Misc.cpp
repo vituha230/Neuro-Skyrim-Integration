@@ -8299,6 +8299,36 @@ namespace MiscThings {
             char priority_left = left.quest->data.priority;
             char priority_right = right.quest->data.priority;
 
+            if (priority_left == priority_right)
+            {
+                if (left.quest && right.quest)
+                {
+                    if (left.quest->formID == right.quest->formID)
+                    {
+                        if (left.target && right.target)
+                        {
+                            if (left.target->alias == right.target->alias)
+                            {
+                                if (left.objective && right.objective)
+                                {
+                                    std::string left_text = "";
+                                    left_text = left.objective->displayText;
+
+                                    std::string right_text = "";
+                                    right_text = right.objective->displayText;
+
+                                    return left_text < right_text;
+                                }
+                            }
+                            else
+                                return left.target->alias < right.target->alias;
+                        }
+                    }
+                    else
+                        return left.quest->formID < right.quest->formID;
+                }
+            }
+                
             return priority_left > priority_right;
             });
 
