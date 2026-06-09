@@ -2166,7 +2166,7 @@ namespace WalkerProcessor {
                     }
 
 
-                    if (distance > 20000.0f)
+                    if (distance > 25000.0f)
                     {
                         if (current_quest_target_followed && current_quest_followed)
                         {
