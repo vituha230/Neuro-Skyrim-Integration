@@ -2934,6 +2934,32 @@ namespace Observer {
 											{
 
 
+
+
+
+												RE::TESObjectREFR* redirect_bar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x89c14);
+
+												if (a_ref == redirect_bar && redirect_bar)
+												{
+													RE::TESObjectREFR* rock = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc6bbd);
+
+													if (rock && !rock->IsDisabled())
+													{
+														RE::TESObjectREFR* cutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703b322);
+
+														if (cutter)
+														{
+															auto cutter_pos = cutter->GetPosition();
+															cutter_pos.z += 1000.0f;
+
+															MiscThings::SetPosition_moveto(cutter, cutter_pos);
+														}
+													}
+												}
+
+
+
+
 												auto ice_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf4973);
 
 												if (a_ref == ice_door && ice_door)
@@ -4083,6 +4109,12 @@ namespace Observer {
 	void player_state_monitor(float dtime)
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();
+
+		RE::TESObjectREFR* test_stone = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc6bbd);
+
+		if (test_stone && !test_stone->IsDisabled())
+			bool stop_here = false;
+		//
 
 
 		if (wait_and_send_game_start_context)

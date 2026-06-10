@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////
 // QUESTLINES
 
-//TODO polish thief guild (entrance to mistveil and shitty close_enough check for mercer's ramp + no info about being paralyzed by karlia)
+//TODO polish thief guild (no info about being paralyzed by karlia)
 //TODO polish mage guild (maybe add context about things happening around)
 //TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
 

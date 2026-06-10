@@ -2640,6 +2640,34 @@ namespace MiscThings {
 
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
 
+
+
+
+        auto azure_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA01");
+
+        if (quest == azure_quest)
+        {
+            RE::TESObjectREFR* target_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3fd14);
+            RE::TESObjectREFR* redirect_bar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x89c14);
+            
+
+            if (target_door && redirect_bar)
+            {
+                if (target == target_door || target == redirect_bar)
+                {
+                    if (MiscThings::two_state_activator_state(redirect_bar) != 0)
+                        return redirect_bar;
+                }
+            }
+            
+
+
+
+        }
+
+
+
+
         auto katariah_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DB11");
 
         if (quest == katariah_quest && katariah_quest)
@@ -5341,6 +5369,19 @@ namespace MiscThings {
         }
 
         
+        object_p = General::Script::GetObject(activator, "doorBar");
+
+        if (object_p)
+        {
+            std::string state = "";
+            state = object_p->currentState;
+
+            if (state == "Up")
+                return 0;
+            else
+                return 1;
+        }
+
 
         object_p = General::Script::GetObject(activator, "dunLabyrinthianElementalDoor");
 
@@ -7226,7 +7267,7 @@ namespace MiscThings {
 
                         if (model.find("DoorDeadBolt01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
-                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 55.0f };
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 5.0f, 75.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
@@ -7437,6 +7478,13 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = door->GetModel();
+
+                        if (model.find("TrapdoorLadder01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, -30.0f, 170.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
 
                         if (model.find("SLGDoor01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
@@ -14782,7 +14830,7 @@ namespace MiscThings {
     }
 
 
-    bool is_enemy_to_actor(RE::TESObjectREFR* object, bool only_fighting)
+    bool is_enemy_to_actor(RE::TESObjectREFR* object, bool only_fighting, bool weapon_independent)
     {
         if (object && object->IsActor() && !object->IsDead())
         {
@@ -14818,7 +14866,7 @@ namespace MiscThings {
             }
             else
             {
-                if (!only_fighting && WalkerProcessor::has_bow_equipped(WalkerProcessor::get_current_active_hand()) || WalkerProcessor::has_crossbow_equipped(WalkerProcessor::get_current_active_hand()))
+                if (!only_fighting && (weapon_independent || WalkerProcessor::has_bow_equipped(WalkerProcessor::get_current_active_hand()) || WalkerProcessor::has_crossbow_equipped(WalkerProcessor::get_current_active_hand())))
                 {
                     bool aggressive = false;
 
@@ -14931,7 +14979,7 @@ namespace MiscThings {
                         return RE::BSContainer::ForEachResult::kContinue; //skip kataria sailors if we escaped. this ship is cursed
 
 
-                    if (is_enemy_to_actor(a_ref, only_fighting) && (!raycastable_only || raycastable(a_ref, range, false)))
+                    if (is_enemy_to_actor(a_ref, only_fighting, true) && (!raycastable_only || raycastable(a_ref, range, false)))
                     {
 
                         auto target_actor = (RE::Actor*)a_ref;
