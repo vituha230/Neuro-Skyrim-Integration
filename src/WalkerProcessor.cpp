@@ -473,7 +473,9 @@ namespace WalkerProcessor {
 
 
         unregister_stop_sneak();
-        register_start_sneak();
+
+        if (MiscThings::sneak_is_allowed())
+            register_start_sneak();
 
 
         auto player = RE::PlayerCharacter::GetSingleton();
