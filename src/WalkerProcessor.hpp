@@ -160,4 +160,12 @@ namespace WalkerProcessor {
 
 	std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout = false, RE::TESObjectREFR* refr_to_activate_when_done = nullptr);
 
+
+
+
+	std::pair<bool, std::string> turn_sneak_on();
+	std::pair<bool, std::string> turn_sneak_off();
+	bool is_sneak_on();
+
+
 }

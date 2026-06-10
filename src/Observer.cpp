@@ -1138,7 +1138,13 @@ namespace Observer {
 					{
 						//wait a little then notify
 
-						if (detect_threats_time > 1.0f || player_was_hit)
+						float threshold = 1.0f;
+
+						if (WalkerProcessor::is_sneak_on())
+							threshold = 0.0f;
+
+
+						if (detect_threats_time > threshold || player_was_hit)
 						{
 
 							if (!threats_response_request_sent)

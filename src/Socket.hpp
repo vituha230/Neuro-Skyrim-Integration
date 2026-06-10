@@ -42,6 +42,28 @@
 namespace Capabilities
 {
 
+    namespace StartSneak
+    {
+        constexpr char Name[] = "toggle_sneak_mode_on";
+        constexpr char Desc[] =
+            R"(Move slower, but less visible)";
+        //constexpr char JsonSchema[] = null;
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
+    }
+
+
+    namespace StopSneak
+    {
+        constexpr char Name[] = "toggle_sneak_mode_off";
+        constexpr char Desc[] =
+            R"(Move faster, but more visible)";
+        //constexpr char JsonSchema[] = null;
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
+    }
+
+
     namespace ConfirmCharacter
     {
         constexpr char Name[] = "confirm";

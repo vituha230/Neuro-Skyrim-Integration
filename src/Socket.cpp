@@ -105,7 +105,10 @@ void clear_actions_status()
 
 
 neurosdk_action ActionsList[] = {
-    
+                                    
+                                    Capabilities::StartSneak::Action,
+                                    Capabilities::StopSneak::Action,
+
                                     Capabilities::ConfirmCharacter::Action,
                                     Capabilities::ChangeCharacter::Action,
 
@@ -156,6 +159,10 @@ neurosdk_action ActionsList[] = {
 
 neurosdk_action ActionsListNoForces[] = {
     
+                                    Capabilities::StartSneak::Action,
+                                    Capabilities::StopSneak::Action,
+
+
                                     Capabilities::ConfirmCharacter::Action,
                                     Capabilities::ChangeCharacter::Action,
 
@@ -209,6 +216,9 @@ neurosdk_action ActionsListNoForces2[] = { //these are for moments when we cant 
 
 
                                     //Capabilities::GetSpells::Action,
+                                    Capabilities::StartSneak::Action,
+                                    Capabilities::StopSneak::Action,
+
                                     Capabilities::CastSpell::Action,
                                     Capabilities::EquipSpell::Action,
                                     Capabilities::Spin::Action,
@@ -661,6 +671,16 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                             actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
                             actions_to_register[action_pos] = Capabilities::CastSpell::Action; action_pos++;
                             actions_to_register[action_pos] = Capabilities::EquipSpell::Action; action_pos++;
+
+                            if (WalkerProcessor::is_sneak_on())
+                            {
+                                actions_to_register[action_pos] = Capabilities::StopSneak::Action; action_pos++;
+                            }
+                            else
+                            {
+                                actions_to_register[action_pos] = Capabilities::StartSneak::Action; action_pos++;
+                            }
+                            
                         }
 
                         actions_to_register[action_pos] = Capabilities::Spin::Action; action_pos++;
@@ -1414,6 +1434,16 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                         }
                         else
                         {
+                            if (name == Capabilities::StartSneak::Name)
+                            {
+                                command_result = WalkerProcessor::turn_sneak_on();
+                            }
+
+                            if (name == Capabilities::StopSneak::Name)
+                            {
+                                command_result = WalkerProcessor::turn_sneak_off();
+                            }
+
 
                             if (name == Capabilities::ConfirmCharacter::Name)
                             {

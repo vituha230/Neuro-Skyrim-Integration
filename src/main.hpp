@@ -91,6 +91,14 @@ bool get_open_map_action_status();
 
 void do_delayed_poke();
 
+
+
+
+bool register_start_sneak();
+bool unregister_start_sneak();
+bool register_stop_sneak();
+bool unregister_stop_sneak();
+
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);
 void force_barter_operation();

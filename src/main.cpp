@@ -225,6 +225,48 @@ bool unregister_visit_interesting()
 
 
 
+bool register_start_sneak()
+{
+    neurosdk_action actions[] = { Capabilities::StartSneak::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+bool unregister_start_sneak()
+{
+    const char* action_names[] = { Capabilities::StartSneak::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
+
+
+bool register_stop_sneak()
+{
+    neurosdk_action actions[] = { Capabilities::StopSneak::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+bool unregister_stop_sneak()
+{
+    const char* action_names[] = { Capabilities::StopSneak::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
 
 
 bool is_in_game()

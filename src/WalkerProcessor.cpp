@@ -437,6 +437,65 @@ namespace WalkerProcessor {
 
 
 
+    //do not reset ever - must be player controlled
+    bool sneak_mode_on = false;
+
+    std::pair<bool, std::string> turn_sneak_on()
+    {
+        std::pair<bool, std::string> result{};
+
+
+        result.first = true;
+        result.second = "[You start moving sneakily...]";
+
+        sneak_mode_on = true;
+
+        unregister_start_sneak();
+        register_stop_sneak();
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        
+        if (player && !player->IsSneaking())
+            crouch();
+
+
+        return result;
+    }
+
+    std::pair<bool, std::string> turn_sneak_off()
+    {
+        std::pair<bool, std::string> result{};
+
+        result.first = true;
+        result.second = "[You stop moving sneakily...]";
+
+        sneak_mode_on = false;
+
+
+        unregister_stop_sneak();
+        register_start_sneak();
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player && player->IsSneaking())
+            crouch(); //uncrouch
+
+
+        return result;
+    }
+
+    bool is_sneak_on()
+    {
+        return sneak_mode_on;
+    }
+
+
+
+
+
+
+
     void reset_attacking_inanimate_object_time()
     {
         attacking_inanimate_object_time = 0.0f;
@@ -1765,6 +1824,9 @@ namespace WalkerProcessor {
                 stealth_arching = !MiscThings::sees_player(target_ref);
         }
 
+        if (sneak_mode_on)
+            stealth_arching = true;
+
 
 
 
@@ -1776,6 +1838,14 @@ namespace WalkerProcessor {
             {
                 if (!stealth_arching)
                     crouch(); //uncrouch
+            }
+            else
+            {
+                if (player && !player->IsSneaking())
+                {
+                    if (stealth_arching)
+                        crouch(); //crouch
+                }
             }
 
             try {
@@ -1900,8 +1970,14 @@ namespace WalkerProcessor {
             }
 
 
-            mouse_x = mulX * 125.0f;//200 //150
-            mouse_y = mulZ * 60.0f;//200
+            float sneak_coef = 1.0f;
+
+            if (player && player->IsSneaking())
+                sneak_coef = 0.65f;
+
+
+            mouse_x = mulX * 125.0f * sneak_coef;//200 //150
+            mouse_y = mulZ * 60.0f * sneak_coef;//200
 
             if (!use_y)
                 mouse_y = 0.0f;
@@ -2021,7 +2097,7 @@ namespace WalkerProcessor {
                     }
                     else
                     {
-                        if (!MiscThings::is_on_horse() && !player->IsRunning() && !player->IsSneaking() && !was_slowwalking && !turning_around && !always_shift)
+                        if (!MiscThings::is_on_horse() && !player->IsRunning() && !was_slowwalking && !turning_around && !always_shift)
                         {
                             //test if we are slowwalking for some reason
                             anti_slowwalk_timer += dtime_maybe_bad;
@@ -3155,7 +3231,7 @@ namespace WalkerProcessor {
                         auto player_temp_pos = player->GetPosition();
 
                         //if (sit_correction)
-                        if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
+                        if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro() && !(sneak_mode_on || player->IsSneaking()))
                             lookat_location.z -= 30.0f;
 
                         target_center = lookat_location;
@@ -3211,7 +3287,7 @@ namespace WalkerProcessor {
                                 auto player_temp_pos = player->GetPosition();
 
                                 //if (sit_correction)
-                                if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
+                                if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro() && !(sneak_mode_on || player->IsSneaking()))
                                     lookat_location.z -= 30.0f;
 
                                 target_center = lookat_location;
@@ -3380,7 +3456,7 @@ namespace WalkerProcessor {
 
                             auto player_temp_pos = player->GetPosition();
 
-                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
+                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro() && !(sneak_mode_on || player->IsSneaking()))
                                 lookat_location.z -= 30.0f;
 
                             target_center = lookat_location;
@@ -3399,7 +3475,7 @@ namespace WalkerProcessor {
 
                             auto player_temp_pos = player->GetPosition();
 
-                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
+                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro() && !(sneak_mode_on || player->IsSneaking()))
                                 lookat_location.z -= 30.0f;
 
                             if (target == tsun)
@@ -3483,7 +3559,7 @@ namespace WalkerProcessor {
 
                         auto player_temp_pos = player->GetPosition();
 
-                        if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro())
+                        if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro() && !(sneak_mode_on || player->IsSneaking()))
                             lookat_location.z -= 30.0f;
 
                         target_center = lookat_location;
@@ -3677,6 +3753,10 @@ namespace WalkerProcessor {
             {
                 stealth_arching = !MiscThings::sees_player(target);
             }
+
+            if (sneak_mode_on)
+                stealth_arching = true;
+
 
             if (!lookat_used || stealth_arching)
                 if (stealth_arching || (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead())))
@@ -15068,7 +15148,7 @@ namespace WalkerProcessor {
                                                 else
                                                 {
                                                     if (almost_stuck()) //basically no blocker but stuck - maybe terrain. will also trigger on pole-type doors though
-                                                        jump(); //experimental
+                                                        ;//jump(); //experimental //ITS SHIT, needs more complexity
                                                 }
 
                                                 walk_to_point(dtime);

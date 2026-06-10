@@ -18,6 +18,7 @@ namespace MiscThings {
     long long settlement_advice_timestamp = 0;
 
 
+
     bool CanFastTravel(RE::Actor* a_actor, bool a_arg2)
     {
         // SkyrimSE 1.6.318.0: 0x6C5560
