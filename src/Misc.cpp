@@ -2514,25 +2514,46 @@ namespace MiscThings {
 
     RE::TESObjectREFR* get_generic_full_redirect(RE::TESObjectREFR* target)
     {
-        RE::TESObjectREFR* mage_force_field_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf0ea9);
-        RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a57);
 
-        if (target == mage_force_field_1)
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
         {
-            if (redirect_marker)
-                return redirect_marker;
+            RE::TESObjectREFR* mage_force_field_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf0ea9);
+            RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a57);
+
+            if (target == mage_force_field_1)
+            {
+                if (redirect_marker)
+                    return redirect_marker;
+            }
+
+
+
+            RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
+            RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+            if (target == mage_force_field_2)
+            {
+                if (redirect_marker2)
+                    return redirect_marker2;
+            }
+
+
+            auto shoot_point_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7038459);
+            //auto top_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x27eed);
+            auto ramp_mechanism = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4ec0b);
+            //auto shoot_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc04b9);
+
+            if (target == ramp_mechanism && ramp_mechanism)
+            {
+                if (player->GetDistance(shoot_point_marker) >= 300.0f)
+                    return shoot_point_marker;
+            }
         }
 
+        
 
-
-        RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
-        RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
-
-        if (target == mage_force_field_2)
-        {
-            if (redirect_marker2)
-                return redirect_marker2;
-        }
 
 
         return nullptr;
@@ -3001,6 +3022,43 @@ namespace MiscThings {
 
             }
         }
+
+        auto mercer_house_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG07");
+
+        if (quest == mercer_house_quest)
+        {
+            auto stage = mercer_house_quest->GetCurrentStageID();
+
+            if (stage == 40)
+            {
+                //plan is this: if target is shoot marker (from optional subquest to shoot the mechanism) or the door itself, redirect to "stand point" marker from which player is prompted to shoot
+
+                auto shoot_point_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7038459);
+                auto top_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x27eed);
+                auto ramp_mechanism = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4ec0b);
+                auto shoot_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc04b9);
+
+                
+                auto vald = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x72b09);
+                auto vald_bottom_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x98e71);
+                auto vald_top_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9e578);
+                auto vald_side_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9e57a);
+
+                if (vald && vald->IsActor() && !vald->IsDead() && vald_side_gate && vald_bottom_gate && vald_top_gate && (MiscThings::is_door_locked(vald_bottom_gate) && MiscThings::is_door_locked(vald_top_gate) && MiscThings::is_door_locked(vald_side_gate)))
+                    return vald_bottom_gate; //hope he actually always aggros when we get there and opens that gate
+
+                if (shoot_point_marker && top_door && ramp_mechanism && shoot_marker && MiscThings::two_state_activator_state(ramp_mechanism) != 0 && (target == top_door || target == shoot_marker || target == shoot_point_marker))
+                    return shoot_point_marker;
+                else
+                    if (top_door && target == top_door && MiscThings::is_door_locked(top_door) && MiscThings::get_picks_amount_int() <= 0)
+                    {
+                        
+                        if (vald)
+                            return vald; //grab the key if door is locked and we have no lockpicks
+                    }
+            }
+        }
+
 
         auto twilight_sanct_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG09");
 
@@ -6918,6 +6976,16 @@ namespace MiscThings {
                         auto distance = player_pos.GetDistance(nearest_navmesh_pos);
 
                         if (distance < 300.0f)
+                            return true;
+                    }
+
+                    auto ramp_mechanism = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4ec0b);
+
+                    if (ramp_mechanism && object == ramp_mechanism)
+                    {
+                        auto shoot_point_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7038459);
+
+                        if (player->GetDistance(shoot_point_marker) < 300.0f)
                             return true;
                     }
                 }

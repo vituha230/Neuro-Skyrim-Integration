@@ -3315,7 +3315,7 @@ namespace WalkerProcessor {
     int debug_mode_cam = 0;
 
 
-    bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, float speed_koef, bool force_speed_correction)
+    bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, float speed_koef, bool force_speed_correction, bool force_high_precision)
     {
         if (looking_mode)
             speed_koef = special_look_speed_koef;
@@ -3515,7 +3515,7 @@ namespace WalkerProcessor {
         }
         
 
-        bool high_precision = false;
+        bool high_precision = force_high_precision;
 
         auto path_point_pos = target_center;
         auto pos_dif = path_point_pos - camera_pos;
@@ -3673,7 +3673,7 @@ namespace WalkerProcessor {
 
             bool stealth_arching = false;
 
-            if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true))
+            if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true) && target && target->IsActor())
             {
                 stealth_arching = !MiscThings::sees_player(target);
             }
@@ -10602,6 +10602,8 @@ namespace WalkerProcessor {
                     }
                 }
 
+
+
                 auto post_mzulft_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a56);
 
                 if (post_mzulft_redirect_marker && target_ref == post_mzulft_redirect_marker && MapProcessor::map_is_allowed())
@@ -12582,6 +12584,34 @@ namespace WalkerProcessor {
                         }
                     }
                     
+
+
+
+                    auto shoot_point_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7038459);
+
+                    if (shoot_point_marker && target_ref == shoot_point_marker)
+                    {
+                        if (player->GetDistance(shoot_point_marker) < 250.0f)
+                        {
+                            //auto top_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x27eed);
+                            auto ramp_mechanism = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4ec0b);
+                            auto shoot_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc04b9);
+
+                            std::string ramp_info = MiscThings::insert_object_into_list_custom_name("Ramp Mechanism", ramp_mechanism);
+
+                            if (lock_camera_onto_target(ramp_mechanism, dtime, 1.0f, false, true) && ramp_info != "" && ramp_mechanism && shoot_marker)
+                            {
+                                send_random_context("[You see a backdoor on the balcony, but to get there you need to break " + ramp_info + ", so the ramp falls. You probably can get it with a bow or Shout]", false);
+                                reset_walker();
+                                return;
+                            }
+                            else
+                            {
+                                if (ramp_info != "" && ramp_mechanism && shoot_marker)
+                                    return;
+                            }
+                        }
+                    }
 
 
 
