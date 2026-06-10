@@ -16,7 +16,64 @@ namespace MiscThings {
 
     long long gave_interesting_notification_timestamp = 0;
     long long settlement_advice_timestamp = 0;
+    
 
+
+    int get_nettlebane_hand_for_target(RE::TESObjectREFR* target)
+    {
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto player_worldspace = player->GetWorldspace();
+
+            if (player_worldspace && player_worldspace->formID == 0x3a9d6)
+            {
+                if (target && (target->formID == 0x5b611 || target->formID == 0x7873e || target->formID == 0x15cb2 || target->formID == 0x41511))
+                {
+                    auto right = MiscThings::get_hand_contents(true);
+                    auto left = MiscThings::get_hand_contents(false);
+
+                    if (right && right->GetFormID() == 0x1c492)
+                        return 1;
+
+                    if (left && left->GetFormID() == 0x1c492)
+                        return 0;
+
+                    return -2; //no nettlebane equipped
+                }
+            }
+        }
+       
+        return -1;
+    }
+
+
+
+    void nettlebane_advice_check(RE::TESObjectREFR* target)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto player_worldspace = player->GetWorldspace();
+
+            if (player_worldspace && player_worldspace->GetFormID() == 0x3a9d6)
+            {
+                //inside of sanctuary
+
+                if (target && (target->formID == 0x5b611 || target->formID == 0x7873e || target->formID == 0x15cb2 || target->formID == 0x41511))
+                {
+                    if (get_nettlebane_hand_for_target(target) == -2)
+                    {
+                        send_random_context("The roots do not react... maybe try Nettlebane knife?", false);
+                    }
+                }
+
+            }
+        }
+    }
 
 
     bool sneak_is_allowed()
@@ -3598,30 +3655,40 @@ namespace MiscThings {
 
         if (quest == elder_tree_quest)
         {
-            auto stage = elder_tree_quest->GetCurrentStageID();
-
-            auto root1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5b611);
-            auto root2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7873e);
-            auto root3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15cb2);
-            auto root4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x41511);
-
-            auto root5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15cb7); //this is redirect-only root
-
-
-            if (root1 && root2 && root3 && root4 && stage == 40)
+            if (player_worldspace && player_worldspace->formID == 0x3a9d6)
             {
-                if (MiscThings::two_state_activator_state(root1) == 1)
-                    return root2;
+                auto stage = elder_tree_quest->GetCurrentStageID();
 
-                if (MiscThings::two_state_activator_state(root2) == 1)
-                    return root3;
+                auto root1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5b611);
+                auto root2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7873e);
+                auto root3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15cb2);
+                auto root4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x41511);
 
-                if (MiscThings::two_state_activator_state(root3) == 1)
-                    return root4;
+                //auto root5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15cb7); //this is redirect-only root
 
-                if (MiscThings::two_state_activator_state(root4) == 1)
-                    return root5;
+                if (root1 && root2 && root3 && root4 && stage == 40)
+                {
+                    auto root1_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ed);
+                    auto root2_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ee);
+                    auto root3_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ef);
+                    auto root4_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1f0);
 
+
+                    if (root1_redirect && root2_redirect && root3_redirect && root4_redirect)
+                    {
+                        if (MiscThings::two_state_activator_state(root1) == 1)
+                            return root1_redirect;
+
+                        if (MiscThings::two_state_activator_state(root2) == 1)
+                            return root2_redirect;
+
+                        if (MiscThings::two_state_activator_state(root3) == 1)
+                            return root3_redirect;
+
+                        if (MiscThings::two_state_activator_state(root4) == 1)
+                            return root4_redirect;
+                    }
+                }
             }
         }
 
@@ -5343,6 +5410,51 @@ namespace MiscThings {
 
 
 
+    std::vector<RE::NiPoint3> niav_recurse(RE::NiAVObject* object)
+    {
+        std::vector<RE::NiPoint3> result{};
+        if (object && object->AsNode())
+        {
+            result.push_back(object->AsNode()->world.translate);
+
+            for (auto child : object->AsNode()->children)
+            {
+                if (child)
+                {
+                    auto temp = niav_recurse(child->AsNode());
+
+                    result.insert(result.end(), temp.begin(), temp.end());
+                }
+            }
+        }
+
+        return result;
+    }
+
+    std::vector<std::string> niav_recurse_names(RE::NiAVObject* object)
+    {
+        std::vector<std::string> result{};
+        if (object && object->AsNode())
+        {
+            std::string name = object->AsNode()->name.c_str();
+            result.push_back(name);
+
+            for (auto child : object->AsNode()->children)
+            {
+                if (child)
+                {
+                    auto temp = niav_recurse_names(child->AsNode());
+
+                    result.insert(result.end(), temp.begin(), temp.end());
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+
     int two_state_activator_state(RE::TESObjectREFR* activator)
     {
         //default2StateActivator
@@ -5644,15 +5756,137 @@ namespace MiscThings {
 
                     }
 
+
+
+                    object_p = General::Script::GetObject(activator, "T03RootBlockerActivatorScript");
+                    if (object_p)
+                    {
+                        bool stop_here = false;
+                    }
+
+
                     if (model.find("WRTempleTree02Root") != std::string::npos)
                     {
 
-                        auto extra = activator->extraList.GetByType(RE::ExtraDataType::kStartingPosition);
+                        auto the_3d = activator->Get3D();
+
+                        if (the_3d)
+                        {
+                            auto asnode = the_3d->AsNode();
+
+                            auto temp = niav_recurse(asnode);
+                            auto temp_names = niav_recurse_names(asnode);
+
+                            //Branch_01
+                            //Branch_Small_U_03
+
+                            auto branch_1 = asnode->GetObjectByName("Branch_01");
+                            auto branch_2 = asnode->GetObjectByName("Branch_Small_U_03");
+
+                            if (branch_1 && branch_2)
+                            {
+                                auto branch_1_pos = branch_1->world.translate;
+                                auto branch_2_pos = branch_2->world.translate;
+
+                                auto distance = branch_1_pos.GetDistance(branch_2_pos) / activator->GetScale();
+
+                                if (distance < 420.0f)
+                                    result = 0;
+                                else
+                                    result = 1;
+                            }
+                            else
+                                result = 1;
+                            /*
+                            if (the_3d->AsNode())
+                            {
+                                for (auto child1 : the_3d->AsNode()->children)
+                                {
+                                    if (child1 && child1->AsNode())
+                                    {
+                                        for (auto child2 : child1->AsNode()->children)
+                                        {
+                                            if (child2 && child2->AsNode())
+                                            {
+                                                for (auto child3 : child2->AsNode()->children)
+                                                {
+                                                    if (child3 && child3->AsNode())
+                                                    {
+                                                        for (auto child4 : child3->AsNode()->children)
+                                                        {
+                                                            if (child4 && child4->AsNode())
+                                                            {
+                                                                for (auto child5 : child4->AsNode()->children)
+                                                                {
+                                                                    if (child5 && child5->AsNode())
+                                                                    {
+                                                                        for (auto child6 : child5->AsNode()->children)
+                                                                        {
+                                                                            auto distance = child1->world.translate.GetDistance(child6->world.translate);
+
+                                                                            distance = distance / activator->GetScale();
+
+                                                                            bool stop_here = false;
+                                                                        }
+                                                                        bool stop_here = false;
+                                                                    }
+
+                                                                }
+                                                                bool stop_here = false;
+                                                            }
+                                                            
+                                                        }
+                                                        bool stop_here = false;
+                                                    }
+                                                    
+                                                }
+                                                bool stop_here = false;
+                                            }
+                                            
+                                        }
+                                        bool stop_here = false;
+                                    }
+                                    
+                                }
+                                bool stop_here = false;
+                            }
+
+                            auto extra_anim = activator->extraList.GetByType(RE::ExtraDataType::kAnimGraphManager);
+                            if (extra_anim)
+                            {
+                                auto extra_anim_graph = (RE::ExtraAnimGraphManager*)extra_anim;
+                                if (extra_anim_graph->animGraphMgr)
+                                {
+                                    if (extra_anim_graph->animGraphMgr->generateDepth > 0)
+                                        result = 1;
+                                    else
+                                        result = 1;
+                                }
+                            }
+                            */
+
+                            //if (current_3d->flags02 == 10)
+                            //    result = 0;
+                            //else
+                            //    result = 1;
+
+                            //if (current_3d->flags.any(RE::NiAVObject::Flag::kNoAnimSyncY) || !current_3d->flags.any(RE::NiAVObject::Flag::kNoAnimSyncY)) //this works for event detection but it doesnt work for redirect check it needs actual state at any time
+                             //   result = 0;
+                            //else
+                            //    result = 1;
+                        }
+                        else
+                            result = 1;
+
+                        /*
+                        auto extra = activator->extraList.GetByType(RE::ExtraDataType::kLastFinishedSequence);
 
                         if (extra)
                             result = 0;
                         else
                             result = 1;
+                        */
+                        //result = 1;
 
                         /*
                             auto extra_linked = (RE::ExtraLinkedRef*)extra;
@@ -14877,14 +15111,40 @@ namespace MiscThings {
                         auto npc = (RE::TESNPC*)base_object;
 
 
+                        //i think aggression1 is human aggression and aggression2 is animal aggression
 
-                        if (npc->aiData.aggression2 || npc->aiData.aggression1 || (npc->aiData.aggroRadiusBehaviour && ((npc->aiData.aggroRadius[1] + 1000) > player->GetDistance(actor_refr))))
+                        bool aggro_radius_active = false;
+
+                        if (npc->aiData.aggroRadiusBehaviour)
+                        {
+                            bool aggro_radius_started = false;
+
+                            if (actor_refr->currentProcess && actor_refr->currentProcess->high)
+                                aggro_radius_started = actor_refr->currentProcess->high->aggroRadiusStarted;
+
+                            bool range_check = (npc->aiData.aggroRadius[1] + 1000) > player->GetDistance(actor_refr);
+
+
+                            aggro_radius_started = true; //try without it
+                            aggro_radius_active = range_check && aggro_radius_active;
+                        }
+
+                        if (npc->aiData.aggression2 || (npc->aiData.aggression1) || (npc->aiData.aggroRadiusBehaviour && (aggro_radius_active)))
                             aggressive = true;
                     }
 
-                    if (aggressive && actor_refr->IsHostileToActor(player_actor))
-                        return true;
+                    bool aggression_check = false;
 
+                    if (aggressive && actor_refr->IsHostileToActor(player_actor))
+                        aggression_check = true;
+
+
+                    auto is_enemy = actor_refr->GetFactionReaction(player_actor);
+
+                    if (is_enemy == RE::FIGHT_REACTION::kEnemy)
+                    {
+                        return aggression_check;
+                    }
 
 
                 }

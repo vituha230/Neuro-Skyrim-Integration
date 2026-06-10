@@ -306,6 +306,10 @@ namespace MiscThings {
 
     RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist);
 
+    int get_nettlebane_hand_for_target(RE::TESObjectREFR* target);
+    void nettlebane_advice_check(RE::TESObjectREFR* target);
+
+
 
     bool is_enemy_to_actor(RE::TESObjectREFR* object, bool only_fighting = false, bool weapon_independent = false);
     bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest, RE::TESQuestTarget* target);

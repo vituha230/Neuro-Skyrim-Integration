@@ -17,6 +17,9 @@ namespace WalkerProcessor {
 
     //bool dont_reset_after_interaction = false;
 
+    float last_checked_enemy_health = -1.0f;
+    bool close_enough_force_fail = false;
+    long long close_enough_force_fail_time_start = 0;
 
     bool reload_after_walk = false;
     bool reload_after_walk_quicksaved = false;
@@ -4445,7 +4448,7 @@ namespace WalkerProcessor {
         //dont_reset_after_interaction = false;
 
 
-
+        last_checked_enemy_health = -1.0f;
 
 
         if (reload_after_walk)
@@ -5161,6 +5164,22 @@ namespace WalkerProcessor {
 
     bool close_enough()
     {
+
+        if (close_enough_force_fail)
+        {
+            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+            float delta_cancel_fal = (double)(now - close_enough_force_fail_time_start) / 1000000000.0;
+
+            if (delta_cancel_fal > 10.0f)
+            {
+                close_enough_force_fail = false;
+                close_enough_force_fail_time_start = 0;
+            }
+            else
+                return false;
+        }
+
+
         if (generic_redirect_active)
             return false;
 
@@ -9136,6 +9155,11 @@ namespace WalkerProcessor {
 
 
                 attack_action = dont_use_right;
+
+                int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
+                if (nettlebane_hand >= 0)
+                    attack_action = !(bool)nettlebane_hand; //not bitwise
+
             }
                 
             
@@ -9468,6 +9492,10 @@ namespace WalkerProcessor {
                                 attack_action = 0;
 
 
+                            int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
+                            if (nettlebane_hand >= 0)
+                                attack_action = !(bool)nettlebane_hand; //not bitwise
+
                             //set_universal_block(0.2f);
                         }
 
@@ -9767,6 +9795,10 @@ namespace WalkerProcessor {
                             else
                                 attack_action = 0;
 
+                            int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
+                            if (nettlebane_hand >= 0)
+                                attack_action = !(bool)nettlebane_hand; //not bitwise
+
                             //set_universal_block(0.2f);
                         }
                     }
@@ -9872,11 +9904,40 @@ namespace WalkerProcessor {
 
                     auto target_actor = (RE::Actor*)target_ref;
 
+
+                    if (last_checked_enemy_health == -1.0f)
+                    {
+                        int max_health = target_actor->GetActorValueMax(RE::ActorValue::kHealth);
+                        int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
+
+                        last_checked_enemy_health = cur_health;
+                    }
+
                     if (active_attacking_time > 20.0f)
                     {
                         active_attacking_time = 0.0f;
 
                         
+                        if (has_bow_equipped(true))
+                        {
+                            int max_health = target_actor->GetActorValueMax(RE::ActorValue::kHealth);
+                            int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
+
+                            if (last_checked_enemy_health != -1.0f)
+                            {
+                                if (last_checked_enemy_health == cur_health)
+                                {
+                                    //hp didnt change since last change, we are probably missing the shots. need to switch position, make close enough fail for 10 seconds
+                                    close_enough_force_fail = true;
+                                    close_enough_force_fail_time_start = std::chrono::steady_clock::now().time_since_epoch().count();
+                                }
+                            }
+                            else
+                            {
+                                last_checked_enemy_health = cur_health;
+                            }
+                        }
+
 
                         if (MiscThings::is_immortal(target_actor))
                         {
@@ -9965,6 +10026,8 @@ namespace WalkerProcessor {
                             attacking_inanimate_object_time = 0.0f;
 
                             result = true;
+
+
                         }
                         else
                             attacking_inanimate_object_time += dtime;
@@ -9977,6 +10040,9 @@ namespace WalkerProcessor {
                             attacking_inanimate_object_time = 0.0f;
 
                             result = true;
+
+
+                            MiscThings::nettlebane_advice_check(target_ref);
                         }
 
                     }
@@ -10692,6 +10758,83 @@ namespace WalkerProcessor {
                     {
                         target_name = "some unusual puzzle pillars... Looks like you need to turn all pillars to correct positions to proceed";
                         walk_backward_a_little = true;
+                    }
+                }
+
+                auto root1_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ed);
+                auto root2_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ee);
+                auto root3_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ef);
+                auto root4_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1f0);
+
+                
+                if (root1_redirect && root2_redirect && root3_redirect && root4_redirect)
+                {
+                    if (target_ref == root1_redirect)
+                    {
+                        auto root1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5b611);
+
+                        if (root1)
+                        {
+                            std::string name = MiscThings::insert_object_into_list_custom_name("Elder Tree Roots", root1);
+
+                            if (name != "")
+                            {
+                                send_random_context(name + " are blocking the path... maybe attack them with Nettlebane knife?", false);
+                                reset_walker();
+                                return "";
+                            }
+                        }
+                    }
+
+                    if (target_ref == root2_redirect)
+                    {
+                        auto root2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7873e);
+
+                        if (root2)
+                        {
+                            std::string name = MiscThings::insert_object_into_list_custom_name("Elder Tree Roots", root2);
+
+                            if (name != "")
+                            {
+                                send_random_context(name + " are blocking the path... maybe attack them with Nettlebane knife?", false);
+                                reset_walker();
+                                return "";
+                            }
+                        }
+                    }
+
+                    if (target_ref == root3_redirect)
+                    {
+                        auto root3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15cb2);
+
+                        if (root3)
+                        {
+                            std::string name = MiscThings::insert_object_into_list_custom_name("Elder Tree Roots", root3);
+
+                            if (name != "")
+                            {
+                                send_random_context(name + " are blocking the path... maybe attack them with Nettlebane knife?", false);
+                                reset_walker();
+                                return "";
+                            }
+                        }
+                    }
+
+                    if (target_ref == root4_redirect)
+                    {
+                        auto root4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x41511);
+
+                        if (root4)
+                        {
+                            std::string name = MiscThings::insert_object_into_list_custom_name("Elder Tree Roots", root4);
+
+                            if (name != "")
+                            {
+                                send_random_context(name + " are blocking the path... maybe attack them with Nettlebane knife?", false);
+                                reset_walker();
+                                return "";
+                            }
+                        }
                     }
                 }
 
@@ -13273,6 +13416,118 @@ namespace WalkerProcessor {
                             return;
                         }
                     }
+
+
+
+
+                    auto root1_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ed);
+                    auto root2_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ee);
+                    auto root3_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ef);
+                    auto root4_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1f0);
+
+
+                    if (target_ref == root1_redirect && root1_redirect)
+                    {
+                        auto root1_redirect_pos = root1_redirect->GetPosition();
+
+                        float distance = player_pos.GetDistance(root1_redirect_pos);
+
+                        if (distance < 400.0f && distance > 50.0f)
+                        {
+                            auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = target_to_remember;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { player_pos, target_ref_pos };
+                            //walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
+                        }
+                    }
+
+                    if (target_ref == root2_redirect && root2_redirect)
+                    {
+                        auto root2_redirect_pos = root2_redirect->GetPosition();
+
+                        float distance = player_pos.GetDistance(root2_redirect_pos);
+
+                        if (distance < 400.0f && distance > 100.0f)
+                        {
+                            auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = target_to_remember;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { player_pos, target_ref_pos };
+                            //walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
+                        }
+                    }
+
+                    if (target_ref == root3_redirect && root3_redirect)
+                    {
+                        auto root3_redirect_pos = root3_redirect->GetPosition();
+
+                        float distance = player_pos.GetDistance(root3_redirect_pos);
+
+                        if (distance < 400.0f && distance > 100.0f)
+                        {
+                            auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = target_to_remember;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { player_pos, target_ref_pos };
+                            //walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
+                        }
+                    }
+
+                    if (target_ref == root4_redirect && root4_redirect)
+                    {
+                        auto root4_redirect_pos = root4_redirect->GetPosition();
+
+                        float distance = player_pos.GetDistance(root4_redirect_pos);
+
+                        if (distance < 400.0f && distance > 100.0f)
+                        {
+                            auto target_to_remember = target_ref;
+                            reset_walker();
+                            target_ref = target_to_remember;
+                            have_target_to_walk = true;
+                            using_custom_path = true;
+                            custom_path = { player_pos, target_ref_pos };
+                            //walk_again_when_finished = true;
+                            lock_and_interact_when_finished = true;
+                            interaction_after_walk = 1;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_quicksave_after_custom_path = true;
+                            //custom_with_close_enough_confirm = true;
+                            return;
+                        }
+                    }
+
+
+
 
 
 
