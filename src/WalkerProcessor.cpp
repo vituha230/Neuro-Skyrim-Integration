@@ -4444,6 +4444,10 @@ namespace WalkerProcessor {
     {
         //dont_reset_after_interaction = false;
 
+
+
+
+
         if (reload_after_walk)
         {
             //cancelled the idea, just cut navmesh around the ship

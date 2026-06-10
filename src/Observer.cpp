@@ -325,7 +325,7 @@ namespace Observer {
 		{
 			if (WalkerProcessor::is_sneak_on())
 			{
-				WalkerProcessor::turn_sneak_off();
+				auto temp_result = WalkerProcessor::turn_sneak_off();
 				unregister_start_sneak(); //will be re-registered later
 			}
 
@@ -2162,6 +2162,18 @@ namespace Observer {
 
 			if (detect_interesting_spit_results_time > 5.0f)
 			{
+
+				//put it here so its every 5 s
+				if (WalkerProcessor::is_sneak_on())
+				{
+					if (!MiscThings::sneak_is_allowed())
+					{
+						auto temp_result = WalkerProcessor::turn_sneak_off();
+						unregister_start_sneak(); //will be re-registered later
+					}
+				}
+
+
 				detect_interesting_spit_results_time = 0.0f;
 				auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
 				auto player_pos = player_ref->GetPosition();
