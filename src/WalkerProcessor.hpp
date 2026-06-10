@@ -168,4 +168,8 @@ namespace WalkerProcessor {
 	bool is_sneak_on();
 
 
+	void start_emergency_swimup();
+	void clear_emergency_swimup();
+
+	void walk_again();
 }

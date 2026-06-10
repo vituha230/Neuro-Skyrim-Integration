@@ -19,6 +19,37 @@ namespace MiscThings {
     
 
 
+    bool is_drowning()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto current_process = player->currentProcess;
+
+            bool no_oxygen = false;
+
+            if (current_process)
+            {
+                auto high = current_process->high;
+
+                if (high)
+                {
+                    float breath_time = high->breathTimer;
+
+                    if (breath_time <= 0.0f)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
     int get_nettlebane_hand_for_target(RE::TESObjectREFR* target)
     {
 

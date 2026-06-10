@@ -42,8 +42,6 @@
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
-//TODO oxygen control
-
 //TODO slaughterfish fights
 //TODO letter aliases for locations (foreachscript scanner)
 

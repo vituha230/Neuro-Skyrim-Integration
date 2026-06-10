@@ -6,6 +6,8 @@
 namespace MiscThings {
 
 
+    bool is_drowning();
+
     RE::TESObjectREFR* get_generic_full_redirect(RE::TESObjectREFR* target);
 
 

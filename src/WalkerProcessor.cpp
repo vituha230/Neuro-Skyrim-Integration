@@ -15,6 +15,8 @@
 namespace WalkerProcessor {
 
 
+    bool emergency_swim_up = false;
+
     //bool dont_reset_after_interaction = false;
 
     float last_checked_enemy_health = -1.0f;
@@ -499,6 +501,22 @@ namespace WalkerProcessor {
 
 
 
+    void start_emergency_swimup()
+    {
+        if (!is_walking_important_path() && !MiscThings::have_force_only_menu_open())
+            emergency_swim_up = true;
+    }
+
+    void clear_emergency_swimup()
+    {
+        emergency_swim_up = false;
+
+        if (target_ref)
+            walk_again();
+    }
+
+
+
 
 
     void reset_attacking_inanimate_object_time()
@@ -510,6 +528,8 @@ namespace WalkerProcessor {
 
     void clear_loop_evasion() //basically load of save reset
     {
+        emergency_swim_up = false;
+
         potential_loop_points.clear();
         confirmed_loop_points[0] = RE::NiPoint3::Zero();
         loop_evasion_mode = false;
@@ -12071,6 +12091,40 @@ namespace WalkerProcessor {
 
 	void processor(float dtime)
 	{
+        if (emergency_swim_up)
+        {
+            if (!is_walking_important_path() && !MiscThings::have_force_only_menu_open())
+            {
+                mouse_mouse_y(-20.0f);
+
+                auto camera = RE::PlayerCamera::GetSingleton();
+                
+                if (camera)
+                {
+                    auto camera_dir = camera->cameraRoot.get()->world.rotate;
+
+                    auto camera_x = camera_dir.GetVectorX();
+                    auto camera_y = camera_dir.GetVectorY();
+                    auto camera_z = camera_dir.GetVectorZ();
+
+                    RE::NiPoint3 down = { 0.0f, 0.0f, -1.0f };
+
+                    auto mulX = camera_x * down;
+                    auto mulY = camera_y * down;
+                    auto mulZ = camera_z * down;
+
+
+                    if (mulY < -0.75f)
+                        walk_forward();
+                }
+
+                return;
+            }
+
+        }
+
+
+
 
         if (have_target_to_walk && interaction_after_walk != 0 && MiscThings::is_on_horse() && close_enough())
         {

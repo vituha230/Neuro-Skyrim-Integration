@@ -12,6 +12,8 @@
 namespace Observer {
 
 
+	bool old_oxygen_status = false;
+
 	bool no_spam = false;
 	float no_spam_time = 0.0f;
 
@@ -4176,7 +4178,7 @@ namespace Observer {
 				{
 					first_cycle = false;
 					//auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
-					
+
 					if (threshold_quest)
 					{
 						int unbound_quest_stage = threshold_quest->GetCurrentStageID();
@@ -4185,7 +4187,8 @@ namespace Observer {
 							old_unbound_quest_stage = unbound_quest_stage;
 						}
 					}
-						
+
+					old_oxygen_status = false;// MiscThings::is_drowning();
 
 					auto control_map = RE::ControlMap::GetSingleton();
 					bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
@@ -4234,13 +4237,13 @@ namespace Observer {
 								//unregister_all_actions();
 								send_random_context("[You are getting out of the carriage with the others...]", false);
 							}
-								
+
 
 							if (unbound_quest_stage == 70)
 							{
 								send_random_context("[You got out of the carriage]", false);
 							}
-								
+
 
 							if (unbound_quest_stage == 80)
 								send_random_context("[You walk after captain towards the block, other prisoners are already there...]", false);
@@ -4259,7 +4262,7 @@ namespace Observer {
 								//unregister_all_actions();
 								send_random_context("[You walk towards the block...]", false);
 							}
-								
+
 
 							if (unbound_quest_stage == 97)
 								send_random_context("[You are pushed down on the beheading block]", false);
@@ -4285,7 +4288,7 @@ namespace Observer {
 								register_allowed_actions();
 								send_random_context("[YOU CAN WALK NOW]", false);
 							}
-								
+
 
 							old_unbound_quest_stage = unbound_quest_stage;
 						}
@@ -4349,7 +4352,7 @@ namespace Observer {
 				auto jail_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("JailQuest");
 				//bool serving_jail = jail_quest->IsRunning() && (jail_quest->GetCurrentStageID() == 10) && (!jail_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD)) && !escaping_jail && !MiscThings::is_intro() && !MiscThings::is_intro2() && MiscThings::escaped_helgen();
 				bool serving_jail = (bool)player->currentPrisonFaction && !escaping_jail && !MiscThings::is_intro() && !MiscThings::is_intro2() && MiscThings::escaped_helgen();
-				
+
 				//serving_jail |= (bool)player->currentPrisonFaction;
 
 
@@ -4366,7 +4369,7 @@ namespace Observer {
 
 					old_greybeard_call_stage = greybeard_call_stage;
 				}
-				
+
 
 
 				if (greybeards_called)
@@ -4380,6 +4383,31 @@ namespace Observer {
 					else
 						greybeards_called_timer += 0.5f;
 				}
+
+
+
+				//oxygen
+
+				bool no_oxygen = MiscThings::is_drowning();
+
+				if (no_oxygen)
+					WalkerProcessor::start_emergency_swimup();
+				else
+					WalkerProcessor::clear_emergency_swimup();
+
+
+
+				if (no_oxygen && !old_oxygen_status)
+				{
+					send_random_context("You started drowning and try to swim up!", false);
+				}
+
+				if (!no_oxygen && old_oxygen_status)
+				{
+					send_random_context("You successfully got to the surface and took a breath", false);
+				}
+
+				old_oxygen_status = no_oxygen;
 
 
 				//hit events
