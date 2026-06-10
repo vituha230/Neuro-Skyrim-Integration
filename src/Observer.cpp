@@ -323,6 +323,12 @@ namespace Observer {
 
 		if (active_puzzle != -1)
 		{
+			if (WalkerProcessor::is_sneak_on())
+			{
+				WalkerProcessor::turn_sneak_off();
+				unregister_start_sneak(); //will be re-registered later
+			}
+
 			switch (active_puzzle)
 			{
 			case 1:
@@ -1141,7 +1147,7 @@ namespace Observer {
 						float threshold = 1.0f;
 
 						if (WalkerProcessor::is_sneak_on())
-							threshold = 0.0f;
+							threshold = 0.1f;
 
 
 						if (detect_threats_time > threshold || player_was_hit)

@@ -678,7 +678,11 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                             }
                             else
                             {
-                                actions_to_register[action_pos] = Capabilities::StartSneak::Action; action_pos++;
+                                if (MiscThings::sneak_is_allowed())
+                                {
+                                    actions_to_register[action_pos] = Capabilities::StartSneak::Action; action_pos++;
+                                }
+                                
                             }
                             
                         }

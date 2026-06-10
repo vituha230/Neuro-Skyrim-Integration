@@ -261,6 +261,8 @@ namespace MiscThings {
 
     bool is_player_swimming();
 
+    bool sneak_is_allowed();
+    bool have_any_enemies_nearby(float range);
 
     std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest);
     std::string get_good_carriage_city_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest);

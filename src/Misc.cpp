@@ -19,6 +19,16 @@ namespace MiscThings {
 
 
 
+    bool sneak_is_allowed()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        bool trespassing = player && player->IsTrespassing();
+
+        return MiscThings::is_interior_cell() && (MiscThings::have_any_enemies_nearby(9000.0f) || trespassing);
+    }
+
+
     bool CanFastTravel(RE::Actor* a_actor, bool a_arg2)
     {
         // SkyrimSE 1.6.318.0: 0x6C5560
@@ -14892,6 +14902,69 @@ namespace MiscThings {
 
         return result;
     }
+
+
+
+    bool have_any_enemies_nearby(float range)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_ref = player->AsReference();
+        auto player_actor = (RE::Actor*)player_ref;
+
+        bool raycastable_only = false;
+        bool only_fighting = false;
+
+
+        RE::TESObjectREFR* exclude_ref = nullptr;
+
+
+
+        RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, range,
+            //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+            [&](RE::TESObjectREFR* a_ref) {
+
+                if (a_ref && a_ref->IsActor())
+                {
+                    if (MiscThings::kataria_exists() && MiscThings::is_object_inside_of_kataria(a_ref) && !MiscThings::is_object_inside_of_kataria(player))
+                        return RE::BSContainer::ForEachResult::kContinue; //skip kataria sailors if we escaped. this ship is cursed
+
+
+                    if (is_enemy_to_actor(a_ref, only_fighting) && (!raycastable_only || raycastable(a_ref, range, false)))
+                    {
+
+                        auto target_actor = (RE::Actor*)a_ref;
+
+                        bool not_a_threat = MiscThings::is_immortal(target_actor) && target_actor->GetActorValue(RE::ActorValue::kHealth) < 2;
+
+                        if (!not_a_threat && (a_ref != exclude_ref) && !a_ref->IsChild())
+                        {
+                            if (MiscThings::is_dragon(a_ref))
+                            {
+                                result = true;
+                            }
+                            else
+                            {
+                                auto distance = player_ref->GetDistance(a_ref);
+
+                                if (distance < range)
+                                    result = true;
+                            }
+                        }
+
+                    }
+
+                }
+
+                return RE::BSContainer::ForEachResult::kContinue;
+            });
+
+
+        return result;
+    }
+
+
 
 
     std::vector<RE::Actor*> get_player_attackers(bool raycastable_only, RE::TESObjectREFR* exclude_ref, bool only_fighting, float range)

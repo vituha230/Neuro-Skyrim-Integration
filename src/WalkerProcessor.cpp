@@ -1824,9 +1824,11 @@ namespace WalkerProcessor {
                 stealth_arching = !MiscThings::sees_player(target_ref);
         }
 
-        if (sneak_mode_on)
-            stealth_arching = true;
+        if (sneak_mode_on && MiscThings::sneak_is_allowed())
+            stealth_arching = !MiscThings::sees_player(target_ref) || !is_fighting(); //true//true;
 
+
+        stealth_arching = stealth_arching && !using_custom_path;
 
 
 
@@ -3754,8 +3756,11 @@ namespace WalkerProcessor {
                 stealth_arching = !MiscThings::sees_player(target);
             }
 
-            if (sneak_mode_on)
-                stealth_arching = true;
+            if (sneak_mode_on && MiscThings::sneak_is_allowed())
+                stealth_arching = !MiscThings::sees_player(target) || !is_fighting(); //true
+
+
+            stealth_arching = stealth_arching && !using_custom_path;
 
 
             if (!lookat_used || stealth_arching)
@@ -3768,6 +3773,8 @@ namespace WalkerProcessor {
                     else
                         lock_camera_wants_to_crouch = false;
 
+            //if (MiscThings::sees_player(target) && player->IsSneaking() && is_fighting())
+             //   crouch(); //test
 
 
             if (!lookat_used)
