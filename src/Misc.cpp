@@ -15110,41 +15110,76 @@ namespace MiscThings {
                     {
                         auto npc = (RE::TESNPC*)base_object;
 
+                        bool aggression_check = false;
+
+
 
                         //i think aggression1 is human aggression and aggression2 is animal aggression
 
-                        bool aggro_radius_active = false;
-
+                        bool aggro_radius_check = false;
+                        bool aggression_level_check = false;
                         if (npc->aiData.aggroRadiusBehaviour)
                         {
-                            bool aggro_radius_started = false;
+                            //bool aggro_radius_started = false;
 
-                            if (actor_refr->currentProcess && actor_refr->currentProcess->high)
-                                aggro_radius_started = actor_refr->currentProcess->high->aggroRadiusStarted;
+                            //if (actor_refr->currentProcess && actor_refr->currentProcess->high)
+                            //    aggro_radius_started = actor_refr->currentProcess->high->aggroRadiusStarted;
 
-                            bool range_check = (npc->aiData.aggroRadius[1] + 1000) > player->GetDistance(actor_refr);
+                            bool range_check = (npc->aiData.aggroRadius[2] + 1500) > player->GetDistance(actor_refr);
+
+                            aggro_radius_check = range_check;//&& aggro_radius_started;
+
+                        }
+                        else
+                        {
+                            int aggression_level = actor_refr->GetActorValue(RE::ActorValue::kAggression);
+
+                            if (aggression_level > 1)
+                                aggression_level_check = true;
 
 
-                            aggro_radius_started = true; //try without it
-                            aggro_radius_active = range_check && aggro_radius_active;
+                            aggression_level_check &= npc->aiData.aggression2 || npc->aiData.aggression1;
                         }
 
-                        if (npc->aiData.aggression2 || (npc->aiData.aggression1) || (npc->aiData.aggroRadiusBehaviour && (aggro_radius_active)))
+
+
+
+
+                        //no aggression flags - not aggressive
+                        //aggression1 - "aggressive"
+                        //aggression2 - "very aggressive" (level independent?)
+                        //aggression1+2 - "frenzied" 
+
+                        //even if not aggressive, can have aggro-radius that makes them aggro in radius, while aggression level is 0 and both aggression flags are 0
+
+
+                        if (aggro_radius_check || aggression_level_check)
                             aggressive = true;
-                    }
 
-                    bool aggression_check = false;
+                        bool confident = npc->aiData.confidence1 || npc->aiData.confidence2 || npc->aiData.confidence3; //without confidence it will just run away from fight => not enemy
 
-                    if (aggressive && actor_refr->IsHostileToActor(player_actor))
-                        aggression_check = true;
+                        aggressive = aggressive && confident;
 
 
-                    auto is_enemy = actor_refr->GetFactionReaction(player_actor);
 
-                    if (is_enemy == RE::FIGHT_REACTION::kEnemy)
-                    {
+                        //maybe its agression-level dependent if its aggression1 and independent if aggression2?
+                        
+                        aggression_check = aggressive && actor_refr->IsHostileToActor(player_actor); //must be hostile to actor from this function
+                        
+
+                        
+
+                        //auto is_enemy = actor_refr->GetFactionReaction(player_actor); //this one is bs
+
+
                         return aggression_check;
                     }
+
+
+                    //if (is_enemy == RE::FIGHT_REACTION::kEnemy)
+                    //{
+                    //    
+                    //}
 
 
                 }

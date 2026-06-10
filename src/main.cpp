@@ -14,11 +14,11 @@
 
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
-//TODO companions
-//TODO bards
 //TODO civil war
 //TODO dragonborn dlc
 //TODO dawnguard dlc
+//TODO companions
+//TODO bards
 //TODO random sidequests
 
 
