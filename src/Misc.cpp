@@ -4517,6 +4517,34 @@ namespace MiscThings {
     }
 
 
+    RE::TESObjectREFR* get_linked_ref(RE::TESObjectREFR* object, int index)
+    {
+        if (object)
+        {
+            auto extra = object->extraList.GetByType(RE::ExtraDataType::kLinkedRef);
+
+            if (extra)
+            {
+                auto extra_linked = (RE::ExtraLinkedRef*)extra;
+
+                int id = 0;
+                for (auto linked_ref : extra_linked->linkedRefs)
+                {
+                    if (id == index && linked_ref.refr)
+                    {
+                        return linked_ref.refr;
+                    }
+                    id++;
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
+
+
+
     bool object_inside_of_windhelm_redirect_box(RE::TESObjectREFR* object)
     {
         if (object)
@@ -4991,9 +5019,16 @@ namespace MiscThings {
 
             if (model.find("StockadeBarricade") != std::string::npos)
             {
-                std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", a_ref);
 
-                result = name;
+                auto linked = MiscThings::get_linked_ref(a_ref);
+
+                if (linked && !linked->IsDisabled())
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", a_ref);
+
+                    result = name;
+                }
+
             }
 
             if (model.find("RTMercerRamp01") != std::string::npos)
@@ -5388,6 +5423,59 @@ namespace MiscThings {
 
 
 
+    void destroy_barricade(RE::TESObjectREFR* barricade)
+    {
+        if (barricade)
+        {
+            auto base_obj = barricade->GetBaseObject();
+            if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
+            {
+                auto base_type = base_obj->GetFormType();
+
+                if (base_type == RE::FormType::Activator)
+                {
+                    auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+                    if (static_obj && static_obj->data)
+                    {
+                        auto linked = MiscThings::get_linked_ref(barricade);
+
+                        if (linked)
+                            linked->Disable();
+
+                        barricade->Disable();
+                    }
+
+                }
+            }
+        }
+    }
+
+
+
+    bool is_barricade(RE::TESObjectREFR* barricade)
+    {
+        if (!barricade)
+            return 0;
+
+        auto base_obj = barricade->GetBaseObject();
+        if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
+        {
+            auto base_type = base_obj->GetFormType();
+
+            if (base_type == RE::FormType::Activator)
+            {
+                auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+                std::string model = static_obj->GetModel();
+
+                if (model.find("StockadeBarricade") != std::string::npos)
+                    return true;
+            }
+        }
+
+        return false;
+    }
 
     int get_destructible_state(RE::TESObjectREFR* web)
     {
@@ -5419,12 +5507,19 @@ namespace MiscThings {
 
                 if (model.find("StockadeBarricade") != std::string::npos)
                 {
-                    auto extralist = &web->extraList;
-                    auto extra_swap = extralist->GetByType(RE::ExtraDataType::kModelSwap);
-                    if (extra_swap)
-                        result = 2;
+                    auto linked = MiscThings::get_linked_ref(web);
+
+                    if (linked && !linked->IsDisabled())
+                    {
+                        auto extralist = &web->extraList;
+                        auto extra_swap = extralist->GetByType(RE::ExtraDataType::kModelSwap);
+                        if (extra_swap)
+                            result = 2;
+                        else
+                            result = -1;
+                    }
                     else
-                        result = -1;
+                        result = 2;
                 }
 
                 if (model.find("TG01DwemerUrn") != std::string::npos)
@@ -10668,9 +10763,14 @@ namespace MiscThings {
 
                 if (model.find("StockadeBarricade") != std::string::npos)
                 {
-                    std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", refr);
+                    //auto linked = MiscThings::get_linked_ref(refr);
 
-                    result = name;
+                    //if (linked && !linked->IsDisabled())
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", refr);
+
+                        result = name;
+                    }
                 }
 
                 if (model.find("TG01DwemerUrn") != std::string::npos)

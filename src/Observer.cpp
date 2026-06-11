@@ -2042,6 +2042,84 @@ namespace Observer {
 										}
 										
 
+										 //looks like this is useless, both bugged and not bugged barricades have exact same properties everywhere
+										/*
+										if (base_type == RE::FormType::Activator)
+										{
+											auto static_obj = (RE::TESObjectACTI*)base_obj;
+
+											std::string model = static_obj->GetModel();
+
+											if (model.find("StockadeBarricade") != std::string::npos)
+											{
+												auto linked = MiscThings::get_linked_ref(a_ref);
+
+												if (linked && !linked->IsDisabled())
+												{
+													bool has_collision = a_ref->HasCollision();
+													
+													auto test_3d = a_ref->Get3D();
+
+													RE::CFilter cFilter_info_obj{};
+													//test_3d->GetCollisionObject()
+
+													//RE::CFilter cFilter_info_player{};
+													//player->GetCollisionFilterInfo(cFilter_info);
+
+
+													auto object_p = MiscThings::General::Script::GetObject(a_ref, "StockadeBarricade01ActivatorScript");
+
+													if (object_p)
+													{
+														std::string state = "";
+														state = object_p->currentState;
+
+														RE::BSFixedString prop_name = "::NewStage_var";
+														auto int1 = MiscThings::General::Script::GetVariable<int>(object_p, prop_name);
+
+														prop_name = "::OldStage_var";
+														auto int2 = MiscThings::General::Script::GetVariable<int>(object_p, prop_name);
+
+
+													
+														auto extralist = &a_ref->extraList;
+														auto extra_swap = extralist->GetByType(RE::ExtraDataType::kObjectHealth);
+
+														float health = -100.0f;
+
+														if (extra_swap)
+														{
+															auto extra_health = (RE::ExtraObjectHealth*)extra_swap;
+
+															if (extra_health)
+																health = extra_health->health;
+															else
+																health = -200.0f;
+														}
+														else
+															health = -300.0f;
+
+
+														bool stop_here = false;
+													}
+
+
+
+
+													auto player_col_layer = player->Get3D()->GetCollisionLayer();
+
+													if (!has_collision)
+													{
+														linked->Disable();
+													}
+												}
+											}
+										}
+										*/
+
+
+
+
 										if (base_obj && (base_obj->formFlags & RE::TESForm::RecordFlags::kDestructible))
 										{
 											base_type = base_obj->GetFormType();
@@ -2098,11 +2176,16 @@ namespace Observer {
 												{
 													if (a_ref->GetDistance(player_ref) < 300.0f)
 													{
-														if (!MiscThings::is_object_in_the_list(a_ref))
+														auto linked = MiscThings::get_linked_ref(a_ref);
+
+														if (linked && !linked->IsDisabled())
 														{
-															std::string info = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", a_ref);
-															if (info != "")
-																interesting_buffer.insert_or_assign(a_ref, info);
+															if (!MiscThings::is_object_in_the_list(a_ref))
+															{
+																std::string info = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", a_ref);
+																if (info != "")
+																	interesting_buffer.insert_or_assign(a_ref, info);
+															}
 														}
 													}
 												}

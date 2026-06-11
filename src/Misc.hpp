@@ -127,6 +127,10 @@ namespace MiscThings {
     bool player_inside_of_karthspire_plate_puzzle();
 
     RE::TESObjectREFR* get_linked_ref_children(RE::TESObjectREFR* object, int index = 0);
+    RE::TESObjectREFR* get_linked_ref(RE::TESObjectREFR* object, int index = 0);
+
+    bool is_barricade(RE::TESObjectREFR* barricade);
+    void destroy_barricade(RE::TESObjectREFR* barricade);
 
     bool is_on_horse();
 

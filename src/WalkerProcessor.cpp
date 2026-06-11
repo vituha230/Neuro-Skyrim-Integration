@@ -2714,9 +2714,14 @@ namespace WalkerProcessor {
 
                     if (model.find("StockadeBarricade") != std::string::npos)
                     {
-                        if (target_ref->GetDistance(player_ref, true) < 200.0f)
+                        auto linked = MiscThings::get_linked_ref(target_ref);
+
+                        if (linked && !linked->IsDisabled())
                         {
-                            return target_ref;
+                            if (target_ref->GetDistance(player_ref, true) < 200.0f)
+                            {
+                                return target_ref;
+                            }
                         }
                     }
 
@@ -6162,7 +6167,7 @@ namespace WalkerProcessor {
                 {
                     //already fighting and current target isnt dead, but new target is dead or isnt an actor
 
-                    if (object->second.object == target_ref || (object->second.object && eye_of_magnus && object->second.object == eye_of_magnus))
+                    if (object->second.object == target_ref || (object->second.object && eye_of_magnus && object->second.object == eye_of_magnus) || (object->second.object && MiscThings::get_destructible_state(object->second.object) != 0))
                     {
                         ;//dont block this
                     }
@@ -10117,6 +10122,12 @@ namespace WalkerProcessor {
 
                         if ((attacking_inanimate_object_time > 5.0f && MiscThings::get_destructible_state(target_ref) != -1) || attacking_inanimate_object_time > 15.0f)
                         {
+                            if (MiscThings::is_barricade(target_ref) && attacking_inanimate_object_time > 15.0f)
+                            {
+                                MiscThings::destroy_barricade(target_ref);
+                            }
+
+
                             right_attack_cancel();
                             left_attack_cancel();
 
