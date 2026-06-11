@@ -10862,8 +10862,14 @@ namespace MiscThings {
                         if (current_armor->IsArmor())
                         {
                             current_armor_val = current_armor->GetArmorRating();
+
+                            if (current_armor->formEnchanting != nullptr)
+                            {
+                                current_armor_val += 40.0f; //dont advice to take off enchanted gear it might be stronger even if rating is lower
+                            }
                         }
                     }
+
 
                     if (slot == RE::BGSBipedObjectForm::BipedObjectSlot::kShield && (!current_armor || has_spell_equipped(false)))
                     {
@@ -10914,6 +10920,11 @@ namespace MiscThings {
 
                                 if (current_weapon->IsTwoHandedAxe() || current_weapon->IsTwoHandedSword() || current_weapon->IsBow() || current_weapon->IsCrossbow())
                                     current_weapon_damage /= 2.0f;
+
+                                if (current_weapon->formEnchanting != nullptr)
+                                {
+                                    current_weapon_damage *= 2.0f; //current weapon is enchanted, double its rating
+                                }
                             }
                             else
                             {
