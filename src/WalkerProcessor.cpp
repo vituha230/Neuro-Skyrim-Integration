@@ -15,6 +15,11 @@
 namespace WalkerProcessor {
 
 
+
+    bool follow_quest_on_cooldown = false;
+    long long follow_quest_cooldown_start_time = false;
+
+
     bool emergency_swim_up = false;
 
     //bool dont_reset_after_interaction = false;
@@ -497,6 +502,15 @@ namespace WalkerProcessor {
         return sneak_mode_on;
     }
 
+
+
+
+    void put_follow_quest_on_cooldown()
+    {
+        follow_quest_on_cooldown = true;
+        long long now = std::chrono::steady_clock::now().time_since_epoch().count();
+        follow_quest_cooldown_start_time = now;
+    }
 
 
 
@@ -6966,6 +6980,26 @@ namespace WalkerProcessor {
         std::pair<bool, std::string> result{};
 
 
+        if (follow_quest_on_cooldown)
+        {
+            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+            float delta_quest_cooldown = (double)(now - follow_quest_cooldown_start_time) / 1000000000.0;
+
+            if (delta_quest_cooldown > 5.0f)
+            {
+                follow_quest_on_cooldown = false;
+                follow_quest_cooldown_start_time = 0;
+            }
+            else
+            {
+                result.first = false;
+                result.second = "You need to wait a little...";
+                return result;
+            }
+        }
+
+
+
         if (last_quest_chosen)
         {
             if (!MiscThings::quest_is_hidden(last_quest_chosen, last_quest_objective))
@@ -7064,6 +7098,27 @@ namespace WalkerProcessor {
     {
 
         std::pair<bool, std::string> result{};
+
+
+        if (follow_quest_on_cooldown)
+        {
+            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+            float delta_quest_cooldown = (double)(now - follow_quest_cooldown_start_time) / 1000000000.0;
+
+            if (delta_quest_cooldown > 5.0f)
+            {
+                follow_quest_on_cooldown = false;
+                follow_quest_cooldown_start_time = 0;
+            }
+            else
+            {
+                result.first = false;
+                result.second = "You need to wait a little...";
+                return result;
+            }
+        }
+
+
 
         auto player = RE::PlayerCharacter::GetSingleton();
 

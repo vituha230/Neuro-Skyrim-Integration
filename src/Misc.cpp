@@ -2731,6 +2731,25 @@ namespace MiscThings {
 
 
 
+        if (parent_cell && parent_cell->formID == 0x2954d)
+        {
+            RE::TESObjectREFR* target_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2970e);
+
+            if (target == target_door)
+            {
+                RE::TESObjectREFR* blocking_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5af69);
+
+                if (blocking_gate && MiscThings::two_state_activator_state(blocking_gate) != 0)
+                {
+                    RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70410b9);
+
+                    if (redirect_marker)
+                        return redirect_marker;
+                }
+            }
+        }
+
+
         auto azure_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA01");
 
         if (quest == azure_quest)
@@ -6352,7 +6371,15 @@ namespace MiscThings {
                     return true;
 
             }
+
+            auto korvan_pull_handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5af7a);
+
+            if (object == korvan_pull_handle)
+                return true;
         }
+
+
+
 
         return false;
     }
@@ -6811,13 +6838,26 @@ namespace MiscThings {
                                             }
                                                 
                                         }
+
+                                        if (var_string == "Subquest Completed: Open the Drawbridge")
+                                        {
+                                            WalkerProcessor::put_follow_quest_on_cooldown();
+                                        }
+
+
+
                                     }  
                                     else
                                     {
                                         var_string = "New subquest: " + insert_quest_into_list_and_get_info(var_string);
                                         WalkerProcessor::test_new_very_close_quest();
+
+                                        if (var_string.find("Accept ") != std::string::npos && var_string.find(" surrender") != std::string::npos)
+                                            WalkerProcessor::reset_walker(); //stop fight
                                     }
                                         
+                                    var_string = MiscThings::remove_aliases(var_string);
+                                    var_string = MiscThings::fix_book_description(var_string);
 
                                     send_random_context("[" + var_string + "]", false);
                                 }
@@ -7376,6 +7416,29 @@ namespace MiscThings {
                     result = rotated_shift_vector;
                     return result;
                 }
+
+                auto whiterun_bridge_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x6bbfd);
+                
+                if (whiterun_bridge_1 && object == whiterun_bridge_1)
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, -80.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    result = rotated_shift_vector;
+                    return result;
+                }
+
+                auto whiterun_bridge_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x6bbff);
+
+                if (whiterun_bridge_2 && object == whiterun_bridge_2)
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { -3.0f, -2.0f, -80.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    result = rotated_shift_vector;
+                    return result;
+                }
+
 
 
                 auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
@@ -8442,6 +8505,8 @@ namespace MiscThings {
                                                 this_quest.name = the_quest->GetFullName();
                                                 this_quest.target = target;
 
+                                                this_quest.name = MiscThings::replace_aliases(this_quest.quest, this_quest.name);
+
                                                 std::string displaytext = "";
                                                 displaytext = objective->displayText;
 
@@ -9062,6 +9127,9 @@ namespace MiscThings {
                                                     std::string displaytext = "";
                                                     displaytext = objective->displayText;
                                                     this_quest.displaytext = replace_aliases(the_quest, displaytext);
+
+                                                    this_quest.displaytext = MiscThings::fix_book_description(this_quest.displaytext);
+
 
                                                     std::string target_name = "";
                                                     target_name = get_alias_name_by_id(the_quest, target->alias);

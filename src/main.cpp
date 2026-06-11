@@ -347,6 +347,7 @@ bool force_choice(std::vector<MenuOption> options, std::string message, int forc
 
             set_active_force(force_type);
             MiscThings::clean_controls_from_string(&message);
+            message = MiscThings::fix_book_description(message);
 
             if (!no_block)
                 set_universal_block(1.0f);

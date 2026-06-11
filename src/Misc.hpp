@@ -6,6 +6,8 @@
 namespace MiscThings {
 
 
+    std::string remove_aliases(std::string displaytext);
+
     bool is_drowning();
 
     RE::TESObjectREFR* get_generic_full_redirect(RE::TESObjectREFR* target);
