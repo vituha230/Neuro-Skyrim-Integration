@@ -717,8 +717,8 @@ namespace MapProcessor {
 		if (player->actorState1.flyState != RE::FLY_STATE::kNone)
 			result = "Cannot open map while in the air! Wait a little and try again if you want...";
 
-		if (player->actorState1.swimming)
-			result = "Cannot open map while swimming!";
+		//if (player->actorState1.swimming)
+		//	result = "Cannot open map while swimming!";
 
 		if (player->GetParentCell() && player->GetParentCell()->IsInteriorCell())
 			result = "Cannot open map in this location!";
