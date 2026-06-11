@@ -509,10 +509,10 @@ namespace WalkerProcessor {
 
     void clear_emergency_swimup()
     {
-        emergency_swim_up = false;
-
-        if (target_ref)
+        if (emergency_swim_up && target_ref)
             walk_again();
+
+        emergency_swim_up = false;
     }
 
 
