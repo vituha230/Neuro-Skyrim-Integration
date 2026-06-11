@@ -2286,7 +2286,9 @@ namespace WalkerProcessor {
                                     if (!get_open_map_action_status())
                                     {
                                         clear_map_cooldown();
-                                        register_open_map();
+
+                                        if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                            register_open_map();
                                     }
                                 }
                             }
@@ -2308,7 +2310,9 @@ namespace WalkerProcessor {
                                         if (!get_open_map_action_status())
                                         {
                                             clear_map_cooldown();
-                                            register_open_map();
+
+                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                register_open_map();
                                         }
                                     }
                                 }
@@ -7544,7 +7548,9 @@ namespace WalkerProcessor {
                                                             if (!get_open_map_action_status())
                                                             {
                                                                 clear_map_cooldown();
-                                                                register_open_map();
+
+                                                                if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                                    register_open_map();
                                                             }
                                                         }
 
@@ -7566,7 +7572,9 @@ namespace WalkerProcessor {
                                                                     if (!get_open_map_action_status())
                                                                     {
                                                                         clear_map_cooldown();
-                                                                        register_open_map();
+
+                                                                        if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                                            register_open_map();
                                                                     }
                                                                 }
                                                             }
@@ -10867,7 +10875,9 @@ namespace WalkerProcessor {
                     if (!get_open_map_action_status())
                     {
                         clear_map_cooldown();
-                        register_open_map();
+
+                        if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                            register_open_map();
                     }
 
                     send_random_context("You are outside, near some cliff. You can now fast travel to the Winterhold College", false);
