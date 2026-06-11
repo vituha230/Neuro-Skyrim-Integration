@@ -4809,7 +4809,10 @@ namespace Observer {
 					if (tried_to_heal)
 					{
 						if (tried_to_heal_time > 15.0f)
+						{
 							tried_to_heal = false;
+							tried_to_heal_time = 0.0f;
+						}
 						else
 							tried_to_heal_time += dtime;
 					}
