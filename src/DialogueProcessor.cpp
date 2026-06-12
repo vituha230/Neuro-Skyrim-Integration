@@ -44,6 +44,8 @@ namespace DialogueProcessor {
     bool catch_start_speaking = false;
     float start_speaking_timeout = 0.0f; 
 
+    float input_disabled_timeout = 0.0f;
+
 
     float no_subtitles_timeout = 0.0f;
 
@@ -54,6 +56,49 @@ namespace DialogueProcessor {
     {
         old_dialogue.topicText = "";
     }
+
+
+
+    bool dialogue_input_enabled_bad()
+    {
+        //this shit doesnt work, its enabled but cant click in that buggy situation
+        RE::UI* ui = RE::UI::GetSingleton();
+        auto menu = ui->GetMenu<RE::DialogueMenu>();
+        RE::GFxValue var1;
+
+        if (ui && menu && ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
+            if (menu->uiMovie)
+                if (menu->uiMovie->GetVariable(&var1, "_root.DialogueMenu_mc.TopicList.bDisableInput"))
+                    if (!var1.IsNull() && var1.IsBool())
+                        return !var1.GetBool();
+        return false;
+    }
+
+
+    //
+
+    bool dialogue_input_enabled()
+    {
+        //if true - we can input (because "copy" with 1 line we chose is hidden/invisible)
+        RE::UI* ui = RE::UI::GetSingleton();
+        auto menu = ui->GetMenu<RE::DialogueMenu>();
+        RE::GFxValue var1;
+
+        if (ui && menu && ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
+            if (menu->uiMovie)
+                if (menu->uiMovie->GetVariable(&var1, "_root.DialogueMenu_mc.TopicListHolder.TextCopy_mc"))
+                    if (!var1.IsNull() && var1.IsObject())
+                    {
+                        RE::GFxValue::DisplayInfo info{};
+
+                        if (var1.GetDisplayInfo(&info))
+                            return !info.GetVisible();
+                    }
+
+
+        return true; //keep it true so another watchdogs covers situations where this fails, instead of false positiving and making dialogue unfinishable
+    }
+
 
     bool is_in_dialogue(RE::TESObjectREFR* speaker)
     {
@@ -411,6 +456,7 @@ namespace DialogueProcessor {
         catch_start_speaking = false;
         start_speaking_timeout = 0.0f;
 
+        input_disabled_timeout = 0.0f;
     }
 
 
@@ -616,84 +662,102 @@ namespace DialogueProcessor {
 
                         if (finished_speaking)
                         {
-
                             if (catch_start_speaking)
                             {
-                                if (start_speaking_timeout > 3.0f)
+                                if (start_speaking_timeout > 30.0f)
                                 {
                                     //dialogue died, close it
+                                    
                                     cancel();
                                     set_universal_block(0.5f);
                                 }
                                 else
                                     start_speaking_timeout += dtime;
                             }
-                            
 
-                            if (old_dialogue.topicText != topic_manager->dialogueList->front()->topicText)
+
+                            if (dialogue_input_enabled())
                             {
-                                if (pause_time > 0.5f)
+                                input_disabled_timeout = 0.0f;
+
+                                if (old_dialogue.topicText != topic_manager->dialogueList->front()->topicText)
                                 {
-                                    no_subtitles_timeout = 0.0f;
-
-
-                                    /*
-                                    std::vector<MenuOption> dialogue_options = get_dialogue_options();
-                                    int id = 0;
-                                    for (auto& dialogue : *topic_manager->dialogueList)
+                                    if (pause_time > 0.5f)
                                     {
-                                        MenuOption option;
-                                        option.id = id;
-                                        option.text = dialogue->topicText.c_str();
-                                        dialogue_options.push_back(option);
-                                        id++;
-                                        //RE::ConsoleLog::GetSingleton()->Print(dialogue->topicText.c_str());
-                                    }
-                                    //TODO: add timer or check if npc finished talking. maybe autoskp for already said options
-                                    force_dialogue(dialogue_options);
-                                    */
-                                    auto options = get_dialogue_options(false);
-                                    if (std::size(options) == 1 || (std::size(options) == 2 && options[0].text == "..."))
-                                    {
-                                        no_options_counter_time += dtime;
+                                        no_subtitles_timeout = 0.0f;
 
-                                        if (no_options_counter_time > 5.0f)
+
+                                        /*
+                                        std::vector<MenuOption> dialogue_options = get_dialogue_options();
+                                        int id = 0;
+                                        for (auto& dialogue : *topic_manager->dialogueList)
                                         {
-                                            options = get_dialogue_options(true);
+                                            MenuOption option;
+                                            option.id = id;
+                                            option.text = dialogue->topicText.c_str();
+                                            dialogue_options.push_back(option);
+                                            id++;
+                                            //RE::ConsoleLog::GetSingleton()->Print(dialogue->topicText.c_str());
+                                        }
+                                        //TODO: add timer or check if npc finished talking. maybe autoskp for already said options
+                                        force_dialogue(dialogue_options);
+                                        */
+                                        auto options = get_dialogue_options(false);
+                                        if (std::size(options) == 1 || (std::size(options) == 2 && options[0].text == "..."))
+                                        {
+                                            no_options_counter_time += dtime;
 
-                                            if (std::size(options) == 1 || (std::size(options) == 2 && options[0].text == "..."))
+                                            if (no_options_counter_time > 5.0f)
                                             {
-                                                reset_menu(); // nothing works
+                                                options = get_dialogue_options(true);
 
-                                                quit_menu(); //cannot get any options.. and dialogue doesnt end... just close it???
-                                                return;
+                                                if (std::size(options) == 1 || (std::size(options) == 2 && options[0].text == "..."))
+                                                {
+                                                    reset_menu(); // nothing works
+
+                                                    quit_menu(); //cannot get any options.. and dialogue doesnt end... just close it???
+                                                    return;
+                                                }
+
+                                                no_options_counter_time = 0.0f;
+                                                //and here we dont return because options got good
+                                            }
+                                            else
+                                            {
+                                                //pause_time = 0.0f;
+                                                return; //just wait for it to disappear its fake
                                             }
 
-                                            no_options_counter_time = 0.0f;
-                                            //and here we dont return because options got good
                                         }
-                                        else
+
+                                        no_options_counter_time = 0.0f;
+
+                                        if (force_choice(options, "You are in dialogue in Skyrim. Choose a line to say", force_type::dialogue_line))
                                         {
-                                            //pause_time = 0.0f;
-                                            return; //just wait for it to disappear its fake
+                                            old_dialogue = *topic_manager->dialogueList->front();
+                                            pause_time = 0.0f;
                                         }
 
                                     }
-
-                                    no_options_counter_time = 0.0f;
-
-                                    if (force_choice(options, "You are in dialogue in Skyrim. Choose a line to say", force_type::dialogue_line))
+                                    else
                                     {
-                                        old_dialogue = *topic_manager->dialogueList->front();
-                                        pause_time = 0.0f;
+                                        old_dialogue.topicText = "";
+                                        pause_time += dtime;
                                     }
-
+                                }
+                            }
+                            else
+                            {
+                                
+                                if (input_disabled_timeout > 3.0f)
+                                {
+                                    //menu died
+                                    cancel();
+                                    set_universal_block(0.5f);
                                 }
                                 else
-                                {
-                                    old_dialogue.topicText = "";
-                                    pause_time += dtime;
-                                }
+                                    input_disabled_timeout += dtime;
+
                             }
                         }
                         else

@@ -3363,7 +3363,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -3434,8 +3434,8 @@ if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu) {
                                 auto test = var1.GetType();
                             }
 
-                            search_var = "focused";
-                            //search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            search_var = "TextCopy_mc";
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
                                 auto test = var1.GetType();
@@ -3485,7 +3485,7 @@ if (const auto menu = ui->GetMenu<RE::ContainerMenu>(); menu) {
                             }
                             */
 
-                            search_var = "Take All";
+                            search_var = "ready to take";
                             //search_var = "Skin Tone";
                             search_success = visit_all_members3(results, var1, &search_var, 0, "_root", search_var, skip_problematic);
                             if (search_success)
@@ -3598,9 +3598,14 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
         // 
         //"_root.RaceSexMenuBaseInstance.RightClickInstance",
         //"_root.RaceSexMenuBaseInstance.LeftClickInstance"
-        "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.1",
-        "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.26",
-        "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.27"
+        //"_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.1",
+        //"_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.26",
+        //"_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.27"
+
+        "_root.DialogueMenu_mc.TopicListHolder.TextCopy_mc",
+        //"_root.DialogueMenu_mc.TopicListHolder.TextCopy_mc.textField",
+        //"_root.DialogueMenu_mc.TopicListHolder.TextCopy_mc.instance13"
+
 
         //"_root.Menu.InventoryLists._ItemsList.Entry0",
         //"_root.Menu.InventoryLists._ItemsList.Entry0.textField"
@@ -3641,7 +3646,7 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
     if (const auto ui = RE::UI::GetSingleton(); ui) 
         //if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) 
         //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu)
-        if (const auto menu = ui->GetMenu<RE::RaceSexMenu>(); menu)
+        if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu)
         {
 
             if (menu->uiMovie)
@@ -3705,6 +3710,14 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
 
         if (have_anything)
             auto test = var1.GetType();
+
+
+        RE::GFxValue::DisplayInfo info{};
+
+        if (var1.GetDisplayInfo(&info))
+        {
+            bool stop_here = false;
+        }
     }
     
                 
