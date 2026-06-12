@@ -584,7 +584,7 @@ namespace DialogueProcessor {
 
             }
             else
-                dialogue_proc_time += dtime + 0.3f;
+                dialogue_proc_time += dtime;
         }
         else
             dialogue_choice_made = false;
