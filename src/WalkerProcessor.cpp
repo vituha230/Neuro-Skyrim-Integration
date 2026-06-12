@@ -10882,7 +10882,7 @@ namespace WalkerProcessor {
         case (3):
         {
 
-            bool still_alive = target_ref->IsActor() && !target_ref->IsDead();
+            bool still_alive = target_ref->IsActor() && !target_ref->IsDead() && !target_ref->IsDisabled();
 
             if (!attacking_done)
             {
