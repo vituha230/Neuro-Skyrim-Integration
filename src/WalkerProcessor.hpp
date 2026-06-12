@@ -160,6 +160,7 @@ namespace WalkerProcessor {
 
 	std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout = false, RE::TESObjectREFR* refr_to_activate_when_done = nullptr);
 
+	bool is_objective_phantom(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective);
 
 	void put_follow_quest_on_cooldown();
 

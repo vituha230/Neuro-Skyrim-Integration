@@ -19,6 +19,108 @@ namespace MiscThings {
     
 
 
+    bool player_is_stormcloak()
+    {
+        auto civil_war = (RE::TESQuest*)RE::TESForm::LookupByEditorID("CW");
+
+        if (civil_war)
+        {
+            auto object_p = General::Script::GetObject(civil_war, "CWScript");
+
+            if (object_p)
+            {
+
+                RE::BSFixedString prop_name = "playerAllegiance";
+
+                int stormcloak = General::Script::GetProperty<int>(object_p, prop_name);
+
+                if (stormcloak == 2)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    int get_city_sieged()
+    {
+        RE::TESQuest* cw_siege = (RE::TESQuest*)RE::TESForm::LookupByID(0x954e1);
+
+        if (cw_siege)
+        {
+            auto object_p = General::Script::GetObject(cw_siege, "CWSiegeScript");
+
+            if (object_p)
+            {
+                //RE::BSFixedString prop_name = "::CWSiegeObjCity_var";
+                //auto loc_alias = General::Script::GetVariable<RE::BGSLocAlias*>(object_p, prop_name);
+                //if (loc_alias)
+                //{
+                //    bool stop_here = false;
+                //}
+
+                //{name="::CWSiegeObjCityGate_var" type={_rawType=2369222178104 } }
+                //{name="::CWSiegeObjGeneral_var" type={_rawType=2369222178104 } }
+                //{name="::CWSiegeObjJarl_var" type={_rawType=2369222178104 } }
+
+
+                    //ReferenceAlias Property CWSiegeObjCityGate Auto
+                    //ReferenceAlias Property CWSiegeObjJarl Auto
+                    //ReferenceAlias Property CWSiegeObjGeneral Auto
+
+
+                RE::BSFixedString prop_name = "::CWSiegeObjCityGate_var";
+                auto gate_alias = General::Script::GetVariable<RE::BGSRefAlias*>(object_p, prop_name);
+                if (gate_alias)
+                {
+                    auto gate_ref = gate_alias->GetReference();
+                    if (gate_ref)
+                    {
+                        if (gate_ref->GetFormID() == 0x1c386)
+                            return 1; //solitude
+
+                        if (gate_ref->GetFormID() == 0x1c386)
+                            return 2; //windhelm
+
+                        if (gate_ref->GetFormID() == 0x1c386)
+                            return 3; //whiterun
+                    }
+                }
+
+                /*
+
+                prop_name = "::CWSiegeObjGeneral_var";
+                auto general_alias = General::Script::GetVariable<RE::BGSRefAlias*>(object_p, prop_name);
+                if (general_alias)
+                {
+                    auto general_ref = general_alias->GetReference();
+                    if (general_ref)
+                    {
+                        if (general_ref->GetFormID() == 0x53c66)
+                            ;// return 1; //ulfric - solitude
+                    }
+                }
+
+                prop_name = "::CWSiegeObjJarl_var";
+                auto jarl_alias = General::Script::GetVariable<RE::BGSRefAlias*>(object_p, prop_name);
+                if (jarl_alias)
+                {
+                    auto jarl_ref = jarl_alias->GetReference();
+                    if (jarl_ref)
+                    {
+                        bool stop_here = false;
+                    }
+                }
+
+                */
+
+            }
+        }
+
+        return -1;
+    }
+
+
     bool is_drowning()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -2766,12 +2868,41 @@ namespace MiscThings {
                         return redirect_bar;
                 }
             }
-            
-
-
-
         }
 
+        auto siege_city = (RE::TESQuest*)RE::TESForm::LookupByEditorID("CWSiegeObj");
+
+        if (quest == siege_city && siege_city && player_worldspace && player_worldspace->GetFormID() == 0x37edf)
+        {
+            auto tulius = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25199);
+
+            if (target == tulius)
+            {
+                RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18434);
+                RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18433);
+
+                if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
+                {
+                    RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7046e61);
+
+                    if (barricade1)
+                        return barricade1;
+                }
+                else
+                {
+                    RE::TESObjectREFR* barricade3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18436);
+                    RE::TESObjectREFR* barricade4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18439);
+
+                    if (MiscThings::get_destructible_state(barricade3) != 2 && MiscThings::get_destructible_state(barricade4) != 2)
+                    {
+                        RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7046e62);
+
+                        if (barricade3)
+                            return barricade3;
+                    }
+                }
+            }
+        }
 
 
 
@@ -8507,6 +8638,25 @@ namespace MiscThings {
 
 
 
+
+
+    RE::BGSQuestObjective* get_quest_objective_by_index(RE::TESQuest* quest, int index)
+    {
+        if (quest)
+        {
+            for (auto objective : quest->objectives)
+            {
+                if (objective && objective->index == index)
+                    return objective;
+            }
+        }
+
+        return nullptr;
+    }
+
+
+
+
     std::pair<bool, std::string> get_current_quests()
     {
         std::pair<bool, std::string> result{};
@@ -8670,6 +8820,8 @@ namespace MiscThings {
                                 this_quest.name = the_quest->GetFullName();
                                 this_quest.target = nullptr;
 
+                                this_quest.name = MiscThings::replace_aliases(this_quest.quest, this_quest.name);
+
                                 std::string displaytext = "";
                                 displaytext = objective->displayText;
 
@@ -8717,6 +8869,8 @@ namespace MiscThings {
                         this_quest.quest = the_quest;
                         this_quest.name = the_quest->GetFullName();
                         this_quest.target = nullptr;
+
+                        this_quest.name = MiscThings::replace_aliases(this_quest.quest, this_quest.name);
 
                         std::string displaytext = "";
                         std::string target_name = "";
@@ -8898,6 +9052,8 @@ namespace MiscThings {
 
                                     this_quest.estimate_distance = 0.0f;
 
+                                    this_quest.phantom_objective = false;
+
                                     sortable_quests.push_back(this_quest);
 
                                     id++;
@@ -8912,6 +9068,120 @@ namespace MiscThings {
             }
         }
            
+
+
+        //test known quests that have places without objective and its inconvenient to edit quests other ways
+
+        RE::TESQuest* cw_siege = (RE::TESQuest*)RE::TESForm::LookupByID(0x96e71);
+
+        if (cw_siege)
+        {
+            auto the_quest = cw_siege;
+
+            if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
+            {
+                //quest is active
+
+                auto objective_get_orders = get_quest_objective_by_index(the_quest, 1000);
+
+
+                if (objective_get_orders && objective_get_orders->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed))
+                {
+                    //now need to decide which objective we are expecting
+                    int city_cieged = get_city_sieged();
+
+                    switch (city_cieged)
+                    {
+                    case (1): //solitude
+                    {
+                        auto objective_kill_tulius = get_quest_objective_by_index(the_quest, 4002);
+
+                        if (objective_kill_tulius && (!objective_kill_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective_kill_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed)))
+                        {
+                            //no objective - but it should be this. insert this objective as valid
+
+                            quest this_quest{};
+
+                            this_quest.id = id;
+                            this_quest.quest = the_quest;
+                            this_quest.name = the_quest->GetFullName();
+                            this_quest.target = nullptr;
+
+                            std::string displaytext = "";
+                            displaytext = objective_kill_tulius->displayText;
+
+                            std::string target_name = "";
+
+                            this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                            this_quest.target_name = target_name;
+
+                            this_quest.objective = objective_kill_tulius;
+                            this_quest.description = "";
+                            this_quest.category = 0;
+
+                            this_quest.estimate_distance = 0.0f;
+
+                            this_quest.phantom_objective = true;
+
+                            this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c386);
+
+
+                            sortable_quests.push_back(this_quest);
+
+                            
+
+                            id++;
+                            got_any_quests = true;
+
+                        }
+
+
+                        break;
+                    }
+
+                    case (2): //windhelm
+                    {
+                        auto objective_kill_ulfric = get_quest_objective_by_index(the_quest, 4001);
+
+
+                        break;
+                    }
+
+                    case (3): //whiterun
+                    {
+                        auto objective_kill_jarl = get_quest_objective_by_index(the_quest, 1200);
+
+
+                        break;
+                    }
+
+
+                    }
+                       
+                    
+                    
+                    
+
+
+                   // bool stormcloak = player_is_stormcloak();
+                }
+
+               
+
+
+
+            }
+        }
+
+
+
+
+
+
+
+
+
 
 
         //test quests with no objectives

@@ -8,13 +8,13 @@
 //////////////////////////////////////////////////////
 // QUESTLINES
 
-//TODO polish thief guild (no info about being paralyzed by karlia)
+//TODO polish thief guild (potential softlock due to anti-drown in mercer fight, no info about being paralyzed by karlia, no info in the well of nocturnal sanctum)
 //TODO polish mage guild (maybe add context about things happening around)
 //TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
 
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
-//TODO civil war
+//TODO civil war imperial side finish + stormcloak polish (barricades)
 //TODO dragonborn dlc
 //TODO dawnguard dlc
 //TODO companions

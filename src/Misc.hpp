@@ -99,6 +99,8 @@ namespace MiscThings {
         std::string description;
         std::string target_name;
         float estimate_distance;
+        bool phantom_objective;
+        RE::TESObjectREFR* phantom_target;
     };
 
 

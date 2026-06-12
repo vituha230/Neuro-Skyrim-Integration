@@ -6931,6 +6931,9 @@ namespace WalkerProcessor {
                     {
                         auto the_quest = quest;
 
+                        if (WalkerProcessor::is_objective_phantom(quest_entry.quest, quest_entry.objective))
+                            return quest_entry.id;
+
                         for (auto objective : the_quest->objectives)
                         {
                             if (quest_entry.objective == objective)
@@ -6957,6 +6960,77 @@ namespace WalkerProcessor {
 
         return result;
     }
+
+    //get_phantom_target
+    
+
+    RE::TESObjectREFR* get_phantom_target(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective)
+    {
+
+        if (!MiscThings::is_quest_list_valid())
+        {
+            auto get_quest_result = MiscThings::get_current_quests();
+
+            if (!MiscThings::is_quest_list_valid())
+            {
+                return nullptr;
+            }
+
+        }
+        else
+        {
+            //refresh quests in case the list changed 
+            auto quest_list = MiscThings::get_p_quest_list();
+
+            for (auto quest_entry : *quest_list)
+            {
+                if (!MiscThings::quest_is_hidden(quest_entry.quest, quest_entry.objective))
+                {
+                    if (quest_entry.quest == quest)
+                    {
+                        return quest_entry.phantom_target;
+                    }
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
+    bool is_objective_phantom(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective)
+    {
+
+        if (!MiscThings::is_quest_list_valid())
+        {
+            auto get_quest_result = MiscThings::get_current_quests();
+
+            if (!MiscThings::is_quest_list_valid())
+            {
+                return false;
+            }
+
+        }
+        else
+        {
+            //refresh quests in case the list changed 
+            auto quest_list = MiscThings::get_p_quest_list();
+
+            for (auto quest_entry : *quest_list)
+            {
+                if (!MiscThings::quest_is_hidden(quest_entry.quest, quest_entry.objective))
+                {
+                    if (quest_entry.quest == quest)
+                    {
+                        return quest_entry.phantom_objective;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
 
 
 
@@ -7155,6 +7229,7 @@ namespace WalkerProcessor {
         }
         
 
+        bool phantom_objective = false;
 
         if (!MiscThings::is_quest_list_valid())
         {
@@ -7178,6 +7253,9 @@ namespace WalkerProcessor {
             bool quest_found = false;
             int actual_id = 0;
 
+
+            
+
             for (auto quest_entry : *quest_list)
             {
                 if (!MiscThings::quest_is_hidden(quest_entry.quest, quest_entry.objective))
@@ -7186,27 +7264,33 @@ namespace WalkerProcessor {
                     {
                         auto the_quest = quest_entry.quest;
 
-                        for (auto objective : the_quest->objectives)
+                        if (quest_entry.phantom_objective)
                         {
-                            if (quest_entry.objective == objective)
+                            phantom_objective = true;
+                            quest_found = true; //pretend its in the list
+                        }
+                        else
+                        {
+                            for (auto objective : the_quest->objectives)
                             {
-                                if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+                                if (quest_entry.objective == objective)
                                 {
-                                    for (auto* target : std::span(objective->targets, objective->numTargets))
+                                    if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
                                     {
-                                        if (target && target == quest_entry.target)
+                                        for (auto* target : std::span(objective->targets, objective->numTargets))
                                         {
-                                            if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                                            if (target && target == quest_entry.target)
                                             {
-                                                quest_found = true;
-                                                break;
+                                                if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                                                {
+                                                    quest_found = true;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
-
                                 }
                             }
-
                         }
                     }
                 }
@@ -7388,6 +7472,9 @@ namespace WalkerProcessor {
                                                
                                                 auto helgen_tower_marker = RE::TESObjectREFR::LookupByID(0xe24c3);
 
+
+                                                if (phantom_objective)
+                                                    quests_target_ref = get_phantom_target(quest_entry.quest, quest_entry.objective);
 
 
                                                 bool quest_is_questionable = false;
@@ -7738,7 +7825,10 @@ namespace WalkerProcessor {
 
             if (objective)
             {
-                if (objective->numTargets != 0 && (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed)))
+                bool phantom_objective = is_objective_phantom(quest, objective);
+
+
+                if (objective->numTargets != 0 && ((objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed)) || phantom_objective))
                 {
                     auto quest_targets = objective->targets;
 
@@ -7858,6 +7948,9 @@ namespace WalkerProcessor {
                                             quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref);
 
                                             new_target_found = true;
+
+                                            if (phantom_objective)
+                                                quests_target_ref = get_phantom_target(quest, objective);
 
                                             if (target_ref != quests_target_ref)
                                             {
@@ -10932,7 +11025,20 @@ namespace WalkerProcessor {
                     }
                 }
 
+                if (quest_mode)
+                {
+                    RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18434);
+                    RE::TESObjectREFR* barricade3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18436);
 
+                    if (target_ref == barricade1 || target_ref == barricade3)
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", target_ref);
+                        send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                        reset_walker();
+                        return "";
+                    }
+                }
+                
 
                 auto post_mzulft_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a56);
 
