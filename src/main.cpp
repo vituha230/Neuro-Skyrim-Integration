@@ -146,7 +146,10 @@ long long get_last_load_timestamp()
 std::unique_ptr<neuro::NeuroSocket> m_neuroSocket{};
 
 
-
+void reset_superwatchdog()
+{
+    m_neuroSocket->reset_superwatchdog();
+}
 
 void do_delayed_poke()
 {
@@ -826,7 +829,11 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text, bo
     {
         std::string speech_context = speaker_name + emotion_text + " says \"" + speech_text + "\"";
         if (DialogueProcessor::is_in_dialogue(speaker))
+        {
             speech_context = "[Dialogue] " + speech_context;
+            reset_superwatchdog();
+        }
+            
 
 
         context_chars_sent += speech_context.length();

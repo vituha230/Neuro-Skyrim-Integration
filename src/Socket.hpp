@@ -660,6 +660,7 @@ namespace neuro {
 
         bool action_register_watchdog(float dtime);
 
+        void reset_superwatchdog();
 
         
         

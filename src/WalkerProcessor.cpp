@@ -17,8 +17,9 @@ namespace WalkerProcessor {
 
 
     bool follow_quest_on_cooldown = false;
-    long long follow_quest_cooldown_start_time = false;
-
+    long long follow_quest_cooldown_start_time = 0;
+    long long post_attack_advice_time = 0;
+    long long walk_unstuck_advice_time = 0;
 
     bool emergency_swim_up = false;
 
@@ -7059,7 +7060,7 @@ namespace WalkerProcessor {
         std::pair<bool, std::string> result{};
 
 
-        if (follow_quest_on_cooldown)
+        if (false && follow_quest_on_cooldown)
         {
             auto now = std::chrono::steady_clock::now().time_since_epoch().count();
             float delta_quest_cooldown = (double)(now - follow_quest_cooldown_start_time) / 1000000000.0;
@@ -7179,7 +7180,7 @@ namespace WalkerProcessor {
         std::pair<bool, std::string> result{};
 
 
-        if (follow_quest_on_cooldown)
+        if (false && follow_quest_on_cooldown)
         {
             auto now = std::chrono::steady_clock::now().time_since_epoch().count();
             float delta_quest_cooldown = (double)(now - follow_quest_cooldown_start_time) / 1000000000.0;
@@ -9317,8 +9318,11 @@ namespace WalkerProcessor {
             if (attack_action < 0 || attack_action > 1)
             {
 
-                bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
-                bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+                bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
+
+
+                bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
+                bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
 
                 bool dont_use_right = false;
 
@@ -9634,9 +9638,11 @@ namespace WalkerProcessor {
                                 ;// dont_use_left |= left_is_block();
                             }
 
+                            bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
 
-                            bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
-                            bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+
+                            bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
+                            bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
 
                             bool dont_use_right = false;
 
@@ -9649,6 +9655,7 @@ namespace WalkerProcessor {
 
                             dont_use_left |= has_staff_equipped(false) && no_charge(false);
 
+                            dont_use_left |= left_is_useless;
 
                             bool staff_of_magnus_in_left = false;
                             auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
@@ -9934,8 +9941,10 @@ namespace WalkerProcessor {
                                 ;// dont_use_left |= left_is_block();
                             }
 
-                            bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f);
-                            bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(90.0f);
+                            bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
+
+                            bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
+                            bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
 
                             bool dont_use_right = false;
 
@@ -9953,6 +9962,7 @@ namespace WalkerProcessor {
 
                             dont_use_left |= has_staff_equipped(false) && no_charge(false);
 
+                            dont_use_left |= left_is_useless;
 
                             bool staff_of_magnus_in_left = false;
                             auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
@@ -10027,6 +10037,19 @@ namespace WalkerProcessor {
                     right_attack_cancel();
                     left_attack_cancel();
                     
+                    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+                    if (post_attack_advice_time == 0)
+                        post_attack_advice_time = now;
+
+                    float delta_post_attack_advice = (double)(now - post_attack_advice_time) / 1000000000.0;
+
+                    if (delta_post_attack_advice > 20.0f)
+                    {
+                        post_attack_advice_time = now;
+
+                        MiscThings::post_attack_advice();
+                    }
 
                     //if its far away - need to notify player because detect_events has low range
 
@@ -14289,7 +14312,22 @@ namespace WalkerProcessor {
 
                     if (wiggle_body_then_walk_again)
                     {
-                        
+                        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+                        //want immidiate advice here
+                        //if (walk_unstuck_advice_time == 0)
+                        //    walk_unstuck_advice_time = now;
+
+                        float delta_walk_unstuck_advice = (double)(now - walk_unstuck_advice_time) / 1000000000.0;
+
+                        if (delta_walk_unstuck_advice > 20.0f)
+                        {
+                            walk_unstuck_advice_time = now;
+
+                            MiscThings::walk_unstuck_advice();
+                        }
+
+
 
                         if (shit_door_locked)
                         {

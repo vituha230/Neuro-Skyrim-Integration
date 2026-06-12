@@ -19,6 +19,125 @@ namespace MiscThings {
     
 
 
+    void post_attack_advice()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_worldspace = player ? player->GetWorldspace() : nullptr;
+
+        if (player_worldspace && player_worldspace->GetFormID() == 0x37edf) //solitude
+        {
+            if (get_city_sieged() == 1)
+            {
+                //we killed someone in solitude and we are sieging solitude rn. advice to break barricades
+                RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18434);
+                RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18433);
+
+                if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
+                {
+                    RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7046e61);
+
+                    if (barricade1)
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade1);
+
+                        if (name != "")
+                            send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                    }
+                }
+                else
+                {
+                    RE::TESObjectREFR* barricade3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18436);
+                    RE::TESObjectREFR* barricade4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18439);
+
+                    if (MiscThings::get_destructible_state(barricade3) != 2 && MiscThings::get_destructible_state(barricade4) != 2)
+                    {
+                        RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7046e62);
+
+                        if (barricade3)
+                        {
+                            std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade3);
+
+                            if (name != "")
+                                send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    void walk_unstuck_advice()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_worldspace = player ? player->GetWorldspace() : nullptr;
+
+        int city_sieged = get_city_sieged();
+
+        if (city_sieged == 3) //whiterun
+        {
+            if (player_worldspace && player_worldspace->GetFormID() == 0x3c) //tamriel
+            {
+                //walk stuck triggered in tamriel and we are sieging whiterun
+                RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x76ead);
+                RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x76eac);
+
+                if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
+                {
+                    if (barricade1)
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade1);
+
+                        if (name != "")
+                            send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                    }
+                }
+            }
+
+
+            if (player_worldspace && player_worldspace->GetFormID() == 0x1a26f) //whiterun
+            {
+                //walk stuck triggered in tamriel and we are sieging whiterun
+                RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xfe0e9);
+                RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xfe0ec);
+
+                if (MiscThings::get_destructible_state(barricade1) != 2)
+                {
+                    if (barricade1)
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade1);
+
+                        if (name != "")
+                            send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                    }
+                }
+                else
+                    if (MiscThings::get_destructible_state(barricade2) != 2)
+                    {
+                        if (barricade2)
+                        {
+                            std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade2);
+
+                            if (name != "")
+                                send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                        }
+                    }
+            }
+
+        }
+
+        if (city_sieged == 4)
+        {
+            //fort sungard
+
+
+        }
+    }
+
+
+
+
+
     bool player_is_stormcloak()
     {
         auto civil_war = (RE::TESQuest*)RE::TESForm::LookupByEditorID("CW");
@@ -46,7 +165,12 @@ namespace MiscThings {
     {
         RE::TESQuest* cw_siege = (RE::TESQuest*)RE::TESForm::LookupByID(0x954e1);
 
-        if (cw_siege)
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        auto player_worldspace = player ? player->GetWorldspace() : nullptr;
+
+
+        if (cw_siege && (cw_siege->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || cw_siege->data.flags.all(RE::QuestFlag::kEnabled)) && !cw_siege->data.flags.all(RE::QuestFlag::kCompleted))
         {
             auto object_p = General::Script::GetObject(cw_siege, "CWSiegeScript");
 
@@ -82,8 +206,23 @@ namespace MiscThings {
                         if (gate_ref->GetFormID() == 0x1c386)
                             return 2; //windhelm
 
-                        if (gate_ref->GetFormID() == 0x1c386)
-                            return 3; //whiterun
+                        if (gate_ref->GetFormID() == 0x1b1f1)
+                        {
+                            //must check if we are nearby
+
+                            if (player_worldspace && player_worldspace->GetFormID() == 0x1a26f) //whiterun
+                                return 3; //whiterun
+
+                            if (player_worldspace && player_worldspace->GetFormID() == 0x3c) //tamriel
+                            {
+                                RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x76ead);
+                                if (barricade1 && player && player->GetDistance(barricade1) < 6000.0f)
+                                    return 3;
+                            }
+
+                            
+                        }
+                            
                     }
                 }
 
@@ -116,6 +255,44 @@ namespace MiscThings {
 
             }
         }
+
+
+        RE::TESQuest* cw_siege_fort = (RE::TESQuest*)RE::TESForm::LookupByID(0x83042);
+
+        if (cw_siege_fort && (cw_siege_fort->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || cw_siege_fort->data.flags.all(RE::QuestFlag::kEnabled)) && !cw_siege_fort->data.flags.all(RE::QuestFlag::kCompleted))
+        {
+            auto object_p = General::Script::GetObject(cw_siege_fort, "CWFortSiegeScript");
+
+            if (object_p)
+            {
+
+                bool stop_here = false;
+                /*
+                RE::BSFixedString prop_name = "::CWSiegeObjCityGate_var";
+                auto gate_alias = General::Script::GetVariable<RE::BGSRefAlias*>(object_p, prop_name);
+                if (gate_alias)
+                {
+                    auto gate_ref = gate_alias->GetReference();
+                    if (gate_ref)
+                    {
+                        if (gate_ref->GetFormID() == 0x1c386)
+                            return 1; //solitude
+
+                        if (gate_ref->GetFormID() == 0x1c386)
+                            return 2; //windhelm
+
+                        if (gate_ref->GetFormID() == 0x1b1f1)
+                            return 3; //whiterun
+                    }
+                }
+                */
+            }
+        }
+
+
+
+
+
 
         return -1;
     }
@@ -7065,7 +7242,7 @@ namespace MiscThings {
                                                 
                                         }
 
-                                        if (var_string == "Subquest Completed: Open the Drawbridge")
+                                        if (false && var_string == "Subquest Completed: Open the Drawbridge")
                                         {
                                             WalkerProcessor::put_follow_quest_on_cooldown();
                                         }
@@ -7659,7 +7836,7 @@ namespace MiscThings {
                 if (whiterun_bridge_2 && object == whiterun_bridge_2)
                 {
                     RE::NiPoint3 object_angles = object->data.angle;
-                    RE::NiPoint3 base_shift_vector = { -3.0f, -2.0f, -80.0f };
+                    RE::NiPoint3 base_shift_vector = { -3.0f, 5.0f, -80.0f };
                     RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                     result = rotated_shift_vector;
                     return result;
@@ -9081,12 +9258,7 @@ namespace MiscThings {
             if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
             {
                 //quest is active
-
-                auto objective_get_orders = get_quest_objective_by_index(the_quest, 1000);
-
-
-                if (objective_get_orders && objective_get_orders->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed))
-                {
+                // 
                     //now need to decide which objective we are expecting
                     int city_cieged = get_city_sieged();
 
@@ -9094,48 +9266,121 @@ namespace MiscThings {
                     {
                     case (1): //solitude
                     {
-                        auto objective_kill_tulius = get_quest_objective_by_index(the_quest, 4002);
+                        auto objective_get_orders = get_quest_objective_by_index(the_quest, 1000);
 
-                        if (objective_kill_tulius && (!objective_kill_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective_kill_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed)))
+                        if (objective_get_orders && objective_get_orders->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed))
                         {
-                            //no objective - but it should be this. insert this objective as valid
+                            auto objective_kill_tulius = get_quest_objective_by_index(the_quest, 4002);
 
-                            quest this_quest{};
+                            if (objective_kill_tulius && (!objective_kill_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective_kill_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed)))
+                            {
+                                //no objective - but it should be this. insert this objective as valid
 
-                            this_quest.id = id;
-                            this_quest.quest = the_quest;
-                            this_quest.name = the_quest->GetFullName();
-                            this_quest.target = nullptr;
+                                quest this_quest{};
 
-                            std::string displaytext = "";
-                            displaytext = objective_kill_tulius->displayText;
+                                this_quest.id = id;
+                                this_quest.quest = the_quest;
+                                this_quest.name = the_quest->GetFullName();
+                                this_quest.target = nullptr;
 
-                            std::string target_name = "";
+                                std::string displaytext = "";
+                                displaytext = objective_kill_tulius->displayText;
 
-                            this_quest.displaytext += replace_aliases(the_quest, displaytext);
+                                std::string target_name = "";
 
-                            this_quest.target_name = target_name;
+                                this_quest.displaytext += replace_aliases(the_quest, displaytext);
 
-                            this_quest.objective = objective_kill_tulius;
-                            this_quest.description = "";
-                            this_quest.category = 0;
+                                this_quest.target_name = target_name;
 
-                            this_quest.estimate_distance = 0.0f;
+                                this_quest.objective = objective_kill_tulius;
+                                this_quest.description = "";
+                                this_quest.category = 0;
 
-                            this_quest.phantom_objective = true;
+                                this_quest.estimate_distance = 0.0f;
 
-                            this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c386);
+                                this_quest.phantom_objective = true;
+
+                                this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c386);
 
 
-                            sortable_quests.push_back(this_quest);
+                                sortable_quests.push_back(this_quest);
 
-                            
 
-                            id++;
-                            got_any_quests = true;
 
+                                id++;
+                                got_any_quests = true;
+
+                            }
+                            else
+                            {
+                                ;//if we disagree to execute the general - there will be no objective until the general is executed
+                                /* //DEVS LOCKED THE CASTLE IN CASE PLAYER WANTS TO RUN AWAY WHILE GENERAL EXECUTES THE OTHER GENERAL, this isnt necessary
+                                auto objective_execute_tulius = get_quest_objective_by_index(the_quest, 4102); //execute tulius objective
+                                if (objective_kill_tulius && (objective_kill_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed)))
+                                {
+                                    if (objective_execute_tulius && (!objective_execute_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective_execute_tulius->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed)))
+                                    {
+                                        //no objective - but it should be this. insert this objective as valid
+
+                                        quest this_quest{};
+
+                                        this_quest.id = id;
+                                        this_quest.quest = the_quest;
+                                        this_quest.name = the_quest->GetFullName();
+                                        this_quest.target = nullptr;
+
+                                        std::string displaytext = "";
+                                        displaytext = objective_kill_tulius->displayText;
+
+                                        std::string target_name = "";
+
+                                        this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                                        this_quest.target_name = target_name;
+
+                                        this_quest.objective = objective_kill_tulius;
+                                        this_quest.description = "";
+                                        this_quest.category = 0;
+
+                                        this_quest.estimate_distance = 0.0f;
+
+                                        this_quest.phantom_objective = true;
+
+                                        if (player)
+                                        {
+                                            auto parent_cell = player->GetParentCell();
+                                            auto player_worldspace = player->GetWorldspace();
+                                            if (parent_cell && parent_cell->GetFormID() == 0x213a0)
+                                                this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ba); //tulius
+                                            else
+                                                if (player_worldspace && player_worldspace->GetFormID() == 0x37edf)
+                                                    this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25199); //castle door
+                                                else
+                                                    if (MiscThings::is_interior_cell())
+                                                        this_quest.phantom_target = WalkerProcessor::get_runaway_target(); //castle door
+                                                    else
+                                                    {
+                                                        auto solitude_gate = this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c386);
+                                                        if (solitude_gate)
+                                                            this_quest.phantom_target = solitude_gate; //solitude door
+                                                        else
+                                                            this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4d0f4); //solitude marker
+                                                    }
+                                        }
+
+
+                                        sortable_quests.push_back(this_quest);
+
+
+
+                                        id++;
+                                        got_any_quests = true;
+
+                                    }
+                                }
+                                */
+                            }
                         }
-
 
                         break;
                     }
@@ -9150,26 +9395,62 @@ namespace MiscThings {
 
                     case (3): //whiterun
                     {
-                        auto objective_kill_jarl = get_quest_objective_by_index(the_quest, 1200);
 
+                        auto objective_open_drawbridge = get_quest_objective_by_index(the_quest, 1030);
+
+                        if (objective_open_drawbridge && objective_open_drawbridge->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed))
+                        {
+
+                            auto objective_kill_jarl = get_quest_objective_by_index(the_quest, 1200);
+
+                            if (objective_kill_jarl && (!objective_kill_jarl->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective_kill_jarl->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed)))
+                            {
+                                //no objective - but it should be this. insert this objective as valid
+
+                                quest this_quest{};
+
+                                this_quest.id = id;
+                                this_quest.quest = the_quest;
+                                this_quest.name = the_quest->GetFullName();
+                                this_quest.target = nullptr;
+
+                                std::string displaytext = "";
+                                displaytext = objective_kill_jarl->displayText;
+
+                                std::string target_name = "";
+
+                                this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                                this_quest.target_name = target_name;
+
+                                this_quest.objective = objective_kill_jarl;
+                                this_quest.description = "";
+                                this_quest.category = 0;
+
+                                this_quest.estimate_distance = 0.0f;
+
+                                this_quest.phantom_objective = true;
+
+                                this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b1f1); //whiterun gate
+
+
+                                sortable_quests.push_back(this_quest);
+
+
+
+                                id++;
+                                got_any_quests = true;
+
+                            }
+                        }
 
                         break;
                     }
-
-
                     }
-                       
-                    
-                    
-                    
+           
 
 
                    // bool stormcloak = player_is_stormcloak();
-                }
-
-               
-
-
 
             }
         }
@@ -14659,6 +14940,63 @@ namespace MiscThings {
 
         return result;
     }
+
+
+    void close_all_closable_menus()
+    {
+
+        RE::UI* ui = RE::UI::GetSingleton();
+
+        if (ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::CraftingMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::DialogueMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::StatsMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::StatsMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::LevelUpMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::TrainingMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::TrainingMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::SleepWaitMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::SleepWaitMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MessageBoxMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::ContainerMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::BarterMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::BarterMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::BookMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::BookMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::GiftMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::GiftMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::LockpickingMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::LockpickingMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::CraftingMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::CraftingMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::CursorMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::CursorMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+        if (ui->IsMenuOpen(RE::TweenMenu::MENU_NAME))
+            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::TweenMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+
+    }
+
 
 
 

@@ -99,6 +99,9 @@ bool unregister_start_sneak();
 bool register_stop_sneak();
 bool unregister_stop_sneak();
 
+
+void reset_superwatchdog();
+
 /*
 void force_dialogue(std::vector<MenuOption> dialogue_options);
 void force_barter_operation();

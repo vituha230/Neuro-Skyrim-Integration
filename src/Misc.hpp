@@ -87,6 +87,11 @@ namespace MiscThings {
 
     void use_random_offensive_shout(RE::TESObjectREFR* target);
 
+    void post_attack_advice();
+    void walk_unstuck_advice();
+
+    int get_city_sieged();
+    
 
     struct quest {
         int id;
@@ -419,6 +424,8 @@ namespace MiscThings {
 
     int get_restore_value(RE::TESBoundObject* object, RE::ActorValue av);
 
+
+    void close_all_closable_menus();
 
     RE::TESObjectREFR::InventoryItemMap get_filtered_inventory();
 

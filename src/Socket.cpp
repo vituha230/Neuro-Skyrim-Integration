@@ -17,6 +17,7 @@ extern bool resend_active_force();
 bool had_connection = false;
 bool ever_registered = false;
 bool something_is_registered = false;
+bool force_is_registered = false;
 
 std::string greet_phrase = "You are playing Skyrim, an action RPG. Use commands to interact with the world. Try to have a fun adventure. ";
 
@@ -392,6 +393,7 @@ bool neuro::NeuroSocket::SendGreeting()
 {
     if (!IsAlive())
     {
+        force_is_registered = false;
         something_is_registered = false;
         ever_registered = false;
         had_connection = false;
@@ -413,6 +415,7 @@ bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
 {
     if (!IsAlive())
     {
+        force_is_registered = false;
         something_is_registered = false;
         ever_registered = false;
         had_connection = false;
@@ -439,7 +442,9 @@ bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
 
     if (!(size == 1 && (action_name == force_name_1 || action_name == force_name_2 || action_name == force_name_3 || action_name == force_name_4))) //exclude forces
         something_is_registered = true;
-
+    else
+        if (size == 1 && (action_name == force_name_1 || action_name == force_name_2 || action_name == force_name_3 || action_name == force_name_4))
+            force_is_registered = true;
 
     for (int i = 0; i < size; i++)
     {
@@ -457,6 +462,7 @@ bool neuro::NeuroSocket::unregister_actions(const char** action_names, int size)
 {
     if (!IsAlive())
     {
+        force_is_registered = false;
         something_is_registered = false;
         ever_registered = false;
         had_connection = false;
@@ -487,6 +493,7 @@ bool neuro::NeuroSocket::unregister_all()
 {
     if (!IsAlive())
     {
+        force_is_registered = false;
         something_is_registered = false;
         ever_registered = false;
         had_connection = false;
@@ -523,7 +530,6 @@ bool neuro::NeuroSocket::unregister_all()
 
     something_is_registered = false;
 
-
     for (int i = 0; i < ActionsCountNoForces; i++)
     {
         set_action_status(action_names[i], false);
@@ -537,6 +543,7 @@ bool neuro::NeuroSocket::unregister_all2()
 {
     if (!IsAlive())
     {
+        force_is_registered = false;
         something_is_registered = false;
         ever_registered = false;
         had_connection = false;
@@ -597,6 +604,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
     if (!IsAlive())
     {
+        force_is_registered = false;
         something_is_registered = false;
         ever_registered = false;
         had_connection = false;
@@ -850,6 +858,13 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
 
 float action_watchdog_timer = 0.0f;
+float action_superwatchdog_timer = 0.0f;
+
+
+void neuro::NeuroSocket::reset_superwatchdog()
+{
+    action_superwatchdog_timer = 0.0f;
+}
 
 bool neuro::NeuroSocket::action_register_watchdog(float dtime)
 {
@@ -871,7 +886,27 @@ bool neuro::NeuroSocket::action_register_watchdog(float dtime)
             action_watchdog_timer += dtime;
     }
     else
+    {
         action_watchdog_timer = 0.0f;
+
+        if (had_connection && ever_registered && !something_is_registered && !force_is_registered)
+        {
+            if (action_superwatchdog_timer > 180.0f)
+            {
+                MiscThings::close_all_closable_menus();
+
+                action_superwatchdog_timer = 0.0f;
+                register_allowed_actions();
+                WalkerProcessor::reset_walker();//in case some custom walk path glitched
+                return true;
+            }
+            else
+                action_superwatchdog_timer += dtime;
+        }
+        else
+            action_superwatchdog_timer = 0.0f;
+    }
+        
 
 
     return false;
@@ -975,6 +1010,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 {
     if (!IsAlive())
     {
+        force_is_registered = false;
         something_is_registered = false;
         ever_registered = false;
         had_connection = false;
