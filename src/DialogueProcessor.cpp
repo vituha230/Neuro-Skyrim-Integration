@@ -41,6 +41,9 @@ namespace DialogueProcessor {
 
     float no_options_counter_time = 0.0f;
 
+    bool catch_start_speaking = false;
+    float start_speaking_timeout = 0.0f; 
+
 
     float no_subtitles_timeout = 0.0f;
 
@@ -404,6 +407,10 @@ namespace DialogueProcessor {
         cursor_unstuck_dir = false;
 
         no_options_counter_time = 0.0f;
+
+        catch_start_speaking = false;
+        start_speaking_timeout = 0.0f;
+
     }
 
 
@@ -482,6 +489,7 @@ namespace DialogueProcessor {
                             //old_dialogue.topicText = "";
                             //leftclick();
 
+                            catch_start_speaking = true;
 
                             //confirm();
 
@@ -608,6 +616,18 @@ namespace DialogueProcessor {
 
                         if (finished_speaking)
                         {
+
+                            if (catch_start_speaking)
+                            {
+                                if (start_speaking_timeout > 3.0f)
+                                {
+                                    //dialogue died, close it
+                                    cancel();
+                                    set_universal_block(0.5f);
+                                }
+                                else
+                                    start_speaking_timeout += dtime;
+                            }
                             
 
                             if (old_dialogue.topicText != topic_manager->dialogueList->front()->topicText)
@@ -678,6 +698,9 @@ namespace DialogueProcessor {
                         }
                         else
                         {
+                            start_speaking_timeout = 0.0f;
+                            catch_start_speaking = false;
+
                             old_dialogue.topicText = "";
                             pause_time = 0.0f;
                         }

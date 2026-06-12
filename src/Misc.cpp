@@ -130,7 +130,20 @@ namespace MiscThings {
         {
             //fort sungard
 
+            //walk stuck triggered in tamriel and we are sieging whiterun
+            RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x76b4f);
+            RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x76b50);
 
+            if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
+            {
+                if (barricade1)
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade1);
+
+                    if (name != "")
+                        send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                }
+            }
         }
     }
 
@@ -165,12 +178,17 @@ namespace MiscThings {
     {
         RE::TESQuest* cw_siege = (RE::TESQuest*)RE::TESForm::LookupByID(0x954e1);
 
+        RE::TESQuest* cw_siege_obj = (RE::TESQuest*)RE::TESForm::LookupByID(0x96e71);
+
+        bool siege_obj_fine = cw_siege_obj && (cw_siege_obj->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || cw_siege_obj->data.flags.all(RE::QuestFlag::kEnabled)) && !cw_siege_obj->data.flags.all(RE::QuestFlag::kCompleted);
+        bool siege_fine = cw_siege && (cw_siege->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || cw_siege->data.flags.all(RE::QuestFlag::kEnabled)) && !cw_siege->data.flags.all(RE::QuestFlag::kCompleted);
+
         auto player = RE::PlayerCharacter::GetSingleton();
 
         auto player_worldspace = player ? player->GetWorldspace() : nullptr;
 
 
-        if (cw_siege && (cw_siege->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || cw_siege->data.flags.all(RE::QuestFlag::kEnabled)) && !cw_siege->data.flags.all(RE::QuestFlag::kCompleted))
+        if (siege_obj_fine || siege_fine)
         {
             auto object_p = General::Script::GetObject(cw_siege, "CWSiegeScript");
 
@@ -257,6 +275,7 @@ namespace MiscThings {
         }
 
 
+
         RE::TESQuest* cw_siege_fort = (RE::TESQuest*)RE::TESForm::LookupByID(0x83042);
 
         if (cw_siege_fort && (cw_siege_fort->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || cw_siege_fort->data.flags.all(RE::QuestFlag::kEnabled)) && !cw_siege_fort->data.flags.all(RE::QuestFlag::kCompleted))
@@ -265,27 +284,19 @@ namespace MiscThings {
 
             if (object_p)
             {
+                RE::BSFixedString prop_name = "::Barricade1_var";
+                auto barricade_alias = General::Script::GetVariable<RE::BGSRefAlias*>(object_p, prop_name);
 
-                bool stop_here = false;
-                /*
-                RE::BSFixedString prop_name = "::CWSiegeObjCityGate_var";
-                auto gate_alias = General::Script::GetVariable<RE::BGSRefAlias*>(object_p, prop_name);
-                if (gate_alias)
+                if (barricade_alias)
                 {
-                    auto gate_ref = gate_alias->GetReference();
-                    if (gate_ref)
+                    auto barricade = barricade_alias->GetReference();
+
+                    if (barricade)
                     {
-                        if (gate_ref->GetFormID() == 0x1c386)
-                            return 1; //solitude
-
-                        if (gate_ref->GetFormID() == 0x1c386)
-                            return 2; //windhelm
-
-                        if (gate_ref->GetFormID() == 0x1b1f1)
-                            return 3; //whiterun
+                        if (barricade->GetFormID() == 0x76b50 && player->GetDistance(barricade) < 3000.0f)
+                            return 4; //fort sungard
                     }
                 }
-                */
             }
         }
 
@@ -2845,6 +2856,36 @@ namespace MiscThings {
                             return redirect_water;
                     }
                 }
+
+
+                RE::NiPoint3 forthragg_tower = { -115161.152f, 114344.4805f, -4324.92163f };
+
+                auto redirect_in_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d29);
+                auto redirect_out_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d2a);
+
+                if (redirect_in_tower && redirect_out_tower)
+                {
+                    if (target == redirect_in_tower)
+                        return redirect_in_tower; //continue
+
+                    if (target == redirect_out_tower)
+                        return redirect_out_tower; //continue
+
+                     
+                    //player inside, target outside
+                    if (player_pos.GetDistance(forthragg_tower) <= 677.246515f && target_pos.GetDistance(forthragg_tower) > 677.246515f)
+                    {
+                        return redirect_in_tower;
+                    }
+
+                    //player outside, target inside
+                    if (player_pos.GetDistance(forthragg_tower) > 677.246515f && target_pos.GetDistance(forthragg_tower) <= 677.246515f)
+                    {
+                        return redirect_out_tower;
+                    }
+                }
+
+
             }
 
 

@@ -857,6 +857,9 @@ void send_random_context(std::string context, bool silent)
     if (context.find(" resisted ") != std::string::npos)
         return;
 
+    if (context.find("No soul gem large enough") != std::string::npos)
+        return;
+
     if (Observer::not_informing_inventory() && context.find("Quest Items cannot be removed") != std::string::npos)
         return;
 

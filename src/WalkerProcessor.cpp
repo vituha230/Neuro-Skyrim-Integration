@@ -13075,8 +13075,14 @@ namespace WalkerProcessor {
                                     }
                                 }
                             }
-
                         }
+
+
+                        
+
+
+
+
                     }
                     
 
@@ -13169,7 +13175,6 @@ namespace WalkerProcessor {
                         }
 
                     }
-
 
                 }
                 
@@ -13624,7 +13629,11 @@ namespace WalkerProcessor {
                             auto labyrinth_lever1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187f);
                             auto labyrinth_lever2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9187e);
 
-                            if (target_ref != redirect_water && target_ref != labyrinth_marker1 && target_ref != labyrinth_marker2 && target_ref != labyrinth_lever1 && target_ref != labyrinth_lever2) //its a chain redirect of 2 points, current target ref is invalid either
+
+                            auto redirect_in_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d29);
+                            auto redirect_out_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d2a);
+
+                            if (target_ref != redirect_water && target_ref != labyrinth_marker1 && target_ref != labyrinth_marker2 && target_ref != labyrinth_lever1 && target_ref != labyrinth_lever2 && target_ref != redirect_in_tower && target_ref != redirect_out_tower) //its a chain redirect of 2 points, current target ref is invalid either
                                 target_before_generic_redirect = target_ref;
 
                             interaction_before_generic_redirect = interaction_after_walk;
@@ -13784,13 +13793,116 @@ namespace WalkerProcessor {
                             return;
                         }
                     }
-
-
-
-
-
-
                 }
+
+
+
+                //including custom path
+
+                auto redirect_in_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d29);
+                auto redirect_out_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d2a);
+
+                if (redirect_in_tower && redirect_out_tower)
+                {
+                    RE::NiPoint3 forthragg_tower = { -115161.152f, 114344.4805f, -4324.92163f };
+
+                    if (target_ref == redirect_in_tower)
+                    {
+                        if (player->GetDistance(redirect_in_tower) < 100.0f)
+                        {
+                            if (target_before_generic_redirect)
+                            {
+                                auto target_before_generic_redirect_pos = target_before_generic_redirect->GetPosition();
+
+                                if (target_before_generic_redirect_pos.GetDistance(forthragg_tower) <= 677.246515f)
+                                {
+                                    //finish redirections, restore old target
+                                    dont_check_quest_target_change = false;
+                                    generic_redirect_active = false;
+                                    interaction_after_walk = interaction_before_generic_redirect;
+                                    target_ref = target_before_generic_redirect;
+                                    target_before_generic_redirect = nullptr;
+                                    //dont_reset_after_interaction = false;
+                                    using_custom_path = false;
+                                    custom_path.clear();
+                                    walk_again();
+                                    return;
+                                }
+                                else
+                                {
+                                    //init custom walk from marker_in to marker_out
+                                    //reset_walker();
+                                    //unregister_all_actions();
+                                    walk_again(); //"soft reset"
+
+                                    target_ref = redirect_out_tower;
+                                    have_target_to_walk = true;
+                                    using_custom_path = true;
+                                    dont_quicksave_after_custom_path = true;
+                                    dont_use_bounds_for_close_enough = true;
+                                    walk_again_when_finished = true;
+                                    auto pos1 = redirect_in_tower->GetPosition();
+                                    auto pos2 = redirect_out_tower->GetPosition();
+                                    pos2.z = pos1.z;
+
+                                    custom_path = { pos1, pos2 };
+                                    path = custom_path;
+                                    path_valid = true;
+                                    current_path_point = 0;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    if (target_ref == redirect_out_tower)
+                    {
+                        if (player->GetDistance(redirect_out_tower) < 100.0f)
+                        {
+                            if (target_before_generic_redirect)
+                            {
+                                auto target_before_generic_redirect_pos = target_before_generic_redirect->GetPosition();
+
+                                if (target_before_generic_redirect_pos.GetDistance(forthragg_tower) <= 677.246515f)
+                                {
+                                    //init custom walk from marker_in to marker_out
+                                    //reset_walker();
+                                    //unregister_all_actions();
+                                    walk_again(); //"soft reset"
+
+                                    target_ref = redirect_in_tower;
+                                    have_target_to_walk = true;
+                                    using_custom_path = true;
+                                    dont_quicksave_after_custom_path = true;
+                                    dont_use_bounds_for_close_enough = true;
+                                    walk_again_when_finished = true;
+                                    custom_path = { redirect_out_tower->GetPosition(), redirect_in_tower->GetPosition() };
+                                    path = custom_path;
+                                    path_valid = true;
+                                    current_path_point = 0;
+                                    return;
+                                }
+                                else
+                                {
+                                    //finish redirections, restore old target
+                                    dont_check_quest_target_change = false;
+                                    generic_redirect_active = false;
+                                    interaction_after_walk = interaction_before_generic_redirect;
+                                    target_ref = target_before_generic_redirect;
+                                    target_before_generic_redirect = nullptr;
+                                    //dont_reset_after_interaction = false;
+                                    using_custom_path = false;
+                                    custom_path.clear();
+                                    walk_again();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+
 
 
 
