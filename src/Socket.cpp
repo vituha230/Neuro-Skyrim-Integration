@@ -478,6 +478,16 @@ bool neuro::NeuroSocket::unregister_actions(const char** action_names, int size)
         return false;
     }
 
+    std::string action_name = action_names[0];
+    std::string force_name_1 = Capabilities::SelectForceChoice::Name;
+    std::string force_name_2 = Capabilities::SelectForceChoiceMultiple::Name;
+    std::string force_name_3 = Capabilities::SelectForceChoiceString::Name;
+    std::string force_name_4 = Capabilities::SelectForceChoiceArray::Name;
+
+
+    if ((size == 1 && (action_name == force_name_1 || action_name == force_name_2 || action_name == force_name_3 || action_name == force_name_4)))
+        force_is_registered = false;
+
 
     for (int i = 0; i < size; i++)
     {
@@ -891,7 +901,7 @@ bool neuro::NeuroSocket::action_register_watchdog(float dtime)
 
         if (had_connection && ever_registered && !something_is_registered && !force_is_registered)
         {
-            if (action_superwatchdog_timer > 180.0f)
+            if (action_superwatchdog_timer > 120.0f)
             {
                 MiscThings::close_all_closable_menus();
 

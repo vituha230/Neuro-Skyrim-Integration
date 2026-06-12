@@ -1212,7 +1212,6 @@ namespace MapProcessor {
 
 	void processor(float dtime)
 	{
-		
 
 		if (wait_and_quit_and_walk_to_marker)
 		{

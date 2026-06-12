@@ -14966,7 +14966,12 @@ namespace MiscThings {
             RE::UIMessageQueue::GetSingleton()->AddMessage(RE::SleepWaitMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 
         if (ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME))
-            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::MessageBoxMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+        {
+            auto menu = ui->GetMenu(RE::MessageBoxMenu::MENU_NAME);
+
+            if (menu)
+                menu->uiMovie->Invoke("_root.MessageMenu.Buttons.Button0.onPress", nullptr, nullptr, 0);
+        }
 
         if (ui->IsMenuOpen(RE::ContainerMenu::MENU_NAME))
             RE::UIMessageQueue::GetSingleton()->AddMessage(RE::ContainerMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
