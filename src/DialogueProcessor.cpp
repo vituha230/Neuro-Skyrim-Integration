@@ -451,6 +451,8 @@ namespace DialogueProcessor {
                     std::string line = std::to_string(dialogue_choice) + "/" + std::to_string(cursor_pos);
                     RE::ConsoleLog::GetSingleton()->Print(line.c_str());
 
+                    //auto temp = get_dialogue_options(false);
+
 
 
                     if (dialogue_choice > cursor_pos)
@@ -509,7 +511,7 @@ namespace DialogueProcessor {
                 }
                 else
                 {
-                    cursor_bad_timeout += dtime;
+                    cursor_bad_timeout += dtime + 0.3f;
 
                     if (cursor_bad_timeout > 3.0f)
                     {
@@ -526,7 +528,7 @@ namespace DialogueProcessor {
 
             }
             else
-                dialogue_proc_time += dtime;
+                dialogue_proc_time += dtime + 0.3f;
         }
         else
             dialogue_choice_made = false;
