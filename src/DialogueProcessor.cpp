@@ -79,6 +79,8 @@ namespace DialogueProcessor {
 
     bool dialogue_input_enabled()
     {
+        return true;
+        
         //if true - we can input (because "copy" with 1 line we chose is hidden/invisible)
         RE::UI* ui = RE::UI::GetSingleton();
         auto menu = ui->GetMenu<RE::DialogueMenu>();
