@@ -25,8 +25,16 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO low fps in windhelm tavern
-//TODO shrine in whiterun fix (raycasting) + compare to solitude shrines
+
+//TODO map remove ability to fast travel to where we are. still keep nearest objective info. rename quit menu to "quit menu and stay where you are now"
+//TODO increase visit interesting places advice cooldown
+//TODO adjust close-enough check so it doesnt work through ceiling in standard houses
+//TODO remove fast travel advice completely (OR NO? just reduce range and frequency)
+//TODO figure out map cooldown
+//TODO meadery quest fix (filter objective's targets too)
+
+
+//TODO low fps in windhelm tavern (maybe it was my system related because couldnt reproduce)
 
 //TODO test malborn and klimek chest and maybe all container types 
 //TODO spells in both hands

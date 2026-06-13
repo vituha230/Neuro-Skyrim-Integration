@@ -8549,8 +8549,17 @@ namespace MiscThings {
 
             if (name.find("Shrine of ") != std::string::npos)
             {
-                RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 60.0f };
-                result = base_shift_vector;
+                auto base_obj = object->GetBaseObject();
+
+                if (base_obj->GetFormType() == RE::FormType::Activator)
+                {
+
+                    auto activator = (RE::TESFurniture*)base_obj;
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 62.0f*object->GetScale()};
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    result = rotated_shift_vector;
+                }
             }
 
         }
@@ -14998,7 +15007,12 @@ namespace MiscThings {
             RE::UIMessageQueue::GetSingleton()->AddMessage(RE::StatsMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 
         if (ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME))
-            RE::UIMessageQueue::GetSingleton()->AddMessage(RE::LevelUpMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+        {
+            auto menu = ui->GetMenu(RE::LevelUpMenu::MENU_NAME);
+
+            if (menu)
+                menu->uiMovie->Invoke("_root.LevelUpMenu_mc.MagickaButton.onPress", nullptr, nullptr, 0);
+        }
 
         if (ui->IsMenuOpen(RE::TrainingMenu::MENU_NAME))
             RE::UIMessageQueue::GetSingleton()->AddMessage(RE::TrainingMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
