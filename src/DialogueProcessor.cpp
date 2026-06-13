@@ -670,7 +670,7 @@ namespace DialogueProcessor {
                                 {
                                     //dialogue died, close it
                                     
-                                    cancel();
+                                    quit_menu();
                                     set_universal_block(0.5f);
                                 }
                                 else
