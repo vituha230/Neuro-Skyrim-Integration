@@ -5615,7 +5615,8 @@ namespace WalkerProcessor {
                         }
                             
 
-
+                        if (target_ref && target_ref->formID == 0x3fb00)
+                            dont_use_bounds_for_close_enough = true;
 
                         if (!dont_use_bounds_for_close_enough && !MiscThings::is_cave_autoloader_door(target_ref))
                         {
