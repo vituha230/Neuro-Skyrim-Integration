@@ -1433,8 +1433,13 @@ namespace Hooks {
                         }
 
 
-                        if (MiscThings::is_in_settlement())
-                            advice += ". You are in a settlement, you can use check_interesting_places action to visit trader, alchemist, or other useful NPC if you want";
+                        if (!MiscThings::is_settlement_advice_on_cooldown())
+                            if (MiscThings::is_in_settlement())
+                            {
+                                advice += ". You are in a settlement, you can use check_interesting_places action to visit trader, alchemist, or other useful NPC if you want";
+                                MiscThings::set_settlement_advice_timestamp();
+                            }
+                                
                         
 
 

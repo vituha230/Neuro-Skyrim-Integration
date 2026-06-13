@@ -1891,6 +1891,21 @@ namespace MiscThings {
 
 
 
+    bool is_settlement_advice_on_cooldown()
+    {
+        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+        float delta_settlement = (double)(now - settlement_advice_timestamp) / 1000000000.0;
+        return delta_settlement <= 300.0f;
+    }
+
+
+    void set_settlement_advice_timestamp()
+    {
+        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+        settlement_advice_timestamp = now;
+    }
+
+
     void settlement_places_processor(float dtime)
     {
         if (settlement_places_processor_timer > 0.5f)
@@ -1904,12 +1919,9 @@ namespace MiscThings {
                     std::string advice = "[You are in a settlement, you can use check_interesting_places action to visit trader, alchemist, or other useful NPC if you want]";
                     register_visit_interesting();
                     
-                    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
-                    float delta_settlement = (double)(now - settlement_advice_timestamp) / 1000000000.0;
-
-                    if (delta_settlement > 600.0f)
+                    if (!is_settlement_advice_on_cooldown())
                     {
-                        settlement_advice_timestamp = now;
+                        set_settlement_advice_timestamp();
                         send_random_context(advice, false);
                     }
 

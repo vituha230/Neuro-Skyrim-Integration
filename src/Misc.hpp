@@ -431,6 +431,9 @@ namespace MiscThings {
 
     bool is_sleeping();
 
+    bool is_settlement_advice_on_cooldown();
+    void set_settlement_advice_timestamp();
+
     std::pair<bool, std::string> activate_array_of_inventory_objects(std::vector<int> ids);
 
     namespace General::Script
