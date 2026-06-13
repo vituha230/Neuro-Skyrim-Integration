@@ -14,7 +14,7 @@
 
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
-//TODO civil war imperial side finish + stormcloak polish (barricades)
+//TODO civil war finish imperials side + weird courier quest redirect
 //TODO dragonborn dlc
 //TODO dawnguard dlc
 //TODO companions
@@ -25,6 +25,7 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+//TODO low fps in windhelm tavern
 
 
 //TODO test malborn and klimek chest and maybe all container types 

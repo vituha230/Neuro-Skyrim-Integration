@@ -666,7 +666,7 @@ namespace DialogueProcessor {
                         {
                             if (catch_start_speaking)
                             {
-                                if (start_speaking_timeout > 30.0f)
+                                if (start_speaking_timeout > 5.0f)
                                 {
                                     //dialogue died, close it
                                     
