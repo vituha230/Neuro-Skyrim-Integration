@@ -44,7 +44,7 @@ namespace Capabilities
 
     namespace StartSneak
     {
-        constexpr char Name[] = "start_snaking";
+        constexpr char Name[] = "start_sneaking";
         constexpr char Desc[] =
             R"(Move slower, but less visible)";
         //constexpr char JsonSchema[] = null;
