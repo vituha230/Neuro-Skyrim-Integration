@@ -7531,7 +7531,8 @@ namespace MiscThings {
         float result = 0.0f;
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
-            result = player->GetBaseActorValue(RE::ActorValue::kMagicka);
+            result = player->GetClampedActorValue(RE::ActorValue::kMagicka);
+            //result = player->GetBaseActorValue(RE::ActorValue::kMagicka);
 
         return result;
     }
@@ -7541,7 +7542,7 @@ namespace MiscThings {
         float result = 0.0f;
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
-            result = player->GetBaseActorValue(RE::ActorValue::kHealth);
+            result = player->GetClampedActorValue(RE::ActorValue::kHealth);
 
         return result;
     }
@@ -7551,7 +7552,7 @@ namespace MiscThings {
         float result = 0.0f;
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
-            result = player->GetBaseActorValue(RE::ActorValue::kStamina);
+            result = player->GetClampedActorValue(RE::ActorValue::kStamina);
 
         return result;
     }
