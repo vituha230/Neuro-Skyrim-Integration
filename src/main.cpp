@@ -26,7 +26,7 @@
 // RANDOM STUFF
 
 //TODO low fps in windhelm tavern
-
+//TODO shrine in whiterun fix (raycasting) + compare to solitude shrines
 
 //TODO test malborn and klimek chest and maybe all container types 
 //TODO spells in both hands
@@ -1108,7 +1108,7 @@ namespace Hooks {
 
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
 
-                register_allowed_actions();
+                ;// register_allowed_actions();
             }
 
             return originalFunction(menu, a_message);

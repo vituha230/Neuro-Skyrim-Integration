@@ -459,7 +459,7 @@ namespace PerksProcessor {
 			return result;
 		}
 
-
+		/*
 		if (choice == -1)
 		{
 			quit_until_no_menus_left = true;
@@ -467,6 +467,8 @@ namespace PerksProcessor {
 			result.second = "[Stopped skill menu]";
 			return result;
 		}
+		*/
+
 
 		if (choice != 0 && choice != 1)
 		{
@@ -2137,7 +2139,7 @@ namespace PerksProcessor {
 																	if (!confirm_request_sent)
 																	{
 																		
-																		if (force_choice({ {0, "No"},{1, "Yes"},{-1, "[QUIT PERK MENU]"} }, "You are in perk menu in Skyrim. You are about to learn " + get_perk_name(get_current_perk_id()) + ": " + get_perk_description() + ". Confirm?", force_type::perk_confirm))
+																		if (force_choice({ {0, "No"},{1, "Yes"} }, "You are in perk menu in Skyrim. You are about to learn " + get_perk_name(get_current_perk_id()) + ": " + get_perk_description() + ". Confirm?", force_type::perk_confirm))
 																			confirm_request_sent = true;
 																	}
 																	else
