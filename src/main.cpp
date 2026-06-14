@@ -14,7 +14,7 @@
 
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
-//TODO civil war finish imperials side + weird courier quest redirect
+//TODO civil war finish imperials side
 //TODO dragonborn dlc
 //TODO dawnguard dlc
 //TODO companions
@@ -24,9 +24,6 @@
 
 //////////////////////////////////////////////////////
 // RANDOM STUFF
-
-//#1 issue:
-//TODO meadery quest fix (filter objective's targets too)
 
 
 //TODO adjust close-enough check so it doesnt work through ceiling in standard houses

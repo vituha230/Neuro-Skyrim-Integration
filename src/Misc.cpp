@@ -3530,9 +3530,57 @@ namespace MiscThings {
             }
         }
 
+        auto meadery_poison_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG03");
+
+        if (quest == meadery_poison_quest && meadery_poison_quest)
+        {
+            auto stage = meadery_poison_quest->GetCurrentStageID();
+
+            if (stage < 55 && stage >= 40)
+            {
+                //outside
+                if (player_worldspace && player_worldspace->GetFormID() == 0x3c)
+                {
+                    auto door_to_boilery = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d7a8);
+                    auto door_to_meadery = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3cf65);
+
+                    if (door_to_boilery && door_to_meadery && MiscThings::is_door_locked(door_to_boilery))
+                        if (target == door_to_boilery)
+                            return door_to_meadery;
+                }
+
+
+                //in the meadery entrance
+                if (parent_cell && parent_cell->GetFormID() == 0x15207)
+                {
+                    auto door_to_outside = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x15c2a);
+                    auto door_to_basement = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3ce78);
+
+                    if (door_to_outside && door_to_basement)
+                        if (target == door_to_outside)
+                            return door_to_basement;
+                }
+
+
+                //in the meadery basement
+                if (parent_cell && parent_cell->GetFormID() == 0x3d35a)
+                {
+                    auto door_to_meadery = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3d413);
+                    auto door_to_boilery = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5aa1);
+
+                    if (door_to_meadery && door_to_boilery)
+                        if (target == door_to_meadery)
+                            return door_to_boilery;
+                }
+            }
+
+        }
+
+
+
         auto mercer_house_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG07");
 
-        if (quest == mercer_house_quest)
+        if (quest == mercer_house_quest && mercer_house_quest)
         {
             auto stage = mercer_house_quest->GetCurrentStageID();
 

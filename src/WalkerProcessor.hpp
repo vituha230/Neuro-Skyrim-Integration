@@ -137,7 +137,7 @@ namespace WalkerProcessor {
 	float get_attack_time(bool right);
 	
 
-	int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective = nullptr);
+	int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective = nullptr, RE::TESQuestTarget* specific_target = nullptr);
 
 	std::pair<bool, std::string> make_spins(int amount, int speed);
 

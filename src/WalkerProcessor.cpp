@@ -284,8 +284,10 @@ namespace WalkerProcessor {
 
     float waiting_pickpocket_time = 0.0f;
 
-    RE::TESQuest* last_quest;
-    RE::BGSQuestObjective* last_quest_objective;
+    RE::TESQuest* last_quest = nullptr;
+    RE::BGSQuestObjective* last_quest_objective = nullptr;
+    RE::TESQuestTarget* last_quest_target = nullptr;
+
 
     bool using_custom_path = false;
 
@@ -4773,6 +4775,8 @@ namespace WalkerProcessor {
 
         last_quest = nullptr;
         last_quest_objective = nullptr;
+        last_quest_target = nullptr;
+
 
         using_custom_path = false;
 
@@ -6900,13 +6904,19 @@ namespace WalkerProcessor {
 
 
     RE::TESQuest* last_quest_chosen = nullptr;
+    RE::BGSQuestObjective* last_quest_objective_chosen = nullptr;
+    RE::TESQuestTarget* last_quest_target_chosen = nullptr;
+
+
     RE::TESQuest* new_quest_chosen = nullptr;
+    RE::BGSQuestObjective* new_objective_chosen = nullptr;
+    RE::TESQuestTarget* new_target_chosen = nullptr;
     std::string last_quest_chosen_name = "";
     std::string new_quest_chosen_name = "";
 
 
 
-    int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective)
+    int get_quest_id_by_refr(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective, RE::TESQuestTarget* specific_target)
     {
         int result = -1;
 
@@ -6946,9 +6956,15 @@ namespace WalkerProcessor {
                                     {
                                         if (objective->numTargets > 0)
                                         {
-                                            result = quest_entry.id;
-                                            return result;
-                                            //break;
+                                            for (auto* target : std::span(objective->targets, objective->numTargets))
+                                            {
+                                                if (target && (!specific_target || target == specific_target))
+                                                {
+                                                    result = quest_entry.id;
+                                                    return result;
+                                                    //break;
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -7050,6 +7066,8 @@ namespace WalkerProcessor {
                 if (get_quest_id_by_refr(last_quest_chosen) != very_close_quest)
                 {
                     last_quest_chosen = nullptr; //so it autorefreshes when walk initiates
+                    last_quest_objective_chosen = nullptr;
+                    last_quest_target_chosen = nullptr;
                 }
             }
         }
@@ -7083,7 +7101,7 @@ namespace WalkerProcessor {
 
         if (last_quest_chosen)
         {
-            if (!MiscThings::quest_is_hidden(last_quest_chosen, last_quest_objective))
+            if (!MiscThings::quest_is_hidden(last_quest_chosen, last_quest_objective_chosen))
             {
                 if (MiscThings::is_quest_list_valid())
                 {
@@ -7104,9 +7122,14 @@ namespace WalkerProcessor {
 
                     if (quest_is_still_there)
                     {
-                        auto temp_result = walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen, last_quest_objective), false, false);
+                        auto temp_result = walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen, last_quest_objective_chosen, last_quest_target_chosen), false, false);
                         if (!temp_result.first)
-                            temp_result = walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen), false, false); //now try without objective if objective failed
+                        {
+                            temp_result = walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen, last_quest_objective_chosen), false, false); //now try without target if target failed
+                            if (!temp_result.first)
+                                temp_result = walk_to_quest_by_index(get_quest_id_by_refr(last_quest_chosen), false, false); //now try without objective if objective failed
+                        }
+                            
 
                         if (temp_result.first)
                         {
@@ -7484,7 +7507,7 @@ namespace WalkerProcessor {
                                                 if (last_quest_chosen && quest_entry.quest != last_quest_chosen)
                                                 {
                                                     //check if last quest is still there and ask for confirmation to digress from it
-                                                    if (!MiscThings::quest_is_hidden(last_quest_chosen, last_quest_objective))
+                                                    if (!MiscThings::quest_is_hidden(last_quest_chosen, last_quest_objective_chosen))
                                                     {
                                                         bool quest_is_still_there = false;
                                                         for (auto quest_entry : *quest_list)
@@ -7500,6 +7523,8 @@ namespace WalkerProcessor {
                                                         {
                                                             quest_is_questionable = true;
                                                             new_quest_chosen = quest_entry.quest;
+                                                            new_objective_chosen = quest_entry.objective;
+                                                            new_target_chosen = quest_entry.target;
                                                             new_quest_chosen_name = quest_entry.name + ": " + quest_entry.displaytext;
 
                                                             trying_to_change_quest_course = true;
@@ -7511,6 +7536,8 @@ namespace WalkerProcessor {
                                                 if (!quest_is_questionable)
                                                 {
                                                     last_quest_chosen = quest_entry.quest;
+                                                    last_quest_objective_chosen = quest_entry.objective;
+                                                    last_quest_target_chosen = quest_entry.target;
                                                     last_quest_chosen_name = quest_entry.name + ": " + quest_entry.displaytext;
                                                 }
                                                 else
@@ -7548,7 +7575,7 @@ namespace WalkerProcessor {
 
                                                 if (have_target_to_walk)
                                                 {
-                                                    if (target_ref != quests_target_ref || last_quest != quest_entry.quest || last_quest_objective != quest_entry.objective || backup_interaction_made)
+                                                    if (target_ref != quests_target_ref || last_quest != quest_entry.quest || last_quest_objective_chosen != quest_entry.objective || backup_interaction_made)
                                                         reset_walker();
                                                     else
                                                     {
@@ -7645,6 +7672,7 @@ namespace WalkerProcessor {
 
                                                 last_quest = quest_entry.quest;
                                                 last_quest_objective = objective;
+                                                last_quest_target = target;
 
                                                 solitude_post_emperor_check(target_ref);
                                                 katariah_post_emperor_check(target_ref);
@@ -7820,10 +7848,11 @@ namespace WalkerProcessor {
         }
 
 
-        if (quest_mode && last_quest && last_quest_objective && target_ref)
+        if (quest_mode && last_quest && last_quest_objective && last_quest_target && target_ref)
         {
             auto quest = last_quest;
             auto objective = last_quest_objective;
+            auto last_target = last_quest_target;
 
             if (objective)
             {
@@ -7838,7 +7867,7 @@ namespace WalkerProcessor {
                     //do this ONLY if old target's conditions are not met anymore
                     for (auto* target : std::span(quest_targets, objective->numTargets)) 
                     {
-                        if (target)
+                        if (target && target == last_target)
                         {
                             if (quest)
                             {
@@ -7907,10 +7936,15 @@ namespace WalkerProcessor {
 
                     //old objective conditions are not met anymore. reset walker if no new targets found.
 
+                    //dont do this, there are some specific checks below that might break
+                    //auto temp_result = walk_to_current_quest();
+                    //return true;
+
+
                     bool new_target_found = false;
 
                     for (auto* target : std::span(quest_targets, objective->numTargets)) {
-                        if (target)
+                        if (target && target == last_target)
                         {
                             if (quest)
                             {
@@ -8097,6 +8131,203 @@ namespace WalkerProcessor {
                             }
                         }
                     }
+
+                    if (!new_target_found)
+                    {
+                        //old target doesnt work anymore. try old scheme without restricting by target
+                        for (auto* target : std::span(quest_targets, objective->numTargets)) {
+                            if (target)
+                            {
+                                if (quest)
+                                {
+                                    bool conditions_met = false;
+                                    try {
+                                        if (target->conditions.head)
+                                        {
+                                            auto the_condition = target->conditions.head;
+
+                                            conditions_met = MiscThings::recursive_quest_condition_check(the_condition, quest, target);
+
+                                            bool test_stop = false;
+                                        }
+                                        else
+                                            conditions_met = true;
+                                    }
+                                    catch (...) {
+                                        conditions_met = true;//met ?
+                                    }
+
+
+
+
+                                    if (conditions_met)
+                                    {
+
+                                        RE::ObjectRefHandle quest_ref_handle{};
+                                        target->GetTrackingRef(quest_ref_handle, quest); //try tracked
+                                        if (!quest_ref_handle)
+                                            target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
+
+                                        if (quest_ref_handle)
+                                            if (quest_ref_handle.get())
+                                            {
+                                                auto quests_target_ref = quest_ref_handle.get().get();
+
+                                                quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref);
+
+                                                new_target_found = true;
+
+                                                if (phantom_objective)
+                                                    quests_target_ref = get_phantom_target(quest, objective);
+
+                                                if (target_ref != quests_target_ref)
+                                                {
+                                                    path_valid = false;
+
+                                                    if (quests_target_ref == RE::TESForm::LookupByEditorID("dunCGObjectiveInn01REF") || quests_target_ref == RE::TESObjectREFR::LookupByID(0x000E24C3))
+                                                    {
+                                                        unregister_all_actions();
+                                                        using_custom_path = true;
+                                                        custom_path = CustomWalkerPaths::helgen_tower_path;
+                                                        path_valid = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (using_custom_path)
+                                                        {
+                                                            register_allowed_actions();
+                                                            if (!dont_quicksave_after_custom_path)
+                                                                quicksave();
+                                                        }
+
+
+                                                        using_custom_path = false;
+                                                    }
+
+
+                                                    solitude_prison_out_of_bounds_check();
+
+
+
+                                                    if (quests_target_ref == RE::TESObjectREFR::LookupByID(0x3FAFB)) //greybeard gate
+                                                    {
+                                                        Observer::set_quest_puzzle_type(2);
+                                                        reset_walker();
+                                                    }
+
+                                                    right_attack_cancel();
+                                                    left_attack_cancel();
+
+
+                                                    target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref); //i think something is excessive here
+
+                                                    solitude_post_emperor_check(target_ref);
+                                                    katariah_post_emperor_check(target_ref);
+
+                                                    long long now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+
+                                                    bool any_doors_left = false;
+
+                                                    for (auto& potential_loop_door : potential_loop_doors)
+                                                    {
+                                                        float delta_change = (double)(now - potential_loop_door.second) / 1000000000.0;
+
+                                                        if (delta_change > 300.0f)
+                                                        {
+                                                            if (potential_loop_door.first && looping_door == potential_loop_door.first)// && MiscThings::is_object_valid(potential_loop_door.first))
+                                                            {
+                                                                potential_loop_doors.clear();
+                                                                looping_door = nullptr;
+                                                                looping_door_quest = nullptr;
+                                                                looping_door_quest_objective = nullptr;
+                                                            }
+
+                                                            potential_loop_door.first = nullptr;
+                                                        }
+                                                        else
+                                                        {
+                                                            if (potential_loop_door.first)// && MiscThings::is_object_valid(potential_loop_door.first))
+                                                                any_doors_left = true;
+                                                        }
+                                                    }
+
+                                                    if (!any_doors_left)
+                                                    {
+                                                        potential_loop_doors.clear();
+                                                        looping_door = nullptr;
+                                                        looping_door_quest = nullptr;
+                                                        looping_door_quest_objective = nullptr;
+                                                    }
+
+
+                                                    if (!looping_door)
+                                                    {
+                                                        if (target_ref && is_door(target_ref))
+                                                        {
+                                                            potential_loop_doors.push_back({ target_ref, now });
+
+                                                            RE::TESObjectREFR* first = nullptr;
+                                                            for (int i = 0; i < std::size(potential_loop_doors); i++)
+                                                                for (int j = i + 1; j < std::size(potential_loop_doors); j++)
+                                                                {
+                                                                    auto& door1 = potential_loop_doors.at(i);
+                                                                    auto& door2 = potential_loop_doors.at(j);
+
+                                                                    if (door1.first && door2.first)// && MiscThings::is_object_valid(door1.first) && MiscThings::is_object_valid(door2.first))
+                                                                    {
+                                                                        float delta_change = (double)(abs(door1.second - door2.second)) / 1000000000.0;
+
+                                                                        if (door1.first == door2.first && delta_change < 15.0f)
+                                                                        {
+                                                                            if (!first || door1.first == first)
+                                                                            {
+                                                                                first = door1.first;
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                //2 looping doors detected
+                                                                                looping_door = first;
+                                                                                looping_door_quest = quest;
+                                                                                looping_door_quest_objective = objective;
+
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (target_ref == looping_door)
+                                                        {
+                                                            reset_walker();
+                                                            send_random_context("[This quest does not have any target in this location... try exploring, waiting, or do another quest]", false);
+                                                            return true;
+                                                        }
+                                                    }
+
+
+                                                    backup_interaction_made = false;
+
+                                                    //last_quest_objective = objective;
+                                                    current_quest_target_followed = target;
+                                                    current_quest_followed = quest;
+
+                                                    result = true;
+                                                }
+                                            }
+
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+
+
 
                     //test if new target was found at all
                     if (!new_target_found)
@@ -12880,7 +13111,12 @@ namespace WalkerProcessor {
                                 change_quest_course_request_sent = false;
 
                                 last_quest_chosen = new_quest_chosen; //so walk_to_quest function doesnt panic
-                                auto for_context = walk_to_quest_by_index(get_quest_id_by_refr(new_quest_chosen), false);
+                                last_quest_objective_chosen = new_objective_chosen;
+                                last_quest_target_chosen = new_target_chosen;
+
+                                auto for_context = walk_to_quest_by_index(get_quest_id_by_refr(new_quest_chosen, new_objective_chosen, new_target_chosen), false);
+
+                                //try without objective and target or no?
 
                                 send_random_context(for_context.second);
 
