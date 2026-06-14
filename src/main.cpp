@@ -25,11 +25,14 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+//#1 issue:
+//TODO meadery quest fix (filter objective's targets too)
+
 
 //TODO adjust close-enough check so it doesnt work through ceiling in standard houses
 //TODO remove fast travel advice completely (OR NO? just reduce range and frequency)
 //TODO figure out map cooldown
-//TODO meadery quest fix (filter objective's targets too)
+
 
 
 //TODO low fps in windhelm tavern (maybe it was my system related because couldnt reproduce)
