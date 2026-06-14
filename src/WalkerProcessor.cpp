@@ -15,6 +15,7 @@
 namespace WalkerProcessor {
 
 
+
     bool try_close_enough_z_decrease_without_raycast = false;
 
     bool follow_quest_on_cooldown = false;
@@ -166,7 +167,7 @@ namespace WalkerProcessor {
 
     bool correct_word_of_power = false;
 
-    int advice_counter = 0;
+    int fasttravel_advice_counter = 0;
 
     float active_attacking_time = 0.0f;
     float backup_interaction_time = 0.0f;
@@ -288,6 +289,12 @@ namespace WalkerProcessor {
     RE::TESQuest* last_quest = nullptr;
     RE::BGSQuestObjective* last_quest_objective = nullptr;
     RE::TESQuestTarget* last_quest_target = nullptr;
+
+
+
+    RE::TESQuest* fasttravel_advice_last_quest = nullptr;
+    RE::BGSQuestObjective* fasttravel_advice_last_quest_objective = nullptr;
+    RE::TESQuestTarget* fasttravel_advice_last_quest_target = nullptr;
 
 
     bool using_custom_path = false;
@@ -2287,17 +2294,24 @@ namespace WalkerProcessor {
                     }
 
 
-                    if (distance > 25000.0f)
+                    //distance from player to quest objective
+                    
+                    if (distance > 40000.0f)
                     {
                         if (current_quest_target_followed && current_quest_followed)
                         {
                             std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
 
-                            if (good_fasttravel_location != "" && advice_counter < 2)
+                            if (good_fasttravel_location != "" && fasttravel_advice_counter < 1)
                             {
                                 if (MapProcessor::map_is_allowed())
                                 {
-                                    advice_counter++;
+                                    fasttravel_advice_counter++;
+
+                                    fasttravel_advice_last_quest = last_quest;
+                                    fasttravel_advice_last_quest_objective = last_quest_objective;
+                                    fasttravel_advice_last_quest_target = last_quest_target;
+
                                     //advice
                                     big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
 
@@ -2317,11 +2331,16 @@ namespace WalkerProcessor {
                             {
                                 std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
 
-                                if (nearest_city != "" && advice_counter < 2)
+                                if (nearest_city != "" && fasttravel_advice_counter < 1)
                                 {
                                     if (MapProcessor::map_is_allowed())
                                     {
-                                        advice_counter++;
+                                        fasttravel_advice_counter++;
+
+                                        fasttravel_advice_last_quest = last_quest;
+                                        fasttravel_advice_last_quest_objective = last_quest_objective;
+                                        fasttravel_advice_last_quest_target = last_quest_target;
+
                                         //advice
                                         big_distance += " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
 
@@ -4608,7 +4627,7 @@ namespace WalkerProcessor {
         pause_pre_stealing_time = 0.0f;
 
 
-        advice_counter = 0;
+        
 
         special_ref_for_distance_calculation = nullptr;
 
@@ -4774,6 +4793,17 @@ namespace WalkerProcessor {
 
         quest_mode = false;
         had_successful_walk = false;
+
+
+        if (last_quest != fasttravel_advice_last_quest || last_quest_objective != fasttravel_advice_last_quest_objective || last_quest_target != fasttravel_advice_last_quest_target)
+        {
+            fasttravel_advice_counter = 0;
+            fasttravel_advice_last_quest = nullptr;
+            fasttravel_advice_last_quest_objective = nullptr;
+            fasttravel_advice_last_quest_target = nullptr;
+        }
+        
+
 
         last_quest = nullptr;
         last_quest_objective = nullptr;
@@ -7717,7 +7747,7 @@ namespace WalkerProcessor {
                                                 result.second = "[Started following quest: " + reminder_target_name + "..." + big_distance + "]";
 
 
-                                                if (distance > 20000.0f)
+                                                if (distance > 40000.0f)
                                                 {
                                                     if (current_quest_target_followed && current_quest_followed)
                                                     {
@@ -7743,11 +7773,17 @@ namespace WalkerProcessor {
                                                         {
                                                             std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
 
-                                                            if (nearest_city != "" && advice_counter < 2)
+                                                            if (nearest_city != "" && fasttravel_advice_counter < 1)
                                                             {
                                                                 if (MapProcessor::map_is_allowed())
                                                                 {
-                                                                    advice_counter++;
+                                                                    fasttravel_advice_counter++;
+
+                                                                    fasttravel_advice_last_quest = last_quest;
+                                                                    fasttravel_advice_last_quest_objective = last_quest_objective;
+                                                                    fasttravel_advice_last_quest_target = last_quest_target;
+
+
                                                                     //advice
                                                                     std::string advice = big_distance + " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
 

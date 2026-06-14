@@ -26,9 +26,8 @@
 // RANDOM STUFF
 
 
-//TODO adjust close-enough check so it doesnt work through ceiling in standard houses
-//TODO remove fast travel advice completely (OR NO? just reduce range and frequency)
-//TODO figure out map cooldown
+//TODO just speed up map
+//TODO more map improvements/limiters?
 
 
 

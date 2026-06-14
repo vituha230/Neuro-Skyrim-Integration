@@ -2629,17 +2629,17 @@ namespace MiscThings {
 
 
                         //distance from target to location
-                        auto distance = get_quest_target_distance(target, quest, real_marker);
+                        auto distance_quest_location = get_quest_target_distance(target, quest, real_marker);
 
                         //auto distance = real_marker->GetDistance(target, true, true);
 
                         //distance from player to location
-                        auto player_distance = player->GetDistance(real_marker, true, true);
+                        auto distance_player_location = player->GetDistance(real_marker, true, true);
 
 
-                        if (player_distance > 50000.0f && distance < min_distance)
+                        if (distance_player_location > 70000.0f && distance_quest_location < min_distance)
                         {
-                            min_distance = distance;
+                            min_distance = distance_quest_location;
                             sublocation_name = marker_name;
                         }
                     }
@@ -2705,16 +2705,19 @@ namespace MiscThings {
                                     quest_target_ref = quest_ref_handle.get().get();
 
 
-                            auto distance = get_quest_target_distance(target, quest, real_marker);
+                            //distance from quest to location
+                            auto distance_quest_location = get_quest_target_distance(target, quest, real_marker);
 
                             //auto distance = real_marker->GetDistance(target, true, true);
                             
-                            auto player_distance = player->GetDistance(real_marker, true, true);
+                            //distance from player to fast travel location
+                            auto distance_player_location = player->GetDistance(real_marker, true, true);
 
 
-                            if (player_distance > 25000.0f && distance < min_distance)
+                            //if player is farther from location than 350m and this is the closest location to quest, put it as candidate
+                            if (distance_player_location > 35000.0f && distance_quest_location < min_distance)
                             {
-                                min_distance = distance;
+                                min_distance = distance_quest_location;
                                 sublocation_name = marker_name;
                             }
                         }
@@ -2723,7 +2726,8 @@ namespace MiscThings {
             }
         }
 
-        if (min_distance <= 25000.0f && sublocation_name != "")
+        //if distance from location to quest is less than 200m
+        if (min_distance <= 20000.0f && sublocation_name != "")
         {
             return sublocation_name;
         }
