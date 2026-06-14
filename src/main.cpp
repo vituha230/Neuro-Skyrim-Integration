@@ -26,7 +26,8 @@
 // RANDOM STUFF
 
 
-//TODO just speed up map
+//TODO hide non main quests when we are climbing the mountain and the temple isnt discovered yet. force fast travel advice if ivarstead is discovered and we go to high hrothgar and it isnt discovered
+//TODO add more traders to interesting places
 //TODO more map improvements/limiters?
 
 

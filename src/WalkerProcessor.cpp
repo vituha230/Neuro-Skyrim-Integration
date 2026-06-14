@@ -2302,19 +2302,22 @@ namespace WalkerProcessor {
                         {
                             std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
 
-                            if (good_fasttravel_location != "" && fasttravel_advice_counter < 1)
+                            if (good_fasttravel_location != "")
                             {
                                 if (MapProcessor::map_is_allowed())
                                 {
-                                    fasttravel_advice_counter++;
+                                    if (fasttravel_advice_counter < 1)
+                                    {
+                                        fasttravel_advice_counter++;
 
-                                    fasttravel_advice_last_quest = last_quest;
-                                    fasttravel_advice_last_quest_objective = last_quest_objective;
-                                    fasttravel_advice_last_quest_target = last_quest_target;
+                                        fasttravel_advice_last_quest = last_quest;
+                                        fasttravel_advice_last_quest_objective = last_quest_objective;
+                                        fasttravel_advice_last_quest_target = last_quest_target;
 
-                                    //advice
-                                    big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
-
+                                        //advice
+                                        big_distance += " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                    }
+                                    
                                     if (!get_open_map_action_status())
                                     {
                                         clear_map_cooldown();
@@ -2331,19 +2334,23 @@ namespace WalkerProcessor {
                             {
                                 std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
 
-                                if (nearest_city != "" && fasttravel_advice_counter < 1)
+                                if (nearest_city != "")
                                 {
                                     if (MapProcessor::map_is_allowed())
                                     {
-                                        fasttravel_advice_counter++;
+                                        if (fasttravel_advice_counter < 1)
+                                        {
+                                            fasttravel_advice_counter++;
 
-                                        fasttravel_advice_last_quest = last_quest;
-                                        fasttravel_advice_last_quest_objective = last_quest_objective;
-                                        fasttravel_advice_last_quest_target = last_quest_target;
+                                            fasttravel_advice_last_quest = last_quest;
+                                            fasttravel_advice_last_quest_objective = last_quest_objective;
+                                            fasttravel_advice_last_quest_target = last_quest_target;
 
-                                        //advice
-                                        big_distance += " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
+                                            //advice
+                                            big_distance += " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
 
+                                        }
+                                        
                                         if (!get_open_map_action_status())
                                         {
                                             clear_map_cooldown();
@@ -7752,19 +7759,23 @@ namespace WalkerProcessor {
                                                     if (current_quest_target_followed && current_quest_followed)
                                                     {
                                                         std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
-                                                        if (good_fasttravel_location != "" && fasttravel_advice_counter < 1)
+                                                        if (good_fasttravel_location != "")
                                                         {
                                                             if (MapProcessor::map_is_allowed())
                                                             {
-                                                                fasttravel_advice_counter++;
+                                                                if (fasttravel_advice_counter < 1)
+                                                                {
+                                                                    fasttravel_advice_counter++;
 
-                                                                fasttravel_advice_last_quest = last_quest;
-                                                                fasttravel_advice_last_quest_objective = last_quest_objective;
-                                                                fasttravel_advice_last_quest_target = last_quest_target;
+                                                                    fasttravel_advice_last_quest = last_quest;
+                                                                    fasttravel_advice_last_quest_objective = last_quest_objective;
+                                                                    fasttravel_advice_last_quest_target = last_quest_target;
 
-                                                                //advice
-                                                                std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
-                                                                add_delayed_message(advice);
+                                                                    //advice
+                                                                    std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                                                    add_delayed_message(advice);
+                                                                }
+                                                                
 
                                                                 //unlock map if we can actually fast travel
                                                                 if (!get_open_map_action_status())
@@ -7782,21 +7793,26 @@ namespace WalkerProcessor {
                                                         {
                                                             std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
 
-                                                            if (nearest_city != "" && fasttravel_advice_counter < 1)
+                                                            if (nearest_city != "")
                                                             {
                                                                 if (MapProcessor::map_is_allowed())
                                                                 {
-                                                                    fasttravel_advice_counter++;
 
-                                                                    fasttravel_advice_last_quest = last_quest;
-                                                                    fasttravel_advice_last_quest_objective = last_quest_objective;
-                                                                    fasttravel_advice_last_quest_target = last_quest_target;
+                                                                    if (fasttravel_advice_counter < 1)
+                                                                    {
+                                                                        fasttravel_advice_counter++;
+
+                                                                        fasttravel_advice_last_quest = last_quest;
+                                                                        fasttravel_advice_last_quest_objective = last_quest_objective;
+                                                                        fasttravel_advice_last_quest_target = last_quest_target;
 
 
-                                                                    //advice
-                                                                    std::string advice = big_distance + " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
+                                                                        //advice
+                                                                        std::string advice = big_distance + " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
 
-                                                                    add_delayed_message(advice);
+                                                                        add_delayed_message(advice);
+                                                                    }
+                                                                    
 
                                                                     if (!get_open_map_action_status())
                                                                     {
