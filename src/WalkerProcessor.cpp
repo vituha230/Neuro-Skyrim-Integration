@@ -4795,7 +4795,7 @@ namespace WalkerProcessor {
         had_successful_walk = false;
 
 
-        if (last_quest != fasttravel_advice_last_quest || last_quest_objective != fasttravel_advice_last_quest_objective || last_quest_target != fasttravel_advice_last_quest_target)
+        if (last_quest && last_quest_objective && last_quest_target && (last_quest != fasttravel_advice_last_quest || last_quest_objective != fasttravel_advice_last_quest_objective || last_quest_target != fasttravel_advice_last_quest_target))
         {
             fasttravel_advice_counter = 0;
             fasttravel_advice_last_quest = nullptr;
@@ -7752,19 +7752,28 @@ namespace WalkerProcessor {
                                                     if (current_quest_target_followed && current_quest_followed)
                                                     {
                                                         std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
-                                                        if (good_fasttravel_location != "")
+                                                        if (good_fasttravel_location != "" && fasttravel_advice_counter < 1)
                                                         {
-                                                            //advice
-                                                            std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
-                                                            add_delayed_message(advice);
-
-                                                            //unlock map if we can actually fast travel
-                                                            if (!get_open_map_action_status())
+                                                            if (MapProcessor::map_is_allowed())
                                                             {
-                                                                clear_map_cooldown();
+                                                                fasttravel_advice_counter++;
 
-                                                                if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
-                                                                    register_open_map();
+                                                                fasttravel_advice_last_quest = last_quest;
+                                                                fasttravel_advice_last_quest_objective = last_quest_objective;
+                                                                fasttravel_advice_last_quest_target = last_quest_target;
+
+                                                                //advice
+                                                                std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                                                add_delayed_message(advice);
+
+                                                                //unlock map if we can actually fast travel
+                                                                if (!get_open_map_action_status())
+                                                                {
+                                                                    clear_map_cooldown();
+
+                                                                    if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                                        register_open_map();
+                                                                }
                                                             }
                                                         }
 
