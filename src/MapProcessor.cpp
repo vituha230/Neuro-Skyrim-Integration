@@ -9,6 +9,12 @@
 
 namespace MapProcessor {
 
+
+	std::string we_are_here_text = "";
+
+
+
+
 	int last_index_chosen = -1;
 	long long last_index_chosen_timestamp = 0;
 
@@ -470,6 +476,8 @@ namespace MapProcessor {
 
 
 
+				bool we_are_here = false;
+
 				if (can_travel.find(local_id) != can_travel.end())
 				{
 					if (local_id != closest_id || closest_distance > 15000.0f)
@@ -484,7 +492,11 @@ namespace MapProcessor {
 						option.text += can_travel_text;
 					}
 					else
-						option.text += ". You are here. ";
+					{
+						option.text = "You are at: " + option.text;
+						we_are_here = true;
+					}
+						
 				}
 
 
@@ -528,14 +540,14 @@ namespace MapProcessor {
 				}
 
 
-
-				result.push_back(option);
+				if (!we_are_here)
+					result.push_back(option);
+				else
+					we_are_here_text = option.text;
 			}
 
 
-
-
-			result.push_back({ -1, "[CLOSE MAP]" } );
+			result.push_back({ -1, "[Close map and stay where you at]" } );
 		}
 
 
@@ -1070,6 +1082,9 @@ namespace MapProcessor {
 
 	void reset_menu()
 	{
+
+		we_are_here_text = "";
+
 		quit_menu_in_a_second = false;
 		time_quit_menu_in_a_second = 0.0f;
 
@@ -1599,8 +1614,9 @@ namespace MapProcessor {
 				{
 					if (!location_request_sent)
 					{
-						
-						if (force_choice(get_location_options(), "You opened the map. Choose location to travel to. ", force_type::map_location))
+						auto options = get_location_options();
+
+						if (force_choice(options, "You opened the map. Choose location to travel to. " + we_are_here_text, force_type::map_location))
 							location_request_sent = true;
 					}
 					else

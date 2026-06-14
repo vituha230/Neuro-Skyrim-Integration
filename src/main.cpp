@@ -26,8 +26,6 @@
 // RANDOM STUFF
 
 
-//TODO map remove ability to fast travel to where we are. still keep nearest objective info. rename quit menu to "quit menu and stay where you are now"
-//TODO increase visit interesting places advice cooldown
 //TODO adjust close-enough check so it doesnt work through ceiling in standard houses
 //TODO remove fast travel advice completely (OR NO? just reduce range and frequency)
 //TODO figure out map cooldown
