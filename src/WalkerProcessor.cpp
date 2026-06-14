@@ -4802,7 +4802,7 @@ namespace WalkerProcessor {
         had_successful_walk = false;
 
 
-        if (last_quest && last_quest_objective && last_quest_target && (last_quest != fasttravel_advice_last_quest || last_quest_objective != fasttravel_advice_last_quest_objective || last_quest_target != fasttravel_advice_last_quest_target))
+        if (last_quest_chosen && last_quest_objective_chosen && last_quest_target_chosen && (last_quest_chosen != fasttravel_advice_last_quest || last_quest_objective_chosen != fasttravel_advice_last_quest_objective || last_quest_target_chosen != fasttravel_advice_last_quest_target))
         {
             fasttravel_advice_counter = 0;
             fasttravel_advice_last_quest = nullptr;
