@@ -15,6 +15,7 @@
 namespace WalkerProcessor {
 
 
+    bool try_close_enough_z_decrease_without_raycast = false;
 
     bool follow_quest_on_cooldown = false;
     long long follow_quest_cooldown_start_time = 0;
@@ -4493,6 +4494,7 @@ namespace WalkerProcessor {
     {
         //dont_reset_after_interaction = false;
 
+        try_close_enough_z_decrease_without_raycast = false;
 
         last_checked_enemy_health = -1.0f;
 
@@ -5354,7 +5356,8 @@ namespace WalkerProcessor {
                 auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, true) - player_pos;
                 
 
-                distance.z = 0.0f; //dont account for height
+                if (MiscThings::raycastable(target_ref, 400.0f, false) || try_close_enough_z_decrease_without_raycast)
+                    distance.z = 0.0f; //dont account for height
 
                 if (!wait_and_start_pickpocket && !got_close_for_pickpocket)
                 {
@@ -5560,7 +5563,11 @@ namespace WalkerProcessor {
                         distance.z = 0.0f;
                     else
                         if (abs(distance.z) < 400.0f && !is_door(target_ref))
-                            distance.z = 50.0f;
+                        {
+                            if (MiscThings::raycastable(target_ref, 500.0f, false) || try_close_enough_z_decrease_without_raycast) //this is super risky
+                                distance.z = 50.0f;
+                        }
+                            
 
                     if (getting_into_carriage)
                     {
@@ -13874,14 +13881,23 @@ namespace WalkerProcessor {
                                 target_before_generic_redirect = target_ref;
 
                             interaction_before_generic_redirect = interaction_after_walk;
+
+
+                            auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
+                            if (redirect_ref == redirect_chain)
+                                interaction_after_walk = 1;
+                            else
+                                generic_redirect_active = true; //for this chain - we must get close_enough so it interacts
+
                             target_ref = redirect_ref;
-                            generic_redirect_active = true;
                             walk_again();
                             return;
                         }
                         else
                         {
-                            if (generic_redirect_active)
+                            auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
+
+                            if (generic_redirect_active || (target_ref == redirect_chain && redirect_chain))
                             {
                                 //check for cancel
                                 if (!redirect_ref)
@@ -14789,6 +14805,13 @@ namespace WalkerProcessor {
                                         {
                                             if (!close_enough())
                                             {
+                                                if (!try_close_enough_z_decrease_without_raycast)
+                                                {
+                                                    try_close_enough_z_decrease_without_raycast = true;
+                                                    return;
+                                                }
+
+
                                                 wiggle_body_then_walk_again = true;
 
                                                 wiggle_body_start_pos = player->GetPosition();
@@ -14905,6 +14928,13 @@ namespace WalkerProcessor {
 
                                             if (!its_a_flying_dragon && (int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
                                             {
+                                                if (!try_close_enough_z_decrease_without_raycast)
+                                                {
+                                                    try_close_enough_z_decrease_without_raycast = true;
+                                                    return;
+                                                }
+
+
                                                 wiggle_body_then_walk_again = true;
 
                                                 wiggle_body_start_pos = player->GetPosition();
@@ -15916,6 +15946,12 @@ namespace WalkerProcessor {
                                                     {
                                                         if ((int)std::size(path) < 3 && ((walk_retries < 4 && !location_mode && !quest_mode) || (walk_retries < 10 && (location_mode || quest_mode)))) //IF IT BROKE - CHECK THIS
                                                         {
+                                                            if (!try_close_enough_z_decrease_without_raycast)
+                                                            {
+                                                                try_close_enough_z_decrease_without_raycast = true;
+                                                                return;
+                                                            }
+
                                                             wiggle_body_then_walk_again = true;
                                                             
                                                             wiggle_body_start_pos = player->GetPosition();

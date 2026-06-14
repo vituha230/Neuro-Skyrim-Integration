@@ -2932,6 +2932,19 @@ namespace MiscThings {
                 }
             }
 
+            auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
+
+            if ((is_inside_of_thief_guild_exit(player) && !is_inside_of_thief_guild_exit(target)) || (redirect_chain && target == redirect_chain))
+            {
+                auto mausoleum_blocker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc730a);
+
+                if (mausoleum_blocker && MiscThings::two_state_activator_state(mausoleum_blocker) == 1)
+                {
+                    if (redirect_chain)
+                        return redirect_chain;
+                }
+            }
+
 
 
 
@@ -3468,20 +3481,6 @@ namespace MiscThings {
 
                 if (redirect_button)
                     return redirect_button;
-            }
-        }
-
-
-        if (is_inside_of_thief_guild_exit(player) && !is_inside_of_thief_guild_exit(target))
-        {
-            auto mausoleum_blocker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc730a);
-
-            if (mausoleum_blocker && MiscThings::two_state_activator_state(mausoleum_blocker) == 1)
-            {
-                auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
-
-                if (redirect_chain)
-                    return redirect_chain;
             }
         }
 

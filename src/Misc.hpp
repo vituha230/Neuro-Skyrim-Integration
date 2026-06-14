@@ -431,6 +431,9 @@ namespace MiscThings {
 
     bool is_sleeping();
 
+    bool is_inside_of_thief_guild_exit(RE::TESObjectREFR* object);
+
+
     bool is_settlement_advice_on_cooldown();
     void set_settlement_advice_timestamp();
 
