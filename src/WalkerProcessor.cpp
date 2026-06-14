@@ -15,6 +15,14 @@
 namespace WalkerProcessor {
 
 
+    //do not reset these in reset_walker()
+    RE::TESQuest* last_quest_chosen = nullptr;
+    RE::BGSQuestObjective* last_quest_objective_chosen = nullptr;
+    RE::TESQuestTarget* last_quest_target_chosen = nullptr;
+    ///////////
+
+
+
 
     bool try_close_enough_z_decrease_without_raycast = false;
 
@@ -6947,9 +6955,6 @@ namespace WalkerProcessor {
 
 
 
-    RE::TESQuest* last_quest_chosen = nullptr;
-    RE::BGSQuestObjective* last_quest_objective_chosen = nullptr;
-    RE::TESQuestTarget* last_quest_target_chosen = nullptr;
 
 
     RE::TESQuest* new_quest_chosen = nullptr;
