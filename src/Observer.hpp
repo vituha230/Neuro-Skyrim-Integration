@@ -44,7 +44,8 @@ namespace Observer {
 
 	void attatch_hitmap();
 
-	
+	std::vector<MenuOption> get_threat_options(bool any_attacker_sees_player, RE::TESObjectREFR* attacker = nullptr);
+
 	void notify_threat_detector_player_hit();
 
 	bool threat_response_choice_pending();

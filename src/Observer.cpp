@@ -1032,7 +1032,7 @@ namespace Observer {
 		dont_inform_inventory = false;
 	}
 
-	std::vector<MenuOption> get_threat_options(bool any_attacker_sees_player)
+	std::vector<MenuOption> get_threat_options(bool any_attacker_sees_player, RE::TESObjectREFR* attacker)
 	{
 		std::vector<MenuOption> threat_options;
 
@@ -1041,8 +1041,27 @@ namespace Observer {
 		else
 			threat_options.push_back({ 1, "Attack them" });
 
-		threat_options.push_back({ 2, "Run" });
-		threat_options.push_back({ 3, "Ignore" });
+
+		std::string slow = "";
+
+		if (attacker)
+		{
+			//need to check if attacker is a troll and somehow give advice to ignore it because its strong but slow
+			if (attacker->IsActor())
+			{
+				auto attacker_actor = (RE::Actor*)attacker;
+
+				std::string name = attacker_actor->GetDisplayFullName();
+
+				if (name.find(" Troll") != std::string::npos)
+				{
+					slow = " (trolls are strong but slow, this might work)";
+				}
+			}
+		}
+
+		threat_options.push_back({ 2, "Run away" });
+		threat_options.push_back({ 3, "Ignore" + slow });
 		if (player_can_be_arrested && closest_guard)
 			threat_options.push_back({ 4, "Surrender to guards" });
 
@@ -1203,7 +1222,7 @@ namespace Observer {
 								if (!any_attacker_sees_player)
 									force_message_start += " They dont see you yet. ";
 
-								if (force_choice(get_threat_options(any_attacker_sees_player), force_message_start + "Enemies: " + attacked_by, force_type::threat_response, true))
+								if (force_choice(get_threat_options(any_attacker_sees_player, first_detected_threat), force_message_start + "Enemies: " + attacked_by, force_type::threat_response, true))
 								{
 									threats_response_request_sent = true;
 
