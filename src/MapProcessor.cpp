@@ -1178,7 +1178,7 @@ namespace MapProcessor {
 	{
 		bool result = false;
 		result = true;
-		set_universal_block(2.0f);
+		set_universal_block(1.5f);
 		
 		RE::GFxValue var1;
 		RE::UI* ui = RE::UI::GetSingleton();
@@ -1323,7 +1323,7 @@ namespace MapProcessor {
 		if (ui && menu && ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
 		{
 			//RE::UIMessageQueue::GetSingleton()->AddMessage(RE::CursorMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr); 
-			if (in_map_timer > 2.5f) //big pause is necessary
+			if (in_map_timer > 0.0f) //big pause is necessary WHY???
 			{
 				in_map = true;
 			}
