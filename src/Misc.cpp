@@ -1362,6 +1362,8 @@ namespace MiscThings {
 
 
 
+
+    //TODO: if civil war progressess Jarl may become invalid because his position was replaced with someone else and and Jarl could be sent to prison in Solitude. It will still lead to him. Need to fix this
     void fill_settlements()
     {
         settlements =
@@ -1405,13 +1407,17 @@ namespace MiscThings {
         {
             "Riften",
             {
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e0b3), 1, "Trader", 1}, //trader
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dc8), 2, "Tavern", 2}, //tavern
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dfc), 3, "Alchemist", 3}, //alchemist
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df1), 4, "Blacksmith", 4}, //blacksmith
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dea), 5, "Jarl", 5}, //jarl
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df0), 6, "Wizard", 6}, //wizard
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4227b), 7, "Church", 7} //church
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e0b3), 1, "Trader (Grelka)", 1}, //trader
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dd0), 1, "Trader (Pawned Prawn)", 2}, //trader
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19ddc), 1, "Trader (Brand-Shei)", 3}, //trader
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x21ea6), 1, "Trader (Madesi)", 4}, //trader
+                //{(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xb882a), 1, "Thieves Guild Trader", 5}, //tavern //this needs some crazy risky walker enhancements
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dc8), 2, "Tavern", 6}, //tavern
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dfc), 3, "Alchemist", 7}, //alchemist
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df1), 4, "Blacksmith", 8}, //blacksmith
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dea), 5, "Jarl", 9}, //jarl
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df0), 6, "Wizard", 10}, //wizard
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4227b), 7, "Church", 11} //church
             }
 
         }
@@ -3034,6 +3040,8 @@ namespace MiscThings {
                 }
             }
 
+
+            //this is when we get out of thieves guild
             auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
 
             if ((is_inside_of_thief_guild_exit(player) && !is_inside_of_thief_guild_exit(target)) || (redirect_chain && target == redirect_chain))
