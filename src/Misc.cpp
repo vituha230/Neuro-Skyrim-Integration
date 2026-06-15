@@ -1371,13 +1371,14 @@ namespace MiscThings {
             RE::TESForm::LookupByID(0x8ea2),
             {
                 "Winterhold",
-                (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c18c), //trader
-                (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c18d), //tavern //FIX THIS
-                nullptr, //alchemist
-                nullptr, //blacksmith
-                (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1b5), //jarl
-                nullptr, //wizard
-                nullptr //church
+
+                {
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c18c), 1, "Trader", 1}, //trader
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c18d), 2, "Tavern", 2}, //tavern
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1b5), 5, "Jarl", 3} //jarl
+
+                }
+
             }
         },
 
@@ -1386,28 +1387,33 @@ namespace MiscThings {
                 RE::TESForm::LookupByID(0x1691d),
                 {
                     "Windhelm",
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b11c), //trader
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b118), //tavern
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b115), //alchemist
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b135), //blacksmith
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b131), //jarl
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b132), //wizard
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16962), //church
+                    {
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b11c), 1, "Trader", 1}, //trader
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b118), 2, "Tavern", 2}, //tavern
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b115), 3, "Alchemist", 3}, //alchemist
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b135), 4, "Blacksmith", 4}, //blacksmith
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b131), 5, "Jarl", 5}, //jarl
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b132), 6, "Wizard", 6}, //wizard
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16962), 7, "Church", 7} //church
+                    }
                 }
             },
 
             //riften
-    {
+        {
         RE::TESForm::LookupByID(0x16bb4),
         {
             "Riften",
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e0b3), //trader
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dc8), //tavern
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dfc), //alchemist
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df1), //blacksmith
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dea), //jarl
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df0), //wizard
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4227b), //church
+            {
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e0b3), 1, "Trader", 1}, //trader
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dc8), 2, "Tavern", 2}, //tavern
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dfc), 3, "Alchemist", 3}, //alchemist
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df1), 4, "Blacksmith", 4}, //blacksmith
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dea), 5, "Jarl", 5}, //jarl
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19df0), 6, "Wizard", 6}, //wizard
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4227b), 7, "Church", 7} //church
+            }
+
         }
     },
 
@@ -1416,13 +1422,13 @@ namespace MiscThings {
                 RE::TESForm::LookupByID(0x9731),
                 {
                     "Riverwood",
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13487), //trader
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13486), //tavern
-                    nullptr, //alchemist
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13482), //blacksmith
-                    nullptr, //jarl
-                    nullptr, //wizard
-                    nullptr, //church
+                    {
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13487), 1, "Trader", 1}, //trader
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13486), 2, "Tavern", 2}, //tavern
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x13482), 4, "Blacksmith", 3} //blacksmith
+                    }
+
+
                 }
             },
 
@@ -1431,13 +1437,17 @@ namespace MiscThings {
                 RE::TESForm::LookupByID(0x9c80),
                 {
                     "Falkreath",
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1981e), //trader
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a198), //tavern
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a19b), //alchemist
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a19f), //blacksmith
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19822), //jarl
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b132), //wizard
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x17766), //church
+                    {
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1981e), 1, "Trader", 1}, //trader
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a198), 2, "Tavern", 2}, //tavern
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a19b), 3, "Alchemist", 3}, //alchemist
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3a19f), 4, "Blacksmith", 4}, //blacksmith
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19822), 5, "Jarl", 5}, //jarl
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b132), 6, "Wizard", 6}, //wizard
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x17766), 7, "Church", 7} //church
+                    }
+
+
                 }
             },
 
@@ -1446,13 +1456,17 @@ namespace MiscThings {
                 RE::TESForm::LookupByID(0x16d71),
                 {
                     "Markarth",
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ea), //trader
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ec), //tavern
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198f7), //alchemist
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19906), //blacksmith
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19903), //jarl
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19908), //wizard
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16e3e), //church
+                    {
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ea), 1, "Trader", 1}, //trader
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ec), 2, "Tavern", 2}, //tavern
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198f7), 3, "Alchemist", 3}, //alchemist
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19906), 4, "Blacksmith", 4}, //blacksmith
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19903), 5, "Jarl", 5}, //jarl
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19908), 6, "Wizard", 6}, //wizard
+                        {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16e3e), 7, "Church", 7} //church
+                    }
+
+                    
                 }
             },
 
@@ -1461,13 +1475,17 @@ namespace MiscThings {
                 RE::TESForm::LookupByID(0x37edf),
                 {
                     "Solitude",
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c9), //trader
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198a0), //tavern
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198d2), //alchemist
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198d8), //blacksmith
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c1), //jarl
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c5), //wizard
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x37f3e), //church
+                    {
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c9), 1, "Trader", 1}, //trader
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198a0), 2, "Tavern", 2}, //tavern
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198d2), 3, "Alchemist", 3}, //alchemist
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198d8), 4, "Blacksmith", 4}, //blacksmith
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c1), 5, "Jarl", 5}, //jarl
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198c5), 6, "Wizard", 6}, //wizard
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x37f3e), 7, "Church", 7} //church
+                    }
+
+
                 }
             },
 
@@ -1476,13 +1494,12 @@ namespace MiscThings {
                 RE::TESForm::LookupByID(0x939d),
                 {
                     "Morthal",
-                    nullptr, //trader
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa62), //tavern
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa61), //alchemist
-                    nullptr, //blacksmith
-                    (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa66), //jarl
-                    nullptr, //wizard
-                    nullptr, //church
+                    {
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa62), 2, "Tavern", 1}, //tavern
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa61), 3, "Alchemist", 2}, //alchemist
+                    {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1aa66), 5, "Jarl", 3} //jarl
+                    }
+
                 }
             },
 
@@ -1491,13 +1508,13 @@ namespace MiscThings {
                         RE::TESForm::LookupByID(0x8eb5),
                         {
                             "Dawnstar",
-                            nullptr, //trader
-                            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c8), //tavern
-                            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6b5), //alchemist
-                            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6be), //blacksmith
-                            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c0), //jarl
-                            nullptr, //wizard
-                            nullptr, //church
+                            {
+                                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c8), 2, "Trader", 1}, //tavern
+                                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6b5), 3, "Alchemist", 2}, //alchemist
+                                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6be), 4, "Blacksmith", 3}, //blacksmith
+                                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c0), 5, "Jarl", 4} //jarl
+                            }
+
                         }
                     },
 
@@ -1507,13 +1524,16 @@ namespace MiscThings {
         RE::TESForm::LookupByID(0x1a26f),
         {
             "Whiterun",
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a672), //trader
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66e), //tavern
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66d), //alchemist
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67c), //blacksmith
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a677), //jarl
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67e), //wizard
-            (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a700), //church
+            {
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a672), 1, "Trader", 1}, //trader
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66e), 2, "Tavern", 2}, //tavern
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66d), 3, "Alchemist", 3}, //alchemist
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67c), 4, "Blacksmith", 4}, //blacksmith
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a677), 5, "Jarl", 5}, //jarl
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67e), 6, "Wizard", 6}, //wizard
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a700), 7, "Church", 7} //church
+            }
+
         }
     },
 
@@ -1767,16 +1787,32 @@ namespace MiscThings {
     }
 
 
+    /*
+            EXAMPLE
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a672), 1, "Trader", 1}, //trader
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66e), 2, "Tavern", 2}, //tavern
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66d), 3, "Alchemist", 3}, //alchemist
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67c), 4, "Blacksmith", 4}, //blacksmith
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a677), 5, "Jarl", 5}, //jarl
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67e), 6, "Wizard", 6}, //wizard
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a700), 7, "Church", 7} //church
+    */
+
+
     bool is_settlement_place_valid(RE::TESObjectREFR* object, int mode)
     {
         if (object)
         {
             //if (is_object_valid(object))
             {
+                
+
                 if (object->IsActor())
                 {
-                    bool is_dead = object->IsDead();
+                    bool is_disabled = object->IsDisabled();
 
+                    bool is_dead = object->IsDead();
+                    
                     bool not_trading = false;
 
                     if (mode == 1 || mode == 3 || mode == 4)
@@ -1787,7 +1823,7 @@ namespace MiscThings {
                         bool stop_here = false;
                     }
 
-                    return !not_trading && !is_dead;
+                    return !not_trading && !is_dead && !is_disabled;
                 }
                 else
                     return true;
@@ -1810,30 +1846,16 @@ namespace MiscThings {
 
             if (settlement != settlements.end())
             {
-                if (is_settlement_place_valid(settlement->second.trader, 1)) 
-                    options.push_back({ 1, "Trader" });
-
-                if (is_settlement_place_valid(settlement->second.tavern, 2))
-                    options.push_back({ 2, "Tavern" });
-
-                if (is_settlement_place_valid(settlement->second.alchemist, 3))
-                    options.push_back({ 3, "Alchemist" });
-
-                if (is_settlement_place_valid(settlement->second.blacksmith, 4))
-                    options.push_back({ 4, "Blacksmith" });
-
-                if (is_settlement_place_valid(settlement->second.jarl, 5))
-                    options.push_back({ 5, "Jarl" });
-
-                if (is_settlement_place_valid(settlement->second.court_wizard, 6))
-                    options.push_back({ 6, "Court Wizard" });
-
-                if (is_settlement_place_valid(settlement->second.church, 7))
-                    options.push_back({ 7, "Church" });
+                for (auto settlement_place : settlement->second.places)
+                {
+                    if (is_settlement_place_valid(settlement_place.npc, settlement_place.type))
+                    {
+                        options.push_back({ settlement_place.id, settlement_place.name });
+                    }  
+                }
 
                 if (std::size(options) > 0)
                     options.push_back({ -1, "[CANCEL]" });
-
             }
         }
 
@@ -1909,87 +1931,7 @@ namespace MiscThings {
 
             if (settlement != settlements.end())
             {
-                switch (id)
-                {
-                case 1:
-                    if (is_settlement_place_valid(settlement->second.trader, 0))
-                    {
-                        WalkerProcessor::walk_to_object_by_refr(settlement->second.trader, 1);
-                        result.first = true;
-                        result.second = "Started walking to trader...";
-                        register_allowed_actions();
-                        return result;
-                    }
-
-                    break;
-
-                case 2:
-                    if (is_settlement_place_valid(settlement->second.tavern, 0))
-                    {
-                        WalkerProcessor::walk_to_object_by_refr(settlement->second.tavern, 1);
-                        result.first = true;
-                        result.second = "Started walking to tavern...";
-                        register_allowed_actions();
-                        return result;
-                    }
-                    break;
-
-                case 3:
-                    if (is_settlement_place_valid(settlement->second.alchemist, 0))
-                    {
-                        WalkerProcessor::walk_to_object_by_refr(settlement->second.alchemist, 1);
-                        result.first = true;
-                        result.second = "Started walking to alchemist...";
-                        register_allowed_actions();
-                        return result;
-                    }
-                    break;
-
-                case 4:
-                    if (is_settlement_place_valid(settlement->second.blacksmith, 0))
-                    {
-                        WalkerProcessor::walk_to_object_by_refr(settlement->second.blacksmith, 1);
-                        result.first = true;
-                        result.second = "Started walking to blacksmith...";
-                        register_allowed_actions();
-                        return result;
-                    }
-                    break;
-
-                case 5:
-                    if (is_settlement_place_valid(settlement->second.jarl, 0))
-                    {
-                        WalkerProcessor::walk_to_object_by_refr(settlement->second.jarl, 1);
-                        result.first = true;
-                        result.second = "Started walking to jarl...";
-                        register_allowed_actions();
-                        return result;
-                    }
-                    break;
-
-                case 6:
-                    if (is_settlement_place_valid(settlement->second.court_wizard, 0))
-                    {
-                        WalkerProcessor::walk_to_object_by_refr(settlement->second.court_wizard, 1);
-                        result.first = true;
-                        result.second = "Started walking to court wizard...";
-                        register_allowed_actions();
-                        return result;
-                    }
-                    break;
-
-                case 7:
-                    if (is_settlement_place_valid(settlement->second.church, 0))
-                    {
-                        WalkerProcessor::walk_to_object_by_refr(settlement->second.church, 1);
-                        result.first = true;
-                        result.second = "Started walking to church...";
-                        register_allowed_actions();
-                        return result;
-                    }
-                    break;
-
-                case -1:
+                if (id == -1)
                 {
                     reset_settlement();
                     result.first = true;
@@ -1997,13 +1939,28 @@ namespace MiscThings {
                     register_allowed_actions();
                     return result;
                 }
-                    break;
 
-                default:
-                    result.first = false;
-                    result.second = "Invalid choice ID";
-                    return result;
+                for (auto settlement_place : settlement->second.places)
+                {
+                    if (settlement_place.id == id)
+                    {
+                        if (is_settlement_place_valid(settlement_place.npc, settlement_place.type))
+                        {
+                            WalkerProcessor::walk_to_object_by_refr(settlement_place.npc, 1);
+                            result.first = true;
+                            result.second = "Started walking to " + settlement_place.name + "...";
+                            register_allowed_actions();
+                            return result;
+                        }
+                    }
                 }
+
+                //
+                result.first = false;
+                result.second = "Invalid choice ID. Maybe this place became unavailable";
+                return result;
+
+
             }
             else
             {

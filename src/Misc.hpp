@@ -40,8 +40,22 @@ namespace MiscThings {
 
     bool object_inside_of_windhelm_redirect_box(RE::TESObjectREFR* object);
 
+    struct interesting_place {
+        RE::TESObjectREFR* npc;
+        int type;
+        std::string name;
+        int id;
+    };
+
     struct interesting_places {
         std::string settlement_name;
+        std::vector<interesting_place> places;
+    };
+
+    /*
+    struct interesting_places {
+        std::string settlement_name;
+        std::vector<interesting_place> places;
         RE::TESObjectREFR* trader;
         RE::TESObjectREFR* tavern;
         RE::TESObjectREFR* alchemist;
@@ -50,6 +64,7 @@ namespace MiscThings {
         RE::TESObjectREFR* court_wizard;
         RE::TESObjectREFR* church;
     };
+    */
 
     bool weird_close_enough_checks(RE::TESObjectREFR* target);
 
