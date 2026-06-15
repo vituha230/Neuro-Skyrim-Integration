@@ -16490,6 +16490,17 @@ namespace MiscThings {
     }
 
 
+    bool is_slaughterfish(RE::Actor* actor)
+    {
+        if (actor && actor->IsActor())
+        {
+            std::string name = actor->GetDisplayFullName();
+
+            if (name == "Slaughterfish")
+                return true;
+        }
+        return false;
+    }
 
 
     std::vector<RE::Actor*> get_player_attackers(bool raycastable_only, RE::TESObjectREFR* exclude_ref, bool only_fighting, float range)
@@ -16525,6 +16536,10 @@ namespace MiscThings {
                 {
                     if (MiscThings::kataria_exists() && MiscThings::is_object_inside_of_kataria(a_ref) && !MiscThings::is_object_inside_of_kataria(player))
                         return RE::BSContainer::ForEachResult::kContinue; //skip kataria sailors if we escaped. this ship is cursed
+
+
+                    if (is_slaughterfish((RE::Actor*)a_ref))
+                        return RE::BSContainer::ForEachResult::kContinue;
 
 
                     if (is_enemy_to_actor(a_ref, only_fighting) && (!raycastable_only || raycastable(a_ref, range, false)))

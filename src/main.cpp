@@ -11,6 +11,7 @@
 //TODO polish thief guild (potential softlock due to anti-drown in mercer fight, no info about being paralyzed by karlia, no info in the well of nocturnal sanctum)
 //TODO polish mage guild (maybe add context about things happening around)
 //TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
+//TODO polish civil war (ambush quest sometimes the soldier cannot hit the enemy)
 
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
@@ -29,7 +30,6 @@
 //TODO hide non main quests when we are climbing the mountain and the temple isnt discovered yet. force fast travel advice if ivarstead is discovered and we go to high hrothgar and it isnt discovered
 //TODO add more traders to interesting places
 //TODO more map improvements/limiters?
-//TODO ignore slaughterfish in threat detection
 
 
 //TODO low fps in windhelm tavern (maybe it was my system related because couldnt reproduce)
@@ -1344,7 +1344,7 @@ namespace Hooks {
                     auto cell = player->GetParentCell();
 
 
-                    if (cell != old_cell)
+                    if (cell != old_cell && !is_fishing())
                     {
                         MiscThings::clear_object_list();
                         WalkerProcessor::refresh_reminder_start_pos();
