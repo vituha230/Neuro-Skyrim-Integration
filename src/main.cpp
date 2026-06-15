@@ -26,6 +26,7 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+//TODO add some kind of subtarget to gain a piece of thieves guild armor for armor upgrade quest
 
 //TODO hide non main quests when we are climbing the mountain and the temple isnt discovered yet. force fast travel advice if ivarstead is discovered and we go to high hrothgar and it isnt discovered
 //TODO add more traders to interesting places

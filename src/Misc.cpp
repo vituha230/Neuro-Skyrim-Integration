@@ -19,6 +19,21 @@ namespace MiscThings {
     
 
 
+    bool dont_autointerract_check(bool quest_mode, RE::TESQuest* quest, RE::TESObjectREFR* target)
+    {
+        auto gulumai_follow_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG04");
+        if (quest_mode && quest == gulumai_follow_quest && gulumai_follow_quest)
+        {
+            auto stage = gulumai_follow_quest->GetCurrentStageID();
+
+            auto gulumai = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198b7);
+            if (stage == 40 && target == gulumai && gulumai)
+                return true;
+        }
+
+        return false;
+    }
+
     void post_attack_advice()
     {
         auto player = RE::PlayerCharacter::GetSingleton();

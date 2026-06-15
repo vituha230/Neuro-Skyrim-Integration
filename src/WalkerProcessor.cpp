@@ -15399,6 +15399,9 @@ namespace WalkerProcessor {
                                                                                             reset_walker();
                                                                                         }
                                                                                             
+                                                                                        dont_autointerract |= MiscThings::dont_autointerract_check(quest_mode, last_quest, target_ref);
+
+
                                                                                         if (parent_cell && parent_cell->GetFormID() == 0x1380e && target_ref && target_ref->GetFormID() == 0x1c1b8)
                                                                                         {
                                                                                             auto force_field_ancano_1_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG06");
@@ -15410,6 +15413,9 @@ namespace WalkerProcessor {
                                                                                             }
                                                                                         }
                                                                                         
+
+                                                                                        
+
 
                                                                                         //attempts to not autointerract with npc's that want us to follow them. interaction will stop walking and start (probably useless) dialogue
                                                                                         if (!dont_autointerract)
