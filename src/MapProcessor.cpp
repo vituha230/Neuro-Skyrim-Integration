@@ -480,7 +480,7 @@ namespace MapProcessor {
 
 				if (can_travel.find(local_id) != can_travel.end())
 				{
-					if (local_id != closest_id || closest_distance > 15000.0f)
+					if (local_id != closest_id || closest_distance > 25000.0f)
 					{
 						std::string can_travel_text = "";
 

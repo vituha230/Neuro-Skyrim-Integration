@@ -24,9 +24,11 @@ namespace MiscThings {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_worldspace = player ? player->GetWorldspace() : nullptr;
 
-        if (player_worldspace && player_worldspace->GetFormID() == 0x37edf) //solitude
+        if (player_worldspace && (player_worldspace->GetFormID() == 0x37edf || player_worldspace->GetFormID() == 0x1691d)) //solitude and windhelm
         {
-            if (get_city_sieged() == 1)
+            int city_sieged = get_city_sieged();
+
+            if (city_sieged == 1) //solitude
             {
                 //we killed someone in solitude and we are sieging solitude rn. advice to break barricades
                 RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18434);
@@ -63,6 +65,62 @@ namespace MiscThings {
                     }
                 }
             }
+
+            if (city_sieged == 2) //windhelm
+            {
+                //we killed someone in windhelm and we are sieging solitude rn. advice to break barricades
+                RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc52d2);
+                RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc52d5);
+
+                if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
+                {
+                    RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac1);
+
+                    if (barricade1)
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade1);
+
+                        if (name != "")
+                            send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                    }
+                }
+                else
+                {
+                    RE::TESObjectREFR* barricade3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc2b83);
+
+                    if (MiscThings::get_destructible_state(barricade3) != 2)
+                    {
+                        RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac2);
+
+                        if (barricade3)
+                        {
+                            std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade3);
+
+                            if (name != "")
+                                send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                        }
+                    }
+                    else
+                    {
+                        RE::TESObjectREFR* barricade4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc2b7c);
+
+                        if (MiscThings::get_destructible_state(barricade4) != 2)
+                        {
+                            RE::TESObjectREFR* redirect_marker3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac3);
+
+                            if (barricade4)
+                            {
+                                std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade4);
+
+                                if (name != "")
+                                    send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                            }
+                        }
+                    }
+                }
+            }
+
+
         }
     }
 
@@ -73,6 +131,66 @@ namespace MiscThings {
         auto player_worldspace = player ? player->GetWorldspace() : nullptr;
 
         int city_sieged = get_city_sieged();
+
+
+
+        if (city_sieged == 2) //windhelm (its so fucked it needs both post-attack and walk-unstuck
+        {
+            //we killed someone in windhelm and we are sieging solitude rn. advice to break barricades
+            RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc52d2);
+            RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc52d5);
+
+            if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
+            {
+                RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac1);
+
+                if (barricade1)
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade1);
+
+                    if (name != "")
+                        send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                }
+            }
+            else
+            {
+                RE::TESObjectREFR* barricade3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc2b83);
+
+                if (MiscThings::get_destructible_state(barricade3) != 2)
+                {
+                    RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac2);
+
+                    if (barricade3)
+                    {
+                        std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade3);
+
+                        if (name != "")
+                            send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                    }
+                }
+                else
+                {
+                    RE::TESObjectREFR* barricade4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc2b7c);
+
+                    if (MiscThings::get_destructible_state(barricade4) != 2)
+                    {
+                        RE::TESObjectREFR* redirect_marker3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac3);
+
+                        if (barricade4)
+                        {
+                            std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade4);
+
+                            if (name != "")
+                                send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
 
         if (city_sieged == 3) //whiterun
         {
@@ -145,6 +263,27 @@ namespace MiscThings {
                 }
             }
         }
+
+        if (city_sieged == 5)
+        {
+            //fort greenwal
+
+            //walk stuck triggered in tamriel and we are sieging whiterun
+            RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x52ed8);
+
+            if (MiscThings::get_destructible_state(barricade1) != 2)
+            {
+                if (barricade1)
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("[Destructible] Barricade", barricade1);
+
+                    if (name != "")
+                        send_random_context(name + " blocks the way! You need to destroy it to proceed", false);
+                }
+            }
+        }
+
+
     }
 
 
@@ -221,7 +360,7 @@ namespace MiscThings {
                         if (gate_ref->GetFormID() == 0x1c386)
                             return 1; //solitude
 
-                        if (gate_ref->GetFormID() == 0x1c386)
+                        if (gate_ref->GetFormID() == 0x55fcb)
                             return 2; //windhelm
 
                         if (gate_ref->GetFormID() == 0x1b1f1)
@@ -295,6 +434,8 @@ namespace MiscThings {
                     {
                         if (barricade->GetFormID() == 0x76b50 && player->GetDistance(barricade) < 3000.0f)
                             return 4; //fort sungard
+                        if (barricade->GetFormID() == 0x52ed8 && player->GetDistance(barricade) < 3000.0f)
+                            return 5; //fort greenwal
                     }
                 }
             }
@@ -3119,37 +3260,89 @@ namespace MiscThings {
 
         auto siege_city = (RE::TESQuest*)RE::TESForm::LookupByEditorID("CWSiegeObj");
 
-        if (quest == siege_city && siege_city && player_worldspace && player_worldspace->GetFormID() == 0x37edf)
+        if (quest == siege_city && siege_city)
         {
-            auto tulius = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25199);
-
-            if (target == tulius)
+            //solitude
+            if (player_worldspace && player_worldspace->GetFormID() == 0x37edf)
             {
-                RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18434);
-                RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18433);
+                auto tulius = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25199);
 
-                if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
+                if (target == tulius)
                 {
-                    RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7046e61);
+                    RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18434);
+                    RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18433);
 
-                    if (barricade1)
-                        return barricade1;
-                }
-                else
-                {
-                    RE::TESObjectREFR* barricade3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18436);
-                    RE::TESObjectREFR* barricade4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18439);
-
-                    if (MiscThings::get_destructible_state(barricade3) != 2 && MiscThings::get_destructible_state(barricade4) != 2)
+                    if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
                     {
-                        RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7046e62);
+                        RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7046e61);
 
-                        if (barricade3)
-                            return barricade3;
+                        if (barricade1)
+                            return barricade1;
+                    }
+                    else
+                    {
+                        RE::TESObjectREFR* barricade3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18436);
+                        RE::TESObjectREFR* barricade4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18439);
+
+                        if (MiscThings::get_destructible_state(barricade3) != 2 && MiscThings::get_destructible_state(barricade4) != 2)
+                        {
+                            RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7046e62);
+
+                            if (barricade3)
+                                return barricade3;
+                        }
+                    }
+                }
+            }
+
+            //windhelm
+            if (player_worldspace && player_worldspace->GetFormID() == 0x1691d)
+            {
+                auto ulfric = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc0e2e);
+
+                if (target == ulfric)
+                {
+                    RE::TESObjectREFR* barricade1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc52d2);
+                    RE::TESObjectREFR* barricade2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc52d5);
+
+                    if (MiscThings::get_destructible_state(barricade1) != 2 && MiscThings::get_destructible_state(barricade2) != 2)
+                    {
+                        RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac1);
+
+                        if (barricade1)
+                            return barricade1;
+                    }
+                    else
+                    {
+                        RE::TESObjectREFR* barricade3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc2b83);
+
+                        if (MiscThings::get_destructible_state(barricade3) != 2)
+                        {
+                            RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac2);
+
+                            if (barricade3)
+                                return barricade3;
+                        }
+                        else
+                        {
+                            RE::TESObjectREFR* barricade4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc2b7c);
+
+                            if (MiscThings::get_destructible_state(barricade4) != 2)
+                            {
+                                RE::TESObjectREFR* redirect_marker3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x704fac3);
+
+                                if (barricade4)
+                                    return barricade4;
+                            }
+                        }
+
                     }
                 }
             }
         }
+           
+
+
 
 
 
@@ -9500,7 +9693,55 @@ namespace MiscThings {
 
                     case (2): //windhelm
                     {
-                        auto objective_kill_ulfric = get_quest_objective_by_index(the_quest, 4001);
+                        
+                        auto objective_get_orders = get_quest_objective_by_index(the_quest, 1000);
+
+                        if (objective_get_orders && objective_get_orders->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed))
+                        {
+                            auto objective_kill_ulfric = get_quest_objective_by_index(the_quest, 4001);
+
+                            if (objective_kill_ulfric && (!objective_kill_ulfric->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective_kill_ulfric->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed)))
+                            {
+                                //no objective - but it should be this. insert this objective as valid
+
+                                quest this_quest{};
+
+                                this_quest.id = id;
+                                this_quest.quest = the_quest;
+                                this_quest.name = the_quest->GetFullName();
+                                this_quest.target = nullptr;
+
+                                std::string displaytext = "";
+                                displaytext = objective_kill_ulfric->displayText;
+
+                                std::string target_name = "";
+
+                                this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                                this_quest.target_name = target_name;
+
+                                this_quest.objective = objective_kill_ulfric;
+                                this_quest.description = "";
+                                this_quest.category = 0;
+
+                                this_quest.estimate_distance = 0.0f;
+
+                                this_quest.phantom_objective = true;
+
+                                this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x55fcb);
+
+
+                                sortable_quests.push_back(this_quest);
+
+
+
+                                id++;
+                                got_any_quests = true;
+
+                            }
+                        }
+
+
 
 
                         break;

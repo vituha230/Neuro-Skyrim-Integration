@@ -14,7 +14,7 @@
 
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
-//TODO civil war finish imperials side
+
 //TODO dragonborn dlc
 //TODO dawnguard dlc
 //TODO companions
@@ -29,7 +29,7 @@
 //TODO hide non main quests when we are climbing the mountain and the temple isnt discovered yet. force fast travel advice if ivarstead is discovered and we go to high hrothgar and it isnt discovered
 //TODO add more traders to interesting places
 //TODO more map improvements/limiters?
-
+//TODO ignore slaughterfish in threat detection
 
 
 //TODO low fps in windhelm tavern (maybe it was my system related because couldnt reproduce)
