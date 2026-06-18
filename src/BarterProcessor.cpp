@@ -3363,7 +3363,7 @@ void debug_scan(float dtime)
             
 if (const auto ui = RE::UI::GetSingleton(); ui) {
 //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu) {
-if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
+if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) {
                 if (menu->uiMovie)
                     if (menu->uiMovie->GetVariable(&var1, "_root"))
 
@@ -3434,7 +3434,7 @@ if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
                                 auto test = var1.GetType();
                             }
 
-                            search_var = "TextCopy_mc";
+                            search_var = "meter";
                             search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
                             if (search_success)
                             {
@@ -3442,7 +3442,21 @@ if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu) {
                             }
 
 
-                            
+                            search_var = "stealth";
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
+
+                            search_var = "detection";
+                            search_success = visit_all_members2(results, var1, &search_var, 0, "_root", skip_problematic, skip_problematic_path, "", "");
+                            if (search_success)
+                            {
+                                auto test = var1.GetType();
+                            }
+
                             //search_var = "Body";
 
                             //const auto menu2 = ui->GetMenu<RE::LevelUpMenu>();
@@ -3602,7 +3616,13 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
         //"_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.26",
         //"_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.PanelTwoWideInstance.List_mc.EntriesA.27"
 
-        "_root.DialogueMenu_mc.TopicListHolder.TextCopy_mc",
+        "_root",
+        "_root.HUDMovieBaseInstance.StealthMeterInstance",
+        "_root.HUDMovieBaseInstance.StealthMeterInstance.SneakAnimInstance",
+        "_root.HUDMovieBaseInstance.StealthMeterInstance.SneakAnimInstance.instance71",
+        "_root.HUDMovieBaseInstance.StealthMeterInstance.SneakTextHolder",
+        "_root.HUDMovieBaseInstance.StealthMeterInstance.SneakTextHolder.SneakTextClip",
+
         //"_root.DialogueMenu_mc.TopicListHolder.TextCopy_mc.textField",
         //"_root.DialogueMenu_mc.TopicListHolder.TextCopy_mc.instance13"
 
@@ -3646,7 +3666,7 @@ _root.StatsMenuBaseInstance.PerkName0 has bPlaying that is set to 1 when we are 
     if (const auto ui = RE::UI::GetSingleton(); ui) 
         //if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu) 
         //if (const auto menu = ui->GetMenu<RE::LevelUpMenu>(); menu)
-        if (const auto menu = ui->GetMenu<RE::DialogueMenu>(); menu)
+        if (const auto menu = ui->GetMenu<RE::HUDMenu>(); menu)
         {
 
             if (menu->uiMovie)

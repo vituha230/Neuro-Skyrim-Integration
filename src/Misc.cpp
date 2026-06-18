@@ -722,8 +722,37 @@ namespace MiscThings {
 
 
 
+
+    float get_hud_stealthmeter_value()
+    {
+
+        RE::UI* ui = RE::UI::GetSingleton();
+        if (ui)
+        {
+            auto menu = ui->GetMenu<RE::HUDMenu>();
+
+            if (menu)
+            {
+                auto stealth_meter = (RE::StealthMeter*)menu->objects[RE::HUDObject::HudComponent::kRolloverNameInstance];
+
+                if (stealth_meter)
+                    return (float)stealth_meter->unk88;
+            }
+        }
+        
+
+        return 100.0f;
+    }
+
+
+
+
+
     bool sees_player(RE::TESObjectREFR* actor_ref)
     {
+        if (MiscThings::is_player_hidden() || MiscThings::get_hud_stealthmeter_value() < 100.0f)
+            return false; //cant see if nobody sees player
+
         if (actor_ref && actor_ref->IsActor())
         {
             auto player = RE::PlayerCharacter::GetSingleton();

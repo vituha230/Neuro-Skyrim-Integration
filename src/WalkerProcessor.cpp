@@ -1876,14 +1876,14 @@ namespace WalkerProcessor {
 
         bool stealth_arching = false;
 
-        if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true))
+        if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true)) //this is automatic
         {
             if (target_ref && target_ref->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
                 stealth_arching = !MiscThings::sees_player(target_ref);
         }
 
         if (sneak_mode_on && MiscThings::sneak_is_allowed())
-            stealth_arching = !MiscThings::sees_player(target_ref) || !is_fighting(); //true//true;
+            stealth_arching = !MiscThings::sees_player(target_ref) || !is_fighting(); //true//true; //this is manual
 
 
         stealth_arching = stealth_arching && !using_custom_path;

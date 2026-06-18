@@ -14,6 +14,11 @@
 
 //void action_queue_add(neurosdk_action action);
 
+
+float get_stealthmeter();
+
+
+
 long long get_last_load_timestamp();
 
 void put_explore_on_cooldown(float cooldown);

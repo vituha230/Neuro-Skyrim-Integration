@@ -5,6 +5,10 @@
 
 namespace MiscThings {
 
+
+    float get_hud_stealthmeter_value();
+
+
     bool dont_autointerract_check(bool quest_mode, RE::TESQuest* quest = nullptr, RE::TESObjectREFR* target = nullptr);
 
     std::string remove_aliases(std::string displaytext);

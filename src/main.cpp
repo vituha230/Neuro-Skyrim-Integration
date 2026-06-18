@@ -1032,12 +1032,36 @@ private:
 
 
 
-
-
-
+/*
+float detection_level = 0.0;
+float get_stealthmeter()
+{
+    return detection_level;
+}
+*/
 
 
 namespace Hooks {
+
+
+    //replaced with normal function, not necesssary (but this also works)
+    /*
+    struct StealthMeter_Update {
+
+        static char thunk(RE::StealthMeter* a1, int64_t a2, int64_t a3, int64_t a4)
+        {
+            auto result = originalFunction(a1, a2, a3, a4);
+
+            detection_level = static_cast<float>(a1->unk88);
+
+            return result;
+        }
+
+        static inline REL::Relocation<decltype(thunk)> originalFunction;
+        static inline void Install() { originalFunction = REL::Relocation<std::uintptr_t>(RE::VTABLE_StealthMeter[0]).write_vfunc(0x1, thunk); }
+    };
+    */
+
 
     struct InventoryProcessMessage {
         static RE::UI_MESSAGE_RESULTS thunk(RE::InventoryMenu* menu, RE::UIMessage& a_message) {
@@ -2566,6 +2590,9 @@ bool visit_all_members2(std::vector<std::string>& results, const RE::GFxValue& i
                     std::string name_str = name;
                     std::string name_orig = name;
 
+                    name_orig = MiscThings::lowercase_string(name_orig);
+
+
                     bool dont_go_deeper = false;
 
 
@@ -3429,6 +3456,7 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 
     Hooks::InventoryProcessMessage::Install();
 
+    //Hooks::StealthMeter_Update::Install();
 
     WalkerProcessor::install_hook();
 
