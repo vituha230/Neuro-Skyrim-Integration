@@ -12773,7 +12773,16 @@ namespace WalkerProcessor {
                 register_allowed_actions();
             }
             else
-                getting_into_carriage_time = 0.0f;
+            {
+                if (is_fighting() || Observer::threat_response_choice_pending())
+                {
+                    reset_walker();
+                    register_allowed_actions();
+                }
+                else
+                    getting_into_carriage_time += dtime;
+            }
+                
         }
         else
             getting_into_carriage_time = 0.0f;

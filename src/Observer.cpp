@@ -2544,34 +2544,49 @@ namespace Observer {
 
 				auto object_p = MiscThings::General::Script::GetObject(carriage_quest, "CarriageSystemScript");
 
-				RE::BSFixedString prop_name = "currentDestination";
-				int current_destination = MiscThings::General::Script::GetProperty<int>(object_p, prop_name);
-
-				prop_name = "currentDriver";
-				RE::Actor* driver = MiscThings::General::Script::GetProperty<RE::Actor*>(object_p, prop_name);
-
-				if (current_destination != 0 && current_destination != -1 && driver)
+				if (object_p)
 				{
+					RE::BSFixedString prop_name = "currentDestination";
+					int current_destination = MiscThings::General::Script::GetProperty<int>(object_p, prop_name);
 
-					auto extra = driver->extraList.GetByType(RE::ExtraDataType::kLinkedRef);
+					prop_name = "currentDriver";
+					RE::Actor* driver = MiscThings::General::Script::GetProperty<RE::Actor*>(object_p, prop_name);
 
-					auto carriage_seat = RE::TESForm::LookupByEditorID("LinkCarriageSeat");
+					prop_name = "::bWaitForPlayerToSit_var";
+					bool waiting_for_player = MiscThings::General::Script::GetVariable<bool>(object_p, prop_name);
 
-					if (extra)
+					//{name="" type={_rawType=kBool } }
+
+					//useless
+					//prop_name = "bWaitingToFastTravel";
+					//bool waiting_to_fasttravel = MiscThings::General::Script::GetVariable<bool>(object_p, prop_name);
+
+
+
+					if (waiting_for_player && current_destination != 0 && current_destination != -1 && driver && !driver->IsDead() && player && !player->IsInCombat() && MiscThings::player_overencumbered_by() <= 0)
 					{
-						auto extra_linked = (RE::ExtraLinkedRef*)extra;
-						for (auto linked_ref : extra_linked->linkedRefs)
+
+						auto extra = driver->extraList.GetByType(RE::ExtraDataType::kLinkedRef);
+
+						auto carriage_seat = RE::TESForm::LookupByEditorID("LinkCarriageSeat");
+
+						if (extra)
 						{
-							if (linked_ref.keyword == carriage_seat && !WalkerProcessor::is_getting_into_carriage() && !MiscThings::is_intro())
+							auto extra_linked = (RE::ExtraLinkedRef*)extra;
+							for (auto linked_ref : extra_linked->linkedRefs)
 							{
-								unregister_all_actions();
-								WalkerProcessor::get_into_carriage(linked_ref.refr);
-								return;
+								if (linked_ref.keyword == carriage_seat && !WalkerProcessor::is_getting_into_carriage() && !MiscThings::is_intro() && !WalkerProcessor::is_fighting() && !Observer::threat_response_choice_pending())
+								{
+									unregister_all_actions();
+									WalkerProcessor::get_into_carriage(linked_ref.refr);
+									return;
+								}
 							}
+
 						}
-						
 					}
 				}
+				
 
 				
 
