@@ -6,7 +6,9 @@
 namespace MiscThings {
 
 
-    float get_hud_stealthmeter_value();
+    float get_hud_stealthmeter_value(bool stealth_probe_done = false);
+    float get_detection_level_value();
+    bool safe_to_stealthwalk(bool stealth_probe_done = false);
 
 
     bool dont_autointerract_check(bool quest_mode, RE::TESQuest* quest = nullptr, RE::TESObjectREFR* target = nullptr);
@@ -186,7 +188,7 @@ namespace MiscThings {
 
     std::vector<quest>* get_p_quest_list();
 
-    bool sees_player(RE::TESObjectREFR* actor_ref);
+    bool sees_player(RE::TESObjectREFR* actor_ref, bool stealth_probe_done = false);
 
     bool is_equipped(RE::TESBoundObject* object);
 

@@ -723,7 +723,7 @@ namespace MiscThings {
 
 
 
-    float get_hud_stealthmeter_value()
+    float get_hud_stealthmeter_value(bool stealth_probe_done)
     {
 
         RE::UI* ui = RE::UI::GetSingleton();
@@ -736,22 +736,43 @@ namespace MiscThings {
                 auto stealth_meter = (RE::StealthMeter*)menu->objects[RE::HUDObject::HudComponent::kRolloverNameInstance];
 
                 if (stealth_meter)
-                    return (float)stealth_meter->unk88;
+                    return (float)stealth_meter->unk88 * stealth_probe_done;
             }
         }
         
 
+        return 100.0f * stealth_probe_done;
+    }
+
+
+    float get_detection_level_value()
+    {
+        if (auto ProcessLists = RE::ProcessLists::GetSingleton())
+        {
+            std::uint32_t LOSCount{ 1 };
+            return ProcessLists->RequestHighestDetectionLevelAgainstActor(RE::PlayerCharacter::GetSingleton(), LOSCount);
+        }
+        
         return 100.0f;
+    }
+
+
+    bool safe_to_stealthwalk(bool stealth_probe_done)
+    {
+        return get_detection_level_value() < -13.0f || get_hud_stealthmeter_value(stealth_probe_done) <= 10.0f;
     }
 
 
 
 
 
-    bool sees_player(RE::TESObjectREFR* actor_ref)
+    bool sees_player(RE::TESObjectREFR* actor_ref, bool stealth_probe_done)
     {
-        if (MiscThings::is_player_hidden() || MiscThings::get_hud_stealthmeter_value() < 100.0f)
+        if (MiscThings::is_player_hidden() || MiscThings::get_hud_stealthmeter_value(stealth_probe_done) < 100.0f)
             return false; //cant see if nobody sees player
+
+        if (MiscThings::get_hud_stealthmeter_value(stealth_probe_done) >= 100.0f)
+            return true;
 
         if (actor_ref && actor_ref->IsActor())
         {

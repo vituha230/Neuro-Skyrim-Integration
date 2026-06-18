@@ -23,6 +23,10 @@ namespace WalkerProcessor {
 
 
 
+    bool sneak_probe_sneak_checked = false;
+    float fuck_it_lets_go_timer = 0.0f;
+    bool sneak_failed = false;
+
 
     bool try_close_enough_z_decrease_without_raycast = false;
 
@@ -1863,6 +1867,28 @@ namespace WalkerProcessor {
     }
 
 
+    
+
+
+    bool is_stealthwalking(bool stealth_probe_done)
+    {
+        bool stealth_walking = false;
+
+        if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true)) //this is automatic
+        {
+            if (target_ref && target_ref->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
+                stealth_walking = !MiscThings::sees_player(target_ref, sneak_probe_sneak_checked);
+        }
+
+        if (sneak_mode_on && MiscThings::sneak_is_allowed())
+            stealth_walking = !MiscThings::sees_player(target_ref, sneak_probe_sneak_checked) || !is_fighting(); //true//true; //this is manual
+
+
+        stealth_walking = stealth_walking && !using_custom_path;
+
+        return stealth_walking && !sneak_failed;
+    }
+
 
 
     float last_walk_reminded_time = 0.0f;
@@ -1874,19 +1900,34 @@ namespace WalkerProcessor {
             lock_camera_onto_target(target_ref, dtime_maybe_bad);
 
 
-        bool stealth_arching = false;
+        bool stealth_walking = is_stealthwalking(sneak_probe_sneak_checked);
 
-        if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true)) //this is automatic
+        if (!stealth_walking)
         {
-            if (target_ref && target_ref->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
-                stealth_arching = !MiscThings::sees_player(target_ref);
+            sneak_probe_sneak_checked = true;
+
+            if (sneak_mode_on)
+                sneak_failed = true;
         }
 
-        if (sneak_mode_on && MiscThings::sneak_is_allowed())
-            stealth_arching = !MiscThings::sees_player(target_ref) || !is_fighting(); //true//true; //this is manual
+        if (fuck_it_lets_go_timer < 15.0f)
+        {
+            fuck_it_lets_go_timer += dtime_maybe_bad;
 
+            if (stealth_walking && !MiscThings::safe_to_stealthwalk(sneak_probe_sneak_checked))
+            {
+                if (MiscThings::raycastable(target_ref, 10000.0f, false))
+                    lock_camera_onto_target(target_ref, dtime_maybe_bad);
 
-        stealth_arching = stealth_arching && !using_custom_path;
+                return;
+            }
+            else
+                fuck_it_lets_go_timer = 0.0f; //safe to walk, reset timer
+        }
+
+        //if timer hit threshold - never stop 
+
+            
 
 
 
@@ -1896,17 +1937,22 @@ namespace WalkerProcessor {
 
             if (player && player->IsSneaking())
             {
-                if (!stealth_arching)
+                if (!stealth_walking)
                     crouch(); //uncrouch
             }
             else
             {
                 if (player && !player->IsSneaking())
                 {
-                    if (stealth_arching)
+                    if (stealth_walking)
                         crouch(); //crouch
                 }
             }
+
+
+            if (player && player->IsSneaking())
+                sneak_probe_sneak_checked = true;
+
 
             try {
 
@@ -3839,15 +3885,22 @@ namespace WalkerProcessor {
 
             if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true) && target && target->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
             {
-                stealth_arching = !MiscThings::sees_player(target);
+                stealth_arching = !MiscThings::sees_player(target, sneak_probe_sneak_checked);
             }
 
             if (sneak_mode_on && MiscThings::sneak_is_allowed())
-                stealth_arching = !MiscThings::sees_player(target) || !is_fighting(); //true
+                stealth_arching = !MiscThings::sees_player(target, sneak_probe_sneak_checked) || !is_fighting(); //true
 
 
-            stealth_arching = stealth_arching && !using_custom_path;
+            stealth_arching = stealth_arching && !using_custom_path && !sneak_failed;
 
+
+            if (!stealth_arching)
+            {
+                sneak_probe_sneak_checked = true;
+                sneak_failed = true;
+            }
+                
 
             if (!lookat_used || stealth_arching)
                 if (stealth_arching || (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead())))
@@ -3861,6 +3914,10 @@ namespace WalkerProcessor {
 
             //if (MiscThings::sees_player(target) && player->IsSneaking() && is_fighting())
              //   crouch(); //test
+
+
+            if (player && player->IsSneaking())
+                sneak_probe_sneak_checked = true;
 
 
             if (!lookat_used)
@@ -4527,6 +4584,10 @@ namespace WalkerProcessor {
     void reset_walker()
     {
         //dont_reset_after_interaction = false;
+        sneak_failed = false;
+        sneak_probe_sneak_checked = false;
+        fuck_it_lets_go_timer = 0.0f;
+
 
         try_close_enough_z_decrease_without_raycast = false;
 
@@ -9571,6 +9632,11 @@ namespace WalkerProcessor {
             lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
 
 
+        if (sneak_failed && player && player->IsSneaking())
+            crouch();//uncrouch 
+
+
+
 
         if (MiscThings::is_dragon(target_ref))
         {
@@ -9822,7 +9888,7 @@ namespace WalkerProcessor {
                                     }
                                     
 
-                                    if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
+                                    if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
                                         cursor_up();
                                 }
 
@@ -10138,7 +10204,7 @@ namespace WalkerProcessor {
                                             else
                                                 attacking_weapon = get_equipped_weapon_name(false) + ". ";
 
-                                            if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale())
+                                            if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
                                                 cursor_up();
                                         }
 
@@ -11546,6 +11612,10 @@ namespace WalkerProcessor {
 
     bool detect_stuck(float dtime)
     {
+
+        if (is_stealthwalking(sneak_probe_sneak_checked) && !MiscThings::safe_to_stealthwalk(sneak_probe_sneak_checked) && fuck_it_lets_go_timer < 15.0f)
+            return false;
+
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
 
