@@ -33,7 +33,6 @@
 //TODO more map improvements/limiters?
 //TODO bad chain in karliah first dungeon (need to pathfind closer to the gate)
 //TODO 100% do some kind of message about being poisoned by karliah and then messer stabbing you
-//TODO fix 99% miss when trying to finish an almost dead humanoid (when they start crawling) with a bow (redirect to torso)
 
 //TODO low fps in windhelm tavern (maybe it was my system related because couldnt reproduce)
 

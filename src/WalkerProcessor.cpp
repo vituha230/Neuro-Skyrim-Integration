@@ -3388,7 +3388,7 @@ namespace WalkerProcessor {
                 {
                     if (target_actor->currentProcess)
                         if (target_actor->currentProcess->middleHigh)
-                            if (target_actor->currentProcess->middleHigh->headNode)
+                            if (target_actor->currentProcess->middleHigh->torsoNode)
                             {
                                 auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
 
@@ -3580,7 +3580,7 @@ namespace WalkerProcessor {
             if (target_actor->currentProcess)
                 if (target_actor->currentProcess->middleHigh)
                 {
-                    if (is_pickpocketing() || (player->GetDistance(target) > 400.0f && is_fighting() && has_ranged_weapon_equipped(get_current_active_hand())))
+                    if (is_pickpocketing() || (player->GetDistance(target) > 400.0f && is_fighting() && has_ranged_weapon_equipped(get_current_active_hand())) || (target_actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kBleedout))
                     {
                         if (target_actor->currentProcess->middleHigh->torsoNode)
                         {
