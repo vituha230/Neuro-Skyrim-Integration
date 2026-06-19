@@ -29,9 +29,6 @@
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
 //TODO hide non main quests when we are climbing the mountain and the temple isnt discovered yet. force fast travel advice if ivarstead is discovered and we go to high hrothgar and it isnt discovered
 //TODO add more traders to interesting places
-//TODO fix situation when carriage hire stops working (happened when i was attacked by dragon mid-walk-to-carriage in riften, could not reproduce)
-//              basically make it so after we got into carriage - dont check and autowalk into this carriage anymore
-//      MAYBE NEED TO INTERACT WITH IT MID-COMBAT SO THE BUG TRIGGERS?
 
 //TODO more map improvements/limiters?
 //TODO bad chain in karliah first dungeon (need to pathfind closer to the gate)

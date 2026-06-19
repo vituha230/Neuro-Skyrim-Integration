@@ -2562,8 +2562,16 @@ namespace Observer {
 					//bool waiting_to_fasttravel = MiscThings::General::Script::GetVariable<bool>(object_p, prop_name);
 
 
+					prop_name = "PlayerRider"; //this one gets cleared when we click the carriage mid-combat and it stops working until we talk to driver again
+					RE::BGSRefAlias* player_rider = MiscThings::General::Script::GetProperty<RE::BGSRefAlias*>(object_p, prop_name);
 
-					if (waiting_for_player && current_destination != 0 && current_destination != -1 && driver && !driver->IsDead() && player && !player->IsInCombat() && MiscThings::player_overencumbered_by() <= 0)
+					RE::TESObjectREFR* player_rider_ref = nullptr;
+
+					if (player_rider)
+						player_rider_ref = player_rider->GetReference();
+
+
+					if (player_rider_ref && waiting_for_player && current_destination != 0 && current_destination != -1 && driver && !driver->IsDead() && player && !player->IsInCombat() && MiscThings::player_overencumbered_by() <= 0)
 					{
 
 						auto extra = driver->extraList.GetByType(RE::ExtraDataType::kLinkedRef);
