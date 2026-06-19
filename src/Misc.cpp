@@ -3250,6 +3250,22 @@ namespace MiscThings {
 
 
 
+        if (parent_cell && parent_cell->formID == 0x1382e) //shors stone mine
+        {
+            RE::TESObjectREFR* target_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xdb28d);
+
+            if (target == target_marker)
+            {
+                RE::TESObjectREFR* redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7052989);
+
+                if (redirect_marker)
+                {
+                    return redirect_marker;
+                }
+            }
+        }
+
+
 
         if (parent_cell && parent_cell->formID == 0x2954d)
         {
