@@ -22,6 +22,8 @@ namespace WalkerProcessor {
     ///////////
 
 
+    bool stealthwalk_was_unsafe = false;
+    float stealthwalk_was_unsafe_time = 0.0f;
 
     bool sneak_probe_sneak_checked = false;
     float fuck_it_lets_go_timer = 0.0f;
@@ -1914,10 +1916,25 @@ namespace WalkerProcessor {
         {
             fuck_it_lets_go_timer += dtime_maybe_bad;
 
-            if (stealth_walking && !MiscThings::safe_to_stealthwalk(sneak_probe_sneak_checked))
+            if (stealthwalk_was_unsafe || (stealth_walking && !MiscThings::safe_to_stealthwalk(sneak_probe_sneak_checked)))
             {
+                stealthwalk_was_unsafe = true;
+
+                if (stealthwalk_was_unsafe_time > 1.5f)
+                {
+                    stealthwalk_was_unsafe = false;
+                    stealthwalk_was_unsafe_time = 0.0f;
+                }
+                else
+                    stealthwalk_was_unsafe_time += dtime_maybe_bad;
+
+
                 if (MiscThings::raycastable(target_ref, 10000.0f, false))
                     lock_camera_onto_target(target_ref, dtime_maybe_bad);
+
+                //this doesnt work like this
+                //if (!MiscThings::safe_to_stealthwalk(sneak_probe_sneak_checked))
+                //    cursor_down();
 
                 return;
             }
@@ -4583,6 +4600,11 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        stealthwalk_was_unsafe = false;
+        stealthwalk_was_unsafe_time = 0.0f;
+
+
         //dont_reset_after_interaction = false;
         sneak_failed = false;
         sneak_probe_sneak_checked = false;
@@ -11613,7 +11635,7 @@ namespace WalkerProcessor {
     bool detect_stuck(float dtime)
     {
 
-        if (is_stealthwalking(sneak_probe_sneak_checked) && !MiscThings::safe_to_stealthwalk(sneak_probe_sneak_checked) && fuck_it_lets_go_timer < 15.0f)
+        if (is_stealthwalking(sneak_probe_sneak_checked) && (!MiscThings::safe_to_stealthwalk(sneak_probe_sneak_checked) || stealthwalk_was_unsafe) && fuck_it_lets_go_timer < 15.0f)
             return false;
 
         auto control_map = RE::ControlMap::GetSingleton();

@@ -26,9 +26,11 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+//TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
-//TODO hide non main quests when we are climbing the mountain and the temple isnt discovered yet. force fast travel advice if ivarstead is discovered and we go to high hrothgar and it isnt discovered
+//TODO (MAYBE NO) hide non main quests when we are climbing the mountain and the temple isnt discovered yet. force fast travel advice if ivarstead is discovered and we go to high hrothgar and it isnt discovered
 //TODO add more traders to interesting places
+//TODO camera shake if we are meleeing an enemy and they are walking back fix
 
 //TODO more map improvements/limiters?
 

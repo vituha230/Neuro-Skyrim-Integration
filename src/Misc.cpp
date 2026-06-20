@@ -8458,6 +8458,13 @@ namespace MiscThings {
 
                         std::string model = activator->GetModel();
 
+                        if (model.find("MetalLever01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 10.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
                         if (model.find("DoorDeadBolt01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 5.0f, 75.0f };
@@ -16447,7 +16454,7 @@ namespace MiscThings {
             }
             else
             {
-                if (!only_fighting && (weapon_independent || WalkerProcessor::has_bow_equipped(WalkerProcessor::get_current_active_hand()) || WalkerProcessor::has_crossbow_equipped(WalkerProcessor::get_current_active_hand())))
+                if (!only_fighting && (WalkerProcessor::is_sneak_on() || weapon_independent || WalkerProcessor::has_bow_equipped(WalkerProcessor::get_current_active_hand()) || WalkerProcessor::has_crossbow_equipped(WalkerProcessor::get_current_active_hand())))
                 {
                     bool aggressive = false;
 
