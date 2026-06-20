@@ -18,10 +18,11 @@ namespace Observer {
 	float no_spam_time = 0.0f;
 
 
-	std::map<RE::TESObjectREFR*, bool> objects_for_extra_notification{};
+	std::map<RE::TESObjectREFR*, std::pair<bool, long long>> objects_for_extra_notification{};
+
 
 	int old_mg6_quest_stage = 0;
-
+	int old_tg05_quest_stage = 0;
 
 	RE::TESForm* old_right_hand = nullptr;
 	RE::TESForm* old_left_hand = nullptr;
@@ -960,6 +961,8 @@ namespace Observer {
 
 		old_unbound_quest_stage = false;
 		old_mg6_quest_stage = 0;
+		old_tg05_quest_stage = 0;
+
 
 		first_cycle = true;
 		first_cycle2 = true;
@@ -1556,21 +1559,43 @@ namespace Observer {
 									}
 									else
 									{
-										
 										auto word_of_power = MiscThings::get_word_of_power(a_ref);
 
 										if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
 										{
-											if (objects_for_extra_notification.find(a_ref) == objects_for_extra_notification.end())
+											if (!WalkerProcessor::is_fighting() && !WalkerProcessor::is_walking_important_path() && !Observer::threat_response_choice_pending())
 											{
-												if (player_ref->GetDistance(a_ref) < 800.0f)
+												if (player_ref->GetDistance(a_ref) < 2000.0f)
 												{
-													objects_for_extra_notification.insert({ a_ref, true });
+													auto notification_info = objects_for_extra_notification.find(a_ref);
 
-													std::string info = MiscThings::insert_object_into_list_custom_name("Word of Power, calling for you", a_ref);
+													auto now = std::chrono::steady_clock::now().time_since_epoch().count();
 
-													if (info != "")
-														send_random_context("You hear something... " + info, false);
+													if (notification_info == objects_for_extra_notification.end())
+													{
+														//new
+														objects_for_extra_notification.insert({ a_ref, {true, now} });
+
+														std::string info = MiscThings::insert_object_into_list_custom_name("Word of Power, calling for you", a_ref);
+
+														if (info != "")
+															send_random_context("You hear something... " + info, false);
+													}
+													else
+													{
+														//already exists but we want repetitive notification
+														float delta_info = (double)(now - notification_info->second.second) / 1000000000.0;
+
+														if (delta_info > 15.0f)
+														{
+															notification_info->second.second = now;
+
+															std::string info = MiscThings::insert_object_into_list_custom_name("Word of Power, calling for you", a_ref);
+
+															if (info != "")
+																send_random_context("You hear something... " + info, false);
+														}
+													}
 												}
 											}
 										}
@@ -4342,6 +4367,9 @@ namespace Observer {
 					if (force_field_ancano_1_quest)
 						old_mg6_quest_stage = force_field_ancano_1_quest->GetCurrentStageID();
 
+					auto snow_veil_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG05");
+					if (snow_veil_quest)
+						old_tg05_quest_stage = snow_veil_quest->GetCurrentStageID();
 
 
 				}
@@ -4447,6 +4475,22 @@ namespace Observer {
 
 					old_mg6_quest_stage = current_stage;
 				}
+
+				auto snow_veil_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG05");
+				if (snow_veil_quest)
+				{
+					auto current_stage = snow_veil_quest->GetCurrentStageID();
+
+					if (old_tg05_quest_stage < 50 && current_stage == 50)
+					{
+						send_random_context("[You are paralyzed!]", true);
+						WalkerProcessor::reset_walker();
+					}
+
+					old_tg05_quest_stage = current_stage;
+				}
+					
+
 
 
 

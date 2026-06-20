@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////
 // QUESTLINES
 
-//TODO polish thief guild (potential softlock due to anti-drown in mercer fight, no info about being paralyzed by karlia, no info in the well of nocturnal sanctum)
+//TODO polish thief guild (potential softlock due to anti-drown in mercer fight, no info in the well of nocturnal sanctum)
 //TODO polish mage guild (maybe add context about things happening around)
 //TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
 //TODO polish civil war (ambush quest sometimes the soldier cannot hit the enemy)
@@ -31,8 +31,6 @@
 //TODO add more traders to interesting places
 
 //TODO more map improvements/limiters?
-//TODO bad chain in karliah first dungeon (need to pathfind closer to the gate)
-//TODO 100% do some kind of message about being poisoned by karliah and then messer stabbing you
 
 //TODO low fps in windhelm tavern (maybe it was my system related because couldnt reproduce)
 

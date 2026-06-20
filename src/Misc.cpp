@@ -3250,6 +3250,83 @@ namespace MiscThings {
 
 
 
+        auto snow_veil_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG05");
+
+
+        if (snow_veil_quest && snow_veil_quest == quest && parent_cell) //snow veil tg05
+        {
+            if (parent_cell->formID == 0x15208)
+            {
+                RE::TESObjectREFR* target_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x55d0e);
+
+                if (target == target_door)
+                {
+                    RE::TESObjectREFR* gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x557b5);
+
+                    if (gate1 && MiscThings::two_state_activator_state(gate1) == 1)
+                    {
+                        RE::TESObjectREFR* redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705298f);
+                        if (redirect1)
+                            return redirect1;
+                    }
+                    else
+                    {
+                        RE::TESObjectREFR* gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5584c);
+
+                        if (gate2 && MiscThings::two_state_activator_state(gate2) == 1)
+                        {
+                            RE::TESObjectREFR* redirect2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7052990);
+                            if (redirect2)
+                                return redirect2;
+                        }
+                        else
+                        {
+                            RE::TESObjectREFR* gate3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xb0f08);
+
+                            if (gate3 && MiscThings::two_state_activator_state(gate3) == 1)
+                            {
+                                RE::TESObjectREFR* redirect3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7052991);
+                                if (redirect3)
+                                    return redirect3;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (parent_cell->formID == 0x25e24)
+                {
+                    RE::TESObjectREFR* karliah = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x58f1a);
+
+                    if (target == karliah)
+                    {
+                        RE::TESObjectREFR* gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5626e);
+
+                        if (gate1 && MiscThings::two_state_activator_state(gate1) == 1)
+                        {
+                            RE::TESObjectREFR* redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7052992);
+                            if (redirect1)
+                                return redirect1;
+                        }
+                        else
+                        {
+                            RE::TESObjectREFR* gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd5418);
+
+                            if (gate2 && MiscThings::two_state_activator_state(gate2) == 1)
+                            {
+                                RE::TESObjectREFR* redirect2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7052993);
+                                if (redirect2)
+                                    return redirect2;
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
+
+
         if (parent_cell && parent_cell->formID == 0x1382e) //shors stone mine
         {
             RE::TESObjectREFR* target_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xdb28d);
@@ -16555,9 +16632,13 @@ namespace MiscThings {
 
 
         auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!player)
+            return result;
+
         auto player_ref = player->AsReference();
         auto player_actor = (RE::Actor*)player_ref;
-
+        auto player_cell = player->GetParentCell();
 
         auto control_map = RE::ControlMap::GetSingleton();
         bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
@@ -16580,6 +16661,19 @@ namespace MiscThings {
 
                 if (a_ref && a_ref->IsActor())
                 {
+                    if (player_cell && player_cell->formID == 0x15208)
+                    {
+                        auto object_pos = a_ref->GetPosition();
+                        auto player_pos = player->GetPosition();
+
+                        if (object_pos.x > 4027.3f && object_pos.y < 2224.7f && !(player_pos.x > 4027.3f && player_pos.y < 2224.7f))
+                        {
+                            auto gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5584c);
+                            if (gate2 && MiscThings::two_state_activator_state(gate2) == 1)
+                                return RE::BSContainer::ForEachResult::kContinue; //it raycasts enemies through this gate and it looks ass
+                        }
+                    }
+
                     if (MiscThings::kataria_exists() && MiscThings::is_object_inside_of_kataria(a_ref) && !MiscThings::is_object_inside_of_kataria(player))
                         return RE::BSContainer::ForEachResult::kContinue; //skip kataria sailors if we escaped. this ship is cursed
 
