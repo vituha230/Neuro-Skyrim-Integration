@@ -37,7 +37,6 @@
 //TODO test malborn and klimek chest and maybe all container types 
 //TODO spells in both hands
 //TODO dualcasting + attacking with both hands if 2 melee weapons
-//TODO sneak toggle
 //TODO conjuration should not summon if already summoned
 //TODO optional argument to equip function so player can specify hand
 
