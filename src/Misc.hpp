@@ -6,6 +6,10 @@
 namespace MiscThings {
 
 
+
+    int get_ingame_hour();
+
+
     float get_hud_stealthmeter_value(bool stealth_probe_done = false);
     float get_detection_level_value();
     bool safe_to_stealthwalk(bool stealth_probe_done = false);

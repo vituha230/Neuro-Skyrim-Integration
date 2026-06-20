@@ -19,6 +19,20 @@ namespace MiscThings {
     
 
 
+    int get_ingame_hour()
+    {
+        auto sky = RE::Sky::GetSingleton();
+
+        if (sky)
+        {
+            return sky->currentGameHour;
+        }
+        
+        return -1;
+    }
+
+
+
     bool dont_autointerract_check(bool quest_mode, RE::TESQuest* quest, RE::TESObjectREFR* target)
     {
         auto gulumai_follow_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG04");
@@ -1580,7 +1594,7 @@ namespace MiscThings {
                         {
                             "Dawnstar",
                             {
-                                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c8), 2, "Trader", 1}, //tavern
+                                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c8), 2, "Tavern", 1}, //tavern
                                 {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6b5), 3, "Alchemist", 2}, //alchemist
                                 {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6be), 4, "Blacksmith", 3}, //blacksmith
                                 {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6c0), 5, "Jarl", 4} //jarl
@@ -1598,11 +1612,14 @@ namespace MiscThings {
             {
                 {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a672), 1, "Trader", 1}, //trader
                 {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66e), 2, "Tavern", 2}, //tavern
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66d), 3, "Alchemist", 3}, //alchemist
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67c), 4, "Blacksmith", 4}, //blacksmith
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a677), 5, "Jarl", 5}, //jarl
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67e), 6, "Wizard", 6}, //wizard
-                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a700), 7, "Church", 7} //church
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a681), 2, "Hunting shop", 3}, //tavern
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a66d), 3, "Alchemist", 4}, //alchemist
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67c), 4, "Blacksmith", 5}, //blacksmith
+                //{(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd15b0), 4, "Blacksmith (Warmaiden's)", 6}, //blacksmith
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a677), 5, "Jarl", 6}, //jarl
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a67e), 6, "Wizard", 7}, //wizard
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a700), 7, "Church", 8}, //church
+                {(RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a6f9), 8, "Breezehome (your house)", 9 } //house
             }
 
         }
@@ -1890,14 +1907,31 @@ namespace MiscThings {
                     {
                         auto actor = (RE::Actor*)object;
 
-                        not_trading = !actor->CanOfferServices();
-                        bool stop_here = false;
+                        //if (actor->GetVendorFaction()) //they actually have no faction when they are not trading
+                        {
+                            not_trading = !actor->CanOfferServices();
+                            bool stop_here = false;
+                        }
                     }
+
 
                     return !not_trading && !is_dead && !is_disabled;
                 }
                 else
-                    return true;
+                {
+                    bool locked = false;
+
+                    if (mode == 8)
+                    {
+                        if (WalkerProcessor::is_door(object))
+                            if (MiscThings::is_door_locked(object))
+                                locked = true;
+
+                    }
+
+                    return !locked;
+                }
+                    
             }
         }
 
@@ -2119,7 +2153,15 @@ namespace MiscThings {
                             return;
                         }
 
-                        std::string force_text = "You are in " + get_settlement_name() + ". Choose a place to visit";
+                        std::string nighttime_text = "";
+
+                        int hour = MiscThings::get_ingame_hour();
+
+                        if (hour >= 20 || hour < 8)
+                            nighttime_text = ". Some places might be unavailable at night";
+
+
+                        std::string force_text = "You are in " + get_settlement_name() + ". Choose a place to visit" + nighttime_text;
 
                         unregister_all_actions();
 
@@ -11480,7 +11522,7 @@ namespace MiscThings {
                                 {
                                     if (owner_extra->owner)
                                     {
-                                        if (owner_extra->owner->GetFormID() == 0x7)
+                                        if (owner_extra->owner->GetFormID() == 0x7 || owner_extra->owner->GetFormID() == 0xf2073) //player or player faction
                                             owner_text = "[Yours]";
                                         else
                                         {
