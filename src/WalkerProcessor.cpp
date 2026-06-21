@@ -2911,6 +2911,7 @@ namespace WalkerProcessor {
 
     bool test_about_to_be_blocked_by_door(float dtime)
     {
+
         bool result = false;
 
         if (ignore_closed_doors_time > 0)
@@ -2934,6 +2935,12 @@ namespace WalkerProcessor {
                 {
                     return false;
                 }
+
+
+                if (target_ref && target_ref->formID == 0x7058726 && targeted_ref->formID == 0xa7615)
+                    return false; //ignore this door for this target
+
+
 
                 float threshold = 0.2f;
 
@@ -11406,6 +11413,24 @@ namespace WalkerProcessor {
                 if (quest_mode && (target_name == "")) //not guaranteed that insert_object will give us a name
                     target_name = "quest target point";
 
+
+
+
+                auto redirect_marker_alikr_prisoner = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7058726);
+
+                if (target_ref == redirect_marker_alikr_prisoner)
+                {
+                    auto prisoner = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x215f6);
+                    if (prisoner)
+                    {
+                        send_random_context("You walked to the cell with Alikr prisoner, and wait for him to come closer...", false);
+                        reset_walker();
+                        look_at_object_by_refr(prisoner);
+                        return "";
+                    }
+                }
+
+
                 auto karthspire_pillars = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xad059);
 
                 if (karthspire_pillars)
@@ -13386,6 +13411,45 @@ namespace WalkerProcessor {
                 if (target_ref && (!my_handle || !my_handle.get() || !my_handle.get().get()))
                     reset_walker();
 
+
+
+                if (looking_mode)
+                {
+                    auto prisoner = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x215f6);
+                    if (target_ref == prisoner)
+                    {
+                        lock_camera_onto_target(prisoner, dtime);
+
+                        if (get_targeted_ref() == prisoner)
+                        {
+                            if (DialogueProcessor::is_in_dialogue())
+                            {
+                                reset_walker();
+                                return;
+                            }
+
+                            confirm();
+
+                            set_universal_block(1.2f);
+                        }
+                        else
+                        {
+                            auto cell_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xa7615);
+
+                            if (get_targeted_ref() == cell_door && prisoner && prisoner->GetDistance(cell_door) < 230.0f)
+                            {
+                                wiggle_camera(dtime);
+                            }
+                        }
+                            
+
+                        //using_custom_path = true;
+
+                        return; //this will effectively lock walker until it is redirected from outside and it will try to talk automatically
+                    }
+                }
+
+                
 
 
 

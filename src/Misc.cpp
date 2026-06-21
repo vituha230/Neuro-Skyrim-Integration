@@ -959,19 +959,6 @@ namespace MiscThings {
     }
 
 
-    RE::NiPoint3 get_nearest_navmesh_node_in_cell(RE::TESObjectREFR* object, RE::TESObjectCELL* cell)
-    {
-        RE::NiPoint3 result = RE::NiPoint3::Zero();
-
-        if (object)
-        {
-            auto object_pos = object->GetPosition();
-        }
-
-        return result;
-    }
-
-
     RE::NiPoint3 get_nearest_navmesh_node_in_cell(RE::NiPoint3 object_pos, RE::TESObjectCELL* cell)
     {
         RE::NiPoint3 result = RE::NiPoint3::Zero();
@@ -1023,7 +1010,7 @@ namespace MiscThings {
 
                                     auto pos_dif = centre - pos;
 
-                                    pos_dif.z = pos_dif.z * 1.5f; //too low/high are low priority
+                                    pos_dif.z = pos_dif.z * 3.0f; //too low/high are low priority
 
                                     float distance = pos_dif.Length();
 
@@ -1042,6 +1029,24 @@ namespace MiscThings {
         }
         return result;
     }
+
+
+    RE::NiPoint3 get_nearest_navmesh_node_in_cell(RE::TESObjectREFR* object, RE::TESObjectCELL* cell)
+    {
+        RE::NiPoint3 result = RE::NiPoint3::Zero();
+
+        if (object)
+        {
+            auto object_pos = object->GetPosition();
+
+            return get_nearest_navmesh_node_in_cell(object_pos, cell);
+
+        }
+
+        return result;
+    }
+
+
 
 
     RE::NiPoint3 get_nearest_navmesh_node(RE::TESObjectREFR* object)
@@ -3405,9 +3410,24 @@ namespace MiscThings {
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
 
 
+        
+
+        if (parent_cell && parent_cell->formID == 0x4a376)
+        {
+            auto alikr_prisoner_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS08");
+
+            if (alikr_prisoner_quest && quest == alikr_prisoner_quest && target && target->formID == 0x215f6)
+            {
+                auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7058726);
+
+                if (redirect_marker)
+                    return redirect_marker;
+            }
+        }
+
+
 
         auto snow_veil_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("TG05");
-
 
         if (snow_veil_quest && snow_veil_quest == quest && parent_cell) //snow veil tg05
         {
