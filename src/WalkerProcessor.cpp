@@ -210,6 +210,9 @@ namespace WalkerProcessor {
     bool path_valid = false;
     std::vector<RE::NiPoint3> path{};
 
+
+
+    bool custom_path_reversed = false;
     std::vector<RE::NiPoint3> custom_path{};
 
     bool have_target_to_walk = false;
@@ -1176,7 +1179,11 @@ namespace WalkerProcessor {
                     std::vector<std::pair<RE::TESQuest*, bool>> quests_to_restore{};
 
                     if (player && player->currentProcess && player->currentProcess->cachedValues)
-                        player->currentProcess->cachedValues->cachedWidth = 25.0; //this is it. this is used to calculate path for clairvoyance.
+                    {
+                        player->currentProcess->cachedValues->cachedWidth = 25.0f; //this is it. this is used to calculate path for clairvoyance.
+                        player->currentProcess->cachedValues->cachedRadius = 1.0f;
+                    }
+                        
 
 
                     for (auto target : targets)
@@ -4908,6 +4915,8 @@ namespace WalkerProcessor {
         last_quest_target = nullptr;
 
 
+        custom_path_reversed = false;
+
         using_custom_path = false;
 
         attacking_inanimate_object_time = 0.0f;
@@ -6054,6 +6063,50 @@ namespace WalkerProcessor {
     }
 
 
+
+
+    void riften_watchtower_check()
+    {
+        if (!using_custom_path)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player)
+            {
+                auto player_worldspace = player->GetWorldspace();
+
+                if (player_worldspace && player_worldspace->formID == 0x3c)
+                {
+                    auto player = RE::PlayerCharacter::GetSingleton();
+
+                    if (MiscThings::is_inside_of_riften_watchtower_top(player) && MiscThings::is_inside_of_riften_watchtower_bottom(target_ref))
+                    {
+                        dont_quicksave_after_custom_path = true;
+                        using_custom_path = true;
+                        walk_again_when_finished = true;
+                        current_path_point = 0;
+                        custom_path = CustomWalkerPaths::riften_watchtower_climb_reverse;
+                        path = custom_path;
+                        path_valid = true;
+                        dont_shift = true;
+                    }
+                    else
+                        if (MiscThings::is_inside_of_riften_watchtower_bottom(player) && MiscThings::is_inside_of_riften_watchtower_top(target_ref))
+                        {
+                            dont_quicksave_after_custom_path = true;
+                            using_custom_path = true;
+                            walk_again_when_finished = true;
+                            current_path_point = 0;
+                            custom_path = CustomWalkerPaths::riften_watchtower_climb;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_shift = true;
+                        }
+                }
+            }
+        }
+        
+    }
 
 
 
@@ -13593,6 +13646,9 @@ namespace WalkerProcessor {
 
                 if (target_ref && !using_custom_path)
                 {
+
+                    riften_watchtower_check();
+
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_pos = player->GetPosition();
                     auto target_ref_pos = target_ref->GetPosition();
@@ -14044,7 +14100,10 @@ namespace WalkerProcessor {
                             auto redirect_in_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d29);
                             auto redirect_out_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d2a);
 
-                            if (target_ref != redirect_water && target_ref != labyrinth_marker1 && target_ref != labyrinth_marker2 && target_ref != labyrinth_lever1 && target_ref != labyrinth_lever2 && target_ref != redirect_in_tower && target_ref != redirect_out_tower) //its a chain redirect of 2 points, current target ref is invalid either
+                            auto redirect_in_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585d);
+                            auto redirect_out_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585c);
+
+                            if (target_ref != redirect_water && target_ref != labyrinth_marker1 && target_ref != labyrinth_marker2 && target_ref != labyrinth_lever1 && target_ref != labyrinth_lever2 && target_ref != redirect_in_tower && target_ref != redirect_out_tower && target_ref != redirect_in_riften_watchtower && target_ref != redirect_out_riften_watchtower) //its a chain redirect of 2 points, current target ref is invalid either
                                 target_before_generic_redirect = target_ref;
 
                             interaction_before_generic_redirect = interaction_after_walk;
@@ -14322,6 +14381,107 @@ namespace WalkerProcessor {
                 }
 
 
+
+
+                auto redirect_in_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585d);
+                auto redirect_out_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585c);
+
+                if (redirect_in_riften_watchtower && redirect_out_riften_watchtower)
+                {
+                    if (target_ref == redirect_in_riften_watchtower)
+                    {
+                        if (player->GetDistance(redirect_in_riften_watchtower) < 100.0f)
+                        {
+                            if (target_before_generic_redirect)
+                            {
+                                auto target_before_generic_redirect_pos = target_before_generic_redirect->GetPosition();
+
+                                if (MiscThings::is_inside_of_riften_watchtower(target_before_generic_redirect))
+                                {
+                                    //finish redirections, restore old target
+                                    dont_check_quest_target_change = false;
+                                    generic_redirect_active = false;
+                                    interaction_after_walk = interaction_before_generic_redirect;
+                                    target_ref = target_before_generic_redirect;
+                                    target_before_generic_redirect = nullptr;
+                                    //dont_reset_after_interaction = false;
+                                    using_custom_path = false;
+                                    custom_path.clear();
+                                    walk_again();
+                                    return;
+                                }
+                                else
+                                {
+                                    //init custom walk from marker_in to marker_out
+                                    //reset_walker();
+                                    //unregister_all_actions();
+                                    walk_again(); //"soft reset"
+
+                                    target_ref = redirect_out_riften_watchtower;
+                                    have_target_to_walk = true;
+                                    using_custom_path = true;
+                                    dont_quicksave_after_custom_path = true;
+                                    dont_use_bounds_for_close_enough = true;
+                                    walk_again_when_finished = true;
+                                    auto pos1 = redirect_in_riften_watchtower->GetPosition();
+                                    auto pos2 = redirect_out_riften_watchtower->GetPosition();
+                                    pos2.z = pos1.z;
+
+                                    custom_path = { pos1, pos2 };
+                                    path = custom_path;
+                                    path_valid = true;
+                                    current_path_point = 0;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    if (target_ref == redirect_out_riften_watchtower)
+                    {
+                        if (player->GetDistance(redirect_out_riften_watchtower) < 100.0f)
+                        {
+                            if (target_before_generic_redirect)
+                            {
+                                auto target_before_generic_redirect_pos = target_before_generic_redirect->GetPosition();
+
+                                if (MiscThings::is_inside_of_riften_watchtower(target_before_generic_redirect))
+                                {
+                                    //init custom walk from marker_in to marker_out
+                                    //reset_walker();
+                                    //unregister_all_actions();
+                                    walk_again(); //"soft reset"
+
+                                    target_ref = redirect_in_riften_watchtower;
+                                    have_target_to_walk = true;
+                                    using_custom_path = true;
+                                    dont_quicksave_after_custom_path = true;
+                                    dont_use_bounds_for_close_enough = true;
+                                    walk_again_when_finished = true;
+                                    custom_path = { redirect_out_riften_watchtower->GetPosition(), redirect_in_riften_watchtower->GetPosition() };
+                                    path = custom_path;
+                                    path_valid = true;
+                                    current_path_point = 0;
+                                    return;
+                                }
+                                else
+                                {
+                                    //finish redirections, restore old target
+                                    dont_check_quest_target_change = false;
+                                    generic_redirect_active = false;
+                                    interaction_after_walk = interaction_before_generic_redirect;
+                                    target_ref = target_before_generic_redirect;
+                                    target_before_generic_redirect = nullptr;
+                                    //dont_reset_after_interaction = false;
+                                    using_custom_path = false;
+                                    custom_path.clear();
+                                    walk_again();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
 
 
 

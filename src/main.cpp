@@ -16,9 +16,9 @@
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
 
+//TODO companions
 //TODO dragonborn dlc
 //TODO dawnguard dlc
-//TODO companions
 //TODO bards
 //TODO random sidequests
 
@@ -26,11 +26,14 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
+//TODO redguard prisoner quest
+//TODO barter and dialogue forces were mixed up in arcadia alchemy
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
-//TODO (MAYBE NO) hide non main quests when we are climbing the mountain and the temple isnt discovered yet. force fast travel advice if ivarstead is discovered and we go to high hrothgar and it isnt discovered
-//TODO add more traders to interesting places
 //TODO camera shake if we are meleeing an enemy and they are walking back fix
+//TODO try fixing order of command register after closed menu/loading (it throws in attack and visit_interesting places too soon sometimes)
+//TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
+//TODO add more traders to interesting places
+//TODO optimise object scan
 
 //TODO more map improvements/limiters?
 

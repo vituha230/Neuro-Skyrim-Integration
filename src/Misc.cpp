@@ -3085,6 +3085,37 @@ namespace MiscThings {
                 }
 
 
+
+                //rift watchtower
+                auto redirect_in_rift_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585d);
+                auto redirect_out_rift_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585c);
+
+                if (redirect_in_rift_watchtower && redirect_out_rift_watchtower)
+                {
+                    if (target == redirect_in_rift_watchtower)
+                        return redirect_in_rift_watchtower; //continue
+
+                    if (target == redirect_out_rift_watchtower)
+                        return redirect_out_rift_watchtower; //continue
+
+
+                    //player inside, target outside
+                    if (MiscThings::is_inside_of_riften_watchtower(player) && !MiscThings::is_inside_of_riften_watchtower(target))
+                    {
+                        return redirect_in_rift_watchtower;
+                    }
+
+                    //player outside, target inside
+                    if (!MiscThings::is_inside_of_riften_watchtower(player) && MiscThings::is_inside_of_riften_watchtower(target))
+                    {
+                        return redirect_out_rift_watchtower;
+                    }
+                }
+
+
+
+
+                //forthragg tower (imperial war entry quest)
                 RE::NiPoint3 forthragg_tower = { -115161.152f, 114344.4805f, -4324.92163f };
 
                 auto redirect_in_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7049d29);
@@ -3249,6 +3280,89 @@ namespace MiscThings {
         return result;
 
     }
+
+    bool is_inside_of_riften_watchtower_top(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto object_pos = object->GetPosition();
+            auto object_worldspace = object->GetWorldspace();
+            //auto riften_worldspace = RE::TESForm::LookupByID(0x16bb4);
+
+            if (object_worldspace && object_worldspace->formID == 0x3c) //tamriel
+            {
+                if (object_pos.z > 12550.0f && object_pos.z < 13191.0)
+                {
+                    RE::NiPoint2 a = { 123099.109, -65424.1758 }; //-5733.7241
+                    RE::NiPoint2 b = { 122127.094, -66044.6094 }; //-5633.2554
+                    RE::NiPoint2 c = { 121481.195, -65100.9883 }; //-5640.6494
+                    RE::NiPoint2 d = { 122431.289, -64436.4766 }; //-5724.9077
+
+                    RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool is_inside_of_riften_watchtower_bottom(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto object_pos = object->GetPosition();
+            auto object_worldspace = object->GetWorldspace();
+            //auto riften_worldspace = RE::TESForm::LookupByID(0x16bb4);
+
+            if (object_worldspace && object_worldspace->formID == 0x3c) //tamriel
+            {
+                if (object_pos.z > 12061.0f && object_pos.z < 12550.0)
+                {
+                    RE::NiPoint2 a = { 123099.109, -65424.1758 }; //-5733.7241
+                    RE::NiPoint2 b = { 122127.094, -66044.6094 }; //-5633.2554
+                    RE::NiPoint2 c = { 121481.195, -65100.9883 }; //-5640.6494
+                    RE::NiPoint2 d = { 122431.289, -64436.4766 }; //-5724.9077
+
+                    RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+    bool is_inside_of_riften_watchtower(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto object_pos = object->GetPosition();
+            auto object_worldspace = object->GetWorldspace();
+            //auto riften_worldspace = RE::TESForm::LookupByID(0x16bb4);
+
+            if (object_worldspace && object_worldspace->formID == 0x3c) //tamriel
+            {
+                if (object_pos.z > 12061.0f && object_pos.z < 13191.0)
+                {
+                    RE::NiPoint2 a = { 123099.109, -65424.1758 }; //-5733.7241
+                    RE::NiPoint2 b = { 122127.094, -66044.6094 }; //-5633.2554
+                    RE::NiPoint2 c = { 121481.195, -65100.9883 }; //-5640.6494
+                    RE::NiPoint2 d = { 122431.289, -64436.4766 }; //-5724.9077
+
+                    RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 
 
     bool is_inside_of_thief_guild_exit(RE::TESObjectREFR* object)

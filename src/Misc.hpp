@@ -9,6 +9,12 @@ namespace MiscThings {
 
     int get_ingame_hour();
 
+    bool is_inside_of_riften_watchtower(RE::TESObjectREFR* object);
+    bool is_inside_of_riften_watchtower_top(RE::TESObjectREFR* object);
+    bool is_inside_of_riften_watchtower_bottom(RE::TESObjectREFR* object);
+
+
+
 
     float get_hud_stealthmeter_value(bool stealth_probe_done = false);
     float get_detection_level_value();
