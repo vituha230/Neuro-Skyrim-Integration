@@ -16,7 +16,7 @@
 /////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
 
-//TODO companions !!!
+//TODO companions (proceed 2nd part of dungeon, catch transformation event)
 //TODO dragonborn dlc
 //TODO dawnguard dlc
 //TODO bards
@@ -3449,7 +3449,7 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
     //Hooks::StealthMeter_Update::Install();
 
     WalkerProcessor::install_hook();
-
+    //Observer::install_observer_hooks();
 
     //Hooks::HookMain::Install();
     

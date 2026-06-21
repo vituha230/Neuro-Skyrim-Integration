@@ -5135,4 +5135,47 @@ namespace Observer {
 
 
 
+
+
+
+
+	/* //doesnt work (MAYBE WILL WORK FOR PLAYER)
+	namespace Hooks {
+
+		struct Werewolf {
+
+
+			static void myStart(RE::WerewolfEffect* a_werewolfEffect)
+			{
+				send_random_context("WEREWOLF START!!!", true);
+				return originalStart(a_werewolfEffect);
+			}
+
+
+			static void myFinish(RE::WerewolfEffect* a_werewolfEffect)
+			{
+				send_random_context("WEREWOLF FINISH!!!", true);
+				return originalFinish(a_werewolfEffect);
+			}
+
+
+			static inline REL::Relocation<decltype(myStart)> originalStart;
+			static inline REL::Relocation<decltype(myFinish)> originalFinish;
+
+			static inline void Install() {
+				originalStart = REL::Relocation<std::uintptr_t>(RE::VTABLE_WerewolfEffect[0]).write_vfunc(0x14, myStart);
+				originalStart = REL::Relocation<std::uintptr_t>(RE::VTABLE_WerewolfEffect[0]).write_vfunc(0x15, myFinish);
+			}
+		};
+	}
+
+
+	void install_observer_hooks()
+	{
+		Hooks::Werewolf::Install();
+	}
+
+	*/
+
+
 }

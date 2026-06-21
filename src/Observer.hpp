@@ -6,6 +6,10 @@
 
 namespace Observer {
 
+
+	//void install_observer_hooks();
+
+
 	void add_quicksave_timer(float time_to_add);
 
 	void detect_threats(float dtime);

@@ -3090,6 +3090,22 @@ namespace MiscThings {
                 }
 
 
+                //dustman cairn door
+                if (target && (target->formID == 0xf5b80 || target->formID == 0x705b5f2))
+                {
+                    auto door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf5b80);
+
+                    if (door && player->GetDistance(door) < 1000.0f && player_pos.z > -6250.0f)
+                    {
+                        auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705b5f2);
+                        if (redirect_marker)
+                            return redirect_marker;
+                    }
+                }
+
+
+
+
 
                 //rift watchtower
                 auto redirect_in_rift_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585d);
@@ -3411,6 +3427,24 @@ namespace MiscThings {
 
 
         
+        //companions shard quest 1
+        if (parent_cell && parent_cell->formID == 0x1528c)
+        {
+            if (quest && quest->formID == 0x6e803)
+            {
+                if (target && target->formID == 0x2a0e9)
+                {
+                    RE::TESObjectREFR* gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x23c30);
+
+                    if (gate1 && MiscThings::two_state_activator_state(gate1) == 1)
+                    {
+                        RE::TESObjectREFR* redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705b5f3);
+                        if (redirect1)
+                            return redirect1;
+                    }
+                }
+            }
+        }
 
         if (parent_cell && parent_cell->formID == 0x4a376)
         {
