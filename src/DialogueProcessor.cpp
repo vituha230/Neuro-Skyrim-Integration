@@ -208,6 +208,8 @@ namespace DialogueProcessor {
                     {
                         if (!options_array.IsNull() && options_array.IsArray())
                         {
+                            int line_number = 0;
+
                             for (int i = 0; i < options_array.GetArraySize(); i++)
                             {
                                 RE::GFxValue var_element;
@@ -253,9 +255,11 @@ namespace DialogueProcessor {
 
 
                                                                                 MenuOption option;
-                                                                                option.id = index;
+                                                                                option.id = line_number;// index;
                                                                                 option.text = text;
                                                                                 dialogue_options.push_back(option);
+
+                                                                                line_number++;
                                                                             }
 
                                                                             id++;
@@ -375,9 +379,26 @@ namespace DialogueProcessor {
             return result;
         }
 
-        int amount_lines = count_dialogue_options();
+        //int amount_lines = count_dialogue_options();
 
-        if (id > amount_lines - 1 || id < 0)
+        //check if option is valid
+        auto options = get_dialogue_options(false);
+
+        if (std::size(options) == 1 || (std::size(options) == 2 && options[0].text == "..."))
+        {
+            options = get_dialogue_options(true);
+        }
+
+        bool found = false;
+
+        for (auto& option : options)
+        {
+            if (option.id == id)
+                found = true;
+        }
+
+
+        if (!found)
         {
             result.first = false;
             result.second = "Invalid choice ID";
@@ -466,6 +487,8 @@ namespace DialogueProcessor {
 
     void processor(float dtime)
     {
+        //int cursor_pos = get_selected_dialogue_line();
+        //auto test_options = get_dialogue_options(false);
 
         RE::UI* ui = RE::UI::GetSingleton();
 

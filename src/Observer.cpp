@@ -2474,6 +2474,7 @@ namespace Observer {
 		int destructible_state;
 		bool reanimating;
 		int wakeup;
+		RE::TESRace* race; //for werewolf/vampiric transformations
 	};
 
 
@@ -2681,7 +2682,9 @@ namespace Observer {
 									if (a_ref == ancano && ancano)
 										ghost_state = actor_ref->IsGhost();
 
-									old_object_state state = { a_ref->IsDead(), is_fleeing,  new_target, (int)actor_ref->actorState1.flyState, ghost_state, -1, -1, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState};
+									auto race = actor_ref->GetRace();
+
+									old_object_state state = { a_ref->IsDead(), is_fleeing,  new_target, (int)actor_ref->actorState1.flyState, ghost_state, -1, -1, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState, race };
 									objects_to_track.insert({ a_ref, state });
 								}
 								else
@@ -2703,7 +2706,9 @@ namespace Observer {
 									if (a_ref == ancano && ancano)
 										ghost_state = actor_ref->IsGhost();
 
-									old_object_state new_state = { a_ref->IsDead(), is_fleeing, new_target, old_state.action_flags, ghost_state, old_state.trap_firing , old_state.destructible_state, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState };
+									auto race = actor_ref->GetRace();
+
+									old_object_state new_state = { a_ref->IsDead(), is_fleeing, new_target, old_state.action_flags, ghost_state, old_state.trap_firing , old_state.destructible_state, (int)actor_ref->actorState2.reanimating, (int)actor_ref->actorState1.sitSleepState, race };
 
 
 									if (old_state.pillar_face_code != new_state.pillar_face_code) //used this flag for ghosts
@@ -2723,6 +2728,22 @@ namespace Observer {
 											result.push_back(message_text);
 										}
 									}
+
+									if (old_state.race != new_state.race && new_state.race && old_state.race)
+									{
+										objects_to_track.insert_or_assign(a_ref, new_state);
+
+										std::string actor_name = MiscThings::insert_object_into_list_and_get_info(a_ref, false, false, true);
+										std::string new_race_name = new_state.race->GetName();
+
+										if (new_race_name != "")
+										{
+											std::string message_text = "[" + actor_name + " turned into " + new_race_name + "!]";
+											result.push_back(message_text);
+										}
+
+									}
+
 
 
 									if (old_state.dead != new_state.dead)
@@ -2955,7 +2976,7 @@ namespace Observer {
 								{
 									if (objects_to_track.find(a_ref) == objects_to_track.end())
 									{
-										old_object_state state = { 0, 0, 0, 0, 0, -1, -1, 0, 0 };
+										old_object_state state = { 0, 0, 0, 0, 0, -1, -1, 0, 0, 0 };
 										RE::ExtraDataList* extralist = &a_ref->extraList;
 										auto extra = extralist->GetByType(RE::ExtraDataType::kAction);
 										int pillar_face = MiscThings::get_pillar_face_name(a_ref);
@@ -2970,7 +2991,7 @@ namespace Observer {
 										//	action_data = static_cast<int>(*extra_action->action);
 										//}
 
-										state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state, 0, 0 };
+										state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state, 0, 0, 0};
 
 										objects_to_track.insert({ a_ref, state });
 									}
@@ -2985,7 +3006,7 @@ namespace Observer {
 										int activation = MiscThings::two_state_activator_state(a_ref);
 										int destructible_state = MiscThings::get_destructible_state(a_ref);
 
-										old_object_state new_state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state, 0, 0 };
+										old_object_state new_state = { 0, 0, 0, activation, pillar_face, trap_firing, destructible_state, 0, 0, 0};
 
 
 										if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")

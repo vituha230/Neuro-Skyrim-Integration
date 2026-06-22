@@ -212,7 +212,7 @@ namespace MiscThings {
     bool player_has_spell(RE::SpellItem* spell);
 
     //int insert_ref_into_obj_list(RE::TESObjectREFR* refr);
-    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains = false, bool no_linked_chains = false);
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains = false, bool no_linked_chains = false, bool ignore_modelstate = false);
     std::string insert_quest_into_list_and_get_info(std::string quest_text);
     std::string insert_object_into_list_custom_name(std::string name, RE::TESObjectREFR* refr);
 
@@ -342,7 +342,7 @@ namespace MiscThings {
 
     bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state = true);
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
-    bool is_new_object_valid(RE::TESObjectREFR* a_ref);
+    bool is_new_object_valid(RE::TESObjectREFR* a_ref, bool ignore_modelstate = false);
     bool in_soltsheim();
     bool in_skuldafn();
     bool player_inside_of_soltsteim_midgates();

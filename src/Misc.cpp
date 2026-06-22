@@ -11980,7 +11980,7 @@ namespace MiscThings {
 
 
 
-    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains, bool no_linked_chains)
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains, bool no_linked_chains, bool ignore_modelstate)
     {
         std::string result = "";
 
@@ -12114,7 +12114,7 @@ namespace MiscThings {
                 }
             }
         
-            if (!found && is_new_object_valid(refr))
+            if (!found && is_new_object_valid(refr, ignore_modelstate))
             {
                 int new_id = std::size(objects_around);
 
@@ -16954,7 +16954,7 @@ namespace MiscThings {
     }
 
 
-    bool is_new_object_valid(RE::TESObjectREFR* a_ref)
+    bool is_new_object_valid(RE::TESObjectREFR* a_ref, bool ignore_modelstate)
     {
         if (!a_ref)
             return false;
@@ -16981,8 +16981,22 @@ namespace MiscThings {
             if (MiscThings::has_digits(name))
                 return false;
 
-            if (a_ref->AsReference()->modelState == 0)
-                return false; //skip objects without world model
+
+            bool dont_check_modelstate = ignore_modelstate;
+
+            if (base_obj && base_type == RE::FormType::NPC)
+            {
+                //-		race	0x000001bf793d88e0 Race [0x000CDD84]	RE::TESRace * ----- werewolf race
+                auto npc = (RE::TESNPC*)base_obj;
+
+                if (npc->race && npc->race->formID == 0x000CDD84) //werewolf. has model state 0 for some reason (probably model is replaced with werewolf model and original model is disabled)
+                    dont_check_modelstate = true;
+            }
+
+
+            if (!dont_check_modelstate)
+                if (a_ref->AsReference()->modelState == 0)
+                    return false; //skip objects without world model
 
 
             if (a_ref->IsDisabled())
