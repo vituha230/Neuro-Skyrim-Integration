@@ -2660,7 +2660,7 @@ namespace WalkerProcessor {
     }
 
 
-    RE::TESObjectREFR* get_nearest_door()
+    RE::TESObjectREFR* get_nearest_door(bool ignore_raycast)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
@@ -2700,7 +2700,7 @@ namespace WalkerProcessor {
 
                         if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
                         {
-                            if (MiscThings::raycastable(a_ref, 500.0f))
+                            if (ignore_raycast || MiscThings::raycastable(a_ref, 500.0f))
                             {
                                 auto distance = player->GetDistance(a_ref);
 
@@ -2721,7 +2721,7 @@ namespace WalkerProcessor {
         return result;
     }
 
-    bool have_doors_nearby(float range)
+    bool have_doors_nearby(float range, bool ignore_raycast)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
@@ -2758,7 +2758,7 @@ namespace WalkerProcessor {
 
                         if (base_type == RE::FormType::Door)// && a_ref->GetDisplayFullName() == "")
                         {
-                            if (MiscThings::raycastable(a_ref, 500.0f))
+                            if (ignore_raycast || MiscThings::raycastable(a_ref, 500.0f))
                             {
                                 result = true;
                                 return RE::BSContainer::ForEachResult::kStop;
@@ -5354,8 +5354,8 @@ namespace WalkerProcessor {
 
 
     //remember that this is bonus (so 0 is no bonus and 1 is x2)
-    float werewolf_coef = 1.5f;
-
+    float werewolf_coef_attack = 1.8f;
+    float werewolf_coef_normal = 0.0f;
 
 
     float successful_raycast_time = 0.0f;
@@ -5683,11 +5683,11 @@ namespace WalkerProcessor {
 
                         if (bound_dif.x > 100.0f || bound_dif.y > 100.0f)
                         {
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef)))
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_attack)))
                                 return true;
                         }
                         else
-                            if (distance.Length() < 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef))
+                            if (distance.Length() < 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_attack))
                                 return true;
 
                     }
@@ -5783,11 +5783,11 @@ namespace WalkerProcessor {
                                 threshold = 0.0f;
 
                             if (target_ref)// && target_ref->IsActor() && !target_ref->IsDead())
-                                if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef)))
+                                if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal)))
                                     return true;
                         }
                         else
-                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef))
+                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal))
                                 return true;
                     }
                     else
@@ -5810,13 +5810,13 @@ namespace WalkerProcessor {
                             threshold2 = weird_threshold2;
                         }
 
-                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * 1.5f)))
+                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal)))
                         {
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef)))
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal)))
                                 return true;
                         }
                         else
-                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef))
+                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal))
                                 return true;
                     }
                 }
@@ -15173,9 +15173,9 @@ namespace WalkerProcessor {
 
                                 if (failed_wiggles >= 4)
                                 {
-                                    if (have_doors_nearby(200.0f))
+                                    if (have_doors_nearby(200.0f, true))
                                     {
-                                        auto shit_door = get_nearest_door();
+                                        auto shit_door = get_nearest_door(true);
 
                                         if (shit_door)
                                         {

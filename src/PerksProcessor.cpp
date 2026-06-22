@@ -17,6 +17,15 @@ namespace PerksProcessor {
 
 	std::vector<int> banned_skill_trees{};
 
+
+	int amount_trees()
+	{
+		if (MiscThings::is_werewolf())
+			return 1;
+		else
+			return 18; //normal
+	}
+
 	bool in_perks = false;
 	bool select_tree_request_sent = false;
 	int tree_choice = 0;
@@ -103,7 +112,21 @@ namespace PerksProcessor {
 	//dirs are: up, right, down, left.
 	//node id is perk's index
 	//-1 - dir leads nowhere
-	std::vector<tree_path_node> navigation_map =
+	std::vector<tree_path_node> navigation_map_werewolf =
+	{
+		//Werewolf
+		{0, {{1, {5, 2, -1, 7}}, //Bestial Strength
+		{2, {3, -1, -1, 4}}, //Gorging
+		{3, {-1, -1, 2, 5}}, //Savage Feeding
+		{4, {5, 2, -1, 7}}, //Animal Vigor
+		{5, {-1, 3, 1, 7}}, //Totem of Terror
+		{6, {-1, 3, 1, 8}}, //Totem of the Predator
+		{7, {6, 1, -1, 8}}, //Totem of Ice Brothers
+		{8, {-1, 6, -1, -1}}} //Totem of the Moon
+		}
+	};
+
+	std::vector<tree_path_node> navigation_map_normal =
 	{
 		//Enchanting
 		{0, {{1, {-1, 2, 8, -1}}, //Storm Enchanter
@@ -324,6 +347,15 @@ namespace PerksProcessor {
 	};
 
 
+	std::vector<tree_path_node>* navigation_map()
+	{
+		if (MiscThings::is_werewolf())
+			return &navigation_map_werewolf;
+		else
+			return &navigation_map_normal;
+	}
+
+
 
 	//std::vector<tree_struct> perk_local_coords{};
 	/*
@@ -506,19 +538,23 @@ namespace PerksProcessor {
 		}
 
 
-		if (tree_id == -1)
+		if (!MiscThings::is_werewolf())
 		{
-			quit_until_no_menus_left = true;
-			result.first = true;
-			result.second = "[Stopped skill menu]";
-			return result;
+			if (tree_id == -1)
+			{
+				quit_until_no_menus_left = true;
+				result.first = true;
+				result.second = "[Stopped skill menu]";
+				return result;
+			}
 		}
+
 
 		auto menu = ui->GetMenu<RE::StatsMenu>();
 
 		if (in_perks && menu) //TODO: return not bool but informative message on what was the error if there was one
 		{
-			if (tree_id >= 0 && tree_id < menu->kTotalTrees)
+			if (tree_id >= 0 && tree_id < amount_trees())
 			{
 				tree_choice = tree_id;
 				tree_choice_valid = true;
@@ -944,7 +980,7 @@ namespace PerksProcessor {
 		if (menu)
 		{
 			int selected_tree = get_selected_tree();
-			int total_trees = menu->kTotalTrees;
+			int total_trees = amount_trees();
 
 			int right_distance = (total_trees - selected_tree + choice_id) % total_trees;
 			int left_distance = (total_trees - choice_id + selected_tree) % total_trees;
@@ -1010,14 +1046,14 @@ namespace PerksProcessor {
 	}
 
 
-	void fill_all_perk_list()
+	void fill_all_perk_list_normal()
 	{
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::StatsMenu>();
 
 		if (menu)
 		{
-			for (int i = 0; i < 18; i++)
+			for (int i = 0; i < amount_trees(); i++)
 			{
 				perk_all_nodes_list.push_back({});
 
@@ -1025,8 +1061,50 @@ namespace PerksProcessor {
 				{
 					auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(menu->skillTrees[i]);
 
-					std::vector<RE::BGSSkillPerkTreeNode*> perk_nodes{};
+					if (tree)
+					{
+						std::vector<RE::BGSSkillPerkTreeNode*> perk_nodes{};
 
+						for (auto perk_root : tree->perkTree->children)
+						{
+							visit_perk_tree(&perk_nodes, perk_root);
+						}
+
+						for (auto perk_node : perk_nodes)
+						{
+							if (perk_node)
+							{
+								perk_all_nodes_list[i].insert({ perk_node->index, perk_node });
+							}
+						}
+
+						perk_all_nodes_list_valid = true;
+					}
+				}
+			}
+		}
+	}
+
+
+	void fill_all_perk_list_werewolf()
+	{
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::StatsMenu>();
+
+		if (menu)
+		{
+			int i = 0;
+
+			perk_all_nodes_list.push_back({});
+
+			if (menu)
+			{
+				auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kWerewolfPerks);
+
+				std::vector<RE::BGSSkillPerkTreeNode*> perk_nodes{};
+
+				if (tree)
+				{
 					for (auto perk_root : tree->perkTree->children)
 					{
 						visit_perk_tree(&perk_nodes, perk_root);
@@ -1038,21 +1116,61 @@ namespace PerksProcessor {
 						{
 							perk_all_nodes_list[i].insert({ perk_node->index, perk_node });
 						}
-
 					}
 
+					perk_all_nodes_list_valid = true;
 				}
+				
 			}
 
-			perk_all_nodes_list_valid = true;
+			
 		}
+	}
 
-
+	void fill_all_perk_list()
+	{
+		if (MiscThings::is_werewolf())
+			fill_all_perk_list_werewolf();
+		else
+			fill_all_perk_list_normal();
 	}
 
 
 
-	void fill_perk_list(int tree_id)
+
+
+	void fill_perk_list_werewolf()
+	{
+		//kWerewolfPerks
+
+		std::vector<MenuOption> result{};
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::StatsMenu>();
+
+		if (menu)
+		{
+			auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kWerewolfPerks);
+
+			std::vector<RE::BGSSkillPerkTreeNode*> perk_nodes{};
+
+			for (auto perk_root : tree->perkTree->children)
+			{
+				visit_perk_tree(&perk_nodes, perk_root);
+			}
+
+			for (auto perk_node : perk_nodes)
+			{
+				if (perk_node)
+				{
+					perk_nodes_list.insert({ perk_node->index, perk_node });
+				}
+			}
+
+			perk_nodes_list_valid = true;
+		}
+	}
+
+	void fill_perk_list_normal(int tree_id)
 	{
 		std::vector<MenuOption> result{};
 		RE::UI* ui = RE::UI::GetSingleton();
@@ -1081,9 +1199,17 @@ namespace PerksProcessor {
 
 			perk_nodes_list_valid = true;
 		}
-
-
 	}
+
+
+	void fill_perk_list(int tree_id)
+	{
+		if (MiscThings::is_werewolf())
+			fill_perk_list_werewolf();
+		else
+			fill_perk_list_normal(tree_id);
+	}
+
 
 
 
@@ -1108,8 +1234,12 @@ namespace PerksProcessor {
 			}
 		}
 
-		result.push_back({ -1, "[QUIT PERK MENU]" });
-		result.push_back({ -2, "[GO BACK TO SKILL TREE SELECTION]" });
+		if (!MiscThings::is_werewolf())
+		{
+			result.push_back({ -1, "[QUIT PERK MENU]" });
+			result.push_back({ -2, "[GO BACK TO SKILL TREE SELECTION]" });
+		}
+
 
 		return result;
 	}
@@ -1213,8 +1343,11 @@ namespace PerksProcessor {
 		if (std::size(result) < 1)
 			banned_skill_trees.push_back(get_selected_tree());
 
-		result.push_back({ -1, "[QUIT SKILL MENU]" });
-		result.push_back({ -2, "[GO BACK TO SKILL TREE SELECTION]" });
+		if (!MiscThings::is_werewolf())
+		{
+			result.push_back({ -1, "[QUIT PERK MENU]" });
+			result.push_back({ -2, "[GO BACK TO SKILL TREE SELECTION]" });
+		}
 		//result.push_back({ -3, "[SHOW UNAVAILABLE PERKS IN THIS SKILL TREE]" });
 
 
@@ -1270,13 +1403,30 @@ namespace PerksProcessor {
 
 			}
 
-		result.push_back({ -1, "[QUIT SKILL MENU]" });
+		if (!MiscThings::is_werewolf())
+		{
+			result.push_back({ -1, "[QUIT SKILL MENU]" });
+		}
+		
 
 		return result;
 	}
 
 
-	std::string get_tree_name(int tree_id)
+	std::string get_tree_name_werewolf()
+	{
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::StatsMenu>();
+
+		auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kWerewolfPerks);
+		if (tree)
+			return tree->GetFullName();
+
+		return "";
+	}
+
+
+	std::string get_tree_name_normal(int tree_id)
 	{
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::StatsMenu>();
@@ -1287,6 +1437,16 @@ namespace PerksProcessor {
 			if (tree)
 				return tree->GetFullName();
 		}
+
+		return "";
+	}
+
+	std::string get_tree_name(int tree_id)
+	{
+		if (MiscThings::is_werewolf())
+			get_tree_name_werewolf();
+		else
+			get_tree_name_normal(tree_id);
 
 		return "";
 	}
@@ -1338,22 +1498,29 @@ namespace PerksProcessor {
 		}
 
 
-		if (perk_id == -1)
+		if (!MiscThings::is_werewolf())
 		{
-			quit_until_no_menus_left = true;
-			result.first = true;
-			result.second = "[Stopped skill menu]";
-			return result;
+			if (perk_id == -1)
+			{
+				quit_until_no_menus_left = true;
+				result.first = true;
+				result.second = "[Stopped skill menu]";
+				return result;
+			}
 		}
 
 
-		if (perk_id == -2) //back to skill tree selection
+		if (!MiscThings::is_werewolf())
 		{
-			reset_perks();
-			result.first = true;
-			result.second = "[Processing...]";
-			return result;
+			if (perk_id == -2) //back to skill tree selection
+			{
+				reset_perks();
+				result.first = true;
+				result.second = "[Processing...]";
+				return result;
+			}
 		}
+
 
 		/**/
 		if (false && perk_id == -3) //show all perks
@@ -1428,7 +1595,7 @@ namespace PerksProcessor {
 	void dump_one_file(std::ofstream& of, int tree_id)
 	{
 
-		auto test_path_tree = &navigation_map[tree_id];
+		auto test_path_tree = &navigation_map()->at(tree_id);
 
 		of << "//" + get_tree_name(tree_id) + "\n";
 
@@ -1476,7 +1643,7 @@ namespace PerksProcessor {
 	void visit_perk_tree_scan_setup(int tree_id, RE::BGSSkillPerkTreeNode* node)
 	{
 
-		auto test_path_tree = &navigation_map[tree_id];
+		auto test_path_tree = &navigation_map()->at(tree_id);
 
 		if (node && node->perk)
 		{
@@ -1489,13 +1656,42 @@ namespace PerksProcessor {
 	}
 
 
-	void setup_tree()
+	void setup_tree_for_scan_werewolf()
 	{
-		for (int i = 0; i < 18; i++)
+		for (int i = 0; i < amount_trees(); i++)
 		{
-			navigation_map.push_back({});
+			navigation_map()->push_back({});
 
-			auto test_path_tree = &navigation_map[i];
+			auto test_path_tree = &navigation_map()->at(i);
+
+			test_path_tree->id = i;
+
+			RE::UI* ui = RE::UI::GetSingleton();
+			auto menu = ui->GetMenu<RE::StatsMenu>();
+
+			auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kWerewolfPerks);
+
+			for (auto perk_node : tree->perkTree->children)
+			{
+				visit_perk_tree_scan_setup(i, perk_node);
+				//std::vector<int> empty_dirs = { -999, -999, -999, -999 };
+				//test_path_tree.perk_nodes.insert({ perk_node->index , empty_dirs });
+
+			}
+		}
+
+		tree_was_set_up = true;
+	}
+
+
+
+	void setup_tree_for_scan_normal()
+	{
+		for (int i = 0; i < amount_trees(); i++)
+		{
+			navigation_map()->push_back({});
+
+			auto test_path_tree = &navigation_map()->at(i);
 
 			test_path_tree->id = i;
 
@@ -1516,6 +1712,14 @@ namespace PerksProcessor {
 		tree_was_set_up = true;
 	}
 
+
+	void setup_tree_for_scan()
+	{
+		if (MiscThings::is_werewolf())
+			setup_tree_for_scan_werewolf();
+		else
+			setup_tree_for_scan_normal();
+	}
 
 
 
@@ -1539,7 +1743,7 @@ namespace PerksProcessor {
 		{
 			if (dir != skip_dir)
 			{
-				auto test_path_tree = &navigation_map[tree_id];
+				auto test_path_tree = &navigation_map()->at(tree_id);
 
 				auto dirs_from = test_path_tree->perk_nodes.find(from);
 
@@ -1625,9 +1829,12 @@ namespace PerksProcessor {
 	int get_node_to_scan(int tree_id)
 	{
 
-		auto test_path_tree = &navigation_map[tree_id];
+		auto test_path_tree = &navigation_map()->at(tree_id);
 
 		auto current_node = test_path_tree->perk_nodes.find(get_current_perk_id());
+
+		if (current_node == test_path_tree->perk_nodes.end())
+			return -1;
 
 		for (int i = 0; i < 4; i++)
 			if (current_node->second[i] == -999)
@@ -1719,7 +1926,7 @@ namespace PerksProcessor {
 
 	int get_dir_to_scan(int tree_id, int node_id)
 	{
-		auto test_path_tree = &navigation_map[tree_id];
+		auto test_path_tree = &navigation_map()->at(tree_id);
 
 		auto current_node = test_path_tree->perk_nodes.find(node_id);
 
@@ -1769,6 +1976,9 @@ namespace PerksProcessor {
 
 	bool scan_tree(int tree_id, float dtime)
 	{
+		if (tree_id < 0)
+			return false;
+
 		if (!have_node_to_scan)
 		{
 			node_to_scan = get_node_to_scan(tree_id);
@@ -1783,7 +1993,7 @@ namespace PerksProcessor {
 		{
 			if (int result = get_dir_probe_result(dtime); result != -999)
 			{
-				auto test_path_tree = &navigation_map[tree_id];
+				auto test_path_tree = &navigation_map()->at(tree_id);
 
 				auto scanned_node = test_path_tree->perk_nodes.find(node_to_scan);
 				scanned_node->second[dir_to_scan] = result;
@@ -1897,7 +2107,7 @@ namespace PerksProcessor {
 
 
 
-
+	//to do scan: set scan_mode=true, release_mode = false, make new empty navigation map, 
 	bool scan_mode = false;
 	bool release_mode = true;
 	float perks_processor_timer = 0.0f;
@@ -1907,6 +2117,8 @@ namespace PerksProcessor {
 
 	void processor(float dtime)
 	{
+		int current_perk_id_123 = get_current_perk_id();
+
 
 		RE::UI* ui = RE::UI::GetSingleton();
 		in_perks = ui->IsMenuOpen(RE::StatsMenu::MENU_NAME) && !ui->IsMenuOpen(RE::LevelUpMenu::MENU_NAME); //separate statsmenu and lvlupmenu
@@ -1914,11 +2126,6 @@ namespace PerksProcessor {
 
 		if (!in_perks)
 			banned_skill_trees.clear();
-
-		if (!perk_all_nodes_list_valid)
-		{
-			fill_all_perk_list();
-		}
 
 
 		if (quit_until_no_menus_left)
@@ -1968,17 +2175,19 @@ namespace PerksProcessor {
 
 		//move_cursor_to_perk(perk_choice);
 
+		
 		if (scanning)
 		{
+
 			if (!tree_was_set_up)
 			{
-				setup_tree();
+				setup_tree_for_scan();
 			}
 			else
 			{
 				if (scan_tree(tree_to_scan, dtime))
 				{
-					std::ofstream of("TREE_MAP_ " + std::to_string(tree_to_scan) + ".txt");
+					std::ofstream of("TREE_MAP_WEREWOLF_ " + std::to_string(tree_to_scan) + ".txt");
 					dump_one_file(of, tree_to_scan);
 					of.close();
 
@@ -1991,10 +2200,10 @@ namespace PerksProcessor {
 					tree_to_scan++;
 					tree_choice++;
 
-					if (tree_to_scan >= 18)
+					if (tree_to_scan >= amount_trees())
 					{
 						std::ofstream of("TREE_MAP_ALL.txt");
-						for (int i = 0; i < 18; i++)
+						for (int i = 0; i < amount_trees(); i++)
 							dump_one_file(of, i);
 						of.close();
 
@@ -2015,10 +2224,35 @@ namespace PerksProcessor {
 
 			if (in_perks) //TODO: filter initial fade in with potential lvlup menu blocking this menu. probably need timers too
 			{
-				auto skill_trees = menu->skillTrees;
+				//auto skill_trees = menu->skillTrees;
 
 				if (lvlup_menu_filter)
 				{
+
+					if (!perk_all_nodes_list_valid)
+					{
+						fill_all_perk_list();
+						return;
+					}
+
+
+					if (MiscThings::is_werewolf())
+					{
+						if (get_available_perk_points_number() < 1)
+						{
+							quit_until_no_menus_left = true;
+							send_random_context("You dont have any perk points left to spend. Quitting skill menu", false);
+							return;
+						}
+						else
+						{
+							select_tree_request_sent = true;
+							tree_choice_valid = true;
+							tree_choice = 0;
+						}
+					}
+						
+
 					if (!select_tree_request_sent)
 					{
 						

@@ -79,6 +79,7 @@ void reset_input_processor();
 void right_attack_bow();
 void left_attack_bow();
 
+void press_tab();
 
 void quicksave();
 void quickload();

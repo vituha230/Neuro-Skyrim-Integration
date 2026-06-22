@@ -729,6 +729,11 @@ namespace MiscThings {
 
             if (door == dawnstar_sanct_door)
                 return true;
+
+            if (door->formID == 0xa9530)
+                return true; //silverhand skinner base exit door
+
+
         }
 
         return false;
@@ -3426,8 +3431,27 @@ namespace MiscThings {
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
 
 
-        
+
         //companions shard quest 1
+
+
+        if (quest && quest->formID == 0x1cef4)
+        {
+            auto companions_rampage = (RE::TESQuest*)RE::TESForm::LookupByEditorID("C03Rampage");
+
+            if (companions_rampage && companions_rampage->IsEnabled())
+            {
+                auto stage = companions_rampage->currentStage;
+                if (stage < 100)
+                {
+                    auto whiterun_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b1f3);
+
+                    if (whiterun_door)
+                        return whiterun_door;
+                }
+            }
+        }
+
 
         auto companions_quest_1 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("C01");
 
@@ -7850,6 +7874,20 @@ namespace MiscThings {
                                         WalkerProcessor::look_up(0.25f);
 
                                     var_string = "Quest completed: " + insert_quest_into_list_and_get_info(var_string.substr(9, var_string.length() - 9));
+
+
+                                    if (var_string == "Quest completed: : THE SILVER HAND")
+                                    {
+                                        RE::TESObjectREFR* blocker_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x706424d);
+
+                                        if (blocker_1)
+                                        {
+                                            auto old_pos = blocker_1->GetPosition();
+                                            old_pos.z += 1000.0f;
+                                            MiscThings::SetPosition_moveto(blocker_1, old_pos);
+                                        }
+                                    }
+
                                     WalkerProcessor::test_new_very_close_quest();
                                 }
                                     
@@ -8128,9 +8166,34 @@ namespace MiscThings {
         auto xp_needed = player->skills->data->levelThreshold;
         auto current_xp = player->skills->data->xp;
 
-        if (player && !player->IsDead() && current_xp > 0 && xp_needed > 0)
-            result = current_xp >= xp_needed;
+        if (player && !player->IsDead())
+        {
+            if (MiscThings::is_werewolf())
+            {
+                auto object_manager = RE::BGSDefaultObjectManager::GetSingleton();
 
+                if (object_manager)
+                {
+                    auto werewolf_perks = (RE::TESGlobal*)object_manager->GetObject(RE::DEFAULT_OBJECT::kWerewolfAvailablePerks);
+
+                    if (werewolf_perks && werewolf_perks->formType == RE::FormType::Global)
+                    {
+                        if (werewolf_perks->value > 0.0f)
+                            result = true; //ok but what if we cant spend perk points because all perks are taken... i guess its a todo. ban quitting menu until perk point is spent for now
+                    }
+                }
+            }
+            else
+            {
+                if (current_xp > 0 && xp_needed > 0)
+                    result = current_xp >= xp_needed;
+            }
+        }
+
+        //this doesnt work, always 0
+        //auto werewolf_perks = player->GetActorValue(RE::ActorValue::kWerewolfPerks);
+        //if (werewolf_perks > 0.0f)
+        //    werewolf_levelup = true;
 
         return result;
     }
