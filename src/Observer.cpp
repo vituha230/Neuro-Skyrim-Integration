@@ -1579,7 +1579,7 @@ namespace Observer {
 														std::string info = MiscThings::insert_object_into_list_custom_name("Word of Power, calling for you", a_ref);
 
 														if (info != "")
-															send_random_context("You hear something... " + info, false);
+															send_random_context("You hear something... " + info, true);
 													}
 													else
 													{
@@ -2731,19 +2731,28 @@ namespace Observer {
 
 									if (old_state.race != new_state.race && new_state.race && old_state.race)
 									{
+
 										objects_to_track.insert_or_assign(a_ref, new_state);
 
-										std::string actor_name = MiscThings::insert_object_into_list_and_get_info(a_ref, false, false, true);
-										std::string new_race_name = new_state.race->GetName();
-
-										if (new_race_name != "")
+										if (!MiscThings::is_intro_quest_only())
 										{
-											std::string message_text = "[" + actor_name + " turned into " + new_race_name + "!]";
-											result.push_back(message_text);
+
+											std::string actor_name = "";
+
+											if (a_ref == player_actor)
+												actor_name = "You";
+											else
+												MiscThings::insert_object_into_list_and_get_info(a_ref, false, false, true);
+
+											std::string new_race_name = new_state.race->GetName();
+
+											if (new_race_name != "")
+											{
+												std::string message_text = "[" + actor_name + " turned into " + new_race_name + "!]";
+												result.push_back(message_text);
+											}
 										}
-
 									}
-
 
 
 									if (old_state.dead != new_state.dead)

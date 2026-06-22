@@ -2465,7 +2465,7 @@ namespace MiscThings {
     }
 
 
-    bool is_door_locked(RE::TESObjectREFR* target_refr)
+    bool is_door_locked(RE::TESObjectREFR* target_refr, bool ignore_player_has_key)
     {
         bool result = false;
 
@@ -2486,7 +2486,7 @@ namespace MiscThings {
                         if (extra_lock_data->IsLocked())
                             if (auto key = extra_lock_data->key; key)
                             {
-                                if (!MiscThings::player_has_key(key))
+                                if (ignore_player_has_key || !MiscThings::player_has_key(key))
                                     result = true; //locked, no key. TODO: may be inaccessible at all. we wont be able to lockpick it
                             }
                             else
@@ -2503,7 +2503,7 @@ namespace MiscThings {
                     if (lock)
                     {
                         auto key = lock->key;
-                        if (!MiscThings::player_has_key(key))
+                        if (ignore_player_has_key || !MiscThings::player_has_key(key))
                             result = true; //locked, no key. TODO: may be inaccessible at all. we wont be able to lockpick it
 
                     }
@@ -3428,9 +3428,29 @@ namespace MiscThings {
 
         
         //companions shard quest 1
-        if (parent_cell && parent_cell->formID == 0x1528c)
+
+        auto companions_quest_1 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("C01");
+
+        if (quest && quest == companions_quest_1)
         {
-            if (quest && quest->formID == 0x6e803)
+            auto stage = companions_quest_1->GetCurrentStageID();
+
+            if (stage == 40)
+            {
+                if (player_worldspace && player_worldspace->formID == 0x1a26f)
+                {
+                    if (target && target->formID == 0x1a691)
+                    {
+                        auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7061385);
+
+                        if (redirect)
+                            return redirect;
+                    }
+                }
+            }
+
+
+            if (parent_cell && parent_cell->formID == 0x1528c)
             {
                 if (target && target->formID == 0x2a0e9)
                 {
@@ -3439,6 +3459,21 @@ namespace MiscThings {
                     if (gate1 && MiscThings::two_state_activator_state(gate1) == 1)
                     {
                         RE::TESObjectREFR* redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705b5f3);
+                        if (redirect1)
+                            return redirect1;
+                    }
+                }
+            }
+
+            if (parent_cell && parent_cell->formID == 0x2a03a)
+            {
+                if (target && target->formID == 0x6e807)
+                {
+                    RE::TESObjectREFR* gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2a218);
+
+                    if (gate1 && MiscThings::is_door_locked(gate1, true)) //ignoring key because pathfinding doesnt care if player has key
+                    {
+                        RE::TESObjectREFR* redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705e4bc);
                         if (redirect1)
                             return redirect1;
                     }
@@ -5819,6 +5854,21 @@ namespace MiscThings {
 
 
 
+    bool is_werewolf()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto race = player->GetRace();
+
+            if (race && race->formID == 0xCDD84)
+                return true;
+        }
+
+        return false;
+    }
+
     bool is_on_horse()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -5829,10 +5879,13 @@ namespace MiscThings {
             //auto horse_data = extralist->GetByType(RE::ExtraDataType::kHorse);
 
             //if (horse_data)
-            if (player_actor->IsOnMount())
-                return true;
-        }
 
+            if (player_actor)
+            {
+                if (player_actor->IsOnMount())
+                    return true;
+            }
+        }
 
         return false;
     }
@@ -8846,6 +8899,20 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = door->GetModel();
+
+                        if (model.find("WRUnderforgedoor01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, -80.0f, 140.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("WRSkyForge01Door01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 1.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (model.find("TrapdoorLadder01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
@@ -16457,6 +16524,19 @@ namespace MiscThings {
     }
 
 
+
+    bool is_intro_quest_only()
+    {
+        auto threshold_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ101");
+        if (threshold_quest)
+            if (threshold_quest->GetCurrentStageID() < 160)
+                return true;
+
+
+        return false;
+    }
+
+
     bool is_intro()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -16989,7 +17069,7 @@ namespace MiscThings {
                 //-		race	0x000001bf793d88e0 Race [0x000CDD84]	RE::TESRace * ----- werewolf race
                 auto npc = (RE::TESNPC*)base_obj;
 
-                if (npc->race && npc->race->formID == 0x000CDD84) //werewolf. has model state 0 for some reason (probably model is replaced with werewolf model and original model is disabled)
+                if (npc->race && npc->race->formID == 0xCDD84) //werewolf. has model state 0 for some reason (probably model is replaced with werewolf model and original model is disabled)
                     dont_check_modelstate = true;
             }
 

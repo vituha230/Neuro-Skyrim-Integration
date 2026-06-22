@@ -425,7 +425,12 @@ namespace MiscThings {
     bool is_friend(RE::TESObjectREFR* object);
 
     bool player_has_key(RE::TESKey* key);
-    bool is_door_locked(RE::TESObjectREFR* target_refr);
+    bool is_door_locked(RE::TESObjectREFR* target_refr, bool ignore_player_has_key = false);
+
+    bool is_werewolf();
+
+
+    bool is_intro_quest_only();
 
     bool is_serving_jail();
 

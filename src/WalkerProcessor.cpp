@@ -11,7 +11,6 @@
 #include "Observer.hpp"
 
 
-
 namespace WalkerProcessor {
 
 
@@ -1043,7 +1042,7 @@ namespace WalkerProcessor {
 
 
 
-    namespace Hooks {
+    namespace HooksPathing {
 
         struct Pathing {
 
@@ -1555,7 +1554,7 @@ namespace WalkerProcessor {
 
     void install_hook()
     {
-        Hooks::Pathing::Install();
+        HooksPathing::Pathing::Install();
     }
 
 
@@ -1621,7 +1620,7 @@ namespace WalkerProcessor {
 
                     direction_vector.Unitize();
 
-                    if (MiscThings::is_on_horse())
+                    if (MiscThings::is_on_horse() || MiscThings::is_werewolf())
                         direction_vector.z -= 0.2f;
                     else
                         direction_vector.z -= 0.08f;
@@ -1683,7 +1682,7 @@ namespace WalkerProcessor {
 
                         direction_vector.Unitize();
 
-                        if (MiscThings::is_on_horse())
+                        if (MiscThings::is_on_horse() || MiscThings::is_werewolf())
                             direction_vector.z -= 0.2f;
                         else
                             direction_vector.z -= 0.08f;
@@ -1728,7 +1727,7 @@ namespace WalkerProcessor {
             auto player_pos = RE::PlayerCharacter::GetSingleton()->GetPosition();
 
 
-            if (MiscThings::is_on_horse())
+            if (MiscThings::is_on_horse() || MiscThings::is_werewolf())
                 return false;
 
             if (path_valid && !use_last_point_of_last_path)
@@ -2208,7 +2207,7 @@ namespace WalkerProcessor {
 
 
 
-                if (!player->IsSwimming() && !MiscThings::is_on_horse() && !dont_shift && (always_shift || is_about_to_fall() || target_is_slowwalking))
+                if (!player->IsSwimming() && !MiscThings::is_werewolf() && !MiscThings::is_on_horse() && !dont_shift && (always_shift || is_about_to_fall() || target_is_slowwalking))
                 {
                     if (player->IsRunning() && !player->IsSneaking() && !was_slowwalking)
                     {
@@ -2220,14 +2219,14 @@ namespace WalkerProcessor {
                 else
                 {
 
-                    if (!MiscThings::is_on_horse() && !always_shift && (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking))
+                    if (!MiscThings::is_werewolf() && !MiscThings::is_on_horse() && !always_shift && (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking))
                     {
                         was_slowwalking = false;
                         unslow_walk();
                     }
                     else
                     {
-                        if (!MiscThings::is_on_horse() && !player->IsRunning() && !was_slowwalking && !turning_around && !always_shift)
+                        if (!MiscThings::is_werewolf() && !MiscThings::is_on_horse() && !player->IsRunning() && !was_slowwalking && !turning_around && !always_shift)
                         {
                             //test if we are slowwalking for some reason
                             anti_slowwalk_timer += dtime_maybe_bad;
@@ -4250,9 +4249,9 @@ namespace WalkerProcessor {
                 auto distance = pos_dif.Length();
 
                 if ((int)std::size(path) < 3)
-                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * 2.0f) + 70.0f * MiscThings::is_player_swimming(); //100
                 else
-                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * 2.0f) + 70.0f * MiscThings::is_player_swimming(); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
@@ -4326,7 +4325,7 @@ namespace WalkerProcessor {
                             result = distance < base_threshold + 70.0f * MiscThings::is_player_swimming(); //100
                         }
                         else
-                            result = distance < ((blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) + 70.0f*MiscThings::is_player_swimming()); //100
+                            result = distance < ((blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * 2.0f) + 70.0f*MiscThings::is_player_swimming()); //100
                     }
                     else
                         result = true;
@@ -4862,7 +4861,7 @@ namespace WalkerProcessor {
         have_blocking_targeted_time = 0.0f;
 
 
-        if (!MiscThings::is_on_horse() && was_slowwalking)
+        if (!MiscThings::is_werewolf() && !MiscThings::is_on_horse() && was_slowwalking)
         {
             was_slowwalking = false;
             unslow_walk();
@@ -5114,7 +5113,7 @@ namespace WalkerProcessor {
             //search_next_fight_target = false;
             search_next_target_timer = 0.0f;
 
-            if (!MiscThings::is_on_horse() && was_slowwalking)
+            if (!!MiscThings::is_werewolf() && !MiscThings::is_on_horse() && was_slowwalking)
             {
                 was_slowwalking = false;
                 unslow_walk();
@@ -5352,6 +5351,11 @@ namespace WalkerProcessor {
 
         return false;
     }
+
+
+    //remember that this is bonus (so 0 is no bonus and 1 is x2)
+    float werewolf_coef = 1.5f;
+
 
 
     float successful_raycast_time = 0.0f;
@@ -5679,11 +5683,11 @@ namespace WalkerProcessor {
 
                         if (bound_dif.x > 100.0f || bound_dif.y > 100.0f)
                         {
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 150.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef)))
                                 return true;
                         }
                         else
-                            if (distance.Length() < 150.0f * (1 + MiscThings::is_on_horse() * 3.0f))
+                            if (distance.Length() < 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef))
                                 return true;
 
                     }
@@ -5779,11 +5783,11 @@ namespace WalkerProcessor {
                                 threshold = 0.0f;
 
                             if (target_ref)// && target_ref->IsActor() && !target_ref->IsDead())
-                                if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f)))
+                                if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef)))
                                     return true;
                         }
                         else
-                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f))
+                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef))
                                 return true;
                     }
                     else
@@ -5806,13 +5810,13 @@ namespace WalkerProcessor {
                             threshold2 = weird_threshold2;
                         }
 
-                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f)))
+                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * 1.5f)))
                         {
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f)))
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef)))
                                 return true;
                         }
                         else
-                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f))
+                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef))
                                 return true;
                     }
                 }
@@ -9950,29 +9954,39 @@ namespace WalkerProcessor {
                                         right_attack();
                                 }
 
-                                if (!MiscThings::has_something_equipped(true))
+
+                                if (MiscThings::is_werewolf())
                                 {
-                                    no_weapon = true;
-                                    attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                    if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
-                                        cursor_up();
+                                    attacking_weapon = "claws. ";
                                 }
                                 else
                                 {
-                                    if (has_bow_equipped(true) && no_ammo())
+                                    if (!MiscThings::has_something_equipped(true))
                                     {
                                         no_weapon = true;
-                                        attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                        attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                        if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
+                                            cursor_up();
                                     }
                                     else
                                     {
-                                        attacking_weapon = get_equipped_weapon_name(true) + ". ";
-                                    }
-                                    
+                                        if (has_bow_equipped(true) && no_ammo())
+                                        {
+                                            no_weapon = true;
+                                            attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                        }
+                                        else
+                                        {
+                                            attacking_weapon = get_equipped_weapon_name(true) + ". ";
+                                        }
 
-                                    if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
-                                        cursor_up();
+
+                                        if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
+                                            cursor_up();
+                                    }
                                 }
+
+                                
 
                             }
 
@@ -10133,6 +10147,15 @@ namespace WalkerProcessor {
                                 attack_action = 0;
 
 
+                            if (MiscThings::is_werewolf())
+                            {
+                                chance = 0.44f;
+                                if (choose_next_action < chance)
+                                    attack_action = 1;
+                                else
+                                    attack_action = 0;
+                            }
+
                             int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
                             if (nettlebane_hand >= 0)
                                 attack_action = !(bool)nettlebane_hand; //not bitwise
@@ -10269,27 +10292,33 @@ namespace WalkerProcessor {
                                     }
                                     else
                                     {
-                                        if (!MiscThings::has_something_equipped(false))
+                                        if (MiscThings::is_werewolf())
                                         {
-                                            no_weapon = true;
-                                            attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                            if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
-                                                cursor_up();
+                                            attacking_weapon = "claws. ";
                                         }
                                         else
                                         {
-                                            if (has_ranged_weapon_equipped(true) && no_ammo())
+                                            if (!MiscThings::has_something_equipped(false))
                                             {
                                                 no_weapon = true;
-                                                attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                                attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
+                                                if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
+                                                    cursor_up();
                                             }
                                             else
-                                                attacking_weapon = get_equipped_weapon_name(false) + ". ";
+                                            {
+                                                if (has_ranged_weapon_equipped(true) && no_ammo())
+                                                {
+                                                    no_weapon = true;
+                                                    attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
+                                                }
+                                                else
+                                                    attacking_weapon = get_equipped_weapon_name(false) + ". ";
 
-                                            if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
-                                                cursor_up();
+                                                if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
+                                                    cursor_up();
+                                            }
                                         }
-
                                     }
                                 }
 
@@ -10438,6 +10467,16 @@ namespace WalkerProcessor {
                                 attack_action = 1;
                             else
                                 attack_action = 0;
+
+                            if (MiscThings::is_werewolf())
+                            {
+                                chance = 0.44f;
+                                if (choose_next_action < chance)
+                                    attack_action = 1;
+                                else
+                                    attack_action = 0;
+                            }
+
 
                             int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
                             if (nettlebane_hand >= 0)
@@ -13125,7 +13164,7 @@ namespace WalkerProcessor {
                             auto caster_123 = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
                             auto paralysis_spell = RE::TESForm::LookupByID(0x5AD5F)->As<RE::SpellItem>();
 
-                            if (caster_123 && paralysis_spell && !MiscThings::is_on_horse())
+                            if (caster_123 && paralysis_spell && !MiscThings::is_on_horse() && !MiscThings::is_werewolf())
                             {
 
                                 auto old_delivery = paralysis_spell->GetDelivery();
@@ -15492,6 +15531,8 @@ namespace WalkerProcessor {
 
                                                     auto player_pos = player->GetPosition();
 
+                                                    dont_invalidate_path_on_walk_again = true; //so wiggle_body does not reset it
+                                                    current_path_point = 0;
                                                     //reset_walker();
                                                     unregister_all_actions();
                                                     //target_ref = redirect_dock;

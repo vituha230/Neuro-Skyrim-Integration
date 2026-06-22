@@ -105,7 +105,7 @@ bool API_CONTROL_CRAFTING = false;
 
 bool do_debug_scan = false;
 bool debug_info = false;
-
+bool debug_info_only_specific = true;
 
 bool autolook_at_speakers_on_afk = true;
 bool count_ephemeral_force = true;
@@ -1537,10 +1537,14 @@ namespace Hooks {
 
     int max_debug_size = 30;
 
-    void add_debug_line(std::string line)
+    void add_debug_line(std::string line, bool specific)
     {
         if (!debug_info)
             return;
+
+        if (debug_info_only_specific && !specific)
+            return;
+
 
 
         if (std::size(debug_lines) < max_debug_size)
