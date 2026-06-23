@@ -908,6 +908,12 @@ namespace MiscThings {
             return 180.0f;
         }
 
+        if (target)
+        {
+            if (target->formID == 0xc629d) //trevas watch lever
+                return 100.0f;
+        }
+
         /*
         RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
 
@@ -5540,6 +5546,31 @@ namespace MiscThings {
     }
 
 
+
+
+    bool object_inside_of_trevas_watch(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto player_worldspace = object->GetWorldspace();
+
+            if (player_worldspace && player_worldspace->formID == 0x3c)
+            {
+                auto player_pos = object->GetPosition();
+
+                RE::NiPoint2 a = { 114614.719, -83955.2812 }; //-5733.7241
+                RE::NiPoint2 b = { 110783.070, -84359.3047 }; //-5633.2554
+                RE::NiPoint2 c = { 110753.328, -80194.4844 }; //-5640.6494
+                RE::NiPoint2 d = { 114612.773, -80245.3516 }; //-5724.9077
+
+                RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                    return true;
+            }
+        }
+
+        return false;
+    }
 
 
     bool object_inside_of_windhelm_redirect_box(RE::TESObjectREFR* object)
@@ -10503,6 +10534,10 @@ namespace MiscThings {
 
         quest_text = lowercase_string(quest_text);
 
+
+        //we need to search current list because "quest completed" also uses this and if we refresh right away, it will be lost
+        //actually "quest completed" just throws in normal name.. for some reason
+
         if (quest_text != "")
         {
             //this is questionable
@@ -10532,156 +10567,191 @@ namespace MiscThings {
             }
 
 
+
             if (!found)
             {
-                auto player = RE::PlayerCharacter::GetSingleton();
-                auto quest_targets = player->questTargets;
+                //just refresh and search again, should work for new quests
 
-                auto my_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("myscPath");
+                auto temp = get_current_quests(); //refresh list
 
-                //int id = 0;
 
-                for (auto quest_target : quest_targets)
+                for (auto quest : quests)
                 {
-                    if (quest_target.first != my_quest)
+                    auto displaytext_lower = lowercase_string(quest.displaytext);
+                    auto name_lower = lowercase_string(quest.name);
+
+                    std::string target_name_local = quest.target_name;
+                    if (target_name_local != "")
+                        target_name_local = " (" + target_name_local + ")";
+
+                    if (name_lower == quest_text)
                     {
+                        result = "[id " + std::to_string(quest.id) + "]" + get_quest_type_text(quest.quest) + " " + quest.name + ": " + quest.displaytext + quest.target_name;
+                        found = true;
+                        //break;
+                    }
 
-                        RE::TESQuest* the_quest = quest_target.first;
+                    if (displaytext_lower == quest_text)
+                    {
+                        result = "[id " + std::to_string(quest.id) + "]" + get_quest_type_text(quest.quest) + " " + quest.name + ": " + quest.displaytext + quest.target_name;
+                        found = true;
+                        //break;
+                    }
+                }
 
 
+                //this should be useless but why not
+                if (!found)
+                {
+                    auto player = RE::PlayerCharacter::GetSingleton();
+                    auto quest_targets = player->questTargets;
 
-                        for (auto objective : the_quest->objectives)
+                    auto my_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("myscPath");
+
+                    //int id = 0;
+
+                    for (auto quest_target : quest_targets)
+                    {
+                        if (quest_target.first != my_quest)
                         {
-                            if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+
+                            RE::TESQuest* the_quest = quest_target.first;
+
+
+
+                            for (auto objective : the_quest->objectives)
                             {
-
-                                if (objective->numTargets != 0)
+                                if (objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
                                 {
-                                    auto quest_targets = objective->targets;
 
-                                    for (auto* target : std::span(quest_targets, objective->numTargets)) {
-                                        if (target)
-                                        {
-                                            if (the_quest)
+                                    if (objective->numTargets != 0)
+                                    {
+                                        auto quest_targets = objective->targets;
+
+                                        for (auto* target : std::span(quest_targets, objective->numTargets)) {
+                                            if (target)
                                             {
-                                                bool conditions_met = false;
-                                                //this needs to be figured out
-                                                try {
-                                                    if (target->conditions.head)
-                                                    {
-                                                        auto the_condition = target->conditions.head;
-
-                                                        conditions_met = recursive_quest_condition_check(the_condition, the_quest, target);
-
-                                                        bool test_stop = false;
-
-                                                    }
-                                                    else
-                                                        conditions_met = true;
-
-                                                }
-                                                catch (...) {
-                                                    conditions_met = true;//met ?
-                                                }
-
-                                                if (conditions_met)
+                                                if (the_quest)
                                                 {
-                                                    
-                                                    quest this_quest{};
-
-                                                    this_quest.id = std::size(quests) + 1;
-                                                    this_quest.quest = the_quest;
-                                                    this_quest.name = the_quest->GetFullName();
-                                                    this_quest.target = target;
-
-                                                    std::string displaytext = "";
-                                                    displaytext = objective->displayText;
-                                                    this_quest.displaytext = replace_aliases(the_quest, displaytext);
-
-                                                    this_quest.displaytext = MiscThings::fix_book_description(this_quest.displaytext);
-
-
-                                                    std::string target_name = "";
-                                                    target_name = get_alias_name_by_id(the_quest, target->alias);
-
-                                                    //this_quest.displaytext = replace_aliases(the_quest, displaytext);
-
-                                                    if (this_quest.name == "Unbound" && target->alias == 124)
-                                                        target_name = "Go with Hadvar (Imperials)";
-
-                                                    if (this_quest.name == "Unbound" && target->alias == 125)
-                                                        target_name = "Go with Ralof (Stormcloaks)";
-
-                                                    this_quest.objective = objective;
-                                                    this_quest.description = "";
-                                                    this_quest.category = 0;
-
-
-                                                    auto displaytext_lower = lowercase_string(this_quest.displaytext);
-                                                    auto name_lower = lowercase_string(this_quest.name);
-
-                                                    if (target_name != "")
-                                                        target_name = " (" + target_name + ")";
-
-                                                    this_quest.target_name = target_name;
-
-                                                    if (name_lower == quest_text)
-                                                    {
-                                                        if (result != "")
-                                                            result += "; ";
-
-                                                        result += "[id " + std::to_string(this_quest.id) + "]" + get_quest_type_text(this_quest.quest) + " " + this_quest.name;
-                                                        quests.push_back(this_quest);
-                                                        found = true;
-
-                                                        if (!quest_list_valid)
-                                                            quest_list_valid = true;
-                                                        //result += "[id " + std::to_string(this_quest.id) + "] " + this_quest.name;
-
-                                                        //break;
-                                                    }
-
-                                                    //this one is raw
-                                                    std::string objective_displaytext = "";
-                                                    objective_displaytext = objective->displayText;
-                                                    objective_displaytext = lowercase_string(objective_displaytext);
-
-                                                    if (objective_displaytext == quest_text)
-                                                    {
-                                                        if (result != "")
-                                                            result += "; ";
-
-
-                                                        result += "[id " + std::to_string(this_quest.id) + "]" + get_quest_type_text(this_quest.quest) + " " + this_quest.name + ": " + this_quest.displaytext + target_name;
-                                                        quests.push_back(this_quest);
-                                                        found = true;
-
-                                                        if (!quest_list_valid)
+                                                    bool conditions_met = false;
+                                                    //this needs to be figured out
+                                                    try {
+                                                        if (target->conditions.head)
                                                         {
-                                                            quest_list_valid = true;
-                                                            register_quest_actions();
+                                                            auto the_condition = target->conditions.head;
+
+                                                            conditions_met = recursive_quest_condition_check(the_condition, the_quest, target);
+
+                                                            bool test_stop = false;
+
                                                         }
-                                                            
-                                                        //result = "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
+                                                        else
+                                                            conditions_met = true;
 
-
-                                                        //break;
+                                                    }
+                                                    catch (...) {
+                                                        conditions_met = true;//met ?
                                                     }
 
-                                                    /*
-                                                    if (displaytext_lower == quest_text)
+                                                    if (conditions_met)
                                                     {
-                                                        result = "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
-                                                        quests.push_back(this_quest);
-                                                        found = true;
 
-                                                        if (!quest_list_valid)
-                                                            quest_list_valid = true;
-                                                        result = "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
+                                                        quest this_quest{};
 
-                                                        //break;
+                                                        this_quest.id = std::size(quests) + 1;
+                                                        this_quest.quest = the_quest;
+                                                        this_quest.name = the_quest->GetFullName();
+                                                        this_quest.target = target;
+
+                                                        std::string displaytext = "";
+                                                        displaytext = objective->displayText;
+                                                        this_quest.displaytext = replace_aliases(the_quest, displaytext);
+
+                                                        this_quest.displaytext = MiscThings::fix_book_description(this_quest.displaytext);
+
+
+                                                        std::string target_name = "";
+                                                        target_name = get_alias_name_by_id(the_quest, target->alias);
+
+                                                        //this_quest.displaytext = replace_aliases(the_quest, displaytext);
+
+                                                        if (this_quest.name == "Unbound" && target->alias == 124)
+                                                            target_name = "Go with Hadvar (Imperials)";
+
+                                                        if (this_quest.name == "Unbound" && target->alias == 125)
+                                                            target_name = "Go with Ralof (Stormcloaks)";
+
+                                                        this_quest.objective = objective;
+                                                        this_quest.description = "";
+                                                        this_quest.category = 0;
+
+
+                                                        auto displaytext_lower = lowercase_string(this_quest.displaytext);
+                                                        auto name_lower = lowercase_string(this_quest.name);
+
+                                                        if (target_name != "")
+                                                            target_name = " (" + target_name + ")";
+
+                                                        this_quest.target_name = target_name;
+
+                                                        if (name_lower == quest_text)
+                                                        {
+                                                            if (result != "")
+                                                                result += "; ";
+
+                                                            result += "[id " + std::to_string(this_quest.id) + "]" + get_quest_type_text(this_quest.quest) + " " + this_quest.name;
+                                                            quests.push_back(this_quest);
+                                                            found = true;
+
+                                                            if (!quest_list_valid)
+                                                                quest_list_valid = true;
+                                                            //result += "[id " + std::to_string(this_quest.id) + "] " + this_quest.name;
+
+                                                            //break;
+                                                        }
+
+                                                        //this one is raw
+                                                        std::string objective_displaytext = "";
+                                                        objective_displaytext = objective->displayText;
+                                                        objective_displaytext = lowercase_string(objective_displaytext);
+
+                                                        if (objective_displaytext == quest_text)
+                                                        {
+                                                            if (result != "")
+                                                                result += "; ";
+
+
+                                                            result += "[id " + std::to_string(this_quest.id) + "]" + get_quest_type_text(this_quest.quest) + " " + this_quest.name + ": " + this_quest.displaytext + target_name;
+                                                            quests.push_back(this_quest);
+                                                            found = true;
+
+                                                            if (!quest_list_valid)
+                                                            {
+                                                                quest_list_valid = true;
+                                                                register_quest_actions();
+                                                            }
+
+                                                            //result = "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
+
+
+                                                            //break;
+                                                        }
+
+                                                        /*
+                                                        if (displaytext_lower == quest_text)
+                                                        {
+                                                            result = "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
+                                                            quests.push_back(this_quest);
+                                                            found = true;
+
+                                                            if (!quest_list_valid)
+                                                                quest_list_valid = true;
+                                                            result = "[id " + std::to_string(this_quest.id) + "] " + this_quest.name + ": " + this_quest.displaytext + target_name;
+
+                                                            //break;
+                                                        }
+                                                        */
                                                     }
-                                                    */
                                                 }
                                             }
                                         }

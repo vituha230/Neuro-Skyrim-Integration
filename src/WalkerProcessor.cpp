@@ -20,6 +20,7 @@ namespace WalkerProcessor {
     RE::TESQuestTarget* last_quest_target_chosen = nullptr;
     ///////////
 
+    bool allow_interrupt_custom_walk = false;
 
     bool stealthwalk_was_unsafe = false;
     float stealthwalk_was_unsafe_time = 0.0f;
@@ -638,7 +639,7 @@ namespace WalkerProcessor {
 
     bool is_walking_important_path()
     {
-        return using_custom_path;
+        return using_custom_path && !allow_interrupt_custom_walk;
     }
 
     bool is_surrendering()
@@ -4613,6 +4614,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        allow_interrupt_custom_walk = false;
 
         stealthwalk_was_unsafe = false;
         stealthwalk_was_unsafe_time = 0.0f;
@@ -6076,6 +6078,44 @@ namespace WalkerProcessor {
 
 
 
+    void trevas_watch_check()
+    {
+        if (!using_custom_path)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player)
+            {
+                auto player_worldspace = player->GetWorldspace();
+
+                if (player_worldspace && player_worldspace->formID == 0x3c)
+                {
+                    auto player = RE::PlayerCharacter::GetSingleton();
+
+                    if (!MiscThings::object_inside_of_trevas_watch(player) && MiscThings::object_inside_of_trevas_watch(target_ref))
+                    {
+                        auto pole_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x47693);
+
+                        if (pole_gate && MiscThings::two_state_activator_state(pole_gate) == 1)
+                        {
+                            allow_interrupt_custom_walk = true;
+                            dont_quicksave_after_custom_path = true;
+                            using_custom_path = true;
+                            walk_again_when_finished = true;
+                            current_path_point = 0;
+                            custom_path = CustomWalkerPaths::trevas_watch_in;
+                            //path = custom_path;
+                            //path_valid = true;
+                            dont_shift = true;
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+
     void riften_watchtower_check()
     {
         if (!using_custom_path)
@@ -6178,8 +6218,15 @@ namespace WalkerProcessor {
     }
 
 
-
-
+    /*
+    void special_pathfinding_checks(RE::TESObjectREFR* target)
+    {
+        riften_watchtower_check();
+        solitude_prison_out_of_bounds_check();
+        solitude_post_emperor_check(target);
+        katariah_post_emperor_check(target);
+    }
+    */
 
 
 
@@ -13751,6 +13798,7 @@ namespace WalkerProcessor {
                 {
 
                     riften_watchtower_check();
+                    trevas_watch_check();
 
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_pos = player->GetPosition();
