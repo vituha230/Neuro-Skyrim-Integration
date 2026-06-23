@@ -1068,10 +1068,34 @@ namespace MiscThings {
         {
             auto parent_cell = object->GetParentCell();
 
+            float min_distance = FLT_MAX;
+
+            //if (!parent_cell) this was a test dont do it doesnt work
+            //    parent_cell = (RE::TESObjectCELL*)RE::TESForm::LookupByID(0x94ac);
+
+
+            /* this doesnt work persistent cell has no navmeshes
+            if (!parent_cell)
+            {
+                //try persistent cell
+                auto persistent_extra = (RE::ExtraPersistentCell*)object->extraList.GetByType(RE::ExtraDataType::kPersistentCell);
+
+                if (persistent_extra)
+                {
+                    auto persistent_cell = persistent_extra->persistentCell;
+                   
+                    if (persistent_cell)
+                    {
+                        return get_nearest_navmesh_node_in_cell(object, persistent_cell);
+                    }
+                }
+                    
+            }
+            */
+
+
             if (parent_cell)
             {
-                float min_distance = FLT_MAX;
-
                 bool interiorCell = parent_cell->IsInteriorCell();
 
                 if (interiorCell)
@@ -1122,6 +1146,63 @@ namespace MiscThings {
                             }
                     }
                 }
+            }
+            else
+            {
+                /*
+                //no parent cell... means its not loaded yet. then we try nearest existing cell and pathfind there. this time not only adjacent but all existing cells
+                //doesnt work, it might lead into some dead end
+                auto player = RE::PlayerCharacter::GetSingleton();
+                if (player)
+                {
+                    parent_cell = player->GetParentCell();
+
+                    if (parent_cell)
+                    {
+                        auto gridCells = RE::TES::GetSingleton()->gridCells;
+
+                        if (gridCells)
+                        {
+                            //check all cells within 1 cell radius
+                            auto parent_cell_coords_raw = parent_cell->GetCoordinates();
+
+                            RE::NiPoint2 parent_cell_coords = { parent_cell_coords_raw->worldX, parent_cell_coords_raw->worldY };
+
+                            for (int x = 0; x < gridCells->length; x++)
+                                for (int y = 0; y < gridCells->length; y++)
+                                {
+                                    auto adjacent_cell = gridCells->GetCell(x, y);
+
+                                    if (adjacent_cell && adjacent_cell->IsAttached())
+                                    {
+                                        auto adjacent_cell_coords_raw = adjacent_cell->GetCoordinates();
+
+                                        RE::NiPoint2 adjacent_cell_coords = { adjacent_cell_coords_raw->worldX, adjacent_cell_coords_raw->worldY };
+
+                                        auto cell_distance = adjacent_cell_coords - parent_cell_coords;
+
+                                        if (true)//cell_distance.Length() < 4100.0f)
+                                        {
+                                            auto nearest_in_cell = get_nearest_navmesh_node_in_cell(object, adjacent_cell);
+
+                                            if (nearest_in_cell != RE::NiPoint3::Zero())
+                                            {
+                                                auto distance = nearest_in_cell.GetDistance(object->GetPosition());
+
+                                                if (distance < min_distance)
+                                                {
+                                                    min_distance = distance;
+                                                    result = nearest_in_cell;
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                }
+                */
             }
         }
 
@@ -2888,6 +2969,46 @@ namespace MiscThings {
 
 
 
+    RE::TESObjectREFR* get_nearest_mapmarker_to_object(RE::TESObjectREFR* target)
+    {
+        RE::TESObjectREFR* result = nullptr;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        RE::BSTArray<RE::ObjectRefHandle> map_markers = player->currentMapMarkers;
+
+        float min_distance = FLT_MAX;
+
+        std::string sublocation_name = "";
+
+        for (auto marker : map_markers)
+        {
+            if (marker.get())
+            {
+                auto real_marker = marker.get().get();
+                auto data = (RE::ExtraMapMarker*)real_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
+                if (real_marker && !real_marker->IsDisabled() && data && data->mapData && data->mapData->flags)
+                {
+
+                    RE::TESObjectREFR* quest_target_ref = target;
+
+                    //distance from target to map marker
+                    auto distance_target_location = target->GetDistance(real_marker, true, true);
+
+                    //if player is farther from location than 350m and this is the closest location to quest, put it as candidate
+                    if (distance_target_location < min_distance)
+                    {
+                        min_distance = distance_target_location;
+                        result = real_marker;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+
 
     std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest)
     {
@@ -3439,6 +3560,17 @@ namespace MiscThings {
 
 
         //companions shard quest 1
+
+        if (quest && quest->formID == 0x1cef6)
+        {
+            if (target && target->formID == 0x582ff)
+            {
+                auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7067116);
+
+                if (redirect)
+                    return redirect;
+            }
+        }
 
 
         if (quest && quest->formID == 0x1cef4)
@@ -9140,12 +9272,14 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+                        /*
                         if (model.find("LoadMarker") != std::string::npos)
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 1.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+                        */
 
                         if (model.find("WinterholdLDoor01") != std::string::npos)
                         {
@@ -9227,6 +9361,10 @@ namespace MiscThings {
                             result = rotated_shift_vector;
                         }
 
+
+
+                        bool leave_it_zero = false;
+
                         if (model == "AutoLoadMarker01.nif")
                         {
                             auto pos = object->GetPosition();
@@ -9234,13 +9372,40 @@ namespace MiscThings {
 
                             if (nearest_navmesh_pos != RE::NiPoint3::Zero())
                                 result = nearest_navmesh_pos - pos;
+                            else
+                            {
+                                leave_it_zero = true;
+                                /* //we want to use it only if pathfinding actually failed because nearest marker may fail instead, while loader door wont. this will create dead pathfinding instead of fixing it
+                                auto nearest_marker = MiscThings::get_nearest_mapmarker_to_object(object);
+
+                                if (nearest_marker)
+                                {
+                                    auto nearest_marker_pos = nearest_marker->GetPosition();
+
+                                    result = nearest_marker_pos - pos;
+
+                                }
+                                */
+
+                                /* doesnt work
+                                auto navportal_extra = (RE::ExtraNavMeshPortal*)object->extraList.GetByType(RE::ExtraDataType::kNavMeshPortal);
+                                if (navportal_extra)
+                                {
+                                    auto nav = RE::TESForm::LookupByID(navportal_extra->portal.nav.navMeshID);
+                                    bool stop_here = false;
+                                }
+                                */
+                                //auto pos_old = pos;
+                                //pos.z += 5000.0f;
+                                //result = pos - pos_old;
+                            }
                         }
 
 
 
 
 
-                        if (result == RE::NiPoint3::Zero())
+                        if (!leave_it_zero && result == RE::NiPoint3::Zero())
                         {
 
 
@@ -12536,7 +12701,12 @@ namespace MiscThings {
 
                                 if (current_weapon->formEnchanting != nullptr)
                                 {
-                                    current_weapon_damage *= 2.0f; //current weapon is enchanted, double its rating
+                                    current_weapon_damage += 5.0f; //current weapon is enchanted, add +5.. should actually check charge here
+                                }
+
+                                if (new_weapon->formEnchanting != nullptr || new_weapon->formID == 0x956b5)
+                                {
+                                    new_weapon_damage += 5.0f; //new weapon is enchanted, add +5
                                 }
                             }
                             else

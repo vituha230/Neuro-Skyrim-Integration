@@ -20,6 +20,8 @@ namespace WalkerProcessor {
     RE::TESQuestTarget* last_quest_target_chosen = nullptr;
     ///////////
 
+    bool autoload_door_pathfinding_failed = false;
+
     bool allow_interrupt_custom_walk = false;
 
     bool stealthwalk_was_unsafe = false;
@@ -1157,6 +1159,23 @@ namespace WalkerProcessor {
                                 pickpocket_shift = MiscThings::get_looking_point_shift(target_ref, true);
                             }
 
+
+                            if (autoload_door_pathfinding_failed && shift == RE::NiPoint3::Zero())
+                            {
+                                //it must have a shift. means door is not loaded yet, try marker but only if pathfinding failed.
+                                auto nearest_marker = MiscThings::get_nearest_mapmarker_to_object(target_ref);
+
+                                if (nearest_marker)
+                                {
+                                    auto pos = target_ref->GetPosition();
+                                    auto nearest_marker_pos = nearest_marker->GetPosition();
+
+                                    shift = nearest_marker_pos - pos;
+
+                                }
+                            }
+
+
                             if (using_custom_path)
                                 MiscThings::SetPosition_moveto(marker_ref, custom_path.at(0));
                             else
@@ -1403,14 +1422,20 @@ namespace WalkerProcessor {
                                     }
                                     else
                                     {
-                                        if (!navmesh_probe_result_valid)
+                                        if (!autoload_door_pathfinding_failed && MiscThings::is_cave_autoloader_door(target_ref))
                                         {
-                                            navmesh_probe_mode = true;
-                                            navmesh_probe_result = false;
-                                            navmesh_probe_result_valid = false;
+                                            autoload_door_pathfinding_failed = true;
                                             return;
-                                            //and we hope whoever called us - calls us again and we get probe
                                         }
+                                        else
+                                            if (!navmesh_probe_result_valid)
+                                            {
+                                                navmesh_probe_mode = true;
+                                                navmesh_probe_result = false;
+                                                navmesh_probe_result_valid = false;
+                                                return;
+                                                //and we hope whoever called us - calls us again and we get probe
+                                            }
                                     }
                                 }
 
@@ -4614,6 +4639,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        autoload_door_pathfinding_failed = false;
+
         allow_interrupt_custom_walk = false;
 
         stealthwalk_was_unsafe = false;

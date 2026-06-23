@@ -2005,6 +2005,21 @@ namespace Observer {
 																
 														}
 													}
+													else
+													{
+														if (a_ref->formID == 0xaa033) //jorwaskr chair
+														{
+															if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 1000.0f, false)))
+															{
+																std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+																if (info != "")
+																{
+																	interesting_buffer.insert_or_assign(a_ref, info);
+																}
+
+															}
+														}
+													}
 
 												}
 											}

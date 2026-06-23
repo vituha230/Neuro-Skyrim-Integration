@@ -37,15 +37,15 @@
 //////////////////////////////////////////////////////
 // for later random stuff
 
-//TODO more map improvements/limiters?
-//TODO low fps in windhelm tavern (maybe it was my system related because couldnt reproduce)
+
 //TODO test malborn and klimek chest and maybe all container types 
 //TODO spells in both hands
 //TODO dualcasting + attacking with both hands if 2 melee weapons
 //TODO conjuration should not summon if already summoned
 //TODO optional argument to equip function so player can specify hand
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
-
+//TODO that nonpathfindable castle near riften lake (faldars tooth?)
+//TODO weapon advice enchantment take charge into account
 
 //opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 

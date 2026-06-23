@@ -45,6 +45,9 @@ namespace MiscThings {
 
     bool is_cave_autoloader_door(RE::TESObjectREFR* object);
 
+    RE::TESObjectREFR* get_nearest_mapmarker_to_object(RE::TESObjectREFR* target);
+
+
     std::string get_timestamp_string();
 
     void initiate_prelast_save_load();
