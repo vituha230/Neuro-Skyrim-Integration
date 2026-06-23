@@ -348,6 +348,7 @@ namespace WalkerProcessor {
     bool backup_interaction_made = false;
 
 
+    int last_attack_action = -1;
     int attack_action = -1;
     float attack_action_time0 = 0.0f;
     float attack_action_time1 = 0.0f;
@@ -4986,6 +4987,7 @@ namespace WalkerProcessor {
 
         gave_attacking_info = false;
 
+        last_attack_action = -1;
         attack_action = -1;
         attack_action_time0 = 0.0f;
         attack_action_time1 = 0.0f;
@@ -9263,7 +9265,20 @@ namespace WalkerProcessor {
                         }
                     }
                     else
-                        result = 0.8f; //melee
+                    {
+                        auto weap = (RE::TESObjectWEAP*)spell;
+
+                        result = 0.8f;
+
+                        if (weap && !(left_is_block() && !right)) //for block leave it 0.8
+                        {
+                            auto speed = weap->GetSpeed();
+
+                            if (speed > 0.0f)
+                                result = 1.0f / speed;
+
+                        }
+                    }
             }
 
         }
@@ -9927,7 +9942,8 @@ namespace WalkerProcessor {
                         right_attack_cancel();
                         //was_charging_ranged = false;
                         attack_action = 1;
-                        
+                        last_attack_action = 0;
+
                         goto finalize_attack;
                         //goto attack_action_1;
 
@@ -10012,7 +10028,7 @@ namespace WalkerProcessor {
                             {
                                 attack_spell_cast_timeout = 0.0f;
 
-                                bool can_power_attack = !MiscThings::has_spell_equipped(true) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f;
+                                bool can_power_attack = !MiscThings::has_spell_equipped(true) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f;//&& last_attack_action != 1;
 
                                 if (has_bow_equipped(true))
                                 {
@@ -10024,7 +10040,12 @@ namespace WalkerProcessor {
                                 {
 
                                     if (can_power_attack && try_power_attack)
-                                        right_attack_bow();
+                                    {
+                                        if (attack_action_time0 < get_attack_time(true)*0.1f || attack_action_time0 > get_attack_time(true) * 0.9f)
+                                            right_attack();
+                                        else
+                                            right_power_attack();
+                                    }
                                     else
                                         right_attack();
                                 }
@@ -10216,6 +10237,8 @@ namespace WalkerProcessor {
                             if (staff_of_magnus_in_left)
                                 chance = 0.03;
 
+                            last_attack_action = 0;
+
                             if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
                                 attack_action = 1;
                             else
@@ -10267,6 +10290,8 @@ namespace WalkerProcessor {
                             //was_charging_ranged = false;
                             attack_action = 0;
                             //return false;
+
+                            last_attack_action = 1;
 
                             goto finalize_attack;
 
@@ -10351,7 +10376,12 @@ namespace WalkerProcessor {
                                     bool can_power_attack = !MiscThings::has_spell_equipped(false) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f && !left_is_block();
 
                                     if (can_power_attack && try_power_attack)
-                                        left_attack_bow();
+                                    {
+                                        if (attack_action_time1 < get_attack_time(false) * 0.1f || attack_action_time1 > get_attack_time(false) * 0.9f)
+                                            left_attack();
+                                        else
+                                            left_power_attack();
+                                    }
                                     else
                                         left_attack();
 
@@ -10537,6 +10567,8 @@ namespace WalkerProcessor {
 
                             if (staff_of_magnus_in_left)
                                 chance = 0.03;
+
+                            last_attack_action = 1;
 
                             if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
                                 attack_action = 1;

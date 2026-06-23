@@ -12770,6 +12770,25 @@ namespace MiscThings {
 
 
 
+    //work in progress, dont use, it crashes
+    float calculate_weapon_damage(RE::TESObjectWEAP* weapon)
+    {
+
+        float result = 0.0f;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto player_actor = (RE::Actor*)player->AsReference();
+
+            RE::BGSEntryPoint::HandleEntryPoint(RE::BGSEntryPoint::ENTRY_POINT::kCalculateWeaponDamage, player_actor, weapon, &result);
+        }
+
+        return 0;
+    }
+
+
 
     float armor_damage_difference(RE::TESBoundObject* item)
     {
@@ -15190,7 +15209,7 @@ namespace MiscThings {
 
                     auto weapon = (RE::TESObjectWEAP*)item_form;
 
-                    auto damage = weapon->attackDamage;
+                    auto damage = weapon->attackDamage;// calculate_weapon_damage(weapon);
 
                     std::stringstream ss;
                     ss << std::fixed << std::setprecision(1) << weapon->weight;

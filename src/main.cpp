@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////
 // QUESTLINES
 
-//TODO polish thief guild (potential softlock due to anti-drown in mercer fight, no info in the well of nocturnal sanctum)
+//TODO polish thief guild (potential softlock due to anti-drown in mercer fight, no info in the well of nocturnal sanctum, maybe fix goldenglow pathfinding)
 //TODO polish mage guild (maybe add context about things happening around)
 //TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
 //TODO polish civil war (ambush quest sometimes the soldier cannot hit the enemy)
@@ -29,7 +29,7 @@
 //TODO camera shake if we are meleeing an enemy and they are walking back fix
 //TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
 //TODO add more traders to interesting places
-//TODO optimise object scan
+//TODO optimize object scan
 
 //////////////////////////////////////////////////////
 // for later random stuff
@@ -91,7 +91,7 @@
 
 
 //REMOVE ON RELEASE (i mean if we wont used it)
-#include <fstream>
+//#include <fstream>
 
 //i think these are not needed anymore, it just works without blocking actual user controls
 bool API_CONTROL_DIALOGUE = false;
@@ -3109,27 +3109,53 @@ class MyHook {
         std::string msg = "";
 
 
+        
         /*
-        if (false && debug_time2 > 3.0f)
+        if (debug_time2 > 0.0f)
         {
             if (!test_debug2)
             {
-                test_debug2 = true;
+                //test_debug2 = true;
+                //debug_time2 = 0.0f;
 
-                auto test_new_input = RE::BSInputDeviceManager::GetSingleton();
-                test_new_input->ReinitializeMouse();
-                int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
+                
+                //auto test_new_input = RE::BSInputDeviceManager::GetSingleton();
+                //test_new_input->ReinitializeMouse();
+                //int32_t my_key = RE::ControlMap::GetSingleton()->GetMappedKey(RE::UserEvents::GetSingleton()->forward, RE::INPUT_DEVICES::kKeyboard);
 
-                test_new_input->GetKeyboard()->SetButtonState(my_key, 1.0f, false, true);
+                //test_new_input->GetKeyboard()->SetButtonState(my_key, 1.0f, false, true);
 
-                test_new_input->ReinitializeMouse();
+                //test_new_input->ReinitializeMouse();
 
+                
+                //right_attack();
+                right_power_attack();
+                //right_attack();
+
+                if (debug_time2 > 0.1f)
+                    right_attack();
+
+
+                if (debug_time2 > WalkerProcessor::get_attack_time(true))
+                {
+                    debug_time2 = 0.0f;
+                    test_debug2 = false;
+                    right_attack_cancel();
+                }
+                else
+                    debug_time2 += dtime;
+
+            }
+            else
+            {
+                debug_time2 = 0.0f;
+                test_debug2 = false;
             }
         }
         else
             debug_time2 += dtime;
-            */
-        
+          
+        */
 
         
         input_processor(dtime);

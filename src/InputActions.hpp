@@ -84,6 +84,9 @@ void press_tab();
 void quicksave();
 void quickload();
 
+void right_power_attack();
+void left_power_attack();
+
 
 void mouse_look(float x, float y);
 
