@@ -14282,15 +14282,30 @@ namespace WalkerProcessor {
                             auto redirect_in_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585d);
                             auto redirect_out_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585c);
 
-                            if (target_ref != redirect_water && target_ref != labyrinth_marker1 && target_ref != labyrinth_marker2 && target_ref != labyrinth_lever1 && target_ref != labyrinth_lever2 && target_ref != redirect_in_tower && target_ref != redirect_out_tower && target_ref != redirect_in_riften_watchtower && target_ref != redirect_out_riften_watchtower) //its a chain redirect of 2 points, current target ref is invalid either
+                            auto redirect_ysgramor_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd82b5);
+                            auto redirect_ysgramor_statue = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab105);
+
+
+                            if (!target_before_generic_redirect && target_ref == redirect_ysgramor_statue)
+                            {
+                                //its a false redirection, we are going to statue anyway
+                                dont_check_quest_target_change = false;
+                                goto skip_generic_redirect; 
+                            }
+
+                            if (target_ref != redirect_water && target_ref != labyrinth_marker1 && target_ref != labyrinth_marker2 && target_ref != labyrinth_lever1 && target_ref != labyrinth_lever2 && target_ref != redirect_in_tower && target_ref != redirect_out_tower && target_ref != redirect_in_riften_watchtower && target_ref != redirect_out_riften_watchtower && target_ref != redirect_ysgramor_chain && target_ref != redirect_ysgramor_statue) //its a chain redirect of 2 points, current target ref is invalid either
                                 target_before_generic_redirect = target_ref;
 
                             interaction_before_generic_redirect = interaction_after_walk;
 
 
                             auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
-                            if (redirect_ref == redirect_chain)
+                            if (redirect_ref == redirect_chain || redirect_ref == redirect_ysgramor_chain || redirect_ref == redirect_ysgramor_statue)
+                            {
+                                generic_redirect_active = false;
+                                backup_interaction_made = false;
                                 interaction_after_walk = 1;
+                            }
                             else
                                 generic_redirect_active = true; //for this chain - we must get close_enough so it interacts
 
@@ -14301,23 +14316,46 @@ namespace WalkerProcessor {
                         else
                         {
                             auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
+                            auto redirect_ysgramor_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd82b5);
+                            auto redirect_ysgramor_statue = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab105);
 
-                            if (generic_redirect_active || (target_ref == redirect_chain && redirect_chain))
+                            if (generic_redirect_active || (target_ref == redirect_chain && redirect_chain) || (target_ref == redirect_ysgramor_chain && redirect_ysgramor_chain) || (target_ref == redirect_ysgramor_statue && redirect_ysgramor_statue))
                             {
                                 //check for cancel
                                 if (!redirect_ref)
                                 {
+                                    if (target_ref == redirect_ysgramor_statue && MiscThings::player_overencumbered_by() > 0.0f)
+                                    {
+                                        reset_walker();
+                                        return;
+                                    }
+
                                     dont_check_quest_target_change = false;
                                     generic_redirect_active = false;
                                     target_ref = target_before_generic_redirect;
                                     target_before_generic_redirect = nullptr;
                                     walk_again();
+
+
+
                                     return;
                                 }
+                                /*
+                                else
+                                { //this was a misunderstanding, it was not interacting because of quest mode and "backup_interaction_made
+                                    if (target_ref == redirect_ysgramor_chain || target_ref == redirect_ysgramor_statue)
+                                    {
+                                        //this is for situation when we get redirect switched from gate to stone door and it did not init properly
+                                        interaction_after_walk = 1;
+                                        generic_redirect_active = false;
+                                        backup_interaction_made = false;
+                                    }
+                                }
+                                */
                             }
                         }
 
-
+                        skip_generic_redirect:
 
 
 

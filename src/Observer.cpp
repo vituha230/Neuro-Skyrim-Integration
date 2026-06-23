@@ -1512,8 +1512,8 @@ namespace Observer {
 
 								std::string name = a_ref->GetDisplayFullName();
 
-								if (name.find("Ghostly") != std::string::npos)
-									bool stop_here = false;
+								//if (name.find("Ghostly") != std::string::npos)
+								//	bool stop_here = false;
 								//auto pos111 = dbg_test.find(base_type);
 
 								//if (pos111 != dbg_test.end())
@@ -1530,6 +1530,15 @@ namespace Observer {
 
 
 
+								if (a_ref->formID == 0xab105) //ysgramor statue
+								{
+									if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 1000.0f))
+									{
+										std::string info = MiscThings::insert_object_into_list_custom_name("Ysgramor Statue", a_ref);
+										if (info != "")
+											interesting_buffer.insert_or_assign(a_ref, info);
+									}
+								}
 
 								auto saartal_orb = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51aec);
 

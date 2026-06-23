@@ -3300,6 +3300,99 @@ namespace MiscThings {
             }
 
 
+            if (player_cell && player_cell->formID == 0x15254) //ysgramor tomb
+            {
+                if (target && (target->formID == 0x17e13 || target->formID == 0x706ceaa || target->formID == 0xd82b5 || target->formID == 0xab105)) //exit door
+                {
+                    //if player past last pre-quest gate, check exit gate and if its closed - redirect past it
+
+
+                    bool player_inside_zone_1 = false;
+
+                    RE::NiPoint2 a = { 1771.32458f, 28.2180672f };//, -1103.65869
+                    RE::NiPoint2 b = { 1771.32458f, -6295.22900f };// , -1095.44202
+                    RE::NiPoint2 c = { -138.0f, -6295.22900f };// , -1113.10095
+                    RE::NiPoint2 d = { -138.0f, 28.2180672f };// , -1104.09680
+
+                    if (player_pos.z < -900.0f)
+                    {
+                        RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                        if (is_inside_of_rectangle(p, a, b, c, d))
+                        {
+                            //player inside zone 1
+                            player_inside_zone_1 = true;
+                        }
+                    }
+
+                    if (player_inside_zone_1)
+                    {
+                        auto gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x6c50e);
+
+                        if (MiscThings::two_state_activator_state(gate) == 1)
+                        {
+                            auto redirect_marker1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x706ceaa);
+
+                            if (redirect_marker1)
+                                return redirect_marker1;
+                        }
+                        
+                    }
+
+
+                    bool player_inside_zone_2 = false;
+
+                    a = { 1020.07019, 557.060974 };//, -1103.65869
+                    b = { 1020.07019, -1520.80005 };// , -1095.44202
+                    c = { 3744.01489, -1520.80005 };// , -1113.10095
+                    d = { 3744.01489, 557.060974 };// , -1104.09680
+
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    if (is_inside_of_rectangle(p, a, b, c, d))
+                    {
+                        //player inside zone 2
+                        player_inside_zone_2 = true;
+                    }
+
+
+                    if (player_inside_zone_1 || player_inside_zone_2)
+                    {
+                        auto stone_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd7913);
+
+                        if (MiscThings::two_state_activator_state(stone_door) == 1)
+                        {
+                            //auto redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x706ceab);
+                            auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd82b5);
+                            if (redirect_chain)
+                                return redirect_chain;
+                        }
+
+                    }
+
+
+
+                    //check if statue is holding the axe, if it does and we are close and we are going to exit - grab the axe on our way
+
+                    auto ysgramor_statue = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab105);
+                    auto ysgramor_statue_activator = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xed2ee);
+                    if (ysgramor_statue && ysgramor_statue_activator && player->GetDistance(ysgramor_statue) < 1500.0f)
+                    {
+
+                        auto object_p = General::Script::GetObject(ysgramor_statue_activator, "C06YsgramorStatueScript");
+
+                        if (object_p)
+                        {
+                            std::string state = "";
+                            state = object_p->currentState;
+
+                            if (state != "Done")
+                                return ysgramor_statue; //grab the axe on our way back
+                        }
+                    }
+                }
+            }
+
+
+
             if (player_cell && player_cell->GetFormID() == 0x83559)
             {
                 //labyrinthian 1
@@ -3569,6 +3662,55 @@ namespace MiscThings {
 
                 if (redirect)
                     return redirect;
+            }
+
+            //ysgramor tomb
+            if (parent_cell && parent_cell->formID == 0x15254)
+            {
+                if (target && target->formID == 0x58300)
+                {
+                    auto web1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xdbe05);
+
+                    if (web1 && MiscThings::get_destructible_state(web1) == -1)
+                    {
+                        auto redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7069fde);
+                        if (redirect1)
+                            return redirect1;
+                    }
+                    else
+                    {
+                        auto web2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xdcc88);
+
+                        if (web2 && MiscThings::get_destructible_state(web2) == -1)
+                        {
+                            auto redirect2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7069fdf);
+                            if (redirect2)
+                                return redirect2;
+                        }
+                        else
+                        {
+                            auto gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xdbdbc);
+
+                            if (gate1 && MiscThings::two_state_activator_state(gate1) == 1)
+                            {
+                                auto redirect3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7069fe0);
+                                if (redirect3)
+                                    return redirect3;
+                            }
+                            else
+                            {
+                                auto gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xaf7ca);
+
+                                if (gate2 && MiscThings::two_state_activator_state(gate2) == 1)
+                                {
+                                    auto redirect4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7069fe1);
+                                    if (redirect4)
+                                        return redirect4;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -8899,6 +9041,18 @@ namespace MiscThings {
 
                     if (base_obj->GetFormType() == RE::FormType::Activator)
                     {
+                        if (object->formID == 0xab105) //ysgramor statue for wuutrad
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 150.0f };
+                            result = base_shift_vector;
+                        }
+
+                        if (object->formID == 0x58302) //witch head fire bucket
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
+                            result = base_shift_vector;
+                        }
+
 
                         auto activator = (RE::TESFurniture*)base_obj;
                         RE::NiPoint3 object_angles = object->data.angle;
