@@ -15084,7 +15084,8 @@ namespace MiscThings {
 
             auto entry = entry_ptr->second.second.get();
 
-            if (entry->extraLists && entry->IsEnchanted())
+            //if (entry->extraLists && entry->IsEnchanted())
+            if (entry->IsEnchanted())
             {
                 auto enchantment = entry->GetEnchantment();
 

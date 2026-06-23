@@ -12,14 +12,12 @@
 //TODO polish mage guild (maybe add context about things happening around)
 //TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
 //TODO polish civil war (ambush quest sometimes the soldier cannot hit the enemy)
+//TODO polish companions (maybe add jorwaskr as an interesting place to whiterun.. or make some kind of bridge-quest when player didnt take new quest right away. maybe test more locations for silverhands)
 
-/////////// FIX MAP AND ADHD BEFORE DOING MORE QUESTLINES
 
-
-//TODO companions (proceed 2nd part of dungeon, catch transformation event)
 //TODO dragonborn dlc
 //TODO dawnguard dlc
-//TODO bards
+//TODO bards 
 //TODO random sidequests
 
 
@@ -29,7 +27,6 @@
 //TODO barter and dialogue forces were mixed up in arcadia alchemy
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
 //TODO camera shake if we are meleeing an enemy and they are walking back fix
-//TODO try fixing order of command register after closed menu/loading (it throws in attack and visit_interesting places too soon sometimes)
 //TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
 //TODO add more traders to interesting places
 //TODO optimise object scan

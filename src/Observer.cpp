@@ -4652,10 +4652,12 @@ namespace Observer {
 					if (!MiscThings::is_intro())
 					{
 						if (!MiscThings::is_intro2())
-							register_walk_to_object();
+							register_allowed_actions(-1.0f);//register_walk_to_object();
 						else
+						{
 							register_walk_to_object_do_nothing();
-						register_get_objects_around();
+							register_get_objects_around();
+						}
 					}
 					else
 					{
@@ -4665,9 +4667,6 @@ namespace Observer {
 							//register_get_objects_around();
 						}
 					}
-						
-
-					
 				}
 
 				old_objects_around_valid = MiscThings::is_objects_around_valid();
