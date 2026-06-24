@@ -9205,9 +9205,9 @@ namespace WalkerProcessor {
                     if (spell->avEffectSetting->data.spellmakingChargeTime > 2.0f)
                     {
                         if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                            return 20.0f;
-                        else
                             return 6.0f;
+                        else
+                            return 5.0f;
                     }
 
                 }
@@ -11572,6 +11572,7 @@ namespace WalkerProcessor {
                 Observer::set_threat_action_taken();
                 locking_failed = false;
                 start_attacking = true;
+                invalidate_path(); //so it doesnt get back to it in case it was not finished and we started fighting by close_enough() checck and it will become not-close-enough again
             }
             else
             {
