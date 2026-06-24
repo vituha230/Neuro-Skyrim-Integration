@@ -16487,8 +16487,17 @@ namespace MiscThings {
                                 equip_hand = " in left hand";
 
 
+                            bool already_equipped = false;
 
-                            equip_manager->EquipSpell(player_actor, spell, slot);
+                            if (get_hand_contents(right_hand) == spell)
+                            {
+                                already_equipped = true;
+                            }
+
+                            if (!already_equipped)
+                                equip_manager->EquipSpell(player_actor, spell, slot);
+
+
                             result.first = true;
                             if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
                             {
@@ -16496,14 +16505,14 @@ namespace MiscThings {
                                 {
                                     if (!player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
                                     {
-                                        set_universal_block(1.0f);
+                                        //set_universal_block(1.0f);
                                         ready_weapon();
                                     }
                                         
 
                                     //if (player_hp_less_than(90.0f) && is_self_healing_spell(spell))
                                     //{
-                                    if (!WalkerProcessor::is_fighting()) 
+                                    //if (!WalkerProcessor::is_fighting()) 
                                         try_casting_hand(right_hand);
 
                                     //}
@@ -16911,28 +16920,19 @@ namespace MiscThings {
                             {
                                 right_hand = true;
                                 equip_hand = " in right hand";
-
-                                if (get_hand_contents(true) == spell)
-                                {
-                                    result.first = true;
-                                    result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
-                                    return result;
-                                }
-
                             }
 
 
                             if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
                             {
-
                                 equip_hand = " in left hand";
+                            }
 
-                                if (get_hand_contents(false) == spell)
-                                {
-                                    result.first = true;
-                                    result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
-                                    return result;
-                                }
+                            if (get_hand_contents(right_hand) == spell)
+                            {
+                                result.first = true;
+                                result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                                return result;
                             }
                                 
 

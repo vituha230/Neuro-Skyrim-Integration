@@ -4480,6 +4480,34 @@ namespace WalkerProcessor {
     }
 
 
+    //this is shit
+    bool is_casting_walker3(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto left_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand);
+        auto right_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kRightHand);
+
+        if (right)
+        {
+            auto state = right_caster->state;
+            if (state == RE::MagicCaster::State::kCasting || state == RE::MagicCaster::State::kCharging)
+                result = true;
+        }
+        else
+        {
+            auto state = left_caster->state;
+            if ((state == RE::MagicCaster::State::kCasting || state == RE::MagicCaster::State::kCharging) && !MiscThings::is_intro2())
+                result = true;
+        }
+
+
+        return result;
+    }
+
+
+
     void cast_immidiately()
     {
         //auto spell_form = RE::TESForm::LookupByID(135491);
@@ -9906,7 +9934,7 @@ namespace WalkerProcessor {
 
             float stamina_state = MiscThings::get_player_stamina() / MiscThings::get_player_max_stamina();
 
-           
+            bool goto_attack_used = false;
 
             if (MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
             {
@@ -9927,8 +9955,16 @@ namespace WalkerProcessor {
 
             //if (close_enough())
             //{
+
+            
+
+
+
                 if (attack_action == 0)
                 {
+
+                    attack_action_0:
+
 
                     if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
                         low_mana_detected = false;
@@ -9959,7 +9995,7 @@ namespace WalkerProcessor {
                     }
 
 
-
+                    
                     
 
 
@@ -10047,7 +10083,7 @@ namespace WalkerProcessor {
                                 else
                                 {
 
-                                    if (can_power_attack && try_power_attack)
+                                    if (can_power_attack && try_power_attack && !goto_attack_used)
                                     {
                                         if (attack_action_time0 < get_attack_time(true)*0.1f || attack_action_time0 > get_attack_time(true) * 0.9f)
                                             right_attack();
@@ -10157,6 +10193,20 @@ namespace WalkerProcessor {
                         }
 
 
+                        //end of attack0
+
+                        if (!goto_attack_used && MiscThings::has_spell_equipped(true) && is_concentration_spell(true) && is_casting_walker3(true))
+                        {
+                            if (player->GetDistance(target_ref, true) < get_weapon_range(false) * target_ref->GetScale())
+                            {
+                                goto_attack_used = true;
+                                goto attack_action_1; //add left while we doing this concentration spell
+                            }
+                        }
+                            
+
+
+
                         attack_action_time0 += dtime;
                     }
                     else
@@ -10245,28 +10295,34 @@ namespace WalkerProcessor {
                             if (staff_of_magnus_in_left)
                                 chance = 0.03;
 
-                            last_attack_action = 0;
 
-                            if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
-                                attack_action = 1;
-                            else
-                                attack_action = 0;
-
-
-                            if (MiscThings::is_werewolf())
+                            if (!goto_attack_used) //dont switch if this is an auxillary attack
                             {
-                                chance = 0.44f;
-                                if (choose_next_action < chance)
+                                last_attack_action = 0;
+
+                                if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
                                     attack_action = 1;
                                 else
                                     attack_action = 0;
+
+
+                                if (MiscThings::is_werewolf())
+                                {
+                                    chance = 0.44f;
+                                    if (choose_next_action < chance)
+                                        attack_action = 1;
+                                    else
+                                        attack_action = 0;
+                                }
+
+                                int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
+                                if (nettlebane_hand >= 0)
+                                    attack_action = !(bool)nettlebane_hand; //not bitwise
+
+                                //set_universal_block(0.2f);
                             }
 
-                            int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
-                            if (nettlebane_hand >= 0)
-                                attack_action = !(bool)nettlebane_hand; //not bitwise
-
-                            //set_universal_block(0.2f);
+                            
                         }
 
                         
@@ -10275,10 +10331,11 @@ namespace WalkerProcessor {
                 else
                 {
 
-                attack_action_1:
-
                     if (attack_action == 1)
                     {
+                        attack_action_1:
+
+
                         if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
                             low_mana_detected = false;
 
@@ -10383,7 +10440,7 @@ namespace WalkerProcessor {
 
                                     bool can_power_attack = !MiscThings::has_spell_equipped(false) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f && !left_is_block();
 
-                                    if (can_power_attack && try_power_attack)
+                                    if (can_power_attack && try_power_attack && !goto_attack_used)
                                     {
                                         if (attack_action_time1 < get_attack_time(false) * 0.1f || attack_action_time1 > get_attack_time(false) * 0.9f)
                                             left_attack();
@@ -10496,6 +10553,19 @@ namespace WalkerProcessor {
                                     send_random_context(attacking_info + "]", silent);
                             }
 
+
+                            //end of attack_1
+
+                            if (!goto_attack_used && MiscThings::has_spell_equipped(false) && is_concentration_spell(false) && is_casting_walker3(false))
+                            {
+                                if (player->GetDistance(target_ref, true) < get_weapon_range(true) * target_ref->GetScale())
+                                {
+                                    goto_attack_used = true;
+                                    goto attack_action_0; //add left while we doing this concentration spell
+                                }
+                            }
+
+
                             attack_action_time1 += dtime;
                         }
                         else
@@ -10576,28 +10646,34 @@ namespace WalkerProcessor {
                             if (staff_of_magnus_in_left)
                                 chance = 0.03;
 
-                            last_attack_action = 1;
 
-                            if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
-                                attack_action = 1;
-                            else
-                                attack_action = 0;
 
-                            if (MiscThings::is_werewolf())
+                            if (!goto_attack_used) //dont switch if this is an auxillary attack
                             {
-                                chance = 0.44f;
-                                if (choose_next_action < chance)
+                                last_attack_action = 1;
+
+                                if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
                                     attack_action = 1;
                                 else
                                     attack_action = 0;
+
+                                if (MiscThings::is_werewolf())
+                                {
+                                    chance = 0.44f;
+                                    if (choose_next_action < chance)
+                                        attack_action = 1;
+                                    else
+                                        attack_action = 0;
+                                }
+
+
+                                int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
+                                if (nettlebane_hand >= 0)
+                                    attack_action = !(bool)nettlebane_hand; //not bitwise
+
+                                //set_universal_block(0.2f);
                             }
-
-
-                            int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
-                            if (nettlebane_hand >= 0)
-                                attack_action = !(bool)nettlebane_hand; //not bitwise
-
-                            //set_universal_block(0.2f);
+                            
                         }
                     }
                 }

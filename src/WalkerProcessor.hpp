@@ -13,6 +13,7 @@ namespace WalkerProcessor {
 	bool have_doors_nearby(float range = 800.0f, bool ignore_raycast = false);
 	RE::TESObjectREFR* get_nearest_door(bool ignore_raycast = false);
 
+	bool is_casting_walker3(bool right);
 
 	void install_hook();
 

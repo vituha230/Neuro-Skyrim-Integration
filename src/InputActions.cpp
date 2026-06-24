@@ -31,6 +31,7 @@ bool do_cast = false;
 bool right_hand_cast = false;
 bool notified_cast = false;
 float spell_cast_time = 0.0f;
+bool was_actually_casting = false;
 
 
 
@@ -55,6 +56,7 @@ void reset_input_processor()
     right_hand_cast = false;
     notified_cast = false;
     spell_cast_time = 0.0f;
+    was_actually_casting = false;
 
     fishing_timer = 0.0f;
 
@@ -1010,7 +1012,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
     if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
     {
         ready_weapon();
-        set_universal_block(1.3f);
+        //set_universal_block(1.3f);
         return false;
     }
 
@@ -1068,6 +1070,32 @@ bool make_long_cast_spell_hand(bool right, float dtime)
             right_attack_spell();
         else
             left_attack_spell();
+
+
+        bool is_actually_casting = WalkerProcessor::is_casting_walker(right);
+
+        if (!was_actually_casting)
+        {
+            if (is_actually_casting)
+                was_actually_casting = true;
+        }
+        else
+        {
+            if (!is_actually_casting)
+            {
+                bool stop_here = WalkerProcessor::is_casting_walker(right);
+
+                //casting stopped for whatever reason. clear cast so new cast can happen.
+                if (right)
+                    right_attack_cancel();
+                else
+                    left_attack_cancel();
+
+                return true;
+            }
+        }
+
+
 
         
 
@@ -1191,6 +1219,7 @@ void input_processor(float dtime)
             do_cast = false;
             right_hand_cast = false;
             notified_cast = false;
+            was_actually_casting = false;
         }
     }
 
