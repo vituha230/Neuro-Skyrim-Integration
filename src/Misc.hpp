@@ -459,6 +459,7 @@ namespace MiscThings {
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target);
 
     bool is_offensive_spell(bool right);
+    bool is_offensive_spell(RE::SpellItem* spell);
     bool has_spell_equipped(bool right);
 
     bool is_loading();

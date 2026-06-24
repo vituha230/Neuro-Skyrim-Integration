@@ -40,7 +40,24 @@ namespace MiscThings {
 
         if (calendar)
         {
-            result = {true, "Skyrim time: " + std::to_string((int)calendar->GetHour()) + ":" + std::to_string((int)calendar->GetMinutes())};
+            std::string am_pm = " AM";
+
+            int hour = (int)calendar->GetHour();
+
+            if (hour == 0)
+            {
+                hour = 12;
+            }
+            else
+                if (hour >= 12)
+                {
+                    if (hour != 12)
+                        hour -= 12;
+
+                    am_pm = " PM";
+                }
+
+            result = {true, "Skyrim time: " + std::to_string(hour) + ":" + std::to_string((int)calendar->GetMinutes()) + am_pm};
         }
 
         return result;
@@ -16947,9 +16964,41 @@ namespace MiscThings {
 
                             if (get_hand_contents(right_hand) == spell)
                             {
-                                result.first = true;
-                                result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
-                                return result;
+                                if (is_offensive_spell(spell))
+                                {
+                                    //check other hand
+
+                                    if (get_hand_contents(!right_hand) == spell)
+                                    {
+                                        result.first = true;
+                                        result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + " in both hands]";
+                                        return result;
+                                    }
+                                    else
+                                    {
+                                        //equip in other hand
+                                        if (right_hand)
+                                        {
+                                            slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
+                                            right_hand = false;
+                                            equip_hand = " in left hand";
+                                        }
+                                        else
+                                        {
+                                            slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+                                            right_hand = true;
+                                            equip_hand = " in right hand";
+                                        }
+                                    }
+
+                                }
+                                else
+                                {
+                                    result.first = true;
+                                    result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                                    return result;
+                                }
+
                             }
                                 
 
@@ -17416,6 +17465,38 @@ namespace MiscThings {
         }
         return result;
     }
+
+
+    bool is_offensive_spell(RE::SpellItem* spell)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player && spell)
+        {
+            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
+                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                {
+                    auto slot_both_hands = RE::TESForm::LookupByID(0x00013F45);
+
+                    if (spell->GetEquipSlot() == slot_both_hands)
+                        return true; //otherwise this will not let us cast 2handed spells/scrolls
+
+
+                    for (auto effect : spell->effects)
+                    {
+                        if (effect->IsHostile())
+                        {
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+
+        }
+        return result;
+    }
+
 
 
 
