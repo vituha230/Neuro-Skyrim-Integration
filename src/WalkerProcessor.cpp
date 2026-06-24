@@ -3584,6 +3584,8 @@ namespace WalkerProcessor {
 
     bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, float speed_koef, bool force_speed_correction, bool force_high_precision)
     {
+        Hooks::add_debug_line("LOCK_CAMERA_CALLED", true);
+
         if (looking_mode)
             speed_koef = special_look_speed_koef;
                 
@@ -9807,7 +9809,11 @@ namespace WalkerProcessor {
 
 
         if (shout_mode || player->GetDistance(target_ref) < 400.0f)
+        {
+            Hooks::add_debug_line("ATTACK_TARGET lock_camera", true);
             lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
+        }
+            
 
 
         if (sneak_failed && player && player->IsSneaking())
@@ -15726,7 +15732,10 @@ namespace WalkerProcessor {
 
                                                     if (get_targeted_ref() == target_ref)
                                                     {
-                                                        stable_target++;
+                                                        if (interaction_after_walk == 3 && !has_ranged_weapon_equipped(get_current_active_hand()))
+                                                            stable_target = 3;
+                                                        else
+                                                            stable_target++;
                                                     }
                                                     else
                                                         stable_target = 0;
