@@ -10261,13 +10261,15 @@ namespace WalkerProcessor {
 
                             bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
 
+                            dont_use_left |= inanimate && left_is_block();
+
 
                             bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
                             bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
 
                             bool dont_use_right = false;
 
-
+                            
                             dont_use_left |= has_bow_equipped(true) && !no_ammo();
                             //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
                             //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
@@ -10607,6 +10609,9 @@ namespace WalkerProcessor {
                             }
 
                             bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
+
+                            dont_use_left |= inanimate && left_is_block();
+
 
                             bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
                             bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
