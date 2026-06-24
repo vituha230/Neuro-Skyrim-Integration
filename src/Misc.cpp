@@ -19,6 +19,17 @@ namespace MiscThings {
     
 
 
+    bool eat_corpse_check(RE::TESObjectREFR* target)
+    {
+        if (target && target->IsActor() && target->IsDead())
+        {
+            bool stop_here = false;
+        }
+
+        return false;
+    }
+
+
     int get_ingame_hour()
     {
         auto sky = RE::Sky::GetSingleton();
@@ -8376,6 +8387,12 @@ namespace MiscThings {
                                                         if (result_string != "Autosaving..." && result_string != "Quicksaving..." && result_string != "Quickloading..." && result_string.find("is too powerful") == std::string::npos)
                                                         {
 
+                                                            if (result_string == "Heart consumed, werewolf perk progress increased")
+                                                            {
+                                                                WalkerProcessor::reset_backup_pickup();
+                                                            }
+
+
                                                             if (result_string.find("You must raise the bar to open this door.") != std::string::npos)
                                                             {
                                                                 WalkerProcessor::reset_walker();
@@ -15696,6 +15713,36 @@ namespace MiscThings {
     }
 
 
+
+    bool is_werewolf_banned_spell(RE::SpellItem* a_spell)
+    {
+        if (MiscThings::is_werewolf())
+        {
+            //in werewolf form only several chosen spells are allowed
+
+            auto werewolf_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("PlayerWerewolfQuest");
+
+            if (werewolf_quest)
+            {
+                auto object_p = General::Script::GetObject(werewolf_quest, "PlayerWerewolfChangeScript");
+                if (object_p)
+                {
+                    RE::BSFixedString prop_name = "::CurrentHowl_var";
+                    auto current_howl = General::Script::GetVariable<RE::TESShout*>(object_p, prop_name);
+
+                    if (a_spell != (RE::SpellItem*)current_howl)
+                        return true;
+                }
+            }
+
+        }
+
+        return false;
+
+    }
+
+
+
     std::pair<bool, std::string> get_available_spells()
     {
         std::pair<bool, std::string> result{};
@@ -15723,7 +15770,7 @@ namespace MiscThings {
 
             RE::BSContainer::ForEachResult Visit(RE::SpellItem* a_spell) override {
                 //if (active_spells && passive_effects && shouts && player)// && player->HasSpell(a_spell))
-                if (active_spells && passive_effects && player)
+                if (active_spells && passive_effects && player && !is_werewolf_banned_spell(a_spell))
                 {
                     std::string name = a_spell->GetFullName();
                     std::string description = "";
@@ -15859,7 +15906,7 @@ namespace MiscThings {
 
         for (auto* shout_p : std::span(shouts_pp, spellList->numShouts))
         {
-            if (shout_p)
+            if (shout_p && !is_werewolf_banned_spell((RE::SpellItem*)shout_p))
             {
                 int known_words = 0;
                 int unlocked_words = 0;
@@ -16098,6 +16145,8 @@ namespace MiscThings {
             auto get_spells_result = get_available_spells();
             send_random_context("Available spells: " + get_spells_result.second);
         }
+        else
+            auto get_spells_result = get_available_spells(); //refresh
 
         if (spells.find(shout_id) != spells.end())
         {
@@ -16375,12 +16424,14 @@ namespace MiscThings {
         auto player_actor = (RE::Actor*)(player->AsReference());
 
 
-
         if (std::size(spells) <= 0)
         {
             auto get_spells_result = get_available_spells();
+
             send_random_context("Available spells: " + get_spells_result.second);
         }
+        else
+            auto get_spells_result = get_available_spells(); //just refresh
 
 
         if (player_actor && spells.find(id) != spells.end())
@@ -16810,6 +16861,8 @@ namespace MiscThings {
             auto get_spells_result = get_available_spells();
             send_random_context("Available spells: " + get_spells_result.second);
         }
+        else
+            auto get_spells_result = get_available_spells(); //just refresh
 
 
         if (player_actor && spells.find(id) != spells.end())

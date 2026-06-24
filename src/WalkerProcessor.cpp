@@ -13062,6 +13062,7 @@ namespace WalkerProcessor {
             {
                 if (backup_pickup_time > 0.3f)
                 {
+
                     if (MiscThings::is_object_still_valid(backup_pickup_object))
                     {
                         backup_pickup = false;
@@ -13370,7 +13371,10 @@ namespace WalkerProcessor {
                             if (!useless_fight)
                             {
                                 if (MiscThings::is_objects_around_valid())
-                                    advice = "loot dead enemies";
+                                    if (MiscThings::is_werewolf())
+                                        advice = "eat corpses to progress werewolf powers";
+                                    else
+                                        advice = "loot dead enemies";
 
                                 Observer::add_quicksave_timer(40.0f);
                             }

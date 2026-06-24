@@ -642,7 +642,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
     if (active_force == -1)
     {
-        if (!reconnect && !MiscThings::have_force_only_menu_open()) //???
+        if (!MiscThings::have_force_only_menu_open()) //???
         {
             if (unbound_quest_stage >= 15)
             {

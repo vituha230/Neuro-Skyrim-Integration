@@ -24,12 +24,10 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO barter and dialogue forces were mixed up in arcadia alchemy
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
 //TODO camera shake if we are meleeing an enemy and they are walking back fix
 //TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
 //TODO add more traders to interesting places
-//TODO optimize object scan
 
 //////////////////////////////////////////////////////
 // for later random stuff

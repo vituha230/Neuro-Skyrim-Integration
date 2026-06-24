@@ -108,41 +108,45 @@ namespace Observer {
 							std::string agressor_name = MiscThings::insert_object_into_list_and_get_info(agressor_ref);
 							std::string weapon_name = "";
 
-							if (agressor_name != "")
+
+							if (!agressor_ref->IsActor() || (agressor_ref->IsActor() && !agressor_ref->IsDead()))
 							{
-								if (weapon_formid)
+								if (agressor_name != "")
 								{
-									auto weapon_form = RE::TESObjectREFR::LookupByID(weapon_formid);
-									if (weapon_form)
+									if (weapon_formid)
 									{
-										weapon_name = weapon_form->GetName();
-									}
-								}
-
-								if (weapon_name != "")
-									weapon_name = " with " + weapon_name;
-
-
-								auto hit_event = player_hit_info->find(agressor_ref);
-								if (hit_event != player_hit_info->end())
-								{
-									if ((now_time - hit_event->second) > 10000000000) //1 second = 1 000 000 000
-									{
-										if (agressor_name != "")
+										auto weapon_form = RE::TESObjectREFR::LookupByID(weapon_formid);
+										if (weapon_form)
 										{
-											send_random_context(agressor_name + " hits you" + weapon_name + "!", true);
-											hit_event->second = now_time;
+											weapon_name = weapon_form->GetName();
 										}
 									}
-								}
-								else
-								{
-									player_hit_info->insert({ agressor_ref, now_time });
-									send_random_context(agressor_name + " hits you" + weapon_name + "!", true);
-								}
-							}
 
-							*hitmap_lock = false;
+									if (weapon_name != "")
+										weapon_name = " with " + weapon_name;
+
+
+									auto hit_event = player_hit_info->find(agressor_ref);
+									if (hit_event != player_hit_info->end())
+									{
+										if ((now_time - hit_event->second) > 10000000000) //1 second = 1 000 000 000
+										{
+											if (agressor_name != "")
+											{
+												send_random_context(agressor_name + " hits you" + weapon_name + "!", true);
+												hit_event->second = now_time;
+											}
+										}
+									}
+									else
+									{
+										player_hit_info->insert({ agressor_ref, now_time });
+										send_random_context(agressor_name + " hits you" + weapon_name + "!", true);
+									}
+								}
+
+								*hitmap_lock = false;
+							}
 						}
 					}
 				}

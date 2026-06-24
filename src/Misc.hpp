@@ -358,6 +358,9 @@ namespace MiscThings {
 
     bool have_force_only_menu_open();
 
+    bool eat_corpse_check(RE::TESObjectREFR* target);
+
+
     void prepare_for_unseen_scan(float min_dist, float max_dist);
     RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist);
 
