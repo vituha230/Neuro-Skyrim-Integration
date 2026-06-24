@@ -24,7 +24,6 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO clock action
 //TODO cast timeout (didnt start casting within a limit - cancel/restart cast). Probably best solution because too many things can break the cast, even though its not so frequent
 //TODO chest reveal after dungeon clear (useful for bandit caves sometimes the chest is a bit behind and main loot is missed). needs some mechanism to check if cave is cleared 
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)

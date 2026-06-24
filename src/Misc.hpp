@@ -7,6 +7,7 @@ namespace MiscThings {
 
 
 
+    std::pair<bool, std::string> get_ingame_time();
 
     bool object_inside_of_trevas_watch(RE::TESObjectREFR* object);
 

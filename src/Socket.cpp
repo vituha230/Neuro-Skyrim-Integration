@@ -107,6 +107,7 @@ void clear_actions_status()
 
 neurosdk_action ActionsList[] = {
                                     
+                                    Capabilities::GetIngameTime::Action,
                                     Capabilities::StartSneak::Action,
                                     Capabilities::StopSneak::Action,
 
@@ -160,6 +161,7 @@ neurosdk_action ActionsList[] = {
 
 neurosdk_action ActionsListNoForces[] = {
     
+                                    Capabilities::GetIngameTime::Action,
                                     Capabilities::StartSneak::Action,
                                     Capabilities::StopSneak::Action,
 
@@ -717,6 +719,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::DropInventoryItem::Action; action_pos++;
 
+                        actions_to_register[action_pos] = Capabilities::GetIngameTime::Action; action_pos++;
 
                         if (MiscThings::escaped_helgen()) //refreshed automatically when we switch location
                         {
@@ -1562,6 +1565,16 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                 make_delayed_poke = true;
 
                             }
+
+
+                            if (name == Capabilities::GetIngameTime::Name)
+                            {
+                                command_result = MiscThings::get_ingame_time();
+
+                                make_delayed_poke = true;
+
+                            }
+
 
                             if (name == Capabilities::UseInventoryItem::Name)
                             {

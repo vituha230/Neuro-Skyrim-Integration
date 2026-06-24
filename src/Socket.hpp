@@ -442,6 +442,17 @@ namespace Capabilities
     } // namespace SelectChoiceOption
 
 
+    namespace GetIngameTime
+    {
+        constexpr char Name[] = "get_skyrim_time";
+        constexpr char Desc[] =
+            R"(Get current Skyrim time of day)";
+        //constexpr char JsonSchema[] = null;
+
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
+    } // namespace SelectChoiceOption
+
+
     namespace GetSpells
     {
         constexpr char Name[] = "get_available_spells";

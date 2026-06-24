@@ -30,6 +30,23 @@ namespace MiscThings {
     }
 
 
+
+    std::pair<bool, std::string> get_ingame_time()
+    {
+        std::pair<bool, std::string>  result = { false, "Cannot get current time right now" };
+
+
+        auto calendar = RE::Calendar::GetSingleton();
+
+        if (calendar)
+        {
+            result = {true, "Skyrim time: " + std::to_string((int)calendar->GetHour()) + ":" + std::to_string((int)calendar->GetMinutes())};
+        }
+
+        return result;
+    }
+
+
     int get_ingame_hour()
     {
         auto sky = RE::Sky::GetSingleton();
