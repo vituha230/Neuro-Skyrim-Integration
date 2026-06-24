@@ -2884,7 +2884,6 @@ std::vector<RE::ATTACK_STATE_ENUM> track_attack{};
 class MyHook {
     static void Update(RE::PlayerCharacter* a, float dtime) 
     {
-
         //virtual BSContainer::ForEachResult Visit(BGSPerkEntry* a_perkEntry) = 0;  // 00
         
         /*

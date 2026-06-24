@@ -353,6 +353,8 @@ namespace WalkerProcessor {
     float attack_action_time0 = 0.0f;
     float attack_action_time1 = 0.0f;
 
+    bool dualcasting = false;
+
     RE::NiPoint3 last_target_pos{};
     RE::NiPoint3 last_u{};
     bool last_target_pos_valid = false;
@@ -3963,10 +3965,11 @@ namespace WalkerProcessor {
 
             if (!lookat_used || stealth_arching)
                 if (stealth_arching || (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead())))
-                    if (!stop_sneaking && !player->IsSneaking() && !using_custom_path && !location_mode && !(!stealth_arching && quest_mode && target->IsActor() && !target->IsDead()))
+                    if (!stop_sneaking && !using_custom_path && !location_mode && !(!stealth_arching && quest_mode && target->IsActor() && !target->IsDead()))
                     {
                         lock_camera_wants_to_crouch = true;
-                        crouch(); //if target is very low - sneak on it
+                        if (!player->IsSneaking())
+                            crouch(); //if target is very low - sneak on it
                     }
                     else
                         lock_camera_wants_to_crouch = false;
@@ -4406,8 +4409,14 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto left_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand);
         auto right_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kRightHand);
+        auto what_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kOther);
 
-        if (right)
+
+        bool left_is_casting = false;
+        bool right_is_casting = false;
+
+
+        //if (right)
         {
             std::string right_anim_name = "";
             if (player->magicCasters[1] && player->magicCasters[1]->animationGraphManager && player->magicCasters[1]->animationGraphManager->variableCache.animationGraph)
@@ -4423,12 +4432,16 @@ namespace WalkerProcessor {
             {
 
                 auto state = right_caster->state;
-                if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(right)))
-                    result = true;
+                if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(true)))
+                {
+                    right_is_casting = true;
+                    //result = true;
+                }
+                    
             }
 
         }
-        else
+        //else
         {
 
             std::string left_anim_name = "";
@@ -4444,10 +4457,25 @@ namespace WalkerProcessor {
             else
             {
                 auto state = left_caster->state;
-                if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(right)) && !MiscThings::is_intro2())
-                    result = true;
+                if (state != RE::MagicCaster::State::kNone && !(state == RE::MagicCaster::State::kCasting && is_concentration_spell(false)) && !MiscThings::is_intro2())
+                {
+                    left_is_casting = true;
+                    //result = true;
+                }
             }
         }
+
+
+        if (right)
+            result = right_is_casting;
+        else
+            result = left_is_casting;
+        
+        if (right && !result && left_is_casting)
+            bool stop_here = false;
+
+        if (right && !result && right_is_casting)
+            bool stop_here = false;
 
 
         return result;
@@ -4670,6 +4698,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        dualcasting = false;
 
         autoload_door_pathfinding_failed = false;
 
@@ -9187,6 +9216,30 @@ namespace WalkerProcessor {
     }
 
 
+    bool is_fire_and_forget_spell(bool right)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
+
+
+        if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
+        {
+            if (spell->avEffectSetting)
+            {
+                auto cast_type = spell->avEffectSetting->data.castingType;
+                if (cast_type == RE::MagicSystem::CastingType::kFireAndForget)
+                    return true;
+            }
+
+        }
+
+        return false;
+    }
+
+
+
+
     float get_spell_timeout(bool right)
     {
         float result = 1.0f;
@@ -9844,7 +9897,7 @@ namespace WalkerProcessor {
             
 
 
-        if (sneak_failed && player && player->IsSneaking())
+        if (!lock_camera_wants_to_crouch && sneak_failed && player && player->IsSneaking())
             crouch();//uncrouch 
 
 
@@ -9935,6 +9988,7 @@ namespace WalkerProcessor {
             float stamina_state = MiscThings::get_player_stamina() / MiscThings::get_player_max_stamina();
 
             bool goto_attack_used = false;
+            
 
             if (MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
             {
@@ -9966,38 +10020,7 @@ namespace WalkerProcessor {
                     attack_action_0:
 
 
-                    if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
-                        low_mana_detected = false;
-
-
-                    bool dont_check_mana = false;
-
-                    dont_check_mana = !is_concentration_spell(true) && is_casting_walker2(true);
-
-                    bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
-
-                    if (low_mana_check)
-                        low_mana_detected = true;
-
-                    if (low_mana_check || (MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(100.0f)))
-                    {
-
-                        //set_universal_block(1.0f);
-                        right_attack_cancel();
-                        //was_charging_ranged = false;
-                        attack_action = 1;
-                        last_attack_action = 0;
-
-                        goto finalize_attack;
-                        //goto attack_action_1;
-
-                        //return false;
-                    }
-
-
                     
-                    
-
 
                     if (attack_action_time0 < get_attack_time(true) && !(MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
                     {
@@ -10012,6 +10035,7 @@ namespace WalkerProcessor {
                         std::string attacking_health = "";
 
                         bool casting = false;
+                        
 
                         bool skip_cast = false;
 
@@ -10034,6 +10058,45 @@ namespace WalkerProcessor {
                         else
                             if (MiscThings::has_spell_equipped(true))
                             {
+
+
+                                if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
+                                    low_mana_detected = false;
+
+
+                                bool dont_check_mana = false;
+
+                                dont_check_mana = !is_concentration_spell(true) && (is_casting_walker2(true) || (dualcasting && is_casting_walker2(false)));
+
+                                //dont_check_mana = true;
+
+
+                                bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
+
+                                if (low_mana_check)
+                                    low_mana_detected = true;
+
+                                if (low_mana_check || (MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(100.0f)))
+                                {
+
+                                    //set_universal_block(1.0f);
+                                    right_attack_cancel();
+                                    //was_charging_ranged = false;
+                                    attack_action = 1;
+                                    last_attack_action = 0;
+
+                                    goto finalize_attack;
+                                    //goto attack_action_1;
+
+                                    //return false;
+                                }
+
+
+
+
+
+
+
                                 if (attack_action_time0 > 0.7f);
                                 ;// was_charging_ranged = true;
 
@@ -10057,7 +10120,11 @@ namespace WalkerProcessor {
 
                                 if (!skip_cast)
                                 {
-                                    right_attack_spell();
+                                    if (attack_action_time0 < 0.000001f)
+                                        right_attack();
+                                    else
+                                        right_attack_spell();
+
                                     if (!MiscThings::is_offensive_spell(true))
                                     {
                                         casting = true;
@@ -10195,6 +10262,23 @@ namespace WalkerProcessor {
 
                         //end of attack0
 
+                        attack_action_time0 += dtime;
+
+
+
+                        bool dualcasting_no_mana = MiscThings::has_spell_equipped(true) && MiscThings::get_player_mana() < get_spell_cost(true) * 2.8f;
+
+
+                        if (!goto_attack_used && !dualcasting_no_mana && MiscThings::get_hand_contents(true) == MiscThings::get_hand_contents(false) && MiscThings::has_spell_equipped(true))
+                        {
+                            //dualcasting 
+                            dualcasting = true;
+                            goto_attack_used = true;
+                            attack_action = 1; //switch to lead hand to make it leading
+                            goto attack_action_1;
+                        }
+
+
                         if (!goto_attack_used && MiscThings::has_spell_equipped(true) && is_concentration_spell(true) && is_casting_walker3(true))
                         {
                             if (player->GetDistance(target_ref, true) < get_weapon_range(false) * target_ref->GetScale())
@@ -10203,29 +10287,36 @@ namespace WalkerProcessor {
                                 goto attack_action_1; //add left while we doing this concentration spell
                             }
                         }
+
+
+
                             
 
 
 
-                        attack_action_time0 += dtime;
+                        
                     }
                     else
                     {
                         //if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kNone && player_actor->actorState2.recoil == 0 && player_actor->actorState2.staggered == 0 && !player->animationObjectAction.any(RE::DEFAULT_OBJECTS::DEFAULT_OBJECT::kActionRightAttack))
                         {
                             //end of attack
+                            
+                            is_casting_walker2(true);
 
-
-
-                            if (has_staff_equipped(true))
+                            if (has_staff_equipped(true) || is_fire_and_forget_spell(true))
                             {
                                 if (pause_post_attack < 0.6f)
                                 {
+                                    right_attack_cancel();
                                     pause_post_attack += dtime;
                                     goto finalize_attack;
                                 } 
                             }
                             pause_post_attack = 0.0f;
+
+
+                            dualcasting = false;
 
 
                             attack_spell_cast_timeout = 0.0f;
@@ -10338,32 +10429,6 @@ namespace WalkerProcessor {
                         attack_action_1:
 
 
-                        if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
-                            low_mana_detected = false;
-
-                        bool dont_check_mana = false;
-
-                        dont_check_mana = !is_concentration_spell(false) && is_casting_walker2(false);
-
-                        bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
-
-                        if (low_mana_check)
-                            low_mana_detected = true;
-
-                        if (low_mana_check || (MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
-                        {
-                            //set_universal_block(1.0f);
-                            left_attack_cancel();
-                            //was_charging_ranged = false;
-                            attack_action = 0;
-                            //return false;
-
-                            last_attack_action = 1;
-
-                            goto finalize_attack;
-
-                        }
-
                         if (attack_action_time1 < get_attack_time(false) && !(MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
                         {
                             std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
@@ -10396,6 +10461,45 @@ namespace WalkerProcessor {
                                 if (MiscThings::has_spell_equipped(false))
                                 {
 
+
+
+                                    if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
+                                        low_mana_detected = false;
+
+                                    bool dont_check_mana = false;
+
+                                    dont_check_mana = !is_concentration_spell(false) && (is_casting_walker2(false) || (dualcasting && is_casting_walker2(true)));
+
+                                    //dont_check_mana = true;
+
+                                    bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
+
+                                    if (low_mana_check)
+                                        low_mana_detected = true;
+
+                                    if (low_mana_check || (MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
+                                    {
+                                        //set_universal_block(1.0f);
+                                        left_attack_cancel();
+                                        //was_charging_ranged = false;
+                                        attack_action = 0;
+                                        //return false;
+
+                                        last_attack_action = 1;
+
+                                        goto finalize_attack;
+
+                                    }
+
+
+
+
+
+
+
+
+
+
                                     bool skip_cast = false;
 
                                     if (!is_casting_walker(false))
@@ -10424,7 +10528,13 @@ namespace WalkerProcessor {
 
                                     if (!skip_cast)
                                     {
-                                        left_attack_spell();
+
+                                        if (attack_action_time1 < 0.000001f)
+                                            left_attack();
+                                        else
+                                            left_attack_spell();
+
+
                                         if (!MiscThings::is_offensive_spell(left))
                                         {
                                             casting = true;
@@ -10558,6 +10668,19 @@ namespace WalkerProcessor {
 
                             //end of attack_1
 
+                            attack_action_time1 += dtime;
+
+                            bool dualcasting_no_mana = MiscThings::has_spell_equipped(true) && MiscThings::get_player_mana() < get_spell_cost(true) * 2.8f;
+
+                            if (!goto_attack_used && !dualcasting_no_mana && MiscThings::get_hand_contents(true) == MiscThings::get_hand_contents(false) && MiscThings::has_spell_equipped(true))
+                            {
+                                //dualcasting 
+                                dualcasting = true;
+                                goto_attack_used = true;
+                                goto attack_action_0;
+                            }
+
+
                             if (!goto_attack_used && MiscThings::has_spell_equipped(false) && is_concentration_spell(false) && is_casting_walker3(false))
                             {
                                 if (player->GetDistance(target_ref, true) < get_weapon_range(true) * target_ref->GetScale())
@@ -10568,21 +10691,31 @@ namespace WalkerProcessor {
                             }
 
 
-                            attack_action_time1 += dtime;
+
+
+
+                            
                         }
                         else
                         {
 
-                            if (has_staff_equipped(false))
+                            
+
+                            is_casting_walker2(false);
+
+
+                            if (has_staff_equipped(false) || is_fire_and_forget_spell(false))
                             {
                                 if (pause_post_attack < 0.6f)
                                 {
+                                    left_attack_cancel();
                                     pause_post_attack += dtime;
                                     goto finalize_attack;
                                 }
                             }
                             pause_post_attack = 0.0f;
 
+                            
 
                             try_power_attack = false;
                             gave_attacking_info = false;
@@ -10653,7 +10786,7 @@ namespace WalkerProcessor {
 
 
 
-                            if (!goto_attack_used) //dont switch if this is an auxillary attack
+                            if (!goto_attack_used && !dualcasting) //dont switch if this is an auxillary attack
                             {
                                 last_attack_action = 1;
 
@@ -10678,6 +10811,8 @@ namespace WalkerProcessor {
 
                                 //set_universal_block(0.2f);
                             }
+
+                            dualcasting = false;
                             
                         }
                     }
@@ -10688,6 +10823,8 @@ namespace WalkerProcessor {
             
 
             finalize_attack:
+
+            
 
 
             if (target_ref->IsActor() && !was_already_dead && !target_ref->IsDisabled())
