@@ -1395,9 +1395,9 @@ namespace Observer {
 
 	
 
-	void cleanup_invalid_objects(float dtime)
+	void cleanup_invalid_objects(float dtime, bool force)
 	{
-		if (object_cleanup_timer > 0.5f)
+		if (object_cleanup_timer > 0.5f || force)
 		{
 			object_cleanup_timer = 0.0f;
 			if (MiscThings::is_objects_around_valid())

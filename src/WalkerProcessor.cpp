@@ -6032,6 +6032,8 @@ namespace WalkerProcessor {
 
         RE::TESObjectREFR* random_target = nullptr;
 
+        MiscThings::prepare_for_unseen_scan(100, max_dist);
+
         while (min_dist > 100.0f && !random_target)
         {
             random_target = MiscThings::find_distant_unseen_reference(min_dist, max_dist);
@@ -6080,7 +6082,7 @@ namespace WalkerProcessor {
         }
 
 
-        put_explore_on_cooldown(90.0f);
+        put_explore_on_cooldown(40.0f);
         unregister_explore_action();
 
         right_attack_cancel();

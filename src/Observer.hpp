@@ -44,7 +44,7 @@ namespace Observer {
 
 	std::pair<bool, std::string> set_quest_puzzle_choice(int id);
 
-	void cleanup_invalid_objects(float dtime);
+	void cleanup_invalid_objects(float dtime, bool force = false);
 
 	void attatch_hitmap();
 

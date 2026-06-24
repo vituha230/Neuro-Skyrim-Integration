@@ -12771,9 +12771,9 @@ namespace MiscThings {
 
 
     //work in progress, dont use, it crashes
-    float calculate_weapon_damage(RE::TESObjectWEAP* weapon)
+    float calculate_weapon_damage(RE::TESObjectWEAP* weapon, RE::InventoryEntryData* entry)
     {
-
+        /*
         float result = 0.0f;
 
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -12782,10 +12782,54 @@ namespace MiscThings {
         {
             auto player_actor = (RE::Actor*)player->AsReference();
 
-            RE::BGSEntryPoint::HandleEntryPoint(RE::BGSEntryPoint::ENTRY_POINT::kCalculateWeaponDamage, player_actor, weapon, &result);
+            RE::BGSEntryPoint::HandleEntryPoint(RE::BGSEntryPoint::ENTRY_POINT::kCalculateWeaponDamage, player, weapon, nullptr , &result);
         }
+        */
 
-        return 0;
+        float result = weapon->GetAttackDamage();
+
+
+        /* //this is too slow and also it shows wrong number inventory is actually opened at least once
+        if (entry)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player)
+            {
+                if (entry && entry->object && entry->object->formID)
+                    result = player->GetDamage(entry);
+            }
+        }
+        else
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player)
+            {
+                RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
+
+                auto entry_ptr = inventory.find(weapon);
+
+                if (entry_ptr == inventory.end())
+                    return result; //not found in actual inventory
+                else
+                {
+                    entry = entry_ptr->second.second.get();
+
+                    if (entry && entry->object && entry->object->formID)
+                        result = player->GetDamage(entry);
+
+                }
+
+
+
+
+            }
+        }
+        */
+
+
+        return result;
     }
 
 
@@ -15152,7 +15196,7 @@ namespace MiscThings {
 
 
 
-    std::string get_inventory_item_full_info(RE::TESBoundObject* item, bool compact = false)
+    std::string get_inventory_item_full_info(RE::TESBoundObject* item, bool compact = false, RE::InventoryEntryData* entry = nullptr)
     {
 
         std::string result = "";
@@ -15209,7 +15253,8 @@ namespace MiscThings {
 
                     auto weapon = (RE::TESObjectWEAP*)item_form;
 
-                    auto damage = weapon->attackDamage;// calculate_weapon_damage(weapon);
+                    //auto damage = weapon->attackDamage;
+                    int damage = calculate_weapon_damage(weapon, entry);
 
                     std::stringstream ss;
                     ss << std::fixed << std::setprecision(1) << weapon->weight;
@@ -17745,24 +17790,29 @@ namespace MiscThings {
 
 
 
-    RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist)
+    std::vector<std::pair<float, RE::TESObjectREFR*>> unseen_list{};
+
+
+
+    void prepare_for_unseen_scan(float min_dist, float max_dist)
     {
-        RE::TESObjectREFR* result = nullptr;
+        //since we probably are going to call find_distant_unseen_reference() several times in a row it might become a bit heavy, while object list actually cannot change between scans.
+        //so prepare it once and then reuse the list for optimization
+
+        unseen_list.clear();
+
 
         auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
 
+        //float closest_dist = max_dist;
 
-
-        std::vector<RE::TESObjectREFR*> candidates{};
-
+        //std::vector<RE::TESObjectREFR*> candidates{};
 
         RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, max_dist,
             [&](RE::TESObjectREFR* a_ref) {
 
                 if (a_ref)
                 {
-
-
                     auto base_obj = a_ref->GetBaseObject();
                     RE::FormType base_type{};
 
@@ -17782,6 +17832,7 @@ namespace MiscThings {
 
                     if (base_type == RE::FormType::Static)
                         return RE::BSContainer::ForEachResult::kContinue;
+
 
                     //only then check if exists
                     if (MiscThings::is_object_in_the_list(a_ref))
@@ -17851,38 +17902,19 @@ namespace MiscThings {
                         }
 
 
-                        if (a_ref->AsReference()->IsActor())
+                        if (a_ref->AsReference()->IsActor() || base_type == RE::FormType::Activator || base_type == RE::FormType::Container)// || base_type == RE::FormType::Door) //doors are filtered from here
                         {
-                            if (!MiscThings::is_object_in_the_list(a_ref))
-                                if (player_ref->GetDistance(a_ref) > min_dist)
+                            //if (!MiscThings::is_object_in_the_list(a_ref))
+                            {
+                                auto dist = player_ref->GetDistance(a_ref);
+                                if (dist > min_dist)
                                 {
-                                    candidates.push_back(a_ref);
+                                    unseen_list.push_back({ dist, a_ref});
                                     return RE::BSContainer::ForEachResult::kContinue;
                                 }
+                            }
                         }
 
-
-                        if (base_type == RE::FormType::Door)
-                        {
-                            if (!MiscThings::is_object_in_the_list(a_ref))
-                                if (player_ref->GetDistance(a_ref) > min_dist)
-                                {
-                                    candidates.push_back(a_ref);
-                                    return RE::BSContainer::ForEachResult::kContinue;
-                                }
-                        }
-
-
-
-                        if (base_type == RE::FormType::Activator)
-                        {
-                            if (!MiscThings::is_object_in_the_list(a_ref))
-                                if (player_ref->GetDistance(a_ref) > min_dist)
-                                {
-                                    candidates.push_back(a_ref);
-                                    return RE::BSContainer::ForEachResult::kContinue;
-                                }
-                        }
 
                         if (base_type == RE::FormType::Furniture) //pullchains/levers
                         {
@@ -17892,29 +17924,19 @@ namespace MiscThings {
                             {
                                 if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
                                 {
-                                    if (!MiscThings::is_object_in_the_list(a_ref))
-                                        if (player_ref->GetDistance(a_ref) > min_dist)
+                                    //if (!MiscThings::is_object_in_the_list(a_ref))
+                                    {
+                                        auto dist = player_ref->GetDistance(a_ref);
+                                        if (dist > min_dist)
                                         {
-                                            candidates.push_back(a_ref);
+                                            unseen_list.push_back({ dist, a_ref });
                                             return RE::BSContainer::ForEachResult::kContinue;
                                         }
+                                    }
                                 }
                             }
                         }
 
-
-
-
-
-                        if (base_type == RE::FormType::Container)
-                        {
-                            if (!MiscThings::is_object_in_the_list(a_ref))
-                                if (player_ref->GetDistance(a_ref) > min_dist)
-                                {
-                                    candidates.push_back(a_ref);
-                                    return RE::BSContainer::ForEachResult::kContinue;
-                                }
-                        }
 
                         if (base_obj)
                         {
@@ -17957,12 +17979,15 @@ namespace MiscThings {
 
                             if (is_harvestable)
                             {
-                                if (!MiscThings::is_object_in_the_list(a_ref))
-                                    if (player_ref->GetDistance(a_ref) > min_dist)
+                                //if (!MiscThings::is_object_in_the_list(a_ref))
+                                {
+                                    auto dist = player_ref->GetDistance(a_ref);
+                                    if (dist > min_dist)
                                     {
-                                        candidates.push_back(a_ref);
+                                        unseen_list.push_back({ dist, a_ref });
                                         return RE::BSContainer::ForEachResult::kContinue;
                                     }
+                                }
                             }
                         }
 
@@ -17973,55 +17998,91 @@ namespace MiscThings {
                             auto workbenchtype = furniture->workBenchData.benchType;
                             if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
                             {
-                                if (!MiscThings::is_object_in_the_list(a_ref))
-                                    if (player_ref->GetDistance(a_ref) > min_dist)
+                                //if (!MiscThings::is_object_in_the_list(a_ref))
+                                {
+                                    auto dist = player_ref->GetDistance(a_ref);
+                                    if (dist > min_dist)
                                     {
-                                        candidates.push_back(a_ref);
+                                        unseen_list.push_back({ dist, a_ref });
                                         return RE::BSContainer::ForEachResult::kContinue;
                                     }
+                                }
                             }
                             else
                             {
                                 if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
-                                    if (!MiscThings::is_object_in_the_list(a_ref))
-                                        if (player_ref->GetDistance(a_ref) > min_dist)
-                                        {
-                                            candidates.push_back(a_ref);
-                                            return RE::BSContainer::ForEachResult::kContinue;
-                                        }
+                                    //if (!MiscThings::is_object_in_the_list(a_ref))
+                                {
+                                    auto dist = player_ref->GetDistance(a_ref);
+                                    if (dist > min_dist)
+                                    {
+                                        unseen_list.push_back({ dist, a_ref });
+                                        return RE::BSContainer::ForEachResult::kContinue;
+                                    }
+                                }
                             }
                         }
 
                         if (base_obj->IsInventoryObject())
                         {
-                            if (!MiscThings::is_object_in_the_list(a_ref))
-                                if (player_ref->GetDistance(a_ref) > min_dist)
+                            //if (!MiscThings::is_object_in_the_list(a_ref))
+                            {
+                                auto dist = player_ref->GetDistance(a_ref);
+                                if (dist > min_dist)
                                 {
-                                    candidates.push_back(a_ref);
+                                    unseen_list.push_back({ dist, a_ref });
                                     return RE::BSContainer::ForEachResult::kContinue;
                                 }
+                            }
                         }
                     }
                 }
-                
+
 
                 return RE::BSContainer::ForEachResult::kContinue;
             });
 
 
 
-            std::sort(candidates.begin(), candidates.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
-                if (left && right && left->data.objectReference && left->data.objectReference &&
-                    right->data.objectReference && left->formID && right->formID)
-                    return left->GetDistance(player_ref) < right->GetDistance(player_ref); //switch > to < for inversed order. this is last->closest
-                else
-                    return false;
+
+            std::sort(unseen_list.begin(), unseen_list.end(), [&](std::pair<float, RE::TESObjectREFR*> left, std::pair<float, RE::TESObjectREFR*> right) {
+                    return left.first < right.first; //switch > to < for inversed order. this is last->closest
                 });
 
-            if (std::size(candidates) > 0)
-                result = candidates.at(0);
+            bool stop_here = false;
 
-        return result;
+    }
+
+
+
+    bool compare_unseens(std::pair<float, RE::TESObjectREFR*> left, std::pair<float, RE::TESObjectREFR*> right)
+    {
+        return left.first < right.first;
+    }
+
+
+    RE::TESObjectREFR* find_distant_unseen_reference(float min_dist, float max_dist)
+    {
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //prepare_unseen_list must be called before doing this
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        RE::TESObjectREFR* result = nullptr;
+
+       
+        //unseen_list is sorted vector
+
+        std::pair<float, RE::TESObjectREFR*> comp_val = { min_dist, nullptr };
+
+        auto lower = std::lower_bound(unseen_list.begin(), unseen_list.end(), comp_val, [&](std::pair<float, RE::TESObjectREFR*> left, std::pair<float, RE::TESObjectREFR*> right) { return left.first < right.first; });
+        
+        if (lower != unseen_list.end() && lower->first < max_dist)
+               return lower->second;
+                
+        return nullptr;
+
     }
 
 
@@ -18589,10 +18650,20 @@ namespace MiscThings {
 
         objects_around_valid = true;
         
-
+        
         std::vector<std::pair<int, object_data>> local_copy{};
 
+        Observer::cleanup_invalid_objects(0.1f, true);
 
+        //now all objects should be valid? ...
+
+        for (auto object : objects_around)
+        {
+            if (object.second.object)
+                local_copy.push_back(object);
+        }
+
+        /*
         RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 50000.0,
             [&](RE::TESObjectREFR* a_ref) {
 
@@ -18612,6 +18683,9 @@ namespace MiscThings {
                 
                 return RE::BSContainer::ForEachResult::kContinue;
             });
+        */
+
+
 
 
         std::sort(local_copy.begin(), local_copy.end(), [&](std::pair<int, object_data> left, std::pair<int, object_data> right) {
