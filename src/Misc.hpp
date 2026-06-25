@@ -355,6 +355,8 @@ namespace MiscThings {
     bool in_skuldafn();
     bool player_inside_of_soltsteim_midgates();
 
+    RE::BGSQuestObjective* get_quest_objective_by_index(RE::TESQuest* quest, int index);
+
     bool player_has_item(RE::TESBoundObject* item);
 
     bool have_force_only_menu_open();

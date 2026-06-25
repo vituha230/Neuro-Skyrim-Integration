@@ -446,7 +446,11 @@ bool neuro::NeuroSocket::register_actions(neurosdk_action actions[], int size)
         something_is_registered = true;
     else
         if (size == 1 && (action_name == force_name_1 || action_name == force_name_2 || action_name == force_name_3 || action_name == force_name_4))
+        {
+            reset_superwatchdog(); //so it only triggers when a singular force is sitting there for 2 min and it isnt just a long series of forces
             force_is_registered = true;
+        }
+            
 
     for (int i = 0; i < size; i++)
     {
@@ -902,7 +906,7 @@ bool neuro::NeuroSocket::action_register_watchdog(float dtime)
     {
         action_watchdog_timer = 0.0f;
 
-        if (had_connection && ever_registered && !something_is_registered && !force_is_registered)
+        if (had_connection && ever_registered && !something_is_registered)// && !force_is_registered)
         {
             if (action_superwatchdog_timer > 120.0f)
             {

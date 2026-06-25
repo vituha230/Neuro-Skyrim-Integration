@@ -3700,6 +3700,72 @@ namespace MiscThings {
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
 
 
+        //dlc2 quest 1
+
+        if (quest && quest->formID == 0x4017f8e)
+        {
+            if (target && target->formID == 0x402aaf9)
+            {
+                auto village_chief = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4018281);
+
+                if (village_chief)
+                    return village_chief;
+            }
+        }
+
+        //dlc2 quest 2
+        if (quest && quest->formID == 0x4017f8f)
+        {
+            if (target && target->formID == 0x401d092)
+            {
+                auto blocking_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017b3a);
+
+                if (blocking_gate && MiscThings::two_state_activator_state(blocking_gate) == 1)
+                {
+                    auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x706fd74);
+                    if (redirect_marker)
+                        return redirect_marker;
+                }
+
+            }
+
+            if (target && target->formID == 0x4017f8c)
+            {
+                auto locked_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4028929);
+
+                if (locked_door && MiscThings::is_door_locked(locked_door, true))
+                {
+                    auto gatekeeper = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x402892a);
+
+                    if (gatekeeper && gatekeeper->IsActor())
+                    {
+                        if (!gatekeeper->IsDead())
+                        {
+                            auto word_of_power = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40340b7);
+
+                            if (word_of_power)
+                                return word_of_power;
+                        }
+                        else
+                        {
+                            auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x706fd75);
+
+                            if (redirect_marker)
+                                return redirect_marker;
+                        }
+
+                    }
+                }
+                else
+                {
+                    //door is unlocked
+                    ;
+                }
+
+            }
+        }
+
+
 
         //companions shard quest 1
 
@@ -5119,6 +5185,25 @@ namespace MiscThings {
 
     bool quest_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective)
     {
+
+        //dlc2 quest 1
+        if (quest && quest->formID == 0x4017f8e)
+        {
+            if (objective && objective->index == 20)
+            {
+                auto next_objective = MiscThings::get_quest_objective_by_index(quest, 25);
+
+                if (next_objective && next_objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !next_objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !next_objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+                {
+                    return true; //hide "search information about miraak" objective if we are pointed to pillars
+                }
+            }
+        }
+
+
+
+
+
         auto barrow_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ103");
         auto golden_claw_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS13");
 
@@ -5877,6 +5962,10 @@ namespace MiscThings {
         auto object_p = General::Script::GetObject(trigger_zone_ref, "WordWallTriggerScript");
         //auto object_p = General::Script::GetObject(trigger_zone_ref, "WordWallTrigger02Script");
         
+        if (!object_p)
+            object_p = General::Script::GetObject(trigger_zone_ref, "DLC2WordWallTriggerScript");
+
+
         if (!object_p)
             return nullptr;
         else
@@ -6807,6 +6896,9 @@ namespace MiscThings {
 
         if (player_ref)
         {
+
+            std::vector<std::pair<RE::TESObjectREFR*, std::string>> blockers = {};
+
             RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, range,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
@@ -6820,18 +6912,55 @@ namespace MiscThings {
                     if (result != "")
                         return RE::BSContainer::ForEachResult::kStop;
 
-                    result = get_blocking_object_name(a_ref);
+                    std::string temp_result = get_blocking_object_name(a_ref);
 
-                    if (result != "")
-                        return RE::BSContainer::ForEachResult::kStop; //this stop isnt stopping for some reason
+                    if (temp_result != "")
+                        blockers.push_back({ a_ref, temp_result });
+                        //return RE::BSContainer::ForEachResult::kStop; //this stop isnt stopping for some reason
 
                     return RE::BSContainer::ForEachResult::kContinue;
                 });
+
+
+            if (std::size(blockers) > 0)
+            {
+                std::sort(blockers.begin(), blockers.end(), [&](std::pair<RE::TESObjectREFR*, std::string> left, std::pair<RE::TESObjectREFR*, std::string> right) {
+
+                    if (left.first && right.first)
+                    {
+                        return left.first->GetDistance(player) < right.first->GetDistance(player);
+                    }
+
+                    return false;
+                    });
+
+
+
+                //it might be worth to wrap this as some kind of function to properly highlight chains/levers for some doors that are not catched properly with normal mechanism
+                if (blockers.at(0).first && blockers.at(0).first->formID == 0x4017b3a)
+                {
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017b2f); //miraak temple 1 handle for gate
+
+                    if (handle)
+                    {
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
+                    }
+                }
+
+                return blockers.at(0).second;
+            }
+
+
+            return "";
         }
 
-
-
-        return result;
+        return "";
     }
 
 
@@ -6870,7 +6999,8 @@ namespace MiscThings {
                                 {
                                     if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
                                     {
-                                        return; //we have some lever or chain. not interesting anymore
+                                        if (player->GetDistance(object_around.second.object) < 3000.0f)
+                                            return; //we have some lever or chain. not interesting anymore
                                     }
                                 }
                             }
@@ -6882,7 +7012,8 @@ namespace MiscThings {
                                 std::string model = activator->GetModel();
 
                                 if (model.find("Lever") != std::string::npos || model.find("Chain") != std::string::npos)
-                                    return; //we have some lever or chain. not interesting anymore
+                                    if (player->GetDistance(object_around.second.object) < 3000.0f)
+                                        return; //we have some lever or chain. not interesting anymore
                             }
 
                         }
@@ -12356,6 +12487,9 @@ namespace MiscThings {
                     race = actor_object->race->GetName();
                     if (race == "Old People Race")
                         race = "Old";
+
+                    if (race == "HMDaedra")
+                        race = "Daedra";
 
                     std::string temp_name = "";
                     temp_name = object->GetDisplayFullName();
