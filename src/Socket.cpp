@@ -911,6 +911,12 @@ bool neuro::NeuroSocket::action_register_watchdog(float dtime)
             if (action_superwatchdog_timer > 120.0f)
             {
                 MiscThings::close_all_closable_menus();
+                set_active_force(-1);
+                
+                const char* action_names[] = { Capabilities::SelectForceChoice::Name, Capabilities::SelectForceChoiceArray::Name, Capabilities::SelectForceChoiceMultiple::Name, Capabilities::SelectForceChoiceString::Name };
+
+                unregister_actions(action_names, std::size(action_names));
+
 
                 action_superwatchdog_timer = 0.0f;
                 register_allowed_actions();
