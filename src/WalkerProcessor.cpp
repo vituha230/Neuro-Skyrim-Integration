@@ -7917,6 +7917,48 @@ namespace WalkerProcessor {
                                                 }
 
 
+                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE0)
+                                                {
+                                                    if (MapProcessor::map_is_allowed())
+                                                    {
+                                                        if (!get_open_map_action_status())
+                                                        {
+                                                            clear_map_cooldown();
+
+                                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                                register_open_map();
+                                                        }
+                                                    }
+
+                                                    reset_walker();
+                                                    result.first = false;
+                                                    result.second = "[This quest is in Solstheim, but you are in Skyrim. You need to travel to Solstheim first to follow it]";
+                                                    do_delayed_poke();
+                                                    return result;
+                                                }
+
+
+                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE1)
+                                                {
+                                                    if (MapProcessor::map_is_allowed())
+                                                    {
+                                                        if (!get_open_map_action_status())
+                                                        {
+                                                            clear_map_cooldown();
+
+                                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                                register_open_map();
+                                                        }
+                                                    }
+
+                                                    reset_walker();
+                                                    result.first = false;
+                                                    result.second = "[This quest is in Skyrim, but you are in Solstheim. You need to travel to Skyrim first to follow it]";
+                                                    do_delayed_poke();
+                                                    return result;
+                                                }
+
+
 
                                                 Observer::reset_threats();
 
@@ -8393,6 +8435,53 @@ namespace WalkerProcessor {
                                                     Observer::set_quest_puzzle_type(2);
                                                     reset_walker();
                                                 }
+
+
+
+
+                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE0)
+                                                {
+
+                                                    if (MapProcessor::map_is_allowed())
+                                                    {
+                                                        if (!get_open_map_action_status())
+                                                        {
+                                                            clear_map_cooldown();
+
+                                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                                register_open_map();
+                                                        }
+                                                    }
+
+
+                                                    reset_walker();
+                                                    do_delayed_poke();
+                                                    send_random_context("[This quest is in Solstheim, but you are in Skyrim. You need to travel to Solstheim first to follow it]", false);
+                                                    return true;
+                                                }
+
+
+                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE1)
+                                                {
+                                                    if (MapProcessor::map_is_allowed())
+                                                    {
+                                                        if (!get_open_map_action_status())
+                                                        {
+                                                            clear_map_cooldown();
+
+                                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                                register_open_map();
+                                                        }
+                                                    }
+
+                                                    reset_walker();
+                                                    do_delayed_poke();
+                                                    send_random_context("[This quest is in Skyrim, but you are in Solstheim. You need to travel to Skyrim first to follow it]", false);
+                                                    return true;
+                                                }
+
+
+
 
                                                 right_attack_cancel();
                                                 left_attack_cancel();

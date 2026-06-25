@@ -351,7 +351,7 @@ namespace MiscThings {
     bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state = true);
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
     bool is_new_object_valid(RE::TESObjectREFR* a_ref, bool ignore_modelstate = false);
-    bool in_soltsheim();
+    bool in_soltsheim(RE::TESObjectREFR* object = nullptr);
     bool in_skuldafn();
     bool player_inside_of_soltsteim_midgates();
 

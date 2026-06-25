@@ -1425,14 +1425,18 @@ namespace MiscThings {
         return false;
     }
 
-    bool in_soltsheim() 
+    bool in_soltsheim(RE::TESObjectREFR* object)
     {
 
         auto player = RE::PlayerCharacter::GetSingleton();
 
-        if (player)
+
+        if (!object)
+            object = player;
+
+        if (object)
         {
-            auto loc = player->GetCurrentLocation();
+            auto loc = object->GetCurrentLocation();
 
             RE::BGSLocation* soltsheim_top = (RE::BGSLocation*)RE::TESForm::LookupByID(0x04016E2A);
 
