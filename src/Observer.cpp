@@ -1228,7 +1228,7 @@ namespace Observer {
 
 								std::string force_message_start = "There are enemies around you. Choose what to do. ";
 
-								if (!any_attacker_sees_player)
+								if (!any_attacker_sees_player && WalkerProcessor::is_sneak_on())
 									force_message_start += " They dont see you yet. ";
 
 								if (force_choice(get_threat_options(any_attacker_sees_player, first_detected_threat), force_message_start + "Enemies: " + attacked_by, force_type::threat_response, true))
