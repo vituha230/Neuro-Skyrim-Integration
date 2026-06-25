@@ -13,6 +13,8 @@
 
 namespace WalkerProcessor {
 
+    bool close_enough_linger = false;
+
 
     //do not reset these in reset_walker()
     RE::TESQuest* last_quest_chosen = nullptr;
@@ -4702,6 +4704,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        close_enough_linger = false;
         dualcasting = false;
 
         autoload_door_pathfinding_failed = false;
@@ -5754,8 +5757,14 @@ namespace WalkerProcessor {
                         distance = camera_pos - aim_pos;
 
 
-                        if ((target_visible && distance.Length() < range) || distance.Length() < 200.0f)
+                        if ((target_visible && distance.Length() < range) || distance.Length() < (160.0f + close_enough_linger * 60.0f))
+                        {
+                            close_enough_linger = true;
                             return true;
+                        }
+                        else
+                            close_enough_linger = false;
+                            
 
                         bool stop_here = false;
                     }
