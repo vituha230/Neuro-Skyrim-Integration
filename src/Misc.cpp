@@ -8426,6 +8426,13 @@ namespace MiscThings {
                                                                 WalkerProcessor::reset_backup_pickup();
                                                             }
 
+                                                            if (result_string == "You are carrying too much to be able to run.")
+                                                            {
+                                                                //when turning back into human from werewolf it falsely sends this message even though we are not overencumbered
+                                                                if (MiscThings::player_overencumbered_by() <= 0.0f)
+                                                                    return;
+                                                            }
+
 
                                                             if (result_string.find("You must raise the bar to open this door.") != std::string::npos)
                                                             {
