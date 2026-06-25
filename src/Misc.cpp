@@ -5458,6 +5458,261 @@ namespace MiscThings {
 
 
 
+
+    void reveal_chests()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player && !player->IsDead())
+        {
+            auto player_pos = player->GetPosition();
+
+            auto player_ref = player->AsReference();
+            auto player_actor = (RE::Actor*)player_ref;
+
+            float scan_distance = 4000.0f;
+            auto player_cell = player->GetParentCell();
+
+
+            std::vector<std::pair<RE::TESObjectREFR*, std::string>> chests{};
+
+
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 4000.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref)
+                    {
+                        auto base_obj = a_ref->GetBaseObject();
+                        RE::FormType base_type{};
+
+                        if (base_obj)
+                        {
+                            base_type = base_obj->GetFormType();
+                            bool debug_type = true;
+                        }
+                        else
+                        {
+                            bool no_base_object = true;
+                        }
+
+                        std::string name = a_ref->GetDisplayFullName();
+
+                        if (base_type == RE::FormType::Hazard)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (base_type == RE::FormType::Static)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (!MiscThings::is_object_valid(a_ref))
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
+                        if (name[0] != '\0' && std::size(name) > 1 && name != player_name && name != "Sit")
+                        {
+
+                            if (MiscThings::has_digits(name))
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            if (a_ref->AsReference()->modelState == 0)
+                                return RE::BSContainer::ForEachResult::kContinue; //skip objects without world model
+
+
+                            if (base_type == RE::FormType::Activator)
+                            {
+                                auto test = (RE::TESObjectACTI*)base_obj;
+                                std::string model = test->GetModel();
+                                if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                                    return RE::BSContainer::ForEachResult::kContinue;
+
+                                //little flags
+                                if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                            }
+
+
+
+                            if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            if (name.find("Do Not Delete") != std::string::npos)
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            if (name.find("default") != std::string::npos)
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+
+                            if (base_type == RE::FormType::Container)
+                            {
+                                if (!MiscThings::is_object_in_the_list(a_ref))
+                                {
+                                    //now need to filter out treasure chests...
+
+                                    auto cont = (RE::TESObjectCONT*)base_obj;
+
+                                    int num_leveled_items = 0;
+
+                                    if (cont)
+                                    {
+                                        for (auto* cont_obj : std::span(cont->containerObjects, cont->numContainerObjects))
+                                        {
+                                            if (cont_obj && cont_obj->obj && cont_obj->obj->formType == RE::FormType::LeveledItem)
+                                            {
+                                                num_leveled_items++;
+                                            }
+                                        }
+                                    }
+
+                                    if (num_leveled_items > 5)
+                                    {
+                                        std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+                                        if (info != "")
+                                        {
+                                            if (!MiscThings::is_container_empty(a_ref))
+                                                chests.push_back({ a_ref, info });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+
+
+
+            std::sort(chests.begin(), chests.end(), [&](std::pair<RE::TESObjectREFR*, std::string> left, std::pair<RE::TESObjectREFR*, std::string> right) {
+                //return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
+                if (left.first && right.first && left.first->formID && right.first->formID && left.first->data.objectReference && right.first->data.objectReference)
+                {
+                    RE::NiPoint3 pos_left = left.first->GetPosition();
+                    RE::NiPoint3 pos_right = right.first->GetPosition();
+
+                    return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
+                }
+                else
+                    return false;
+                });
+
+            std::string info_string = "";
+
+
+            bool veryclose_line_made = false;
+            bool nearby_line_made = false;
+            bool faraway_line_made = false;
+
+            std::string last_name = "";
+            bool has_last = false;
+
+            bool mzark_special = false;
+
+            for (auto result_entry : chests)
+            {
+                if (result_entry.first && result_entry.first->formID && result_entry.first->data.objectReference)
+                {
+                    auto this_object = result_entry.first->data.objectReference;
+                    auto distance = player_ref->GetDistance(result_entry.first);
+
+                    if (result_entry.first == RE::TESObjectREFR::LookupByID(0x1ba5f))
+                        mzark_special = true;
+
+                    if (this_object && result_entry.second != "")
+                    {
+                        if (distance < 450.0f)
+                            if (!veryclose_line_made)
+                            {
+                                std::string last_name = "";
+                                bool has_last = false;
+                                info_string += "\nVery close:\n";
+                                veryclose_line_made = true;
+                            }
+
+                        if (distance >= 450.0f && distance < 2000.0f)
+                            if (!nearby_line_made)
+                            {
+                                std::string last_name = "";
+                                bool has_last = false;
+                                info_string += "\nNearby:\n";
+                                nearby_line_made = true;
+                            }
+
+
+                        if (distance >= 2000.0f && distance < 10000.0f)
+                            if (!faraway_line_made)
+                            {
+                                std::string last_name = "";
+                                bool has_last = false;
+                                info_string += "\nFar away:\n";
+                                faraway_line_made = true;
+                            }
+
+
+
+                        //std::string category = get_object_category(object.second);
+
+                        std::string result_name = result_entry.second;//insert_object_into_list_and_get_info(this_object); //they are all in the list but whatever. just to get the name
+
+                        auto id_end = result_name.find_first_of("]");
+
+                        if (result_name != "" && id_end != std::string::npos)
+                        {
+                            std::string name_no_id = result_name.substr(id_end + 1, result_name.length() - id_end);
+                            std::string id_text_raw = result_name.substr(0, id_end + 1);
+                            std::string id_text = result_name.substr(4, id_end - 4);
+
+
+                            if (has_last && name_no_id == last_name)
+                            {
+                                auto last_start = info_string.rfind("\n", info_string.length() - 2);
+
+                                auto last_id_start = info_string.find("[id", last_start);
+
+                                if (last_id_start == std::string::npos || last_start == std::string::npos)
+                                {
+                                    info_string += result_name + "\n";
+                                }
+                                else
+                                {
+                                    if (info_string.substr(last_id_start + 3, 1) != "s")
+                                    {
+                                        info_string.insert(last_id_start + 3, "s");
+                                    }
+
+                                    auto last_substr = info_string.substr(last_id_start, info_string.length() - last_id_start);
+
+                                    auto last_id_sub_end = last_substr.find_first_of("]");
+
+                                    auto last_id_insert_pos = last_id_start + last_id_sub_end;
+
+                                    info_string.insert(last_id_insert_pos, ", " + id_text);
+                                }
+
+                            }
+                            else
+                                info_string += result_name + "\n";
+
+                            last_name = name_no_id;
+                            has_last = true;
+                        }
+                    }
+                }
+            }
+
+            if (info_string != "")
+            {
+                info_string = "[You see objects around you: \n" + info_string;
+                send_random_context(info_string);
+            }
+        }
+    }
+
+
+
+
     std::string check_very_interesting_objects()
     {
         auto now = std::chrono::steady_clock::now().time_since_epoch().count();

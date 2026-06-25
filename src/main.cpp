@@ -24,7 +24,6 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO chest reveal after dungeon clear (useful for bandit caves sometimes the chest is a bit behind and main loot is missed). needs some mechanism to check if cave is cleared 
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
 //TODO camera shake if we are meleeing an enemy and they are walking back fix (either 2 lock_camera's are fighting, or its trying to walk_to_point for brief moment for some reason (raycast related?)) basically close_enough problem
 //TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)

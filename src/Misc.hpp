@@ -462,6 +462,10 @@ namespace MiscThings {
     bool is_offensive_spell(RE::SpellItem* spell);
     bool has_spell_equipped(bool right);
 
+
+    void reveal_chests();
+
+
     bool is_loading();
     bool dont_interact_with(RE::TESObjectREFR* target);
 

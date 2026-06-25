@@ -11,6 +11,9 @@
 
 namespace Observer {
 
+	RE::BGSLocation* old_player_loc = nullptr;
+
+	bool old_location_cleared = false;
 
 	bool old_oxygen_status = false;
 
@@ -944,6 +947,9 @@ namespace Observer {
 
 	void reset_observer()
 	{
+		old_location_cleared = false;
+		old_player_loc = nullptr;
+
 		no_spam = false;
 		no_spam_time = 0.0f;
 
@@ -1832,7 +1838,6 @@ namespace Observer {
 												}
 											}
 										}
-
 
 
 
@@ -4426,6 +4431,17 @@ namespace Observer {
 						old_tg05_quest_stage = snow_veil_quest->GetCurrentStageID();
 
 
+
+					//location cleared event. reveal chests. init
+					auto player_loc = player->GetCurrentLocation();
+
+					if (player_loc)
+					{
+						old_location_cleared = player_loc->cleared;
+					}
+					
+					old_player_loc = player_loc;
+
 				}
 				else
 				{
@@ -4546,6 +4562,25 @@ namespace Observer {
 					
 
 
+				//location cleared event. reveal chests. main part
+				auto player_loc = player->GetCurrentLocation();
+
+				if (player_loc)
+				{
+					bool loc_cleared = player_loc->cleared;
+
+					if (old_player_loc == player_loc) //should be enough to check if old_cleared is valid and change isnt caused by location change
+					{
+						if (loc_cleared && !old_location_cleared)
+						{
+							MiscThings::reveal_chests();
+						}
+					}
+
+					old_location_cleared = loc_cleared;
+				}
+
+				old_player_loc = player_loc;
 
 
 				state_monitor_timer = 0.0f;
