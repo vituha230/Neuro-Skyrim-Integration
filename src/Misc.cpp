@@ -14511,6 +14511,12 @@ namespace MiscThings {
             return result;
         }
 
+        if (MiscThings::is_werewolf())
+        {
+            result.first = false;
+            result.second = "Cannot access inventory in beast form. ";
+            return result;
+        }
 
 
         if (!inventory_valid)

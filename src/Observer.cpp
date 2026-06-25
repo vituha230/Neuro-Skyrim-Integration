@@ -5012,7 +5012,7 @@ namespace Observer {
 
 					
 
-					if (!tried_to_heal && MiscThings::player_hp_less_than(60.0f))
+					if (!tried_to_heal && MiscThings::player_hp_less_than(60.0f) && !MiscThings::is_werewolf())
 					{
 						bool right_healing = MiscThings::is_self_healing_spell(true);
 						bool left_healing = MiscThings::is_self_healing_spell(false);
@@ -5044,7 +5044,7 @@ namespace Observer {
 					bool want_health = MiscThings::player_hp_less_than(30) && WalkerProcessor::is_fighting();
 					bool want_mana = (float)mana / (float)max_mana < 0.4f && WalkerProcessor::is_fighting();
 
-					if (want_health || want_mana)
+					if ((want_health || want_mana) && !MiscThings::is_werewolf())
 					{
 						auto inventory = MiscThings::get_filtered_inventory();
 

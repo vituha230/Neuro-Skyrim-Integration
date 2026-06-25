@@ -3891,7 +3891,11 @@ namespace WalkerProcessor {
             float arc_shift = arc_coef1 * distance * distance + arc_coef2 * distance;
 
 
+
             if (shout_mode && !force_speed_correction)
+                arc_shift = 0.0f;
+
+            if (!has_bow_equipped(true) && !has_crossbow_equipped(get_current_active_hand()))
                 arc_shift = 0.0f;
 
 
