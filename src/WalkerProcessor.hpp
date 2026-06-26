@@ -15,6 +15,8 @@ namespace WalkerProcessor {
 
 	bool is_casting_walker3(bool right);
 
+	bool detect_quest_target_changed_and_walk();
+
 	void install_hook();
 
 	void reset_walker();

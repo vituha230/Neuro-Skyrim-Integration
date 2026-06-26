@@ -19,6 +19,38 @@ namespace MiscThings {
     
 
 
+    bool inside_solstheim_superwaterfall()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto player_worldspace = player->GetWorldspace();
+
+            if (player_worldspace && player_worldspace->formID == 0x4000800)
+            {
+                auto player_pos = player->GetPosition();
+
+                RE::NiPoint2 a = { 61504.3242f, 77751.8672f };//, -1103.65869
+                RE::NiPoint2 b = { 59951.3164f, 76516.2266f };// , -1095.44202
+                RE::NiPoint2 c = { 59153.1719f, 77511.3047f };// , -1113.10095
+                RE::NiPoint2 d = { 60875.3203f, 78738.9922f };// , -1104.09680
+
+                if (player_pos.z > 2000.0f && player_pos.z < 2700.0f)
+                {
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    if (is_inside_of_rectangle(p, a, b, c, d))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
     bool eat_corpse_check(RE::TESObjectREFR* target)
     {
         if (target && target->IsActor() && target->IsDead())
@@ -2669,6 +2701,11 @@ namespace MiscThings {
 
         if (player)
         {
+
+            if (MiscThings::inside_solstheim_superwaterfall())
+                return true; //pretend we are swimming for all walker checks 
+
+
             return player->actorState1.swimming;
         }
 
@@ -3713,7 +3750,7 @@ namespace MiscThings {
             }
         }
 
-        //dlc2 quest 2
+        //dlc2 quest 2 (find book)
         if (quest && quest->formID == 0x4017f8f)
         {
             if (target && target->formID == 0x401d092)
@@ -3758,12 +3795,87 @@ namespace MiscThings {
                 }
                 else
                 {
-                    //door is unlocked
-                    ;
+                    //door1 is unlocked
+                    auto locked_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4028936);
+
+                    if (locked_door2 && MiscThings::is_door_locked(locked_door2, true))
+                    {
+                        auto redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7072c3e);
+
+                        if (redirect_marker2)
+                            return redirect_marker2;
+                    }
+                    else
+                    {
+                        //door 2 is unlocked
+                        auto stone_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401b7c3);
+
+                        if (stone_door && MiscThings::two_state_activator_state(stone_door) == 1)
+                        {
+                            auto redirect_marker3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7072c3f);
+
+                            if (redirect_marker3)
+                                return redirect_marker3;
+                        }
+                        else
+                        {
+                            //stone door is open
+                            auto horizontal_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401d04f);
+
+                            if (horizontal_gate && MiscThings::two_state_activator_state(horizontal_gate) == 1)
+                            {
+                                auto redirect_marker4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7072c40);
+
+                                if (redirect_marker4)
+                                    return redirect_marker4;
+                            }
+                            else
+                            {
+                                //horizontal gate is open
+                                auto sliding_stairs = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401d006);
+
+                                if (sliding_stairs && MiscThings::two_state_activator_state(sliding_stairs) == 1)
+                                {
+                                    auto redirect_marker5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7072c41);
+
+                                    if (redirect_marker5)
+                                        return redirect_marker5;
+                                }
+                            }
+                        }
+                    }
+
                 }
 
             }
         }
+
+        //dlc2 bend will on wind stone, skaal introduction post first book quest
+
+        if (quest && quest->formID == 0x4017f90)
+        {
+            if (std::size(quest->scenes) > 1)
+            {
+                auto freya_scene = quest->scenes[1];
+
+                if (freya_scene)
+                {
+                    auto current_phase = freya_scene->unkBC;
+
+                    if (current_phase == 6)
+                    {
+                        //redirect to some village shit marker so freya progresses
+                        auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4038533);
+                        
+                        if (redirect)
+                            return redirect;
+                    }
+                }
+
+            }
+            bool stop_here = false;
+        }
+
 
 
 
@@ -6658,6 +6770,8 @@ namespace MiscThings {
             }
         }
 
+        MiscThings::reveal_tricky_activators_linked_to_object(a_ref);
+
         return result;
     }
 
@@ -6722,6 +6836,25 @@ namespace MiscThings {
             auto static_obj = (RE::TESObjectACTI*)base_obj;
 
             std::string model = static_obj->GetModel();
+
+
+            if (model.find("NorRotatingDoor01") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Rotating Stone Door", a_ref);
+
+                result = name;
+            }
+
+
+            if (model.find("TrapNorPlatformStairs01") != std::string::npos)
+            {
+                if (MiscThings::two_state_activator_state(a_ref) == 1) //it must be closed because when its open, and we walk through it, its constantly in targeted ref range and gets treated as blocking
+                {
+                    std::string name = MiscThings::insert_object_into_list_custom_name("Secret Sliding Staircase", a_ref);
+
+                    result = name;
+                }
+            }
 
             if (model.find("FXspiderWebKitDoorSpecial") != std::string::npos)
             {
@@ -6794,6 +6927,14 @@ namespace MiscThings {
                 }
 
             }
+
+            if (model.find("TrapDoorALT01") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal floor gate", a_ref);
+                result = name;
+            }
+            
+
         }
 
             auto fire_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xf4986);
@@ -6887,6 +7028,46 @@ namespace MiscThings {
 
 
 
+    void reveal_tricky_activators_linked_to_object(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            if (object->formID == 0x4017b3a)
+            {
+                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017b2f); //miraak temple 1 handle for gate
+
+                if (handle)
+                {
+                    if (!MiscThings::is_object_in_the_list(handle))
+                    {
+                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                        if (temp_result != "")
+                            send_random_context("You see: " + temp_result, false);
+                    }
+                }
+            }
+
+            if (object->formID == 0x401b7c3)
+            {
+                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401b7c5); //miraak temple 2 handle for stone door
+
+                if (handle)
+                {
+                    if (!MiscThings::is_object_in_the_list(handle))
+                    {
+                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                        if (temp_result != "")
+                            send_random_context("You see: " + temp_result, false);
+                    }
+                }
+            }
+        }
+        
+    }
+
+
     std::string get_potential_blocking_object(float range, RE::TESObjectREFR* ignore_ref)
     {
         std::string result = "";
@@ -6936,21 +7117,10 @@ namespace MiscThings {
 
 
 
-                //it might be worth to wrap this as some kind of function to properly highlight chains/levers for some doors that are not catched properly with normal mechanism
-                if (blockers.at(0).first && blockers.at(0).first->formID == 0x4017b3a)
+                //reveal activators that might be undetected
+                if (blockers.at(0).first)
                 {
-                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017b2f); //miraak temple 1 handle for gate
-
-                    if (handle)
-                    {
-                        if (!MiscThings::is_object_in_the_list(handle))
-                        {
-                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
-
-                            if (temp_result != "")
-                                send_random_context("You see: " + temp_result, false);
-                        }
-                    }
+                    MiscThings::reveal_tricky_activators_linked_to_object(blockers.at(0).first);
                 }
 
                 return blockers.at(0).second;
@@ -7393,6 +7563,35 @@ namespace MiscThings {
             else
                 return 1;
         }
+
+        object_p = General::Script::GetObject(activator, "TrapNorPlatform");
+
+        if (object_p)
+        {
+            std::string state = "";
+            state = object_p->currentState;
+
+            if (state == "On")
+                return 0;
+            else
+                return 1;
+        }
+
+
+        object_p = General::Script::GetObject(activator, "DLC2norRotatingDoorSCRIPT");
+
+        if (object_p)
+        {
+            bool stop_here = false;
+
+            RE::BSFixedString prop_name = "::startOpen_var";
+
+            if (General::Script::GetVariable<bool>(object_p, prop_name))
+                result = 0;
+            else
+                result = 1;
+        }
+
 
 
         object_p = General::Script::GetObject(activator, "dunLabyrinthianElementalDoor");

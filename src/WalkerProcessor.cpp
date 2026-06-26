@@ -319,6 +319,7 @@ namespace WalkerProcessor {
 
 
     bool using_custom_path = false;
+    bool custom_path_use_z_for_path_point_reached = false;
 
     bool start_attacking = false;
     float attacking_inanimate_object_time = 0.0f;
@@ -1806,6 +1807,8 @@ namespace WalkerProcessor {
             if (MiscThings::object_inside_katariah_balcony(player))
                 return true;
 
+            if (MiscThings::inside_solstheim_superwaterfall())
+                return true;
 
             if (path_valid && !use_last_point_of_last_path && current_path_point < (int)std::size(path) - 3)
             {
@@ -4352,13 +4355,22 @@ namespace WalkerProcessor {
                                 send_random_context("You walk off the cliff's edge...");
                             }
 
-                            current_path_point_pos.z = 0.0f;
-                            player_pos.z = 0.0f;
+                            if (!custom_path_use_z_for_path_point_reached)
+                            {
+                                current_path_point_pos.z = 0.0f;
+                                player_pos.z = 0.0f;
+                            }
+
                             distance = current_path_point_pos.GetDistance(player_pos);
 
                             float base_threshold = 80.0f;
                             if (karthspire_plates)
                                 base_threshold = 30.0f;
+
+
+                            if (custom_path_use_z_for_path_point_reached)
+                                base_threshold = 60.0f;
+
 
                             result = distance < base_threshold + 70.0f * MiscThings::is_player_swimming(); //100
                         }
@@ -4915,6 +4927,8 @@ namespace WalkerProcessor {
                 quicksave();
         }
 
+        custom_path_use_z_for_path_point_reached = false;
+
         dont_quicksave_after_custom_path = false;
 
         if (!backup_input_cancel)
@@ -5236,7 +5250,7 @@ namespace WalkerProcessor {
             }
             
             
-
+            
 
 
 
@@ -6180,7 +6194,51 @@ namespace WalkerProcessor {
     }
 
 
+    void miraak_temple2_check()
+    {
+        if (!using_custom_path)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
 
+            if (player && target_ref)
+            {
+                auto player_cell = player->GetParentCell();
+
+                if (player_cell && player_cell->formID == 0x4019cd7)
+                {
+                    auto player_pos = player->GetPosition();
+
+                    if (player_pos.GetDistance({ -935.203369, 5581.19580, -1471.51489 }) < 100.0f && target_ref->GetPositionZ() < -1750.0f)
+                    {
+                            //allow_interrupt_custom_walk = true;
+                            dont_quicksave_after_custom_path = true;
+                            using_custom_path = true;
+                            walk_again_when_finished = true;
+                            current_path_point = 0;
+                            custom_path = CustomWalkerPaths::miraak_temple_2_staircase_down;
+                            custom_path_use_z_for_path_point_reached = true;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_shift = true;
+                    }
+
+                    if (player_pos.GetDistance({ -846.570312, 5289.66357, -2191.64990 }) < 100.0f && target_ref->GetPositionZ() > -1750.0f)
+                    {
+                        //allow_interrupt_custom_walk = true;
+                        dont_quicksave_after_custom_path = true;
+                        using_custom_path = true;
+                        walk_again_when_finished = true;
+                        current_path_point = 0;
+                        custom_path = CustomWalkerPaths::miraak_temple_2_staircase_up;
+                        custom_path_use_z_for_path_point_reached = true;
+                        path = custom_path;
+                        path_valid = true;
+                        dont_shift = true;
+                    }
+                }
+            }
+        }
+    }
 
     void trevas_watch_check()
     {
@@ -7917,17 +7975,14 @@ namespace WalkerProcessor {
                                                 }
 
 
-                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE0)
+                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE0 && MapProcessor::map_is_allowed())
                                                 {
-                                                    if (MapProcessor::map_is_allowed())
+                                                    if (!get_open_map_action_status())
                                                     {
-                                                        if (!get_open_map_action_status())
-                                                        {
-                                                            clear_map_cooldown();
+                                                        clear_map_cooldown();
 
-                                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
-                                                                register_open_map();
-                                                        }
+                                                        if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                            register_open_map();
                                                     }
 
                                                     reset_walker();
@@ -7938,17 +7993,14 @@ namespace WalkerProcessor {
                                                 }
 
 
-                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE1)
+                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE1 && MapProcessor::map_is_allowed())
                                                 {
-                                                    if (MapProcessor::map_is_allowed())
+                                                    if (!get_open_map_action_status())
                                                     {
-                                                        if (!get_open_map_action_status())
-                                                        {
-                                                            clear_map_cooldown();
+                                                        clear_map_cooldown();
 
-                                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
-                                                                register_open_map();
-                                                        }
+                                                        if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                            register_open_map();
                                                     }
 
                                                     reset_walker();
@@ -7968,6 +8020,11 @@ namespace WalkerProcessor {
                                                         reset_walker();
                                                     else
                                                     {
+                                                        if (detect_quest_target_changed_and_walk())
+                                                        {
+                                                            had_successful_walk = false;
+                                                        }
+
                                                         result.first = true;
                                                         result.second = "You keep following quest...";
 
@@ -8439,18 +8496,15 @@ namespace WalkerProcessor {
 
 
 
-                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE0)
+                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE0 && MapProcessor::map_is_allowed())
                                                 {
 
-                                                    if (MapProcessor::map_is_allowed())
+                                                    if (!get_open_map_action_status())
                                                     {
-                                                        if (!get_open_map_action_status())
-                                                        {
-                                                            clear_map_cooldown();
+                                                        clear_map_cooldown();
 
-                                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
-                                                                register_open_map();
-                                                        }
+                                                        if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                            register_open_map();
                                                     }
 
 
@@ -8461,17 +8515,14 @@ namespace WalkerProcessor {
                                                 }
 
 
-                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE1)
+                                                if (quests_target_ref && quests_target_ref->formID == 0x4016FE1 && MapProcessor::map_is_allowed())
                                                 {
-                                                    if (MapProcessor::map_is_allowed())
+                                                    if (!get_open_map_action_status())
                                                     {
-                                                        if (!get_open_map_action_status())
-                                                        {
-                                                            clear_map_cooldown();
+                                                        clear_map_cooldown();
 
-                                                            if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
-                                                                register_open_map();
-                                                        }
+                                                        if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                            register_open_map();
                                                     }
 
                                                     reset_walker();
@@ -14192,6 +14243,7 @@ namespace WalkerProcessor {
 
                     riften_watchtower_check();
                     trevas_watch_check();
+                    miraak_temple2_check();
 
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_pos = player->GetPosition();
@@ -15918,7 +15970,7 @@ namespace WalkerProcessor {
                                             if (walk_again_when_finished)
                                             {
 
-
+                                                custom_path_use_z_for_path_point_reached = false;
 
                                                 if (ustengrev_run_only_mode)
                                                 {

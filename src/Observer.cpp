@@ -13,6 +13,8 @@ namespace Observer {
 
 	RE::BGSLocation* old_player_loc = nullptr;
 
+	bool old_blackbook_warp = false;
+
 	bool old_location_cleared = false;
 
 	bool old_oxygen_status = false;
@@ -947,6 +949,9 @@ namespace Observer {
 
 	void reset_observer()
 	{
+
+		old_blackbook_warp = false;
+
 		old_location_cleared = false;
 		old_player_loc = nullptr;
 
@@ -3238,6 +3243,29 @@ namespace Observer {
 																}
 															}
 
+															//
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRotatingDoor01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Rotating Stone Door", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " opened]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " closed]");
+															}
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "TrapNorPlatformStairs01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Secret Sliding Staircase", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " slided up]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " slided down]");
+															}
 
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
 															{
@@ -4821,7 +4849,8 @@ namespace Observer {
 
 				if (!old_can_fight && can_fight)
 				{
-					register_attack_action();
+					//register_attack_action();
+					register_allowed_actions();
 				}
 
 				if (old_can_fight && !can_fight)
@@ -4956,6 +4985,29 @@ namespace Observer {
 
 				old_sit_state = sit_state;
 
+
+
+				//black book animation event.check for "book warp armor" being equipped
+
+				auto fx_content = player->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kFX01);
+
+				bool blackbook_warp = false;
+
+				if (fx_content)
+				{
+					if (fx_content->formID == 0x40323fe)
+					{
+						//black book warp armor
+						blackbook_warp = true;
+					}
+				}
+
+				if (blackbook_warp && !old_blackbook_warp)
+					send_random_context("[Black tentacles come out of the book and wrap around you!]", false);
+
+
+
+				old_blackbook_warp = blackbook_warp;
 
 
 

@@ -12,6 +12,9 @@ namespace MiscThings {
     bool object_inside_of_trevas_watch(RE::TESObjectREFR* object);
 
 
+    bool inside_solstheim_superwaterfall();
+
+
     int get_ingame_hour();
 
     bool is_inside_of_riften_watchtower(RE::TESObjectREFR* object);
@@ -354,6 +357,8 @@ namespace MiscThings {
     bool in_soltsheim(RE::TESObjectREFR* object = nullptr);
     bool in_skuldafn();
     bool player_inside_of_soltsteim_midgates();
+
+    void reveal_tricky_activators_linked_to_object(RE::TESObjectREFR* object);
 
     RE::BGSQuestObjective* get_quest_objective_by_index(RE::TESQuest* quest, int index);
 
