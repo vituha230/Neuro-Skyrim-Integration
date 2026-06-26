@@ -6,6 +6,7 @@
 namespace MiscThings {
 
 
+    bool check_autolook_ban();
 
     std::pair<bool, std::string> get_ingame_time();
 

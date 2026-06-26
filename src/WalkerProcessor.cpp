@@ -541,6 +541,41 @@ namespace WalkerProcessor {
 
 
 
+    bool check_special_too_high_message()
+    {
+        if (target_ref)
+        {
+            switch (target_ref->formID)
+            {
+            case (0x401ff5f):
+                send_random_context("[You walked up to the Wind Stone and look at it. You can use Bend Will shout now]", false);
+                return true;
+
+            case (0x4035441):
+                send_random_context("[You walked up to the Beast Stone and look at it. You can use Bend Will shout now]", false);
+                return true;
+
+            case (0x4035444):
+                send_random_context("[You walked up to the Water Stone and look at it. You can use Bend Will shout now]", false);
+                return true;
+
+            case (0x4035442):
+                send_random_context("[You walked up to the Earth Stone and look at it. You can use Bend Will shout now]", false);
+                return true;
+
+            case (0x4035443):
+                send_random_context("[You walked up to the Sun Stone and look at it. You can use Bend Will shout now]", false);
+                return true;
+
+            }
+
+        }
+
+        return false;
+    }
+
+
+
     void put_follow_quest_on_cooldown()
     {
         follow_quest_on_cooldown = true;
@@ -1423,7 +1458,9 @@ namespace WalkerProcessor {
                                         if (!too_high_notified)
                                         {
                                             too_high_notified = true;
-                                            send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
+
+                                            if (!check_special_too_high_message())
+                                                send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
                                         }
                                     }
                                     else
@@ -14005,8 +14042,6 @@ namespace WalkerProcessor {
                         return;
                     }
 
-
-
                 }
 
 
@@ -14703,6 +14738,10 @@ namespace WalkerProcessor {
                             auto redirect_ysgramor_statue = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab105);
 
 
+                            auto mushroom_lift_up = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7d);
+                            auto mushroom_lift_down = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7e);
+
+
                             if (!target_before_generic_redirect && target_ref == redirect_ysgramor_statue)
                             {
                                 //its a false redirection, we are going to statue anyway
@@ -14717,7 +14756,7 @@ namespace WalkerProcessor {
 
 
                             auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
-                            if (redirect_ref == redirect_chain || redirect_ref == redirect_ysgramor_chain || redirect_ref == redirect_ysgramor_statue)
+                            if (redirect_ref == redirect_chain || redirect_ref == redirect_ysgramor_chain || redirect_ref == redirect_ysgramor_statue || redirect_ref == mushroom_lift_up || redirect_ref == mushroom_lift_down)
                             {
                                 generic_redirect_active = false;
                                 backup_interaction_made = false;
@@ -14736,7 +14775,10 @@ namespace WalkerProcessor {
                             auto redirect_ysgramor_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd82b5);
                             auto redirect_ysgramor_statue = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab105);
 
-                            if (generic_redirect_active || (target_ref == redirect_chain && redirect_chain) || (target_ref == redirect_ysgramor_chain && redirect_ysgramor_chain) || (target_ref == redirect_ysgramor_statue && redirect_ysgramor_statue))
+                            auto mushroom_lift_up = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7d);
+                            auto mushroom_lift_down = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7e);
+
+                            if (generic_redirect_active || (target_ref == redirect_chain && redirect_chain) || (target_ref == redirect_ysgramor_chain && redirect_ysgramor_chain) || (target_ref == redirect_ysgramor_statue && redirect_ysgramor_statue) || (target_ref == mushroom_lift_up && mushroom_lift_up) || (target_ref == mushroom_lift_down && mushroom_lift_down))
                             {
                                 //check for cancel
                                 if (!redirect_ref)
@@ -14746,6 +14788,10 @@ namespace WalkerProcessor {
                                         reset_walker();
                                         return;
                                     }
+
+                                    if (target_ref == mushroom_lift_down || target_ref == mushroom_lift_up)
+                                        backup_interaction_made = false; //allow it to interact again
+
 
                                     dont_check_quest_target_change = false;
                                     generic_redirect_active = false;
@@ -16644,7 +16690,8 @@ namespace WalkerProcessor {
                                                     if (!too_high_notified)
                                                     {
                                                         too_high_notified = true;
-                                                        send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
+                                                        if (!check_special_too_high_message())
+                                                            send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
                                                     }
                                                     lock_camera_onto_target(target_ref, dtime);
                                                     return;

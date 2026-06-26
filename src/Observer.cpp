@@ -1789,7 +1789,7 @@ namespace Observer {
 
 												model = MiscThings::lowercase_string(model);
 
-												if (model.find("effects\\ashpile") != std::string::npos)
+												if (model.find("effects\\ashpile") != std::string::npos || model.find("effects\\dlc2ashspawnpile") != std::string::npos)
 												{
 													local_ignore_raycast = true;
 												}
@@ -4946,28 +4946,48 @@ namespace Observer {
 					if (furniture_handle && furniture_handle.get() && furniture_handle.get().get())
 					{
 						auto furniture_refr = furniture_handle.get().get();
-						auto base_obj = furniture_refr->GetBaseObject();
-						if (base_obj && base_obj->GetFormType() == RE::FormType::Furniture)
+
+						if (furniture_refr)
 						{
-							auto furniture = (RE::TESFurniture*)base_obj;
-
-							std::string furniture_name = furniture->GetFullName();
-
-							if (furniture_name != "")
+							auto base_obj = furniture_refr->GetBaseObject();
+							if (base_obj && base_obj->GetFormType() == RE::FormType::Furniture)
 							{
-								if (furniture_name.find("Carriage") != std::string::npos)
+								auto furniture = (RE::TESFurniture*)base_obj;
+
+								std::string furniture_name = furniture->GetFullName();
+
+								if (furniture_name != "")
 								{
-									if (sit_state == RE::SIT_SLEEP_STATE::kWaitingForSitAnim)
-										send_random_context("[You get into carriage...]");
+									if (furniture_name.find("Carriage") != std::string::npos)
+									{
+										if (sit_state == RE::SIT_SLEEP_STATE::kWaitingForSitAnim)
+											send_random_context("[You get into carriage...]");
 
-								}
+									}
+
+
+									if (sit_state == RE::SIT_SLEEP_STATE::kIsSitting)
+									{
+										if (furniture_refr->formID == 0x403bd78)
+										{
+											send_random_context("[Some magic carries you up to the top of Mushroom House...]");
+										}
+
+										if (furniture_refr->formID == 0x403bd77)
+										{
+											send_random_context("[Some magic carries you down to the bottom of Mushroom House...]");
+										}
+									}
 									
-								old_furniture_name = furniture_name;
-							}
-							//auto model = furniture->GetModel();
 
-							//bool stop_here = false;
+									old_furniture_name = furniture_name;
+								}
+								//auto model = furniture->GetModel();
+
+								//bool stop_here = false;
+							}
 						}
+						
 					}
 
 					if (sit_state == RE::SIT_SLEEP_STATE::kNormal)

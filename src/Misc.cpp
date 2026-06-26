@@ -19,6 +19,51 @@ namespace MiscThings {
     
 
 
+
+    bool check_autolook_ban()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_worldspace = player->GetWorldspace();
+
+        if (player)
+        {
+            if (player_worldspace && player_worldspace->formID == 0x4000800)
+            {
+                auto wind_stone_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401ff5f);
+
+                if (wind_stone_marker && player && player->GetDistance(wind_stone_marker) < 700.0f)
+                    return true;
+
+
+                auto beast_stone_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4035441);
+
+                if (beast_stone_marker && player && player->GetDistance(beast_stone_marker) < 700.0f)
+                    return true;
+
+
+                auto water_stone_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4035444);
+
+                if (water_stone_marker && player && player->GetDistance(water_stone_marker) < 700.0f)
+                    return true;
+
+                auto earth_stone_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4035442);
+
+                if (earth_stone_marker && player && player->GetDistance(earth_stone_marker) < 700.0f)
+                    return true;
+
+                auto sun_stone_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4035443);
+
+                if (sun_stone_marker && player && player->GetDistance(sun_stone_marker) < 700.0f)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+
     bool inside_solstheim_superwaterfall()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -3478,6 +3523,23 @@ namespace MiscThings {
             }
 
 
+            //dlc2 nelot's mushroom house lifts
+            if (player_cell && player_cell->formID == 0x4017787)
+            {
+                auto mushroom_lift_up = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7d);
+                auto mushroom_lift_down = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7e);
+
+                if (target != mushroom_lift_down && mushroom_lift_up && (target->GetPositionZ() > -1116.0f || target == mushroom_lift_up) && player->GetPositionZ() < -1116.0f)
+                {
+                    return mushroom_lift_up;
+                }
+
+                if (target != mushroom_lift_up && mushroom_lift_down && (target->GetPositionZ() < -1116.0f || target == mushroom_lift_down) && player->GetPositionZ() > -1116.0f)
+                {
+                    return mushroom_lift_down;
+                }
+
+            }
 
             if (player_cell && player_cell->GetFormID() == 0x83559)
             {
@@ -3735,6 +3797,26 @@ namespace MiscThings {
         auto player_worldspace = player->GetWorldspace();
 
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+
+
+        //mushroom door to inside
+        if (target && target->formID == 0x403bd84)
+        {
+            auto mushroom_door_normal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4018281);
+
+            if (mushroom_door_normal)
+                return mushroom_door_normal;
+        }
+
+        //mushroom door to outside
+        if (target && target->formID == 0x403bd83)
+        {
+            auto mushroom_door_normal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40177ca);
+
+            if (mushroom_door_normal)
+                return mushroom_door_normal;
+        }
 
 
         //dlc2 quest 1
