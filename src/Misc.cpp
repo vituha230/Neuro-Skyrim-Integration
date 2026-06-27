@@ -19,6 +19,81 @@ namespace MiscThings {
     
 
 
+    bool is_blocker_open(RE::TESObjectREFR* object)
+    {
+        //most of two-state activators return 0 when they are open, but not all. need to filter here tricky ones
+
+
+        if (object)
+        {
+            auto base_obj = object->GetBaseObject();
+
+            if (base_obj)
+            {
+                int two_state = MiscThings::two_state_activator_state(object);
+
+                if (base_obj->formType == RE::FormType::Activator)
+                {
+                    auto acti = (RE::TESObjectACTI*)base_obj;
+                    std::string model = acti->GetModel();
+
+                    if (model.find("PortImpGate01") != std::string::npos ||
+                        model.find("NorRetractableBridge01") != std::string::npos ||
+                        model.find("DweRetractableBridge01") != std::string::npos ||
+                        model.find("SkyHavenRetractableBridge01") != std::string::npos ||
+                        model.find("PuzzleDoorKeyHole") != std::string::npos)
+                        if (two_state == 1)
+                            return true;
+                }
+
+                if (two_state == 0)
+                    return true;
+
+                int destructible_state = MiscThings::get_destructible_state(object);
+
+                if (destructible_state != -1 && destructible_state != 0)
+                    return true; //-1 is not destroyed, 0 is not destructible. everything else - destroyed
+            }
+        }
+
+
+
+        return false;
+    }
+
+    bool pedestal_has_cube(RE::TESObjectREFR* pedestal)
+    {
+
+        if (pedestal)
+        {
+            auto object_p = General::Script::GetObject(pedestal, "DLC2dunNchardakPedestalScript");
+
+            if (object_p)
+            {
+                std::string state = "";
+
+                state = object_p->currentState;
+
+                if (state == "Filled")
+                    return true;
+            }
+        }
+
+
+        return false;
+    }
+
+
+    std::string pedestal_has_cube_text(RE::TESObjectREFR* pedestal)
+    {
+        if (pedestal_has_cube(pedestal))
+            return "[With Cube]";
+        else
+            return "";
+    }
+
+
+
 
     bool check_autolook_ban()
     {
@@ -1034,6 +1109,10 @@ namespace MiscThings {
         {
             if (target->formID == 0xc629d) //trevas watch lever
                 return 100.0f;
+
+
+            if (target->formID == 0x401753b || target->formID == 0x40175ba) //nchardak sealed doors
+                return 30.0f;
         }
 
         /*
@@ -3958,7 +4037,244 @@ namespace MiscThings {
             bool stop_here = false;
         }
 
+        //dlc2 mq4 nchardak
+        if (quest && quest->formID == 0x4016e1f)
+        {
+            if (parent_cell && parent_cell->formID == 0x40173b3)
+            {
+                auto pedestal0 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017641);
+                auto pedestal1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c7a2);
+                auto pedestal2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c7d3);
+                auto pedestal3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c83a);
+                auto pedestal4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017673);
 
+                if (pedestal0 && pedestal1 && pedestal2 && pedestal3 && pedestal4)
+                {
+
+                    bool has_cube_0 = pedestal_has_cube(pedestal0);
+                    bool has_cube_1 = pedestal_has_cube(pedestal1);
+                    bool has_cube_2 = pedestal_has_cube(pedestal2);
+                    bool has_cube_3 = pedestal_has_cube(pedestal3);
+                    bool has_cube_4 = pedestal_has_cube(pedestal4);
+
+                    if (has_cube_0) return pedestal0; //grab cube here no conditions
+
+
+                    if (has_cube_3)
+                    {
+                        //pedestal3 has cube. one cube must be in pedestal 1 or 2. if both have cubes - remove one first, need it to control other stuff
+
+                        if (!has_cube_1 && !has_cube_2) return pedestal2; //lower level but only in 1 pedestal
+                        if (has_cube_1 && has_cube_2) return pedestal1; //grab one cube back
+
+                        //now only one of pedestals has cube. go on.
+
+                        auto bridge = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c7d1);
+                        auto staircase = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c797);
+
+                        auto bridge_control = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401d4c7);
+                        auto staircase_control = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c83e);
+
+                        if (bridge_control && bridge && two_state_activator_state(bridge) != 0)
+                            return bridge_control;
+
+                        if (staircase_control && staircase && two_state_activator_state(staircase) != 0)
+                            return staircase_control;
+
+
+                        //now both bridge and staircase are good, grab pedestal3
+
+                        return pedestal3;
+                    }
+
+
+                    //now need to get back our cube from pedestal 1 or 2
+
+                    if (has_cube_1) return pedestal1;
+                    if (has_cube_2) return pedestal2;
+
+                    //now grab pedestal4 cube
+
+                    if (has_cube_4) return pedestal4;
+
+                    //now lower exit bridge and get out
+
+                    auto bridge2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401761d);
+                    auto bridge2_control = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017685);
+
+                    if (bridge2 && bridge2_control && two_state_activator_state(bridge2) == 0)
+                        return bridge2_control;
+
+                    //all done, follow normal quest now. all pedestals except 0 are not available anymore
+
+                }
+
+            }
+
+            //main room
+            if (parent_cell && parent_cell->formID == 0x40142f1)
+            {
+                //top pedestals
+                auto pedestal1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017605);
+                auto pedestal2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c717);
+
+                //bottom pedestals
+                auto pedestal3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017604);
+                auto pedestal4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017603);
+                auto pedestal5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017602);
+                auto pedestal6 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017601);
+
+                auto cube = RE::TESForm::LookupByID(0x40173bb);
+
+                auto nelot = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40177da);
+
+                if (nelot && cube && pedestal1 && pedestal2 && pedestal3 && pedestal4 && pedestal5 && pedestal6)
+                {
+                    bool has_cube_1 = pedestal_has_cube(pedestal1);
+                    bool has_cube_2 = pedestal_has_cube(pedestal2);
+                    bool has_cube_3 = pedestal_has_cube(pedestal3);
+                    bool has_cube_4 = pedestal_has_cube(pedestal4);
+                    bool has_cube_5 = pedestal_has_cube(pedestal5);
+                    bool has_cube_6 = pedestal_has_cube(pedestal6);
+
+
+                    auto stage = quest->GetCurrentStageID();
+
+                    if (stage < 400)
+                    {
+                        //first part, need to grab all cubes. bottom part first
+
+                        if (has_cube_3) return pedestal3;
+                        if (has_cube_4) return pedestal4;
+                        if (has_cube_5) return pedestal5;
+                        if (has_cube_6) return pedestal6;
+
+                        if (has_cube_1) return pedestal1;
+                        if (has_cube_2) return pedestal2;
+
+                        
+                        //else - door1
+
+                        auto door1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401753b);
+
+                        if (door1)
+                            return door1;
+                    }
+
+                    if (stage >= 400 && stage < 460)
+                    {
+                        //part 2 - need to put 2 cubes in top pedestals
+
+                        if (has_cube_3) return pedestal3;
+                        if (has_cube_4) return pedestal4;
+                        if (has_cube_5) return pedestal5;
+                        if (has_cube_6) return pedestal6;
+
+                        if (!has_cube_1) return pedestal1;
+                        if (!has_cube_2) return pedestal2;
+
+                        //else - door2
+
+                        auto door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40175ba);
+
+                        if (door2)
+                            return door2;
+
+                    }
+
+                    if (stage >= 460)
+                    {
+                        //part 3 - need to put 1 cube in top pedestal, and then put 4 cubes in all bottom pedestals
+                        //dont forget to take a cube from nelot if he has it
+
+                        if (has_cube_1 && has_cube_2) return pedestal1;
+                        if (!has_cube_1 && !has_cube_2) return pedestal2;
+
+
+                        auto nchardak_tracking_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC2dunNchardakTracking");
+
+                        bool nelot_has_cubes = false;
+
+                        if (nchardak_tracking_quest)
+                        {
+                            auto object_p = General::Script::GetObject(nchardak_tracking_quest, "DLC2dunNchardakTrackingScript");
+
+                            if (object_p)
+                            {
+                                RE::BSFixedString prop_name = "::CubesInNeloth_var";
+
+                                if (General::Script::GetVariable<int>(object_p, prop_name))
+                                    nelot_has_cubes = true;
+                            }
+                        }
+
+                        if (nelot_has_cubes)
+                            return nelot;
+
+                        if (!has_cube_3) return pedestal3;
+
+                        if (!has_cube_4) return pedestal4;
+
+                        if (!has_cube_5) return pedestal5;
+
+                        if (!has_cube_6) return pedestal6;
+
+
+                        //else - door3 (exit door)
+
+                        auto door3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017546);
+
+                        if (door3)
+                            return door3;
+
+                    }
+
+                }
+
+            }
+
+
+            //third room 
+            if (parent_cell && parent_cell->formID == 0x40173b2)
+            {
+                auto bridge1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017896);
+                auto bridge2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401786a);
+                auto bridge3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017884);
+
+                auto pedestal1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017905);
+                auto pedestal2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017907);
+
+                auto bridge_control_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401d485);
+                auto bridge_control_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401d434);
+                auto bridge_control_3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401d486);
+
+                if (bridge1 && bridge2 && bridge3 && pedestal1 && pedestal2 && bridge_control_1 && bridge_control_2 && bridge_control_3)
+                {
+                    bool bridge1_down = two_state_activator_state(bridge1) == 1;
+                    bool bridge2_down = two_state_activator_state(bridge2) == 1;
+                    bool bridge3_down = two_state_activator_state(bridge3) == 1;
+
+                    bool has_cube_1 = pedestal_has_cube(pedestal1);
+                    bool has_cube_2 = pedestal_has_cube(pedestal2);
+
+
+                    if (has_cube_2)
+                    {
+                        if (!bridge3_down) return bridge_control_3;
+                        if (!bridge2_down) return bridge_control_1;
+                        if (!bridge1_down) return bridge_control_2;
+
+
+                        if (!has_cube_1) return pedestal1; //put cube here to lower water
+
+                        return pedestal2; //bridges are fine and pedestal1 has cube - ready to go to pedestal2
+                    }
+
+                    //else - do nothing, return to main room following normal quest markers
+                }
+            }
+
+        }
 
 
         //companions shard quest 1
@@ -6913,6 +7229,12 @@ namespace MiscThings {
             bool no_base_object = true;
         }
 
+
+        if (MiscThings::is_blocker_open(a_ref))
+            return ""; //if its open - it should not block
+
+
+
         if (base_type == RE::FormType::Activator)
         {
             auto static_obj = (RE::TESObjectACTI*)base_obj;
@@ -6993,6 +7315,15 @@ namespace MiscThings {
         {
             auto door = (RE::TESObjectDOOR*)base_obj;
             std::string model = door->GetModel();
+
+
+            if (model.find("DLC2DwemerWaterGate") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer Door Seal", a_ref);
+
+                result = name;
+            }
+
 
             if (model.find("CaveGSecretDoor") != std::string::npos)
             {
@@ -7631,6 +7962,35 @@ namespace MiscThings {
                 result = 1;
 
         }
+
+
+        object_p = General::Script::GetObject(activator, "DLC2DweRetractableStairScript");
+
+        if (object_p)
+        {
+            std::string state = "";
+            state = object_p->currentState;
+
+            if (state == "Lowered")
+                return 1;
+            else
+                return 0;
+        
+        }
+
+
+        object_p = General::Script::GetObject(activator, "DLC2dunNchardakDoorSeal");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "::isSealed_var";
+
+            if (General::Script::GetVariable<bool>(object_p, prop_name))
+                result = 1;
+            else
+                result = 0;
+        }
+
 
         
         object_p = General::Script::GetObject(activator, "doorBar");
@@ -8725,6 +9085,16 @@ namespace MiscThings {
             }
         }
 
+        auto base_obj = object->GetBaseObject();
+
+        if (base_obj)
+        {
+            if (base_obj->GetFormType() == RE::FormType::Activator)
+            {
+                result += pedestal_has_cube_text(object);
+            }
+        }
+
         return result;
     }
 
@@ -9787,6 +10157,14 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = activator->GetModel();
+
+                        //02 - red, no number - blue
+                        if (model.find("DLC2DweControlCube") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 50.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (model.find("MetalLever01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
@@ -13132,6 +13510,11 @@ namespace MiscThings {
                 if (model.find("Ruins_LargeChest") != std::string::npos)
                 {
                     name = "Large Treasure Chest";
+                }
+
+                if (model.find("DweChest01") != std::string::npos)
+                {
+                    name = "Large Treasure Dwemer Chest";
                 }
             }
 

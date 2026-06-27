@@ -1869,6 +1869,11 @@ namespace WalkerProcessor {
                 if (parent_cell && parent_cell->GetFormID() == 0x54b6f && mzulft_crystal_pickup_fake && target_ref != mzulft_crystal_pickup_fake && player->GetDistance(mzulft_crystal_pickup_fake) < 400.0f && player->GetDistance(mzulft_crystal_pickup_fake) > 300.0f)
                     return true;
 
+
+                //nchardak last room bricks blocking the path if we are unlucky to fall behind it. this really needs some universal solution...
+                if (parent_cell && parent_cell->formID == 0x40173b2 && player->GetPosition().GetDistance({ 1597.70044, -6316.40674, 796.152222 }) < 300.0f)
+                    return true;
+
             }
         }
         catch (const std::out_of_range& e) {
@@ -8057,7 +8062,7 @@ namespace WalkerProcessor {
                                                         reset_walker();
                                                     else
                                                     {
-                                                        if (detect_quest_target_changed_and_walk())
+                                                        if (detect_quest_target_changed_and_walk(true))
                                                         {
                                                             had_successful_walk = false;
                                                         }
@@ -8316,8 +8321,9 @@ namespace WalkerProcessor {
     }
 
 
-    bool detect_quest_target_changed_and_walk()
+    bool detect_quest_target_changed_and_walk(bool manual_check)
     {
+        //this if for redirects that create temporary target that may be canceled by redirect_quest_target
         if (dont_check_quest_target_change)
             return false;
 
@@ -8325,18 +8331,33 @@ namespace WalkerProcessor {
             return false;
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        bool player_in_tower_of_mzark = player && player->GetParentCell() == RE::TESForm::LookupByID(0x2d4e3);
 
-        if (player_in_tower_of_mzark)
-            return false;
+        auto parent_cell = player->GetParentCell();
 
-
-        auto skuldafn_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ303");
-        if (skuldafn_quest && last_quest == skuldafn_quest)
+        
+        if (!manual_check && !(target_ref && target_ref->parentCell != parent_cell))
         {
-            if (skuldafn_quest->GetCurrentStageID() > 150)
+            //tower of mzark so it doesnt go on full autosolve mode
+            if (parent_cell && parent_cell->formID == 0x2d4e3)
                 return false;
+
+
+            auto skuldafn_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ303");
+            if (skuldafn_quest && last_quest == skuldafn_quest)
+            {
+                if (skuldafn_quest->GetCurrentStageID() > 150)
+                    return false;
+            }
+
+            //dlc2 nchardak so it doesnt go on full autosolve mode
+            if (last_quest && last_quest->formID == 0x4016e1f)
+            {
+                if (parent_cell && ((parent_cell->formID == 0x40173b3) || (parent_cell->formID == 0x40142f1) || (parent_cell->formID == 0x40142f1) || (parent_cell->formID == 0x40173b2)))
+                    return false;
+            }
         }
+
+
 
 
 

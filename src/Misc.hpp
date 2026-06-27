@@ -6,6 +6,8 @@
 namespace MiscThings {
 
 
+    bool is_blocker_open(RE::TESObjectREFR* object);
+
     bool check_autolook_ban();
 
     std::pair<bool, std::string> get_ingame_time();

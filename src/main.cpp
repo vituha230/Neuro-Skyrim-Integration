@@ -16,8 +16,12 @@
 
 
 //TODO dragonborn dlc
+// 2nd book apocrypha. 1st book apocrypha
+
+
 //TODO dawnguard dlc
 //TODO bards 
+//TODO hearthfire
 //TODO random sidequests
 
 

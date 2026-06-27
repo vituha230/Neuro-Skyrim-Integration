@@ -3059,6 +3059,18 @@ namespace Observer {
 												auto door = (RE::TESObjectDOOR*)base_object;
 												std::string model = door->GetModel();
 
+
+												if (model.find("DLC2DwemerWaterGate") != std::string::npos)
+												{
+													std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer Door Seal", a_ref);
+
+													if (activation == 1)
+														result.push_back("[ " + name + " closed]");
+
+													if (activation == 0)
+														result.push_back("[ " + name + " opened]");
+												}
+
 												if (model.find("CaveGSecretDoor") != std::string::npos)
 												{
 													std::string name = MiscThings::insert_object_into_list_custom_name("Secret stone wall door", a_ref);
@@ -3255,7 +3267,7 @@ namespace Observer {
 																if (activation == 1)
 																	result.push_back("[ " + name + " closed]");
 															}
-
+															
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "TrapNorPlatformStairs01")
 															{
 																std::string name = MiscThings::insert_object_into_list_custom_name("Secret Sliding Staircase", a_ref);
@@ -3267,16 +3279,44 @@ namespace Observer {
 																	result.push_back("[ " + name + " slided down]");
 															}
 
+															//the problem with these - they are default 2 state activators. to properly set it up so 0 is open (lowered) and 1 is closed (raised) - need to invert it in two_state_activator function
+															//thats a TODO. will need to check all uses so nothing break. maybe better leave as is
+
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRetractableBridge01")
 															{
 																std::string name = MiscThings::insert_object_into_list_custom_name("Large wooden bridge", a_ref);
 
 																if (activation == 0)
-																	result.push_back("[ " + name + " closed]");
+																	result.push_back("[ " + name + " raised]");
 
 																if (activation == 1)
-																	result.push_back("[ " + name + " opened]");
+																	result.push_back("[ " + name + " lowered]");
 															}
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweRetractableBridge01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer Metal Bridge", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " raised]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " lowered]");
+
+															}
+
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DLC2DweRetractableStairScript")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer Stone Stairs", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " raised]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " lowered]");
+															}
+
 
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortGatePole04")
 															{
@@ -3602,7 +3642,7 @@ namespace Observer {
 																	result.push_back("[ " + name + " fell, blocking the path]");
 															}
 
-															if (anim_name.find("PuzzleDoorKeyHole") != std::string::npos && anim_name.find("PuzzleDoorKeyHoleIvory") == std::string::npos)
+															if (anim_name.find("PuzzleDoorKeyHole") != std::string::npos)// && anim_name.find("PuzzleDoorKeyHoleIvory") == std::string::npos)
 															{
 																std::string name = MiscThings::insert_object_into_list_custom_name("[Puzzle door] Ancient Nordic Door", a_ref);
 
