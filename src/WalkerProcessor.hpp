@@ -40,6 +40,10 @@ namespace WalkerProcessor {
 
 	float get_spell_timeout(bool right);
 
+
+	std::pair<bool, std::string> make_jumps();
+
+
 	bool has_staff_equipped(bool right);
 
 	bool is_door(RE::TESObjectREFR* refr);

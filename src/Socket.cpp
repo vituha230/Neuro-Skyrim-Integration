@@ -147,6 +147,7 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::OpenMap::Action,
                                     Capabilities::GetGold::Action,
                                     Capabilities::Spin::Action,
+                                    Capabilities::Jump::Action,
 
                                     Capabilities::SelectForceChoice::Action,
                                     Capabilities::SelectForceChoiceMultiple::Action,
@@ -199,6 +200,8 @@ neurosdk_action ActionsListNoForces[] = {
                                     Capabilities::OpenMap::Action,
                                     Capabilities::GetGold::Action,
                                     Capabilities::Spin::Action,
+                                    Capabilities::Jump::Action,
+
 
                                     Capabilities::GetObjectsAround::Action, //idk about this one
                                     Capabilities::GoToLocation::Action
@@ -225,6 +228,8 @@ neurosdk_action ActionsListNoForces2[] = { //these are for moments when we cant 
                                     Capabilities::CastSpell::Action,
                                     Capabilities::EquipSpell::Action,
                                     Capabilities::Spin::Action,
+                                    Capabilities::Jump::Action,
+
                                    // Capabilities::UnlockShoutLevel::Action, //TODO: probably calculate ourselves and force just like levelup
 
                                     //Capabilities::GetInventory::Action,
@@ -712,7 +717,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         }
 
                         actions_to_register[action_pos] = Capabilities::Spin::Action; action_pos++;
-
+                        actions_to_register[action_pos] = Capabilities::Jump::Action; action_pos++;
 
                         if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
                         {
@@ -1535,6 +1540,12 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                     failed_to_parse_json = true;
                                 else
                                     command_result = WalkerProcessor::make_spins(json2.id1, json2.id2);
+                            }
+
+
+                            if (name == Capabilities::Jump::Name)
+                            {
+                                command_result = WalkerProcessor::make_jumps();
                             }
 
 

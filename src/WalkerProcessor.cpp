@@ -405,6 +405,9 @@ namespace WalkerProcessor {
     int amount_of_spins_done = 0;
     float spin_timeout = 0.0f;
 
+    bool do_jumps = false;
+    float jumps_duration = 0.0f;
+
 
     bool too_high_notified = false;
 
@@ -1904,6 +1907,9 @@ namespace WalkerProcessor {
         if (runaway_mode)
             return true;
 
+        if (do_jumps)
+            return false;
+
         //return true;
         bool result = false;
         try {
@@ -2370,7 +2376,7 @@ namespace WalkerProcessor {
                     }
                 } 
 
-                if (player_is_sprinting() && stamina_state < 0.1f)
+                if (player_is_sprinting() && (stamina_state < 0.1f || do_jumps))
                 {
                     if (!launching_sprint())
                     {
@@ -12541,6 +12547,53 @@ namespace WalkerProcessor {
 
 
 
+    std::pair<bool, std::string> make_jumps()
+    {
+        std::pair<bool, std::string> result{};
+
+
+        auto cant_walk_reason = get_cant_walk_reason();
+
+        if (cant_walk_reason != "")
+        {
+            result.first = false;
+            result.second = cant_walk_reason;
+            return result;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_actor = (RE::Actor*)player->AsReference();
+
+        auto control_map = RE::ControlMap::GetSingleton();
+        bool can_walk = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+        bool can_look = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kLooking) || player->IsInRagdollState();;
+        bool can_interact = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+        bool can_fight = control_map->enabledControls.any(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+
+        //if (player_actor && !player_actor->movementController->controlsDriven)
+        if (!can_walk && !can_look)
+        {
+            result.first = false;
+            result.second = "You cannot spin yet";
+            return result;
+        }
+
+        auto camera = RE::PlayerCamera::GetSingleton();
+        spins_start_camera_dir = camera->cameraRoot.get()->world.rotate;
+
+        do_jumps = true;
+        jumps_duration = 0.5f + (float)std::rand() / RAND_MAX * 3.0f;
+
+        result.first = true;
+        result.second = "[You jump...]";
+
+        return result;
+
+
+    }
+
+
+
     bool ustengrev_off_the_cliff()
     {
         std::pair<bool, std::string> result{};
@@ -13645,6 +13698,25 @@ namespace WalkerProcessor {
                     surrender_time += dtime;
             }
 
+
+            if (do_jumps && !is_walking_important_path())
+            {
+                if (jumps_duration > 0.0f)
+                {
+                    jump();
+                    jumps_duration -= dtime;
+                }
+                else
+                {
+                    do_jumps = false;
+                    jumps_duration = 0.0f;
+                }
+            }
+            else
+            {
+                do_jumps = false;
+                jumps_duration = 0.0f;
+            }
 
 
 

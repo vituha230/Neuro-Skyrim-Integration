@@ -18,8 +18,10 @@
 //TODO dragonborn dlc
 // 2nd book apocrypha. 1st book apocrypha. probably separate file for apocrypha navigation (zones, redirections)
 
-
 //TODO dawnguard dlc
+// end 1st cave puzzle
+
+
 //TODO bards 
 //TODO hearthfire
 //TODO random sidequests
@@ -30,7 +32,6 @@
 
 
 //TODO strange dragon aim sometimes when using magic
-//TODO cant pickpocket kids
 
 
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)

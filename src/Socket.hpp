@@ -176,7 +176,14 @@ namespace Capabilities
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     }
 
+    namespace Jump
+    {
+        constexpr char Name[] = "jump";
+        constexpr char Desc[] =
+            R"(Do some jumps)";
 
+        constexpr neurosdk_action Action = { .name = Name, .description = Desc };// , .json_schema = JsonSchema};
+    }
 
     namespace ExploreWorld
     {
