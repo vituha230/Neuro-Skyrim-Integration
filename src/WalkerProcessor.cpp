@@ -15,6 +15,8 @@ namespace WalkerProcessor {
 
     bool close_enough_linger = false;
 
+    bool map_was_unregistered_by_follow_quest = false;
+
 
     //do not reset these in reset_walker()
     RE::TESQuest* last_quest_chosen = nullptr;
@@ -4810,6 +4812,16 @@ namespace WalkerProcessor {
             //quickload(); 
         }
 
+        if (map_was_unregistered_by_follow_quest)
+        {
+            if (MapProcessor::map_is_allowed())
+                register_allowed_actions();
+
+            map_was_unregistered_by_follow_quest = false;
+        }
+
+
+
         reload_after_walk_quicksaved = false;
         reload_after_walk = false;
 
@@ -8297,6 +8309,17 @@ namespace WalkerProcessor {
                                                             }
                                                         }
 
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (distance < 15000.0f)
+                                                    {
+                                                        if (get_open_map_action_status())
+                                                        {
+                                                            map_was_unregistered_by_follow_quest = true;
+                                                            unregister_open_map();
+                                                        }
                                                     }
                                                 }
 
