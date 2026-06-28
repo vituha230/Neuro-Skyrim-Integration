@@ -1972,7 +1972,7 @@ namespace WalkerProcessor {
     {
         bool stealth_walking = false;
 
-        if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true)) //this is automatic
+        if ((is_fighting() || Observer::threat_response_choice_pending()) && !no_ammo() && (has_bow_equipped(true) || has_crossbow_equipped(true))) //this is automatic
         {
             if (target_ref && target_ref->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
                 stealth_walking = !MiscThings::sees_player(target_ref, sneak_probe_sneak_checked);
@@ -4013,7 +4013,7 @@ namespace WalkerProcessor {
 
             bool stealth_arching = false;
 
-            if ((is_fighting() || Observer::threat_response_choice_pending()) && has_bow_equipped(true) && target && target->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
+            if ((is_fighting() || Observer::threat_response_choice_pending()) && (has_bow_equipped(true) || has_crossbow_equipped(true)) && !no_ammo() && target && target->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
             {
                 stealth_arching = !MiscThings::sees_player(target, sneak_probe_sneak_checked);
             }
@@ -9792,7 +9792,7 @@ namespace WalkerProcessor {
             }
 
         }
-        return result;
+        return result;// has_crossbow_equipped(right);
     }
 
 
@@ -10246,7 +10246,7 @@ namespace WalkerProcessor {
 
             dont_use_left |= left_is_useless;
 
-            dont_use_left |= has_bow_equipped(true) && !no_ammo();
+            dont_use_left |= (has_crossbow_equipped(true) || has_bow_equipped(true)) && !no_ammo();
 
             dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
 

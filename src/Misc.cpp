@@ -8994,12 +8994,14 @@ namespace MiscThings {
 
             }
 
-            auto korvan_pull_handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5af7a);
+            if (object->formID == 0x5af7a) //korvan_pull_handle
+                return true;
 
-            if (object == korvan_pull_handle)
+            if (object->formID == 0x2000f86) //dawnguard first dungeon pull chain
                 return true;
         }
 
+        
 
 
 
@@ -13133,6 +13135,18 @@ namespace MiscThings {
                         result = "[Door to " + leads_to + "]";
                     else
                         result = "[Door]";
+
+                    bool is_locked = MiscThings::is_door_locked(object, true);
+                    bool is_closed = is_door_closed(object);
+
+                    if (is_locked)
+                        result += "[Locked]";
+                    else
+                        if (is_closed)
+                            result += "[Closed]";
+                        else
+                            result += "[Opened]";
+
                 }
 
             }
