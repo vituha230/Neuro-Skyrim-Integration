@@ -2038,6 +2038,19 @@ namespace Observer {
 
 															}
 														}
+
+														if (a_ref->formID == 0x2006892) //dawnguard first cave puzzle button
+														{
+															if (!MiscThings::is_object_in_the_list(a_ref) && (jail_condition_raycastable || ignore_raycast || MiscThings::raycastable(a_ref, 2000.0f, false)))
+															{
+																std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
+																if (info != "")
+																{
+																	interesting_buffer.insert_or_assign(a_ref, info);
+																}
+
+															}
+														}
 													}
 
 												}
@@ -3232,6 +3245,17 @@ namespace Observer {
 																	result.push_back("[ " + name + " closed]");
 															}
 
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "CasExtMainTowerGate01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Metal Gate", a_ref);
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " closed]");
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " opened]");
+															}
 
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortImpGate01")
 															{

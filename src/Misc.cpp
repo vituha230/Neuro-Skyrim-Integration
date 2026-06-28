@@ -3995,6 +3995,49 @@ namespace MiscThings {
 
 
 
+        //dlc1 (dawnguard) dimhollow cave
+
+        if (target && target->formID == 0x20010c9)
+        {
+            auto gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2000f7d);
+            auto gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2002f8d);
+            auto gate3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2018413);
+            auto gate4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20010ac);
+
+            if (gate1 && gate2 && gate3 && gate4)
+            {
+
+                if (MiscThings::two_state_activator_state(gate1) == 1)
+                {
+                    auto redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x707ac0a);
+                    if (redirect1) return redirect1;
+                }
+                else
+                    if (MiscThings::two_state_activator_state(gate2) == 1)
+                    {
+                        auto redirect2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x707ac0b);
+                        if (redirect2) return redirect2;
+                    }
+                    else
+                        if (MiscThings::two_state_activator_state(gate3) == 1)
+                        {
+                            auto redirect3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x707ac0c);
+                            if (redirect3) return redirect3;
+                        }
+                        else
+                            if (MiscThings::two_state_activator_state(gate4) == 1)
+                            {
+                                auto redirect4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x707ac0d);
+                                if (redirect4) return redirect4;
+                            }
+            }
+
+        }
+
+
+
+
+
         //mushroom door to inside
         if (target && target->formID == 0x403bd84)
         {
@@ -7357,6 +7400,13 @@ namespace MiscThings {
 
             std::string model = static_obj->GetModel();
 
+            if (model.find("CasExtMainTowerGate01") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Metal Gate", a_ref);
+
+                result = name;
+            }
+
 
             if (model.find("NorRotatingDoor01") != std::string::npos)
             {
@@ -7403,7 +7453,7 @@ namespace MiscThings {
 
                 result = name;
             }
-            
+
 
             if (model.find("RTMausoleumDoor01") != std::string::npos)
             {
@@ -7411,7 +7461,7 @@ namespace MiscThings {
 
                 result = name;
             }
-            
+
 
 
             if (model.find("PuzzleDoorKeyHole") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
@@ -7581,6 +7631,24 @@ namespace MiscThings {
             {
                 auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401b7c5); //miraak temple 2 handle for stone door
 
+                if (handle)
+                {
+                    if (!MiscThings::is_object_in_the_list(handle))
+                    {
+                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                        if (temp_result != "")
+                            send_random_context("You see: " + temp_result, false);
+                    }
+                }
+            }
+
+
+            //dawnguard dimhollow cave first gate (chain is far away)
+            if (object->formID == 0x2000f7d)
+            {
+                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2000f86); //miraak temple 2 handle for stone door
+                
                 if (handle)
                 {
                     if (!MiscThings::is_object_in_the_list(handle))
@@ -10172,6 +10240,16 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = furniture->GetModel();
+
+
+                        if (model.find("CasCoffinPuzzleSpike01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 30.0f, 65.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
                         if (model.find("SmelterMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { -120.0f, 90.0f, 70.0f };
@@ -13142,10 +13220,14 @@ namespace MiscThings {
                     if (is_locked)
                         result += "[Locked]";
                     else
-                        if (is_closed)
-                            result += "[Closed]";
-                        else
-                            result += "[Opened]";
+                        if (leads_to == "")
+                        {
+                            if (is_closed)
+                                result += "[Closed]";
+                            else
+                                result += "[Opened]";
+                        }
+
 
                 }
 
@@ -13477,7 +13559,12 @@ namespace MiscThings {
                     {
                         std::string name_furniture = object->GetDisplayFullName();
                         if (name_furniture != "Bed")
-                            result = "[Furniture]";
+                        {
+                            if (object->formID != 0x2006892)
+                                result = "[Interactive]";
+                            else
+                                result = "[Furniture]";
+                        }
                         else
                         {
                             if (furniture->furnFlags.any(RE::TESFurniture::ActiveMarker::kCanSleep))
