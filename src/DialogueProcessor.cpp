@@ -58,7 +58,6 @@ namespace DialogueProcessor {
     }
 
 
-
     bool dialogue_input_enabled_bad()
     {
         //this shit doesnt work, its enabled but cant click in that buggy situation
@@ -252,7 +251,9 @@ namespace DialogueProcessor {
                                                                                 //if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
                                                                                 if (MiscThings::is_quest_active(the_quest))
                                                                                     text = "[QUEST-RELATED] " + text;
-
+                                                                                else
+                                                                                    if (!dialogue->neverSaid)
+                                                                                        text = "[Already said] " + text;
 
                                                                                 MenuOption option;
                                                                                 option.id = line_number;// index;
