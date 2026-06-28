@@ -38,6 +38,7 @@ namespace WalkerProcessor {
 
 	bool no_charge(bool right);
 
+	float get_spell_timeout(bool right);
 
 	bool has_staff_equipped(bool right);
 

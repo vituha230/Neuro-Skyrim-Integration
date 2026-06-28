@@ -40,6 +40,9 @@ void walk_forward_limited();
 void clear_input_queue();
 
 
+bool input_wants_to_look_down();
+void look_down_for_summon(bool internal = false);
+
 void ready_weapon();
 void left_attack();
 void right_attack();

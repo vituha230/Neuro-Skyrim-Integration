@@ -17634,26 +17634,136 @@ namespace MiscThings {
         {
             RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
 
-            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
-                if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+            if (spell)
+            {
+                if ((spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
                 {
-                    if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf)
+                    if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                     {
-                        for (auto effect : spell->effects)
+                        if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf)
                         {
-                            if (effect->baseEffect && effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kValueModifier && effect->baseEffect->data.primaryAV == RE::ActorValue::kHealth && effect->baseEffect->data.associatedSkill == RE::ActorValue::kRestoration)
+                            for (auto effect : spell->effects)
                             {
-                                result = true;
-                                break;
+                                if (effect->baseEffect && effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kValueModifier && effect->baseEffect->data.primaryAV == RE::ActorValue::kHealth && effect->baseEffect->data.associatedSkill == RE::ActorValue::kRestoration)
+                                {
+                                    result = true;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
+                else
+                {
+                    if (spell->GetFormType() == RE::FormType::Weapon)
+                    {
+                        auto staff = (RE::TESObjectWEAP*)spell;
+
+                        if (staff->IsStaff())
+                        {
+                            auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                            if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                            {
+                                if (ench->formEnchanting->GetDelivery() == RE::MagicSystem::Delivery::kSelf)
+                                {
+                                    for (auto effect : ench->formEnchanting->effects)
+                                    {
+                                        if (effect->baseEffect && effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kValueModifier && effect->baseEffect->data.primaryAV == RE::ActorValue::kHealth && effect->baseEffect->data.associatedSkill == RE::ActorValue::kRestoration)
+                                        {
+                                            result = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         return result;
     }
 
 
+    bool is_summon_spell(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+
+            if (spell)
+            {
+                if (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll)
+                {
+                    if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                    {
+                        for (auto effect : spell->effects)
+                        {
+                            if (effect->baseEffect && effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kSummonCreature)
+                            {
+                                result = true;
+                                break;
+                            }
+                        }
+
+                    }
+                }
+                else
+                {
+                    if (spell->GetFormType() == RE::FormType::Weapon)
+                    {
+                        auto staff = (RE::TESObjectWEAP*)spell;
+
+                        if (staff->IsStaff())
+                        {
+                            auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                            if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                            {
+                                for (auto effect : ench->formEnchanting->effects)
+                                {
+                                    if (effect->baseEffect && effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kSummonCreature)
+                                    {
+                                        result = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+    bool player_has_summon()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto effect_list = player->GetActiveEffectList();
+
+            if (effect_list)
+            {
+                for (auto effect : *effect_list)
+                {
+                    if (effect && effect->effect && effect->effect->baseEffect && effect->effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kSummonCreature)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
 
 

@@ -15,6 +15,8 @@
 
 //test clear
 
+bool need_look_down = false;
+
 
 bool launch_sprint = false;
 float launch_sprint_time = 0.0f;
@@ -57,6 +59,8 @@ void reset_input_processor()
     notified_cast = false;
     spell_cast_time = 0.0f;
     was_actually_casting = false;
+    
+    need_look_down = false;
 
     fishing_timer = 0.0f;
 
@@ -999,8 +1003,59 @@ void try_casting_hand(bool right)
         do_cast = true;
         right_hand_cast = right;
         spell_cast_time = 0.0f;
+        need_look_down = false;
     }
 
+}
+
+
+
+
+
+bool input_wants_to_look_down()
+{
+    return need_look_down;
+}
+
+void look_down_for_summon(bool internal)
+{
+    if (!WalkerProcessor::is_walking_important_path() && !MiscThings::have_force_only_menu_open())
+    {
+        
+
+        auto camera = RE::PlayerCamera::GetSingleton();
+
+        if (camera)
+        {
+            auto camera_dir = camera->cameraRoot.get()->world.rotate;
+
+            auto camera_x = camera_dir.GetVectorX();
+            auto camera_y = camera_dir.GetVectorY();
+            auto camera_z = camera_dir.GetVectorZ();
+
+            RE::NiPoint3 down = { 0.0f, 0.0f, -1.0f };
+
+            auto mulX = camera_x * down;
+            auto mulY = camera_y * down;
+            auto mulZ = camera_z * down;
+
+
+            if (mulY > 0.75f)
+            {
+                ;// need_look_down = false;
+            }
+            else
+            {
+                if (internal)
+                    need_look_down = true;
+
+                mouse_mouse_y(20.0f);
+            }
+                
+        }
+
+        return;
+    }
 }
 
 
@@ -1031,9 +1086,9 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
     bool check_time = !MiscThings::is_self_healing_spell(right);
 
-    spell_cast_time += dtime;
+    
 
-    if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (MiscThings::has_spell_equipped(right) && MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
+    if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
     {
 
         if (low_mana_check)
@@ -1066,10 +1121,23 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
 
 
+        if (MiscThings::is_summon_spell(right))
+            look_down_for_summon(true);
+
         if (right)
-            right_attack_spell();
+        {
+            if (spell_cast_time < 0.000001f)
+                right_attack();
+            else
+                right_attack_spell();
+        }
         else
-            left_attack_spell();
+        {
+            if (spell_cast_time < 0.000001f)
+                left_attack();
+            else
+                left_attack_spell();
+        }
 
 
         bool is_actually_casting = WalkerProcessor::is_casting_walker(right);
@@ -1096,7 +1164,24 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         }
 
 
+        if (!was_actually_casting)
+        {
+            float timeout_val = WalkerProcessor::get_spell_timeout(true);
 
+            if (spell_cast_time > timeout_val)
+            {
+                if (right)
+                    right_attack_cancel();
+                else
+                    left_attack_cancel();
+
+                return true;
+            }
+        }
+
+
+
+        spell_cast_time += dtime;
         
 
         return false;
@@ -1220,6 +1305,7 @@ void input_processor(float dtime)
             right_hand_cast = false;
             notified_cast = false;
             was_actually_casting = false;
+            need_look_down = false;
         }
     }
 

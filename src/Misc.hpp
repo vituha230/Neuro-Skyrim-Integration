@@ -14,6 +14,7 @@ namespace MiscThings {
     bool in_apocrypha(RE::TESObjectREFR* object = nullptr);
 
 
+
     bool check_autolook_ban();
 
     std::pair<bool, std::string> get_ingame_time();
@@ -420,6 +421,8 @@ namespace MiscThings {
 
     RE::TESForm* get_hand_contents(bool right);
     bool is_self_healing_spell(bool right);
+    bool is_summon_spell(bool right);
+    bool player_has_summon();
 
     void book_reader(float dtime);
 

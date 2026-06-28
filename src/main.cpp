@@ -29,8 +29,6 @@
 // RANDOM STUFF
 
 
-//TODO conjure spells fix
-//TODO rare camera shake when using magic
 //TODO strange dragon aim sometimes when using magic
 //TODO cant pickpocket kids
 

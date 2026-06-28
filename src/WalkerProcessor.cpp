@@ -3649,6 +3649,10 @@ namespace WalkerProcessor {
     {
         Hooks::add_debug_line("LOCK_CAMERA_CALLED", true);
 
+        if (input_wants_to_look_down() || (start_attacking && MiscThings::is_summon_spell(get_current_active_hand())))
+            return false;
+
+
         if (looking_mode)
             speed_koef = special_look_speed_koef;
                 
@@ -5555,6 +5559,10 @@ namespace WalkerProcessor {
 
         if (MiscThings::is_cave_autoloader_door(target_ref))
             return false; //it must pass using weird_close check
+
+
+        //if (start_attacking && MiscThings::is_summon_spell(get_current_active_hand()))
+        //    return true;
 
 
 
@@ -9426,16 +9434,40 @@ namespace WalkerProcessor {
         RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
 
-        if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
+        if (spell)
         {
-            if (spell->avEffectSetting)
+            if (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll)
             {
-                auto cast_type = spell->avEffectSetting->data.castingType;
-                if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                    return true;
-            }
+                if (spell->avEffectSetting)
+                {
+                    auto cast_type = spell->avEffectSetting->data.castingType;
+                    if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                        return true;
+                }
 
+            }
+            else
+            {
+                if (spell->GetFormType() == RE::FormType::Weapon)
+                {
+                    auto staff = (RE::TESObjectWEAP*)spell;
+
+                    if (staff->IsStaff())
+                    {
+                        auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                        if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                        {
+                            if (ench->formEnchanting->GetCastingType() == RE::MagicSystem::CastingType::kConcentration)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
         }
+
 
         return false;
     }
@@ -9541,7 +9573,7 @@ namespace WalkerProcessor {
                 if (has_bow_equipped(true) && !no_ammo())
                     result = 2.6f;//result = 2.7f;
                 else
-                    if (has_staff_equipped(right) && !no_charge(right))
+                    if (has_staff_equipped(right))
                     {
                         auto staff = (RE::TESObjectWEAP*)spell;
 
@@ -9570,7 +9602,8 @@ namespace WalkerProcessor {
                                     }
                                 }
                                 else
-                                    result = 0.3f;
+                                    result = 1.2f;// +ench->formEnchanting->avEffectSetting->data.spellmakingChargeTime;
+                                    //result = 0.3f;
                             }
                         }
                     }
@@ -9874,6 +9907,10 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player)
         {
+            if (MiscThings::is_summon_spell(right))
+                return 30000.0f;
+
+
             RE::TESForm* hand_contents = MiscThings::get_hand_contents(right);
 
             if (hand_contents)
@@ -9945,7 +9982,7 @@ namespace WalkerProcessor {
                     if (!weapon->IsMelee())
                     {
 
-                        if (weapon->IsStaff() && !no_charge(right))
+                        if (weapon->IsStaff())
                         {
                             auto staff = weapon;
 
@@ -10176,44 +10213,76 @@ namespace WalkerProcessor {
 
         if (target_ref && player_ref)
         {
+
+
+
+
+            bool dont_use_left = false;
+            bool dont_use_right = false;
+
+            
+            if (target_ref->IsActor() && !target_ref->IsDead())
+            {
+                auto target_actor = (RE::Actor*)target_ref;
+                auto target_combat_controller = target_actor->combatController;
+
+                if (target_combat_controller)
+                    dont_use_left = (target_combat_controller->IsFleeing() || target_combat_controller->ignoringCombat || !target_combat_controller->startedCombat || target_combat_controller->stoppedCombat) && left_is_block();
+            }
+
+
+            bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
+
+            dont_use_left |= inanimate && left_is_block();
+
+            bool left_is_useless = MiscThings::is_self_healing_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
+            bool right_is_useless = MiscThings::is_self_healing_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
+
+            left_is_useless |= MiscThings::is_summon_spell(false) && MiscThings::player_has_summon();
+            right_is_useless |= MiscThings::is_summon_spell(true) && MiscThings::player_has_summon();
+
+            left_is_useless |= has_staff_equipped(false) && no_charge(false);
+            right_is_useless |= has_staff_equipped(true) && no_charge(true);
+
+            dont_use_left |= left_is_useless;
+
+            dont_use_left |= has_bow_equipped(true) && !no_ammo();
+
+            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
+
+            
+
+            bool staff_of_magnus_in_left = false;
+            auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+            auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
+
+            auto left_weapon = MiscThings::get_hand_contents(false);
+            if (left_weapon && left_weapon->GetFormID() == 0x35369)
+                staff_of_magnus_in_left = true;
+
+            if (target_ref && (target_ref == magnus_eye || target_ref == redirect_force_field2))
+                if (staff_of_magnus_in_left)
+                    dont_use_right = true;
+
+
+
             if (attack_action < 0 || attack_action > 1)
             {
-
-                bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
-
-
-                bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
-                bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
-
-                bool dont_use_right = false;
-
-                dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && (no_ammo() || no_charge(true))) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
-
-
-                auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
-                auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
-                if (target_ref && (target_ref == magnus_eye || target_ref == redirect_force_field2))
-                {
-                    auto left_weapon = MiscThings::get_hand_contents(false);
-                    if (left_weapon && left_weapon->GetFormID() == 0x35369)
-                        dont_use_right = true;
-                }
-
-
                 attack_action = dont_use_right;
 
                 int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
                 if (nettlebane_hand >= 0)
                     attack_action = !(bool)nettlebane_hand; //not bitwise
-
-            }
-                
-            
+            } 
 
             float stamina_state = MiscThings::get_player_stamina() / MiscThings::get_player_max_stamina();
 
             bool goto_attack_used = false;
             
+
+            if (left_is_useless && right_is_useless)
+                goto finalize_attack;
+
 
             if (MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
             {
@@ -10247,7 +10316,7 @@ namespace WalkerProcessor {
 
                     
 
-                    if (attack_action_time0 < get_attack_time(true) && !(MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))))
+                    if (attack_action_time0 < get_attack_time(true) && !((MiscThings::is_self_healing_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))) || (MiscThings::is_summon_spell(true) && MiscThings::player_has_summon())))
                     {
                         std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                         
@@ -10276,7 +10345,31 @@ namespace WalkerProcessor {
                             //if (attack_action_time0 > 0.9f);
                                // was_charging_ranged = true;
 
-                            right_attack_spell();
+                            //right_attack_spell();
+
+
+                            bool no_charge_check = no_charge(true);
+
+                            if (no_charge_check || (MiscThings::is_self_healing_spell(true) && MiscThings::player_hp_more_than(100.0f)))
+                            {
+                                right_attack_cancel();
+                                attack_action = 1;
+                                last_attack_action = 0;
+                                goto finalize_attack;
+                            }
+
+
+
+
+                            if (attack_action_time0 < 0.000001f)
+                                right_attack();
+                            else
+                                right_attack_spell();
+
+
+                            if (MiscThings::is_summon_spell(true))
+                                look_down_for_summon();
+
 
                             attacking_weapon = get_equipped_weapon_name(true) + ". ";
                         }
@@ -10301,7 +10394,7 @@ namespace WalkerProcessor {
                                 if (low_mana_check)
                                     low_mana_detected = true;
 
-                                if (low_mana_check || (MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && MiscThings::player_hp_more_than(100.0f)))
+                                if (low_mana_check || (MiscThings::is_self_healing_spell(true) && MiscThings::player_hp_more_than(100.0f)))
                                 {
 
                                     //set_universal_block(1.0f);
@@ -10349,6 +10442,11 @@ namespace WalkerProcessor {
                                         right_attack();
                                     else
                                         right_attack_spell();
+
+
+                                    if (MiscThings::is_summon_spell(true))
+                                        look_down_for_summon();
+
 
                                     if (!MiscThings::is_offensive_spell(true))
                                     {
@@ -10499,7 +10597,7 @@ namespace WalkerProcessor {
                             //dualcasting 
                             dualcasting = true;
                             goto_attack_used = true;
-                            attack_action = 1; //switch to lead hand to make it leading
+                            attack_action = 1; //switch to left hand to make it leading
                             goto attack_action_1;
                         }
 
@@ -10556,57 +10654,10 @@ namespace WalkerProcessor {
                             float choose_next_action = (float)std::rand() / RAND_MAX;
 
 
-                            bool dont_use_left = false;
-
                             float power_attack_chance = (float)std::rand() / RAND_MAX;
-                            if (power_attack_chance > 0.7)
+                            if (power_attack_chance > 0.5)
                                 try_power_attack = true;
 
-                            if (target_ref->IsActor() && target_ref->IsDead())
-                            {
-                                auto target_actor = (RE::Actor*)target_ref;
-                                auto target_combat_controller = target_actor->combatController;
-
-                                if (target_combat_controller)
-                                    dont_use_left = (target_combat_controller->IsFleeing() || target_combat_controller->ignoringCombat || !target_combat_controller->startedCombat || target_combat_controller->stoppedCombat) && left_is_block();
-                            }
-                            else
-                            {
-                                ;// dont_use_left |= left_is_block();
-                            }
-
-                            bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
-
-                            dont_use_left |= inanimate && left_is_block();
-
-
-                            bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
-                            bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
-
-                            bool dont_use_right = false;
-
-                            
-                            dont_use_left |= has_bow_equipped(true) && !no_ammo();
-                            //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
-                            //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
-
-                            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && (no_ammo() || no_charge(true))) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
-
-                            dont_use_left |= has_staff_equipped(false) && no_charge(false);
-
-                            dont_use_left |= left_is_useless;
-
-                            bool staff_of_magnus_in_left = false;
-                            auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
-                            auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
-
-                            auto left_weapon = MiscThings::get_hand_contents(false);
-                            if (left_weapon && left_weapon->GetFormID() == 0x35369)
-                                staff_of_magnus_in_left = true;
-
-                            if (target_ref && (target_ref == magnus_eye || target_ref == redirect_force_field2))
-                                if (staff_of_magnus_in_left)
-                                    dont_use_right = true;  
 
                             float chance = 0.2f;
 
@@ -10654,7 +10705,7 @@ namespace WalkerProcessor {
                         attack_action_1:
 
 
-                        if (attack_action_time1 < get_attack_time(false) && !(MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))))
+                        if (attack_action_time1 < get_attack_time(false) && !((MiscThings::is_self_healing_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))) || (MiscThings::is_summon_spell(false) && MiscThings::player_has_summon())))
                         {
                             std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
 
@@ -10678,7 +10729,30 @@ namespace WalkerProcessor {
                                 //if (attack_action_time0 > 0.9f);
                                    // was_charging_ranged = true;
 
-                                left_attack_spell();
+                                //left_attack_spell();
+
+
+                                bool no_charge_check = no_charge(false);
+
+                                if (no_charge_check || (MiscThings::is_self_healing_spell(false) && MiscThings::player_hp_more_than(100.0f)))
+                                {
+                                    left_attack_cancel();
+                                    attack_action = 0;
+                                    last_attack_action = 1;
+                                    goto finalize_attack;
+                                }
+
+
+
+                                if (attack_action_time1 < 0.000001f)
+                                    left_attack();
+                                else
+                                    left_attack_spell();
+
+                                if (MiscThings::is_summon_spell(false))
+                                    look_down_for_summon();
+
+
 
                                 attacking_weapon = get_equipped_weapon_name(false) + ". ";
                             }
@@ -10702,7 +10776,7 @@ namespace WalkerProcessor {
                                     if (low_mana_check)
                                         low_mana_detected = true;
 
-                                    if (low_mana_check || (MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
+                                    if (low_mana_check || (MiscThings::is_self_healing_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
                                     {
                                         //set_universal_block(1.0f);
                                         left_attack_cancel();
@@ -10759,8 +10833,10 @@ namespace WalkerProcessor {
                                         else
                                             left_attack_spell();
 
+                                        if (MiscThings::is_summon_spell(false))
+                                            look_down_for_summon();
 
-                                        if (!MiscThings::is_offensive_spell(left))
+                                        if (!MiscThings::is_offensive_spell(false))
                                         {
                                             casting = true;
                                             start_attacking_info = "[You are casting ";
@@ -10906,12 +10982,12 @@ namespace WalkerProcessor {
                             }
 
 
-                            if (!goto_attack_used && MiscThings::has_spell_equipped(false) && is_concentration_spell(false) && is_casting_walker3(false))
+                            if (!goto_attack_used && MiscThings::has_spell_equipped(false) && is_concentration_spell(false) && is_casting_walker3(false) && !MiscThings::is_summon_spell(true) && !MiscThings::is_summon_spell(false))
                             {
                                 if (player->GetDistance(target_ref, true) < get_weapon_range(true) * target_ref->GetScale())
                                 {
                                     goto_attack_used = true;
-                                    goto attack_action_0; //add left while we doing this concentration spell
+                                    goto attack_action_0; //add right while we doing this concentration spell
                                 }
                             }
 
@@ -10951,65 +11027,14 @@ namespace WalkerProcessor {
                             attack_action_time1 = 0.0f;
                             float choose_next_action = (float)std::rand() / RAND_MAX;
 
-                            bool dont_use_left = false;
-
-                            if (target_ref->IsActor() && !target_ref->IsDead())
-                            {
-                                auto target_actor = (RE::Actor*)target_ref;
-                                auto target_combat_controller = target_actor->combatController;
-
-                                if (target_combat_controller)
-                                    dont_use_left = (target_combat_controller->IsFleeing() || target_combat_controller->ignoringCombat || !target_combat_controller->startedCombat || target_combat_controller->stoppedCombat) && left_is_block();
-                            }
-                            else
-                            {
-                                ;// dont_use_left |= left_is_block();
-                            }
-
-                            bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
-
-                            dont_use_left |= inanimate && left_is_block();
-
-
-                            bool left_is_useless = MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
-                            bool right_is_useless = MiscThings::has_spell_equipped(true) && !MiscThings::is_offensive_spell(true) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
-
-                            bool dont_use_right = false;
-
-
                             float power_attack_chance = (float)std::rand() / RAND_MAX;
-                            if (power_attack_chance > 0.7)
+                            if (power_attack_chance > 0.5)
                                 try_power_attack = true;
-
-
-                            dont_use_left |= has_bow_equipped(true) && !no_ammo();
-                            //dont_use_left |= MiscThings::has_spell_equipped(true) && (!has_something_equipped(false) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(false)) && MiscThings::has_spell_equipped(false)));
-                            //bool dont_use_right = has_something_equipped(false) && (!has_something_equipped(true) || (low_mana_detected && (MiscThings::get_player_mana() < get_spell_cost(true)) && MiscThings::has_spell_equipped(true)));
-
-                            dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && (no_ammo() || no_charge(true))) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
-
-                            dont_use_left |= has_staff_equipped(false) && no_charge(false);
-
-                            dont_use_left |= left_is_useless;
-
-                            bool staff_of_magnus_in_left = false;
-                            auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
-                            auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
-
-                            auto left_weapon = MiscThings::get_hand_contents(false);
-                            if (left_weapon && left_weapon->GetFormID() == 0x35369)
-                                staff_of_magnus_in_left = true;
-
-                            if (target_ref && (target_ref == magnus_eye || target_ref == redirect_force_field2))
-                                if (staff_of_magnus_in_left)
-                                    dont_use_right = true;
 
                             float chance = 0.2f;
 
                             if (staff_of_magnus_in_left)
                                 chance = 0.03;
-
-
 
                             if (!goto_attack_used && !dualcasting) //dont switch if this is an auxillary attack
                             {
@@ -11056,34 +11081,7 @@ namespace WalkerProcessor {
             {
                 if (target_ref->IsDead())
                 {
-                    /* //now sent from observer
-                    std::string victim_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
-                    std::string message_text = "[" + victim_name + " died]";
-
-                    auto target_actor = (RE::Actor*)target_ref;
-                    auto killer = target_actor->myKiller;
-                    if (killer)
-                    {
-                        auto killer_ptr = killer.get();
-                        if (killer_ptr)
-                        {
-                            auto killer_actor = killer_ptr.get();
-
-                            if (killer_actor)
-                            {
-                                std::string killer_name = MiscThings::insert_object_into_list_and_get_info(killer_actor);
-                                if (killer_actor == player_actor)
-                                    killer_name = "You";
-
-                                message_text = "[" + killer_name + " killed " + victim_name + "]";
-
-                            }
-                        }
-                    }
-                    send_random_context(message_text);
-                    */
-
-                    //clear_input_queue();
+                   
                     right_attack_cancel();
                     left_attack_cancel();
                     
@@ -13367,6 +13365,10 @@ namespace WalkerProcessor {
     }
 
 
+
+    //bool get_ready_for_summon = false;
+    //bool ready_for_summon = false;
+
 	void processor(float dtime)
 	{
         if (emergency_swim_up)
@@ -13398,10 +13400,7 @@ namespace WalkerProcessor {
 
                 return;
             }
-
         }
-
-
 
 
         if (have_target_to_walk && interaction_after_walk != 0 && MiscThings::is_on_horse() && close_enough())
