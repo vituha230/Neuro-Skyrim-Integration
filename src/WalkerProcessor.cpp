@@ -1077,6 +1077,10 @@ namespace WalkerProcessor {
             }
 
 
+            if (MiscThings::in_apocrypha())
+                return nullptr; //surely this is safe?
+
+
             return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887); //runaway marker default skyrim
         }
             
@@ -1112,9 +1116,19 @@ namespace WalkerProcessor {
                     {
                         RE::TESObjectREFR* probe_target = get_runaway_target();
 
-                        
-                        pre_probe_target = target_ref;
-                        target_ref = probe_target;
+                        if (!probe_target)
+                        {
+                            //probably apocrypha or some other shit, runaway is hard to find there - fall back to basic unstuck mechanism, pretending runaway is valid
+                            navmesh_probe_result = true;
+                            navmesh_probe_result_valid = true;
+                            navmesh_probe_mode = false;
+                        }
+                        else
+                        {
+                            pre_probe_target = target_ref;
+                            target_ref = probe_target;
+                        }
+
                     }
 
 

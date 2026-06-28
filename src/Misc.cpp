@@ -19,6 +19,56 @@ namespace MiscThings {
     
 
 
+    RE::TESObjectREFR* find_hermaeus_mora_face()
+    {
+
+        RE::TESObjectREFR* result = nullptr;
+
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player && !player->IsDead())
+        {
+            auto player_pos = player->GetPosition();
+
+            auto player_ref = player->AsReference();
+            auto player_actor = (RE::Actor*)player_ref;
+
+            float scan_distance = 4000.0f;
+            auto player_cell = player->GetParentCell();
+
+
+            std::vector<std::pair<RE::TESObjectREFR*, std::string>> chests{};
+
+
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 10000.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (!result)
+                    {
+                        if (a_ref)
+                        {
+                            auto base_obj = a_ref->GetBaseObject();
+
+                            if (base_obj && base_obj->formID == 0x4037ada)
+                                if (!a_ref->IsDisabled())
+                                {
+                                    result = a_ref;
+                                    return RE::BSContainer::ForEachResult::kStop;
+                                }
+                        }
+                    }
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+
+        }
+
+        return result;
+    }
+
+
+
     bool is_blocker_open(RE::TESObjectREFR* object)
     {
         //most of two-state activators return 0 when they are open, but not all. need to filter here tricky ones
@@ -1581,6 +1631,65 @@ namespace MiscThings {
         return false;
     }
 
+
+    bool in_apocrypha(RE::TESObjectREFR* object)
+    {
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!object)
+            object = player;
+
+        if (object)
+        {
+
+            auto object_worldspace = object->GetWorldspace();
+
+            if (object_worldspace && object_worldspace->formID == 0x04) //TODO!!! THIS IS WRONG. need to find that location where worldspace is used
+                return true;
+
+
+            auto loc = object->GetCurrentLocation();
+
+            RE::BGSLocation* apocrypha_location = (RE::BGSLocation*)RE::TESForm::LookupByID(0x04016E2B);
+
+            if (loc)
+            {
+                if (loc == apocrypha_location)
+                {
+                    return true;
+                }
+
+                unsigned int safeguard = 0;
+
+                auto* parent = loc->parentLoc;
+
+                while (parent && safeguard < 100)
+                {
+                    if (parent == apocrypha_location)
+                    {
+                        return true;
+                    }
+                    parent = parent->parentLoc;
+
+                    safeguard++;
+                }
+
+                //kind of bad but whatever
+                //if (safeguard == 100)
+                {
+                 //   return false
+                }
+            }
+        }
+
+
+
+        return false;
+    }
+
+
+
     bool in_soltsheim(RE::TESObjectREFR* object)
     {
 
@@ -1592,6 +1701,13 @@ namespace MiscThings {
 
         if (object)
         {
+
+            auto object_worldspace = object->GetWorldspace();
+
+            if (object_worldspace && object_worldspace->formID == 0x04000800)
+                return true;
+
+
             auto loc = object->GetCurrentLocation();
 
             RE::BGSLocation* soltsheim_top = (RE::BGSLocation*)RE::TESForm::LookupByID(0x04016E2A);
@@ -7979,6 +8095,21 @@ namespace MiscThings {
         }
 
 
+        object_p = General::Script::GetObject(activator, "DLC2defaultSlottedItemActivatorScript");
+
+        if (object_p)
+        {
+            std::string state = "";
+            state = object_p->currentState;
+
+            if (state == "off")
+                return 1;
+            else
+                return 0;
+
+        }
+
+
         object_p = General::Script::GetObject(activator, "DLC2dunNchardakDoorSeal");
 
         if (object_p)
@@ -10157,6 +10288,25 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = activator->GetModel();
+
+                        if (model.find("ApoScryeTrigger") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 75.0f };
+                            base_shift_vector *= object->GetScale();
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+                        if (model.find("ApoMouthSconce") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 200.0f };
+                            base_shift_vector *= object->GetScale();
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
 
                         //02 - red, no number - blue
                         if (model.find("DLC2DweControlCube") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist

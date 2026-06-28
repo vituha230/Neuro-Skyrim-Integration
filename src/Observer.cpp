@@ -3293,6 +3293,29 @@ namespace Observer {
 																	result.push_back("[ " + name + " lowered]");
 															}
 
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ApoBendingBridge01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Apocrypha Bridge", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " unrolled]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " rolled up]");
+															}
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "ApoScryeTrigger01")
+															{
+																std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " closed]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " opened]");
+															}
+
+
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "DweRetractableBridge01")
 															{
 																std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer Metal Bridge", a_ref);

@@ -16,7 +16,7 @@
 
 
 //TODO dragonborn dlc
-// 2nd book apocrypha. 1st book apocrypha
+// 2nd book apocrypha. 1st book apocrypha. probably separate file for apocrypha navigation (zones, redirections)
 
 
 //TODO dawnguard dlc
@@ -27,6 +27,13 @@
 
 //////////////////////////////////////////////////////
 // RANDOM STUFF
+
+
+//TODO conjure spells fix
+//TODO rare camera shake when using magic
+//TODO strange dragon aim sometimes when using magic
+//TODO cant pickpocket kids
+
 
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
 //TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
@@ -3269,7 +3276,19 @@ class MyHook {
 
                             if (!dont_autolook && !is_casting_cast() && !is_casting_ult() && speaker && WalkerProcessor::get_walker_inactive_time() > 4.0f && (skip_raycast || MiscThings::raycastable(speaker, 5000.0f, false)) && !WalkerProcessor::walker_active() && !MiscThings::have_force_only_menu_open() && get_active_force() == -1)
                             {
-                                WalkerProcessor::look_at_object_by_refr(speaker);
+
+                                RE::TESObjectREFR* look_speaker = speaker;
+
+                                if (speaker && speaker->formID == 0x403219a)
+                                {
+                                    //auto hermaeus_mora_face = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4032171);
+                                    auto hermaeus_mora_face = MiscThings::find_hermaeus_mora_face();
+
+                                    if (hermaeus_mora_face)
+                                        look_speaker = hermaeus_mora_face;
+                                }
+
+                                WalkerProcessor::look_at_object_by_refr(look_speaker);
                             }
                         }
 
