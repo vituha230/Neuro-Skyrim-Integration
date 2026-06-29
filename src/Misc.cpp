@@ -19,6 +19,7 @@ namespace MiscThings {
     
 
 
+    //TODO THIS IS NOT PERFECT AT ALL
     RE::TESObjectREFR* find_hermaeus_mora_face()
     {
 
@@ -66,6 +67,134 @@ namespace MiscThings {
 
         return result;
     }
+
+
+    RE::TESObjectREFR* find_nearest_resurrectable_corpse()
+    {
+        RE::TESObjectREFR* result = nullptr;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player && !player->IsDead())
+        {
+            auto player_pos = player->GetPosition();
+
+            auto player_ref = player->AsReference();
+            auto player_actor = (RE::Actor*)player_ref;
+
+            float scan_distance = 3000.0f;
+            auto player_cell = player->GetParentCell();
+
+
+            std::vector<RE::TESObjectREFR*> corpses{};
+
+
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 3000.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref)
+                    {
+                        auto base_obj = a_ref->GetBaseObject();
+                        RE::FormType base_type{};
+
+                        if (base_obj)
+                        {
+                            base_type = base_obj->GetFormType();
+                            bool debug_type = true;
+                        }
+                        else
+                        {
+                            bool no_base_object = true;
+                        }
+
+                        std::string name = a_ref->GetDisplayFullName();
+
+                        if (base_type == RE::FormType::Hazard)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (base_type == RE::FormType::Static)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (!MiscThings::is_object_valid(a_ref))
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
+
+                        if (name[0] != '\0' && std::size(name) > 1 && name != player_name && name != "Sit")
+                        {
+
+                            if (MiscThings::has_digits(name))
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            if (a_ref->AsReference()->modelState == 0)
+                                return RE::BSContainer::ForEachResult::kContinue; //skip objects without world model
+
+
+                            if (base_type == RE::FormType::Activator)
+                            {
+                                auto test = (RE::TESObjectACTI*)base_obj;
+                                std::string model = test->GetModel();
+                                if (model.find("Marker_LinkMarker") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                                    return RE::BSContainer::ForEachResult::kContinue;
+
+                                //little flags
+                                if (model.find("MapFlag") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                            }
+
+
+
+                            if (name.find("not be visible") != std::string::npos) //"This should not be visible [Furniture]"
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            if (name.find("Do Not Delete") != std::string::npos)
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            if (name.find("nvisible") != std::string::npos && name.find("arker") != std::string::npos)
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+                            if (name.find("default") != std::string::npos)
+                                return RE::BSContainer::ForEachResult::kContinue;
+
+
+                            if (a_ref->IsActor() && a_ref->IsDead())
+                            {
+                                if (MiscThings::is_object_in_the_list(a_ref))
+                                {
+                                    //need to check if resurrectable...
+                                    corpses.push_back(a_ref);
+                                }
+                            }
+                        }
+                    }
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+
+
+
+            std::sort(corpses.begin(), corpses.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
+                //return left->GetDistance(player) > right->GetDistance(player); //switch > to < for inversed order. this is last->closest
+                if (left && right && left->formID && right->formID && left->data.objectReference && right->data.objectReference)
+                {
+                    RE::NiPoint3 pos_left = left->GetPosition();
+                    RE::NiPoint3 pos_right = right->GetPosition();
+
+                    return pos_left.GetDistance(player_pos) < pos_right.GetDistance(player_pos); //alphabetical order. top = A
+                }
+                else
+                    return false;
+                });
+
+
+            if (std::size(corpses) > 0)
+                result = corpses.at(0);
+
+        }
+
+        return result;
+    }
+
 
 
 
@@ -9882,7 +10011,6 @@ namespace MiscThings {
 
     bool player_has_levelup()
     {
-        return false;
 
         bool result = false;
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -18351,8 +18479,21 @@ namespace MiscThings {
                                     {
                                         WalkerProcessor::cast_spell_at_target(spell_target, spell);
                                     }
-                                    else    
-                                        try_casting_hand(right_hand);
+                                    else
+                                    {
+                                        if (MiscThings::is_reanimate_spell(right_hand))
+                                        {
+                                            auto some_corpse = MiscThings::find_nearest_resurrectable_corpse();
+
+                                            if (some_corpse)
+                                                WalkerProcessor::cast_spell_at_target(some_corpse, spell);
+                                            else
+                                                try_casting_hand(right_hand);
+                                        }
+                                        else
+                                            try_casting_hand(right_hand);
+                                    }
+                                        
 
                                 }
                                     

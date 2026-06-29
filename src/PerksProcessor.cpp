@@ -129,6 +129,18 @@ namespace PerksProcessor {
 	std::vector<tree_path_node> navigation_map_vampirelord =
 	{
 		//Vampire Lord
+		{0, {{1, {11, 8, 9, 3}}, //Blood Healing
+		{2, {-1, -1, -1, 12}}, //Corpse Curse
+		{3, {-1, 1, -1, 5}}, //Mist Form
+		{4, {11, 2, -1, 9}}, //Vampiric Grip
+		{5, {-1, 3, -1, -1}}, //Supernatural Reflexes
+		{6, {11, 9, -1, 5}}, //Detect All Creatures
+		{8, {11, 12, 9, 1}}, //Unearthly Will
+		{9, {1, 4, -1, 6}}, //Power of the Grave
+		{10, {11, 12, 9, 3}}, //Poison Talons
+		{11, {-1, 2, 10, 5}}, //Night Cloak
+		{12, {-1, 2, -1, 8}}} //Summon Gargoyle
+},
 	};
 
 	std::vector<tree_path_node> navigation_map_normal =
@@ -976,6 +988,9 @@ namespace PerksProcessor {
 		if (menu)
 			result = menu->selectedTree;
 
+		if (MiscThings::is_vampirelord())
+			result -= 1; //just set it to 0 here so nothing breaks
+
 		return result;
 	}
 
@@ -1292,7 +1307,7 @@ namespace PerksProcessor {
 			fill_perk_list_werewolf();
 		else
 			if (MiscThings::is_vampirelord())
-				fill_all_perk_list_vampirelord();
+				fill_perk_list_vampirelord();
 			else
 				fill_perk_list_normal(tree_id);
 	}
@@ -2239,7 +2254,7 @@ namespace PerksProcessor {
 
 
 
-	//to do scan: set scan_mode=true, release_mode = false, make new empty navigation map, 
+	//to do scan: set scan_mode=true, release_mode = false, make new empty navigation map, adjust amount_trees() and navigation_map() functions, change filename in scan dump file condition below
 	bool scan_mode = false;
 	bool release_mode = true;
 	float perks_processor_timer = 0.0f;
@@ -2249,7 +2264,6 @@ namespace PerksProcessor {
 
 	void processor(float dtime)
 	{
-		return;
 
 		int current_perk_id_123 = get_current_perk_id();
 
@@ -2321,7 +2335,7 @@ namespace PerksProcessor {
 			{
 				if (scan_tree(tree_to_scan, dtime))
 				{
-					std::ofstream of("TREE_MAP_WEREWOLF_ " + std::to_string(tree_to_scan) + ".txt");
+					std::ofstream of("TREE_MAP_VAMPIRELORD_ " + std::to_string(tree_to_scan) + ".txt");
 					dump_one_file(of, tree_to_scan);
 					of.close();
 
@@ -2382,7 +2396,11 @@ namespace PerksProcessor {
 						{
 							select_tree_request_sent = true;
 							tree_choice_valid = true;
-							tree_choice = 0;
+
+							//if (MiscThings::is_werewolf()) //decided to change this so it pretends that vampire tree is 0 even though its 1 (in get_selected_tree function)
+								tree_choice = 0;
+							//else
+							//	tree_choice = 1; //vampire lord has tree id 1
 						}
 					}
 						

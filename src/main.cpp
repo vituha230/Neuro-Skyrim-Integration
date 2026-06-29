@@ -30,9 +30,13 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+//TODO "cant walk there" from walker - add info that its potentially because player is in vampire lord form
+//TODO test combat with resurrection spell in hand (automatic usage check)
+//TODO vampire lord skilltree and levelup
 //TODO check whiterun house in the list of interesting places before player buys it
 //TODO fix constant crouch while using bow/crossbow (detection system is broken)
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
+//TODO test all cast_spell variations
 //TODO strange dragon aim sometimes when using magic
 
 

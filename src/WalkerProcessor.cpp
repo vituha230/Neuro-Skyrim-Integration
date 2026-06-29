@@ -10355,6 +10355,8 @@ namespace WalkerProcessor {
 
             bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
 
+            bool target_is_dead = target_ref && target_ref->IsActor() && target_ref->IsDead();
+
             dont_use_left |= inanimate && left_is_block();
 
             bool left_is_useless = MiscThings::is_self_healing_spell(false) && (MiscThings::player_hp_more_than(90.0f) || inanimate);
@@ -10365,6 +10367,32 @@ namespace WalkerProcessor {
 
             left_is_useless |= has_staff_equipped(false) && no_charge(false);
             right_is_useless |= has_staff_equipped(true) && no_charge(true);
+
+            bool left_is_resurrect = MiscThings::is_reanimate_spell(false);
+            bool right_is_resurrect = MiscThings::is_reanimate_spell(true);
+
+
+            RE::TESObjectREFR* resurrectable_corpse = nullptr;
+
+            if (left_is_resurrect || right_is_resurrect)
+            {
+                resurrectable_corpse = MiscThings::find_nearest_resurrectable_corpse();
+
+                if (!resurrectable_corpse)
+                {
+                    left_is_useless |= left_is_resurrect;
+                    right_is_useless |= right_is_resurrect;
+                }
+                else
+                {
+                    if (left_is_resurrect)
+                        left_is_useless |= MiscThings::player_has_summon() || (inanimate && !target_is_dead);
+
+                    if (right_is_resurrect)
+                        right_is_useless |= MiscThings::player_has_summon() || (inanimate && !target_is_dead);
+                }
+            }
+
 
             dont_use_left |= left_is_useless;
 
@@ -10437,7 +10465,7 @@ namespace WalkerProcessor {
             bool goto_attack_used = false;
             
 
-            if (left_is_useless && right_is_useless)
+            if (left_is_useless && right_is_useless && !spell_mode)
                 goto finalize_attack;
 
 
@@ -10470,10 +10498,16 @@ namespace WalkerProcessor {
 
                     attack_action_0:
 
-
+                    if (!spell_mode && MiscThings::is_reanimate_spell(true) && !right_is_useless && resurrectable_corpse)
+                    {
+                        //redirect to the corpse
+                        spell_mode = true; //but no spell to use so it doesnt mess up above
+                        target_ref = resurrectable_corpse;
+                        return false;
+                    }
                     
 
-                    if (attack_action_time0 < get_attack_time(true) && !((MiscThings::is_self_healing_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))) || (MiscThings::is_summon_spell(true) && MiscThings::player_has_summon())))
+                    if (attack_action_time0 < get_attack_time(true) && !((MiscThings::is_self_healing_spell(true) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(true))) || (!spell_mode && MiscThings::is_summon_spell(true) && MiscThings::player_has_summon())))
                     {
                         std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                         
@@ -10867,8 +10901,15 @@ namespace WalkerProcessor {
                     {
                         attack_action_1:
 
+                        if (!spell_mode && MiscThings::is_reanimate_spell(false) && !right_is_useless && resurrectable_corpse)
+                        {
+                            //redirect to the corpse
+                            spell_mode = true; //but no spell to use so it doesnt mess up above
+                            target_ref = resurrectable_corpse;
+                            return false; //in next cycle its supposed to properly return here but this time we are aiming at the corpse
+                        }
 
-                        if (attack_action_time1 < get_attack_time(false) && !((MiscThings::is_self_healing_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))) || (MiscThings::is_summon_spell(false) && MiscThings::player_has_summon())))
+                        if (attack_action_time1 < get_attack_time(false) && !((MiscThings::is_self_healing_spell(false) && (MiscThings::player_hp_more_than(90.0f) && !is_casting_walker(false))) || (!spell_mode && MiscThings::is_summon_spell(false) && MiscThings::player_has_summon())))
                         {
                             std::string target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
 

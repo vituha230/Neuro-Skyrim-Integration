@@ -286,6 +286,7 @@ namespace MiscThings {
 
     std::string lowercase_string(std::string in);
 
+    RE::TESObjectREFR* find_nearest_resurrectable_corpse();
 
     bool is_fighting_dragons_allowed();
     bool is_intro();
@@ -425,6 +426,7 @@ namespace MiscThings {
     RE::TESForm* get_hand_contents(bool right);
     bool is_self_healing_spell(bool right);
     bool is_summon_spell(bool right);
+    bool is_reanimate_spell(bool right);
     bool player_has_summon();
 
     void book_reader(float dtime);

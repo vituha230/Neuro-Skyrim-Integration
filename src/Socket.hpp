@@ -191,7 +191,7 @@ namespace Capabilities
     {
         constexpr char Name[] = "switch_to_claws";
         constexpr char Desc[] =
-            R"(Stop flying and get your claws out. Bloodmagic becomes unavailable, but you dont need magicka to attack)";
+            R"(Stop flying and get your claws out. Blood Magic becomes unavailable, but you dont need magicka to attack)";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc };// , .json_schema = JsonSchema};
     }
@@ -201,7 +201,7 @@ namespace Capabilities
     {
         constexpr char Name[] = "switch_to_bloodmagic";
         constexpr char Desc[] =
-            R"(Start flying and get out your claws. Bloodmagic becomes available, but you need magicka to attack)";
+            R"(Start flying and unlock Blood Magic)";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc };// , .json_schema = JsonSchema};
     }
@@ -370,7 +370,7 @@ namespace Capabilities
             R"(Cast spell. Requires spell ID. )";
         constexpr char JsonSchema[] =
            //R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the spell. Use get_available_spells to get list of spell IDs. ", "type": "integer" } }, "required": ["id"] })";//
-            R"({ "additionalProperties": false, "type": "object", "properties": { "id1": { "description": "The ID of the spell. Use get_available_spells to get list of spell IDs.", "type": "integer" }, "id2": { "description": "(OPTIONAL) The ID of the target", "type": "integer" } }, "required": ["id1"] })";
+            R"({ "additionalProperties": false, "type": "object", "properties": { "id_spell": { "description": "The ID of the spell. Use get_available_spells to get list of spell IDs.", "type": "integer" }, "id_target": { "description": "(OPTIONAL) The ID of the target", "type": "integer" } }, "required": ["id_spell"] })";
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc, .json_schema = JsonSchema };
     } // namespace SelectChoiceOption

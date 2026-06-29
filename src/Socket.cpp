@@ -1679,6 +1679,8 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                             }
 
 
+
+                            //attempt to give some freedom in format, accept whatever makes sense
                             if (name == Capabilities::CastSpell::Name)
                             {
                                 Impl::JSON::NeuroChoiceJson_spell_and_target json_spell_target{};
