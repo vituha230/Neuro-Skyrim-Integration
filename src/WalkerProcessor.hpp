@@ -44,6 +44,10 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> make_jumps();
 
 
+	std::pair<bool, std::string> switch_vampirelord_mode_up();
+	std::pair<bool, std::string> switch_vampirelord_mode_down();
+
+
 	bool has_staff_equipped(bool right);
 
 	bool is_door(RE::TESObjectREFR* refr);
@@ -167,6 +171,8 @@ namespace WalkerProcessor {
 
 
 	std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout = false, RE::TESObjectREFR* refr_to_activate_when_done = nullptr);
+	std::pair<bool, std::string> cast_spell_at_target(RE::TESObjectREFR* target, RE::SpellItem* spell);
+
 
 	bool is_objective_phantom(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective);
 

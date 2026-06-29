@@ -30,7 +30,9 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-
+//TODO check whiterun house in the list of interesting places before player buys it
+//TODO fix constant crouch while using bow/crossbow (detection system is broken)
+//TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
 //TODO strange dragon aim sometimes when using magic
 
 
@@ -277,6 +279,52 @@ bool unregister_stop_sneak()
 
     return false;
 }
+
+
+
+
+bool register_vampire_up()
+{
+    neurosdk_action actions[] = { Capabilities::VampirelordSwitchUp::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+bool unregister_vampire_up()
+{
+    const char* action_names[] = { Capabilities::VampirelordSwitchUp::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
+bool register_vampire_down()
+{
+    neurosdk_action actions[] = { Capabilities::VampirelordSwitchDown::Action };
+
+    if (m_neuroSocket->register_actions(actions, std::size(actions)))
+        return true;
+
+    return false;
+}
+
+bool unregister_vampire_down()
+{
+    const char* action_names[] = { Capabilities::VampirelordSwitchDown::Name };
+
+    if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
+        return true;
+
+    return false;
+}
+
+
+
 
 
 

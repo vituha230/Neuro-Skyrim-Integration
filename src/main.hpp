@@ -98,6 +98,13 @@ void do_delayed_poke();
 
 
 
+bool register_vampire_up();
+bool unregister_vampire_up();
+bool register_vampire_down();
+bool unregister_vampire_down();
+
+
+
 
 bool register_start_sneak();
 bool unregister_start_sneak();

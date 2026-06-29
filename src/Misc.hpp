@@ -280,6 +280,9 @@ namespace MiscThings {
     void update_old_topleft_nofification(std::string new_notif);
 
     bool is_object_in_the_list(RE::TESObjectREFR* object);
+    bool is_object_in_the_list(int id); //variant to check if id is valid
+
+    RE::TESObjectREFR* get_object_by_index(int id);
 
     std::string lowercase_string(std::string in);
 
@@ -308,7 +311,7 @@ namespace MiscThings {
 
     bool has_digits(std::string& str);
 
-    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast = false, bool player_issued = false);
+    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast = false, bool player_issued = false, int target_index = -1);
     std::pair<bool, std::string> equip_spell_by_index(int id, bool fast = false);
 
     int player_overencumbered_by();
@@ -460,6 +463,9 @@ namespace MiscThings {
 
     bool is_werewolf();
     bool is_vampirelord();
+
+    bool vampirelord_melee_mode();
+
 
     bool is_intro_quest_only();
 

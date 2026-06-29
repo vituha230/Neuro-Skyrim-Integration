@@ -9882,6 +9882,7 @@ namespace MiscThings {
 
     bool player_has_levelup()
     {
+        return false;
 
         bool result = false;
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -12932,6 +12933,46 @@ namespace MiscThings {
         }
         return result;
     }
+
+
+    bool is_object_in_the_list(int id)
+    {
+        bool result = false;
+
+        if (objects_around_valid)
+        {
+            for (auto list_entry : objects_around)
+            {
+                if (list_entry.first == id)
+                {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+
+    RE::TESObjectREFR* get_object_by_index(int id)
+    {
+        RE::TESObjectREFR* result = nullptr;
+
+        if (objects_around_valid)
+        {
+            for (auto list_entry : objects_around)
+            {
+                if (list_entry.first == id)
+                {
+                    result = list_entry.second.object;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+
 
 
     std::map<int, object_data>* get_p_objects_around()
@@ -17273,11 +17314,12 @@ namespace MiscThings {
                     RE::BSFixedString prop_name = "::CurrentHowl_var";
                     auto current_howl = General::Script::GetVariable<RE::TESShout*>(object_p, prop_name);
 
-                    if (a_spell != (RE::SpellItem*)current_howl)
-                        return true;
+                    if (a_spell == (RE::SpellItem*)current_howl)
+                        return false;
                 }
             }
 
+            return true;
         }
 
         return false;
@@ -17287,31 +17329,66 @@ namespace MiscThings {
 
     bool is_vampirelord_banned_spell(RE::SpellItem* a_spell)
     {
-        if (MiscThings::is_vampirelord())
+        if (a_spell)
         {
-            //in werewolf form only several chosen spells are allowed
-
-            auto werewolf_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("PlayerWerewolfQuest");
-
-            if (werewolf_quest)
+            if (MiscThings::is_vampirelord())
             {
-                auto object_p = General::Script::GetObject(werewolf_quest, "PlayerWerewolfChangeScript");
-                if (object_p)
-                {
-                    RE::BSFixedString prop_name = "::CurrentHowl_var";
-                    auto current_howl = General::Script::GetVariable<RE::TESShout*>(object_p, prop_name);
+                //in vampire lord form we have only certain spells to use
 
-                    if (a_spell != (RE::SpellItem*)current_howl)
-                        return true;
-                }
+                auto formid = a_spell->formID;
+
+                if (//formid == 0xf5b54 ||
+                    formid == 0x2015fc7 || //this one has no name
+                    formid == 0x10f1e7 ||
+                    formid == 0x10f1eb ||
+                    //formid == 0x8d5bf ||
+                    //formid == 0x200283b ||
+                    formid == 0x2012d15 ||
+                    formid == 0x2007a39 ||
+                    formid == 0xc4de1 ||
+                    formid == 0x200cd5c ||
+                    formid == 0x20038b9 ||
+                    formid == 0x20038ba ||
+                    formid == 0x20038b8 ||
+                    formid == 0x20038bc ||
+                    formid == 0x20038b7 ||
+                    formid == 0x2008a6f ||
+                    formid == 0x2016909 ||
+                    formid == 0x20126b8 ||
+                    formid == 0x2013ec9 ||
+                    formid == 0x20071e2
+                    //formid == 0x201462a
+                    )
+                    return false;
+
+
+                return true;
+
             }
-
         }
+
 
         return false;
 
     }
 
+
+    
+    bool vampirelord_melee_mode()
+    {
+        if (MiscThings::is_vampirelord())
+        {
+            auto left = MiscThings::get_hand_contents(false);
+            auto right = MiscThings::get_hand_contents(true);
+
+            if (left || right)
+                return false;
+            else
+                return true;
+        }
+        return false;
+    }
+    
 
 
 
@@ -17348,7 +17425,6 @@ namespace MiscThings {
                     std::string description = "";
 
 
-
                     auto effect = a_spell->GetAVEffect();
 
                     std::string descr = "";
@@ -17375,7 +17451,7 @@ namespace MiscThings {
 
                     description = " " + descr;
 
-                    if (a_spell->menuDispObject)
+                    if (a_spell->menuDispObject || MiscThings::is_vampirelord() || MiscThings::is_werewolf())
                     {
                         if (a_spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
                         {
@@ -17389,10 +17465,20 @@ namespace MiscThings {
                                 equip_info = "[Unequipped]";
                             else
                                 if (right_equipped && !left_equipped)
-                                    equip_info = "[Equipped in right hand, can also be equipped in left hand]";
+                                {
+                                    if (MiscThings::is_vampirelord())
+                                        equip_info = "[Equipped in right hand]";
+                                    else
+                                        equip_info = "[Equipped in right hand, can also be equipped in left hand]";
+                                }
                                 else
                                     if (!right_equipped && left_equipped)
-                                        equip_info = "[Equipped in left hand, can also be equipped in right hand]";
+                                    {
+                                        if (MiscThings::is_vampirelord())
+                                            equip_info = "[Equipped in left hand]";
+                                        else
+                                            equip_info = "[Equipped in left hand, can also be equipped in right hand]";
+                                    }
                                     else
                                         equip_info = "[Equipped in both hands]";
 
@@ -18060,6 +18146,65 @@ namespace MiscThings {
     }
 
 
+
+    bool is_reanimate_spell(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+
+            if (spell)
+            {
+                if (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll)
+                {
+                    if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                    {
+                        for (auto effect : spell->effects)
+                        {
+                            if (effect->baseEffect && effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kReanimate)
+                            {
+                                result = true;
+                                break;
+                            }
+                        }
+
+                    }
+                }
+                else
+                {
+                    if (spell->GetFormType() == RE::FormType::Weapon)
+                    {
+                        auto staff = (RE::TESObjectWEAP*)spell;
+
+                        if (staff->IsStaff())
+                        {
+                            auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                            if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                            {
+                                for (auto effect : ench->formEnchanting->effects)
+                                {
+                                    if (effect->baseEffect && effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kReanimate)
+                                    {
+                                        result = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+
+
     bool player_has_summon()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -18085,7 +18230,7 @@ namespace MiscThings {
 
 
 
-    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast, bool player_issued)
+    std::pair<bool, std::string> cast_spell_by_index(int id, bool fast, bool player_issued, int target_index)
     {
 
         //TODO: somehow get proper result of this action
@@ -18146,12 +18291,19 @@ namespace MiscThings {
                     }
                     else
                     {
-                        if (slot_id == 0x00013F44) //either hand
+                        if (slot_id == 0x00013F44 || slot_id == 0x00013F42 || slot_id == 0x00013F43) //either hand
                         {
                             auto slot = get_free_slot();
 
-                            if (!is_offensive_spell(spell))
+                            if (!is_offensive_spell(spell) || MiscThings::is_vampirelord())
                                 slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
+
+
+                            if (slot_id == 0x00013F42)
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand forced
+
+                            if (slot_id == 0x00013F43)
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand forced
 
 
                             std::string equip_hand = "";
@@ -18190,14 +18342,18 @@ namespace MiscThings {
                                         //set_universal_block(1.0f);
                                         ready_weapon();
                                     }
-                                        
 
-                                    //if (player_hp_less_than(90.0f) && is_self_healing_spell(spell))
-                                    //{
-                                    //if (!WalkerProcessor::is_fighting()) 
+                                    //check target. if cant find it - fallback to old-way cast no target
+
+                                    auto spell_target = MiscThings::get_object_by_index(target_index);
+
+                                    if (spell_target)
+                                    {
+                                        WalkerProcessor::cast_spell_at_target(spell_target, spell);
+                                    }
+                                    else    
                                         try_casting_hand(right_hand);
 
-                                    //}
                                 }
                                     
 
@@ -18586,13 +18742,22 @@ namespace MiscThings {
                     }
                     else
                     {
-                        if (slot_id == 0x00013F44) //either hand
+                        if (slot_id == 0x00013F44 || slot_id == 0x00013F42 || slot_id == 0x00013F43) //either hand
                         {
 
                             auto slot = get_free_slot();
 
-                            if (!is_offensive_spell(spell))
+                            if (!is_offensive_spell(spell) || MiscThings::is_vampirelord())
                                 slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
+
+
+                            if (slot_id == 0x00013F42)
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand forced
+
+                            if (slot_id == 0x00013F43)
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand forced
+
+
 
                             std::string equip_hand = "";
 

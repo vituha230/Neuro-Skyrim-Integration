@@ -17,6 +17,8 @@ namespace WalkerProcessor {
 
     bool map_was_unregistered_by_follow_quest = false;
 
+    bool spell_mode_init_done = false;
+
 
     //do not reset these in reset_walker()
     RE::TESQuest* last_quest_chosen = nullptr;
@@ -452,6 +454,11 @@ namespace WalkerProcessor {
     bool ustengrev_wrong_order_mode = false;
     bool ustengrev_cliff_mode = false;
 
+
+    bool spell_mode = false;
+    RE::SpellItem* spell_to_use = nullptr;
+
+
     float anti_slowwalk_timer = 0.0f;
 
     bool dont_tell_result = false;
@@ -485,6 +492,62 @@ namespace WalkerProcessor {
     RE::NiPoint3 last_point_of_last_path{};
 
     bool last_dragon_was_flying = false;
+
+
+
+
+    //
+
+
+    std::pair<bool, std::string> switch_vampirelord_mode_up()
+    {
+        std::pair<bool, std::string> result{};
+
+
+        if (MiscThings::vampirelord_melee_mode())
+        {
+            result.first = true;
+            result.second = "[You start floating and unlock your Blood Magic...]";
+            crouch();
+
+            //this should be controlled outside because we dont have sneak_modes here
+            //unregister_vampire_up();
+            //register_vampire_down();
+        }
+        else
+        {
+            result.first = false;
+            result.second = "[You are already in Blood Magic mode!]";
+        }
+           
+
+        return result;
+    }
+
+
+    std::pair<bool, std::string> switch_vampirelord_mode_down()
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!MiscThings::vampirelord_melee_mode())
+        {
+            result.first = true;
+            result.second = "[You descend on the ground and get your claws out...]";
+            crouch();
+
+            //this should be controlled outside because we dont have sneak_modes here
+            //unregister_vampire_down();
+            //register_vampire_up();
+        }
+        else
+        {
+            result.first = false;
+            result.second = "[You are already in Melee mode!]";
+        }
+
+        return result;
+    }
+
 
 
 
@@ -968,6 +1031,12 @@ namespace WalkerProcessor {
         {
             shout_mode = false;
             shout_to_use = nullptr;
+        }
+
+        if (spell_mode)
+        {
+            spell_mode = false;
+            spell_to_use = nullptr;
         }
 
         start_attacking = false; //so it restarts attack properly
@@ -4806,6 +4875,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        spell_mode_init_done = false;
+
         close_enough_linger = false;
         dualcasting = false;
 
@@ -5197,6 +5268,9 @@ namespace WalkerProcessor {
 
         shout_mode = false;
         shout_to_use = nullptr;
+
+        spell_mode = false;
+        spell_to_use = nullptr;
 
         if (gate_shout)
             register_allowed_actions();
@@ -9052,6 +9126,10 @@ namespace WalkerProcessor {
             have_target_to_walk = true;
             interaction_after_walk = interaction;
 
+
+            if (interaction_after_walk == 3 && target_ref->IsActor() && target_ref->IsDead())
+                was_already_dead = true;
+
             auto player = RE::PlayerCharacter::GetSingleton();
             reminder_target_name = MiscThings::insert_object_into_list_and_get_info(target);
             reminder_start_pos = player->GetPosition();
@@ -9326,8 +9404,7 @@ namespace WalkerProcessor {
             if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                     result = spell->GetFullName();
-
-
+                   
 
         }
 
@@ -10109,7 +10186,6 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player_ref;
 
 
-
         if (shout_mode)
         {
             if (shout_to_use)
@@ -10302,6 +10378,7 @@ namespace WalkerProcessor {
             auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
             auto redirect_force_field2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
 
+            auto right_weapon = MiscThings::get_hand_contents(true);
             auto left_weapon = MiscThings::get_hand_contents(false);
             if (left_weapon && left_weapon->GetFormID() == 0x35369)
                 staff_of_magnus_in_left = true;
@@ -10311,6 +10388,40 @@ namespace WalkerProcessor {
                     dont_use_right = true;
 
 
+            //this forces switch to hand that has the spell we need
+            if (spell_mode && spell_to_use && !spell_mode_init_done)
+            {
+                spell_mode_init_done = true;
+
+                if (right_weapon == spell_to_use)
+                {
+                    right_is_useless = false;
+                    dont_use_right = false;
+                    attack_action = 0;
+                    attack_action_time0 = 0.0f;
+                    attack_action_time1 = 0.0f;
+                }
+                else
+                {
+                    if (left_weapon == spell_to_use)
+                    {
+                        left_is_useless = false;
+                        dont_use_left = false;
+                        attack_action = 1;
+                        attack_action_time0 = 0.0f;
+                        attack_action_time1 = 0.0f;
+                    }
+                    else
+                    {
+                        //no hand has this spell. do nothing
+                        spell_mode = false;
+                        spell_to_use = nullptr;
+                    }
+                }
+            }
+
+
+            bool attack_action_done = false;
 
             if (attack_action < 0 || attack_action > 1)
             {
@@ -10401,6 +10512,9 @@ namespace WalkerProcessor {
                                 right_attack_cancel();
                                 attack_action = 1;
                                 last_attack_action = 0;
+
+                                attack_action_done = true;
+
                                 goto finalize_attack;
                             }
 
@@ -10448,6 +10562,8 @@ namespace WalkerProcessor {
                                     //was_charging_ranged = false;
                                     attack_action = 1;
                                     last_attack_action = 0;
+
+                                    attack_action_done = true;
 
                                     goto finalize_attack;
                                     //goto attack_action_1;
@@ -10684,6 +10800,7 @@ namespace WalkerProcessor {
                             }
                             pause_post_attack = 0.0f;
 
+                            attack_action_done = true;
 
                             dualcasting = false;
 
@@ -10785,6 +10902,9 @@ namespace WalkerProcessor {
                                     left_attack_cancel();
                                     attack_action = 0;
                                     last_attack_action = 1;
+
+                                    attack_action_done = true;
+
                                     goto finalize_attack;
                                 }
 
@@ -10831,6 +10951,8 @@ namespace WalkerProcessor {
                                         //return false;
 
                                         last_attack_action = 1;
+                                        
+                                        attack_action_done = true;
 
                                         goto finalize_attack;
 
@@ -11062,7 +11184,7 @@ namespace WalkerProcessor {
                             }
                             pause_post_attack = 0.0f;
 
-                            
+                            attack_action_done = true;
 
                             try_power_attack = false;
                             gave_attacking_info = false;
@@ -11120,244 +11242,253 @@ namespace WalkerProcessor {
 
             finalize_attack:
 
-            
-
-
-            if (target_ref->IsActor() && !was_already_dead && !target_ref->IsDisabled())
             {
-                if (target_ref->IsDead())
+                if (spell_mode && attack_action_done)
                 {
-                   
-                    right_attack_cancel();
-                    left_attack_cancel();
-                    
-                    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+                    spell_mode = false;
+                    spell_to_use = nullptr;
+                    return true;
+                }
 
-                    if (post_attack_advice_time == 0)
-                        post_attack_advice_time = now;
 
-                    float delta_post_attack_advice = (double)(now - post_attack_advice_time) / 1000000000.0;
-
-                    if (delta_post_attack_advice > 20.0f)
+                if (target_ref->IsActor() && !was_already_dead && !target_ref->IsDisabled())
+                {
+                    if (target_ref->IsDead())
                     {
-                        post_attack_advice_time = now;
 
-                        MiscThings::post_attack_advice();
-                    }
+                        right_attack_cancel();
+                        left_attack_cancel();
 
-                    //if its far away - need to notify player because detect_events has low range
+                        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
 
-                    if (target_ref && target_ref->IsActor() && target_ref->GetDistance(player) > 2000.0f)
-                    {
-                        bool dont_add = false;
+                        if (post_attack_advice_time == 0)
+                            post_attack_advice_time = now;
 
-                        std::string victim_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
-                        std::string message_text = "[" + victim_name + " died]";
+                        float delta_post_attack_advice = (double)(now - post_attack_advice_time) / 1000000000.0;
 
-                        auto target_actor = (RE::Actor*)target_ref;
-                        auto killer = target_actor->myKiller;
-                        if (killer)
+                        if (delta_post_attack_advice > 20.0f)
                         {
-                            if (target_ref == player_ref) //have dedicated message for that
-                                dont_add = true;
+                            post_attack_advice_time = now;
 
-                            auto killer_ptr = killer.get();
-                            if (killer_ptr)
+                            MiscThings::post_attack_advice();
+                        }
+
+                        //if its far away - need to notify player because detect_events has low range
+
+                        if (target_ref && target_ref->IsActor() && target_ref->GetDistance(player) > 2000.0f)
+                        {
+                            bool dont_add = false;
+
+                            std::string victim_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
+                            std::string message_text = "[" + victim_name + " died]";
+
+                            auto target_actor = (RE::Actor*)target_ref;
+                            auto killer = target_actor->myKiller;
+                            if (killer)
                             {
-                                auto killer_actor = killer_ptr.get();
-
-
-                                if (MiscThings::is_intro2() && killer_actor == target_ref && target_actor->race->fullName == "Dragon Race")
+                                if (target_ref == player_ref) //have dedicated message for that
                                     dont_add = true;
 
-                                if (killer_actor)
+                                auto killer_ptr = killer.get();
+                                if (killer_ptr)
                                 {
-                                    std::string killer_name = MiscThings::insert_object_into_list_and_get_info(killer_actor);
-                                    if (killer_actor == player_actor)
-                                        killer_name = "You";
-
-                                    message_text = "[" + killer_name + " killed " + victim_name + "]";
-
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (target_ref == player_ref) //have dedicated message for that
-                                dont_add = true;
-                        }
-
-                        if (!dont_add)
-                        {
-                            send_random_context(message_text);
-                        }
-                    }
+                                    auto killer_actor = killer_ptr.get();
 
 
-                    result = true;
-                }
-                else
-                {
-                    active_attacking_time += dtime;
+                                    if (MiscThings::is_intro2() && killer_actor == target_ref && target_actor->race->fullName == "Dragon Race")
+                                        dont_add = true;
 
-                    auto target_actor = (RE::Actor*)target_ref;
+                                    if (killer_actor)
+                                    {
+                                        std::string killer_name = MiscThings::insert_object_into_list_and_get_info(killer_actor);
+                                        if (killer_actor == player_actor)
+                                            killer_name = "You";
 
+                                        message_text = "[" + killer_name + " killed " + victim_name + "]";
 
-                    if (last_checked_enemy_health == -1.0f)
-                    {
-                        int max_health = target_actor->GetActorValueMax(RE::ActorValue::kHealth);
-                        int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
-
-                        last_checked_enemy_health = cur_health;
-                    }
-
-                    if (active_attacking_time > 20.0f)
-                    {
-                        active_attacking_time = 0.0f;
-
-                        
-                        if (has_bow_equipped(true) || has_crossbow_equipped(true))
-                        {
-                            int max_health = target_actor->GetActorValueMax(RE::ActorValue::kHealth);
-                            int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
-
-                            if (last_checked_enemy_health != -1.0f)
-                            {
-                                if (last_checked_enemy_health == cur_health)
-                                {
-                                    //hp didnt change since last change, we are probably missing the shots. need to switch position, make close enough fail for 10 seconds
-                                    close_enough_force_fail = true;
-                                    close_enough_force_fail_time_start = std::chrono::steady_clock::now().time_since_epoch().count();
+                                    }
                                 }
                             }
                             else
                             {
-                                last_checked_enemy_health = cur_health;
+                                if (target_ref == player_ref) //have dedicated message for that
+                                    dont_add = true;
+                            }
+
+                            if (!dont_add)
+                            {
+                                send_random_context(message_text);
                             }
                         }
 
 
-                        if (MiscThings::is_immortal(target_actor))
+                        result = true;
+                    }
+                    else
+                    {
+                        active_attacking_time += dtime;
+
+                        auto target_actor = (RE::Actor*)target_ref;
+
+
+                        if (last_checked_enemy_health == -1.0f)
                         {
+                            int max_health = target_actor->GetActorValueMax(RE::ActorValue::kHealth);
+                            int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
 
-                            auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
-                            auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10828C);
+                            last_checked_enemy_health = cur_health;
+                        }
 
-                            auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
+                        if (active_attacking_time > 20.0f)
+                        {
+                            active_attacking_time = 0.0f;
 
-                            if (capture_dragon_quest)
+
+                            if (has_bow_equipped(true) || has_crossbow_equipped(true))
                             {
-                                if (capture_dragon_quest->GetCurrentStageID() < 200)
-                                {
-                                    if (odahviing && redirect_marker)
-                                    {
-                                        auto odahviing_actor = (RE::Actor*)odahviing;
+                                int max_health = target_actor->GetActorValueMax(RE::ActorValue::kHealth);
+                                int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
 
-                                        if (target_ref == odahviing)
-                                        {
-                                            if (!MiscThings::is_flying(odahviing))
-                                            {
-                                                target_ref = redirect_marker;
-                                                interaction_after_walk = 3;
-                                                return false;
-                                            }
-                                        }
+                                if (last_checked_enemy_health != -1.0f)
+                                {
+                                    if (last_checked_enemy_health == cur_health)
+                                    {
+                                        //hp didnt change since last change, we are probably missing the shots. need to switch position, make close enough fail for 10 seconds
+                                        close_enough_force_fail = true;
+                                        close_enough_force_fail_time_start = std::chrono::steady_clock::now().time_since_epoch().count();
                                     }
+                                }
+                                else
+                                {
+                                    last_checked_enemy_health = cur_health;
                                 }
                             }
 
 
-
-
-
-                            send_random_context("Attacking doesnt work... They are not dying. You can try to run away or ignore the fight instead.", false);
-                            Observer::reset_threats(); //so it can actually offer choice to run or ignore
-                            reset_walker();
-                            return true;
-                        }
-
-                        std::string message = "You keep attacking...";
-
-                        if (no_weapons_equipped)
-                            message = "You dont have anything that can deal damage in your hands! Equip weapons or offensive spells to deal damage";
-
-                        send_random_context(message, false);
-                    }
-
-
-                    if (MiscThings::is_immortal(target_actor) && target_actor->GetActorValue(RE::ActorValue::kHealth) < 2)
-                    {
-                        auto attackers = MiscThings::get_player_attackers(false, target_ref, true);
-
-                        if (std::size(attackers) > 0)
-                        {
-                            //there are other targets nearby. switch target
-                            return true;
-                        }
-                        else
-                        {
-                            if (MiscThings::player_brawling())
+                            if (MiscThings::is_immortal(target_actor))
                             {
+
+                                auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);
+                                auto redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10828C);
+
+                                auto capture_dragon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ301");
+
+                                if (capture_dragon_quest)
+                                {
+                                    if (capture_dragon_quest->GetCurrentStageID() < 200)
+                                    {
+                                        if (odahviing && redirect_marker)
+                                        {
+                                            auto odahviing_actor = (RE::Actor*)odahviing;
+
+                                            if (target_ref == odahviing)
+                                            {
+                                                if (!MiscThings::is_flying(odahviing))
+                                                {
+                                                    target_ref = redirect_marker;
+                                                    interaction_after_walk = 3;
+                                                    return false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+
+
+
+
+                                send_random_context("Attacking doesnt work... They are not dying. You can try to run away or ignore the fight instead.", false);
+                                Observer::reset_threats(); //so it can actually offer choice to run or ignore
+                                reset_walker();
                                 return true;
                             }
+
+                            std::string message = "You keep attacking...";
+
+                            if (no_weapons_equipped)
+                                message = "You dont have anything that can deal damage in your hands! Equip weapons or offensive spells to deal damage";
+
+                            send_random_context(message, false);
                         }
+
+
+                        if (MiscThings::is_immortal(target_actor) && target_actor->GetActorValue(RE::ActorValue::kHealth) < 2)
+                        {
+                            auto attackers = MiscThings::get_player_attackers(false, target_ref, true);
+
+                            if (std::size(attackers) > 0)
+                            {
+                                //there are other targets nearby. switch target
+                                return true;
+                            }
+                            else
+                            {
+                                if (MiscThings::player_brawling())
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+
                     }
 
-                }
-                    
-            }
-            else
-            {
-                if (no_weapons_equipped)
-                {
-                    result = true;
                 }
                 else
                 {
-                    if (attacking_inanimate_object_time > 3.0f)
+                    if (no_weapons_equipped)
                     {
-                        if (MiscThings::get_destructible_state(target_ref) != 0 && MiscThings::get_destructible_state(target_ref) != -1)
-                        {
-                            right_attack_cancel();
-                            left_attack_cancel();
-
-                            attacking_inanimate_object_time = 0.0f;
-
-                            result = true;
-
-
-                        }
-                        else
-                            attacking_inanimate_object_time += dtime;
-
-                        if ((attacking_inanimate_object_time > 5.0f && MiscThings::get_destructible_state(target_ref) != -1) || attacking_inanimate_object_time > 15.0f)
-                        {
-                            if (MiscThings::is_barricade(target_ref) && attacking_inanimate_object_time > 15.0f)
-                            {
-                                MiscThings::destroy_barricade(target_ref);
-                            }
-
-
-                            right_attack_cancel();
-                            left_attack_cancel();
-
-                            attacking_inanimate_object_time = 0.0f;
-
-                            result = true;
-
-
-                            MiscThings::nettlebane_advice_check(target_ref);
-                        }
-
+                        result = true;
                     }
                     else
                     {
-                        if (actually_attacked)
-                            attacking_inanimate_object_time += dtime;
+                        if (attacking_inanimate_object_time > 3.0f)
+                        {
+                            if (MiscThings::get_destructible_state(target_ref) != 0 && MiscThings::get_destructible_state(target_ref) != -1)
+                            {
+                                right_attack_cancel();
+                                left_attack_cancel();
+
+                                attacking_inanimate_object_time = 0.0f;
+
+                                result = true;
+
+
+                            }
+                            else
+                                attacking_inanimate_object_time += dtime;
+
+                            if ((attacking_inanimate_object_time > 5.0f && MiscThings::get_destructible_state(target_ref) != -1) || attacking_inanimate_object_time > 15.0f)
+                            {
+                                if (MiscThings::is_barricade(target_ref) && attacking_inanimate_object_time > 15.0f)
+                                {
+                                    MiscThings::destroy_barricade(target_ref);
+                                }
+
+
+                                right_attack_cancel();
+                                left_attack_cancel();
+
+                                attacking_inanimate_object_time = 0.0f;
+
+                                result = true;
+
+
+                                MiscThings::nettlebane_advice_check(target_ref);
+                            }
+
+                        }
+                        else
+                        {
+                            if (actually_attacked)
+                                attacking_inanimate_object_time += dtime;
+                        }
                     }
+
                 }
-                
             }
+
+                
         }
         
 
@@ -13012,7 +13143,27 @@ namespace WalkerProcessor {
         }
     }
 
+    std::pair<bool, std::string> cast_spell_at_target(RE::TESObjectREFR* target, RE::SpellItem* spell)
+    {
+        std::pair<bool, std::string> result{};
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        bool have_this_spell = MiscThings::player_has_spell(spell);
+
+        if (have_this_spell)
+        {
+            spell_mode = true;
+            spell_to_use = spell;
+            return walk_to_object_by_refr(target, 3);
+        }
+        else
+        {
+            result.first = false;
+            result.second = "You dont have this spell ";
+            return result;
+        }
+    }
     
 
     void walk_whiterun_prison_grate()
@@ -15422,7 +15573,7 @@ namespace WalkerProcessor {
 
                 if (attack_paused)
                 {
-                    if (start_attacking || (shout_mode && target_ref && target_ref->IsActor()))
+                    if (start_attacking || (spell_mode && target_ref && target_ref->IsActor()))
                     {
                         bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
                         lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);

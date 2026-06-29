@@ -148,6 +148,8 @@ neurosdk_action ActionsList[] = {
                                     Capabilities::GetGold::Action,
                                     Capabilities::Spin::Action,
                                     Capabilities::Jump::Action,
+                                    Capabilities::VampirelordSwitchDown::Action,
+                                    Capabilities::VampirelordSwitchUp::Action,
 
                                     Capabilities::SelectForceChoice::Action,
                                     Capabilities::SelectForceChoiceMultiple::Action,
@@ -201,7 +203,8 @@ neurosdk_action ActionsListNoForces[] = {
                                     Capabilities::GetGold::Action,
                                     Capabilities::Spin::Action,
                                     Capabilities::Jump::Action,
-
+                                    Capabilities::VampirelordSwitchDown::Action,
+                                    Capabilities::VampirelordSwitchUp::Action,
 
                                     Capabilities::GetObjectsAround::Action, //idk about this one
                                     Capabilities::GoToLocation::Action
@@ -229,6 +232,9 @@ neurosdk_action ActionsListNoForces2[] = { //these are for moments when we cant 
                                     Capabilities::EquipSpell::Action,
                                     Capabilities::Spin::Action,
                                     Capabilities::Jump::Action,
+                                    Capabilities::VampirelordSwitchDown::Action,
+                                    Capabilities::VampirelordSwitchUp::Action,
+
 
                                    // Capabilities::UnlockShoutLevel::Action, //TODO: probably calculate ourselves and force just like levelup
 
@@ -696,38 +702,62 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         if (can_fight)
                         {
                             actions_to_register[action_pos] = Capabilities::AttackObject::Action; action_pos++;
-                            actions_to_register[action_pos] = Capabilities::PickpocketObject::Action; action_pos++;
                             actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
                             actions_to_register[action_pos] = Capabilities::CastSpell::Action; action_pos++;
                             actions_to_register[action_pos] = Capabilities::EquipSpell::Action; action_pos++;
 
-                            if (WalkerProcessor::is_sneak_on())
+
+                            if (!MiscThings::is_vampirelord() && !MiscThings::is_werewolf())
                             {
-                                actions_to_register[action_pos] = Capabilities::StopSneak::Action; action_pos++;
-                            }
-                            else
-                            {
-                                if (MiscThings::sneak_is_allowed())
+                                actions_to_register[action_pos] = Capabilities::PickpocketObject::Action; action_pos++;
+
+                                if (WalkerProcessor::is_sneak_on())
                                 {
-                                    actions_to_register[action_pos] = Capabilities::StartSneak::Action; action_pos++;
+                                    actions_to_register[action_pos] = Capabilities::StopSneak::Action; action_pos++;
                                 }
-                                
+                                else
+                                {
+                                    if (MiscThings::sneak_is_allowed())
+                                    {
+                                        actions_to_register[action_pos] = Capabilities::StartSneak::Action; action_pos++;
+                                    }
+
+                                }
                             }
-                            
+
+                            if (MiscThings::is_vampirelord())
+                            {
+                                if (player->IsSneaking())
+                                {
+                                    actions_to_register[action_pos] = Capabilities::VampirelordSwitchUp::Action; action_pos++;
+                                }
+                                else
+                                {
+                                    actions_to_register[action_pos] = Capabilities::VampirelordSwitchDown::Action; action_pos++;
+                                }
+                            }
+
+
                         }
 
                         actions_to_register[action_pos] = Capabilities::Spin::Action; action_pos++;
                         actions_to_register[action_pos] = Capabilities::Jump::Action; action_pos++;
 
-                        if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
+                        if (!MiscThings::is_vampirelord() && !MiscThings::is_werewolf())
                         {
-                            actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+                            if (MiscThings::player_has_shouts_to_unlock()) //must be watched to refresh
+                            {
+                                actions_to_register[action_pos] = Capabilities::UnlockShoutLevel::Action; action_pos++;
+                            }
+
+                            actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
+                            actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
+                            actions_to_register[action_pos] = Capabilities::DropInventoryItem::Action; action_pos++;
+                            actions_to_register[action_pos] = Capabilities::GetGold::Action; action_pos++;
                         }
 
-                        actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::DropInventoryItem::Action; action_pos++;
-                        actions_to_register[action_pos] = Capabilities::GetGold::Action; action_pos++;
+
+
 
                         actions_to_register[action_pos] = Capabilities::GetIngameTime::Action; action_pos++;
 
@@ -1530,6 +1560,15 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                                 command_result = WalkerProcessor::surrender_to_guards();
                             }
 
+                            if (name == Capabilities::VampirelordSwitchUp::Name)
+                            {
+                                command_result = WalkerProcessor::switch_vampirelord_mode_up();
+                            }
+
+                            if (name == Capabilities::VampirelordSwitchDown::Name)
+                            {
+                                command_result = WalkerProcessor::switch_vampirelord_mode_down();
+                            }
 
                             if (name == Capabilities::Spin::Name)
                             {
@@ -1642,12 +1681,40 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
                             if (name == Capabilities::CastSpell::Name)
                             {
+                                Impl::JSON::NeuroChoiceJson_spell_and_target json_spell_target{};
+                                Impl::JSON::NeuroChoiceJson12_spell json12_spell{};
+                                Impl::JSON::NeuroChoiceJson2 json2{};
                                 Impl::JSON::NeuroChoiceJson json{};
+                                Impl::JSON::NeuroChoiceJson12 json12{};
 
-                                if (glz::read_json(json, messageQueue[i].value.action.data))
-                                    failed_to_parse_json = true;
+                                json_spell_target.id_target = -1;
+                                json2.id2 = -1;
+
+                                if (glz::read_json(json_spell_target, messageQueue[i].value.action.data))
+                                {
+                                    if (glz::read_json(json12_spell, messageQueue[i].value.action.data))
+                                    {
+                                        if (glz::read_json(json2, messageQueue[i].value.action.data))
+                                        {
+                                            if (glz::read_json(json, messageQueue[i].value.action.data))
+                                            {
+                                                if (glz::read_json(json12, messageQueue[i].value.action.data))
+                                                    failed_to_parse_json = true;
+                                                else
+                                                    command_result = MiscThings::cast_spell_by_index(json12.id1, false, true, -1);
+                                            }
+                                            else
+                                                command_result = MiscThings::cast_spell_by_index(json.id, false, true, -1);
+                                        }
+                                        else
+                                            command_result = MiscThings::cast_spell_by_index(json2.id1, false, true, json2.id2);
+                                    }
+                                    else
+                                        command_result = MiscThings::cast_spell_by_index(json12_spell.id_spell, false, true, -1);
+                                }
                                 else
-                                    command_result = MiscThings::cast_spell_by_index(json.id, false, true);
+                                    command_result = MiscThings::cast_spell_by_index(json_spell_target.id_spell, false, true, json_spell_target.id_target);
+
                             }
 
 

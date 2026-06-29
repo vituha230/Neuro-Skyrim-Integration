@@ -2249,6 +2249,8 @@ namespace PerksProcessor {
 
 	void processor(float dtime)
 	{
+		return;
+
 		int current_perk_id_123 = get_current_perk_id();
 
 

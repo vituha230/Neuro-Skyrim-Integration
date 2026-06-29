@@ -16,6 +16,7 @@ namespace Observer {
 
 	int old_dlc1vq01_stage = 0;
 
+	bool old_vampire_melee = false;
 
 
 	bool old_blackbook_warp = false;
@@ -910,6 +911,10 @@ namespace Observer {
 
 	bool can_surrender_to_guards()
 	{
+		if (MiscThings::is_werewolf() || MiscThings::is_vampirelord())
+			return false;
+
+
 		auto player = RE::PlayerCharacter::GetSingleton();
 		auto escaping_jail = player->playerFlags.escaping;
 		return closest_guard && player_can_be_arrested && !escaping_jail;
@@ -954,6 +959,7 @@ namespace Observer {
 
 	void reset_observer()
 	{
+		old_vampire_melee = false;
 
 		old_blackbook_warp = false;
 
@@ -2796,7 +2802,17 @@ namespace Observer {
 											std::string actor_name = "";
 
 											if (a_ref == player_actor)
+											{
 												actor_name = "You";
+
+												if (is_something_registered() && get_active_force() == -1 && !MiscThings::have_force_only_menu_open() && !WalkerProcessor::is_walking_important_path() && !MiscThings::is_intro() && !MiscThings::is_intro2())
+												{
+													//reregister actions
+													unregister_all_actions();
+													register_allowed_actions();
+												}
+
+											}
 											else
 												MiscThings::insert_object_into_list_and_get_info(a_ref, false, false, true);
 
@@ -4578,6 +4594,11 @@ namespace Observer {
 					if (dlc1vq01_quest)
 						old_dlc1vq01_stage = dlc1vq01_quest->currentStage;
 
+
+					
+					old_vampire_melee = MiscThings::vampirelord_melee_mode();
+
+
 				}
 				else
 				{
@@ -4796,6 +4817,38 @@ namespace Observer {
 					else
 						greybeards_called_timer += 0.5f;
 				}
+
+
+
+				//vampire modes
+
+				if (MiscThings::is_vampirelord())
+				{
+					bool vampire_melee = MiscThings::vampirelord_melee_mode();
+
+					if (vampire_melee != old_vampire_melee)
+					{
+						if (is_something_registered() && get_active_force() == -1 && !MiscThings::have_force_only_menu_open() && !WalkerProcessor::is_walking_important_path() && !MiscThings::is_intro() && !MiscThings::is_intro2())
+						{
+							//reregister actions
+
+							if (vampire_melee)
+							{
+								unregister_vampire_down();
+								register_vampire_up();
+							}
+							else
+							{
+								register_vampire_down();
+								unregister_vampire_up();
+							}
+						}
+					}
+
+
+					old_vampire_melee = vampire_melee;
+				}
+				
 
 
 
