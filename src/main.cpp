@@ -38,7 +38,7 @@
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
 //TODO test all cast_spell variations
 //TODO strange dragon aim sometimes when using magic
-
+//TODO adjust poke frequency (decrease frequency of normal pokes and do something about combat overpoking)
 
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
 //TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)

@@ -18345,7 +18345,7 @@ namespace MiscThings {
             {
                 for (auto effect : *effect_list)
                 {
-                    if (effect && effect->effect && effect->effect->baseEffect && effect->effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kSummonCreature)
+                    if (effect && effect->effect && effect->effect->baseEffect && (effect->effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kSummonCreature || effect->effect->baseEffect->GetArchetype() == RE::EffectArchetypes::ArchetypeID::kReanimate))
                     {
                         return true;
                     }
