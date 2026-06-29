@@ -92,7 +92,7 @@ namespace Observer {
 					auto target_ref = target.get();
 					auto agressor_ref = agressor.get();
 
-					if (target_ref == player_ref)
+					if (target_ref == player_ref && agressor_ref != player_ref)
 					{
 						//player_hit_info.insert_or_assign({ agressor_ref, {} })
 

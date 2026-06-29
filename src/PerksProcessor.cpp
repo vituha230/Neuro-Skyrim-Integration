@@ -20,7 +20,7 @@ namespace PerksProcessor {
 
 	int amount_trees()
 	{
-		if (MiscThings::is_werewolf())
+		if (MiscThings::is_werewolf() || MiscThings::is_vampirelord())
 			return 1;
 		else
 			return 18; //normal
@@ -124,6 +124,11 @@ namespace PerksProcessor {
 		{7, {6, 1, -1, 8}}, //Totem of Ice Brothers
 		{8, {-1, 6, -1, -1}}} //Totem of the Moon
 		}
+	};
+
+	std::vector<tree_path_node> navigation_map_vampirelord =
+	{
+		//Vampire Lord
 	};
 
 	std::vector<tree_path_node> navigation_map_normal =
@@ -352,7 +357,10 @@ namespace PerksProcessor {
 		if (MiscThings::is_werewolf())
 			return &navigation_map_werewolf;
 		else
-			return &navigation_map_normal;
+			if (MiscThings::is_vampirelord())
+				return &navigation_map_vampirelord;
+			else
+				return &navigation_map_normal;
 	}
 
 
@@ -538,7 +546,7 @@ namespace PerksProcessor {
 		}
 
 
-		if (!MiscThings::is_werewolf())
+		if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
 		{
 			if (tree_id == -1)
 			{
@@ -1122,22 +1130,67 @@ namespace PerksProcessor {
 				}
 				
 			}
-
-			
 		}
 	}
+
+
+	void fill_all_perk_list_vampirelord()
+	{
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::StatsMenu>();
+
+		if (menu)
+		{
+			int i = 0;
+
+			perk_all_nodes_list.push_back({});
+
+			if (menu)
+			{
+				auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kVampirePerks);
+
+				std::vector<RE::BGSSkillPerkTreeNode*> perk_nodes{};
+
+				if (tree)
+				{
+					for (auto perk_root : tree->perkTree->children)
+					{
+						visit_perk_tree(&perk_nodes, perk_root);
+					}
+
+					for (auto perk_node : perk_nodes)
+					{
+						if (perk_node)
+						{
+							perk_all_nodes_list[i].insert({ perk_node->index, perk_node });
+						}
+					}
+
+					perk_all_nodes_list_valid = true;
+				}
+
+			}
+		}
+	}
+
+
+
+
 
 	void fill_all_perk_list()
 	{
 		if (MiscThings::is_werewolf())
 			fill_all_perk_list_werewolf();
 		else
-			fill_all_perk_list_normal();
+			if (MiscThings::is_vampirelord())
+				fill_all_perk_list_vampirelord();
+			else
+				fill_all_perk_list_normal();
 	}
 
 
 
-
+	
 
 	void fill_perk_list_werewolf()
 	{
@@ -1150,6 +1203,37 @@ namespace PerksProcessor {
 		if (menu)
 		{
 			auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kWerewolfPerks);
+
+			std::vector<RE::BGSSkillPerkTreeNode*> perk_nodes{};
+
+			for (auto perk_root : tree->perkTree->children)
+			{
+				visit_perk_tree(&perk_nodes, perk_root);
+			}
+
+			for (auto perk_node : perk_nodes)
+			{
+				if (perk_node)
+				{
+					perk_nodes_list.insert({ perk_node->index, perk_node });
+				}
+			}
+
+			perk_nodes_list_valid = true;
+		}
+	}
+
+	void fill_perk_list_vampirelord()
+	{
+		//kVampirePerks
+
+		std::vector<MenuOption> result{};
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::StatsMenu>();
+
+		if (menu)
+		{
+			auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kVampirePerks);
 
 			std::vector<RE::BGSSkillPerkTreeNode*> perk_nodes{};
 
@@ -1207,7 +1291,10 @@ namespace PerksProcessor {
 		if (MiscThings::is_werewolf())
 			fill_perk_list_werewolf();
 		else
-			fill_perk_list_normal(tree_id);
+			if (MiscThings::is_vampirelord())
+				fill_all_perk_list_vampirelord();
+			else
+				fill_perk_list_normal(tree_id);
 	}
 
 
@@ -1234,7 +1321,7 @@ namespace PerksProcessor {
 			}
 		}
 
-		if (!MiscThings::is_werewolf())
+		if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
 		{
 			result.push_back({ -1, "[QUIT PERK MENU]" });
 			result.push_back({ -2, "[GO BACK TO SKILL TREE SELECTION]" });
@@ -1343,7 +1430,7 @@ namespace PerksProcessor {
 		if (std::size(result) < 1)
 			banned_skill_trees.push_back(get_selected_tree());
 
-		if (!MiscThings::is_werewolf())
+		if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
 		{
 			result.push_back({ -1, "[QUIT PERK MENU]" });
 			result.push_back({ -2, "[GO BACK TO SKILL TREE SELECTION]" });
@@ -1403,7 +1490,7 @@ namespace PerksProcessor {
 
 			}
 
-		if (!MiscThings::is_werewolf())
+		if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
 		{
 			result.push_back({ -1, "[QUIT SKILL MENU]" });
 		}
@@ -1419,6 +1506,18 @@ namespace PerksProcessor {
 		auto menu = ui->GetMenu<RE::StatsMenu>();
 
 		auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kWerewolfPerks);
+		if (tree)
+			return tree->GetFullName();
+
+		return "";
+	}
+
+	std::string get_tree_name_vampirelord()
+	{
+		RE::UI* ui = RE::UI::GetSingleton();
+		auto menu = ui->GetMenu<RE::StatsMenu>();
+
+		auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kVampirePerks);
 		if (tree)
 			return tree->GetFullName();
 
@@ -1446,7 +1545,10 @@ namespace PerksProcessor {
 		if (MiscThings::is_werewolf())
 			get_tree_name_werewolf();
 		else
-			get_tree_name_normal(tree_id);
+			if (MiscThings::is_vampirelord())
+				get_tree_name_vampirelord();
+			else
+				get_tree_name_normal(tree_id);
 
 		return "";
 	}
@@ -1498,7 +1600,7 @@ namespace PerksProcessor {
 		}
 
 
-		if (!MiscThings::is_werewolf())
+		if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
 		{
 			if (perk_id == -1)
 			{
@@ -1510,7 +1612,7 @@ namespace PerksProcessor {
 		}
 
 
-		if (!MiscThings::is_werewolf())
+		if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
 		{
 			if (perk_id == -2) //back to skill tree selection
 			{
@@ -1683,6 +1785,33 @@ namespace PerksProcessor {
 		tree_was_set_up = true;
 	}
 
+	void setup_tree_for_scan_vampirelord()
+	{
+		for (int i = 0; i < amount_trees(); i++)
+		{
+			navigation_map()->push_back({});
+
+			auto test_path_tree = &navigation_map()->at(i);
+
+			test_path_tree->id = i;
+
+			RE::UI* ui = RE::UI::GetSingleton();
+			auto menu = ui->GetMenu<RE::StatsMenu>();
+
+			auto tree = RE::ActorValueList::GetSingleton()->GetActorValueInfo(RE::ActorValue::kVampirePerks);
+
+			for (auto perk_node : tree->perkTree->children)
+			{
+				visit_perk_tree_scan_setup(i, perk_node);
+				//std::vector<int> empty_dirs = { -999, -999, -999, -999 };
+				//test_path_tree.perk_nodes.insert({ perk_node->index , empty_dirs });
+
+			}
+		}
+
+		tree_was_set_up = true;
+	}
+
 
 
 	void setup_tree_for_scan_normal()
@@ -1718,7 +1847,10 @@ namespace PerksProcessor {
 		if (MiscThings::is_werewolf())
 			setup_tree_for_scan_werewolf();
 		else
-			setup_tree_for_scan_normal();
+			if (MiscThings::is_vampirelord())
+				setup_tree_for_scan_vampirelord();
+			else
+				setup_tree_for_scan_normal();
 	}
 
 
@@ -2236,7 +2368,7 @@ namespace PerksProcessor {
 					}
 
 
-					if (MiscThings::is_werewolf())
+					if (MiscThings::is_werewolf() || MiscThings::is_vampirelord())
 					{
 						if (get_available_perk_points_number() < 1)
 						{

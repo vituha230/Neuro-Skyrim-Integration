@@ -3994,6 +3994,15 @@ namespace MiscThings {
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
 
 
+        //dlc1 boat to castle
+        if (target && target->formID == 0x20028b6)
+        {
+            auto boat_activator = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201a523);
+
+            if (boat_activator)
+                return boat_activator;
+        }
+
 
         //dlc1 (dawnguard) dimhollow cave
 
@@ -4035,6 +4044,35 @@ namespace MiscThings {
         }
 
 
+        //dlc1 (dawnguard) dimhollow cave 2
+
+        if (target && target->formID == 0x2009fc9)
+        {
+            auto button = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2006892);
+            auto coffin = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200f7f4);
+            if (button && coffin)
+                if (coffin->IsDisabled())
+                    return button;
+                else
+                    return coffin;
+        }
+
+        if (target && (target->formID == 0x2002f73 || target->formID == 0x2002997))
+        {
+            auto gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2009742);
+
+            if (gate1 && two_state_activator_state(gate1) == 1)
+            {
+                auto redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x707fd0e);
+                if (redirect1) return redirect1;
+            }
+            else
+                if (target->formID == 0x2002997)
+                {
+                    auto actual_exit = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2002f73);
+                    if (actual_exit) return actual_exit;
+                }
+        }
 
 
 
@@ -6634,6 +6672,9 @@ namespace MiscThings {
         if (!object_p)
             object_p = General::Script::GetObject(trigger_zone_ref, "DLC2WordWallTriggerScript");
 
+        if (!object_p)
+            object_p = General::Script::GetObject(trigger_zone_ref, "DLC1WordWallTriggerScript");
+
 
         if (!object_p)
             return nullptr;
@@ -7242,7 +7283,20 @@ namespace MiscThings {
 
 
 
+    bool is_vampirelord()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
 
+        if (player)
+        {
+            auto race = player->GetRace();
+
+            if (race && race->formID == 0x200283a)
+                return true;
+        }
+
+        return false;
+    }
 
 
     bool is_werewolf()
@@ -7649,6 +7703,23 @@ namespace MiscThings {
             {
                 auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2000f86); //miraak temple 2 handle for stone door
                 
+                if (handle)
+                {
+                    if (!MiscThings::is_object_in_the_list(handle))
+                    {
+                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                        if (temp_result != "")
+                            send_random_context("You see: " + temp_result, false);
+                    }
+                }
+            }
+
+            //dimhollow cave 2 first gate to exit lever
+            if (object->formID == 0x2009742)
+            {
+                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201475a); //miraak temple 2 handle for stone door
+
                 if (handle)
                 {
                     if (!MiscThings::is_object_in_the_list(handle))
@@ -9188,6 +9259,19 @@ namespace MiscThings {
         }
 
 
+        object_p = General::Script::GetObject(pillar, "DLC1VQ01PuzzleBrazierScript");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "::solved_var";
+
+            solved = General::Script::GetVariable<bool>(object_p, prop_name);
+
+            if (solved)
+                result = "[Is correct position]";
+            else
+                result = "[Is wrong position]";
+        }
         
 
 
@@ -9279,6 +9363,17 @@ namespace MiscThings {
                         if (code == 3)
                             result = " [position Hawk]";
                     }
+
+                    if (project_name.find("CasCoffinPuzzleBrazier01") != std::string::npos)
+                    {
+                        if (code == 1)
+                            result = " [position Outer]";
+                        if (code == 2)
+                            result = " [position Middle]";
+                        if (code == 3)
+                            result = " [position Inner]";
+                    }
+
 
                     if (result != "")
                         result += " " + get_pillar_solved_text(object);
@@ -9374,6 +9469,33 @@ namespace MiscThings {
                                 }
                             }
                         }
+
+
+                        if (project_name.find("CasCoffinPuzzleBrazier01") != std::string::npos)
+                        {
+                            auto object_p = General::Script::GetObject(pillar, "DLC1VQ01PuzzleBrazierScript");
+
+                            if (object_p)
+                            {
+                                std::string state = "";
+
+                                state = object_p->currentState;
+
+                                if (state == "inner")
+                                    return 3;
+
+                                if (state == "Mid")
+                                    return 2;
+
+                                if (state == "outer")
+                                    return 1;
+
+                                if (state == "Done")
+                                    return 999;
+
+                            }
+                        }
+
 
 
                         /*
@@ -9790,8 +9912,24 @@ namespace MiscThings {
             }
             else
             {
-                if (current_xp > 0 && xp_needed > 0)
-                    result = current_xp >= xp_needed;
+                if (MiscThings::is_vampirelord())
+                {
+                    auto object_manager = RE::BGSDefaultObjectManager::GetSingleton();
+
+                    if (object_manager)
+                    {
+                        auto vampire_perks = (RE::TESGlobal*)object_manager->GetObject(RE::DEFAULT_OBJECT::kVampireAvailablePerks);
+
+                        if (vampire_perks && vampire_perks->formType == RE::FormType::Global)
+                        {
+                            if (vampire_perks->value > 0.0f)
+                                result = true; //ok but what if we cant spend perk points because all perks are taken... i guess its a todo. ban quitting menu until perk point is spent for now
+                        }
+                    }
+                }
+                else
+                    if (current_xp > 0 && xp_needed > 0)
+                        result = current_xp >= xp_needed;
             }
         }
 
@@ -10213,6 +10351,18 @@ namespace MiscThings {
                 }
 
 
+                
+                //if (object->formID == 0x2003e39) //serana tomb
+                if (object->formID == 0x200f7f4) //serana tomb activator
+                {
+                    RE::NiPoint3 object_angles = { 0.0f, 0.0f, 0.0f };
+                    RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+
+                    return rotated_shift_vector;
+                }
+
+
                 if (object->IsActor() && is_dragon(object) && !is_enemy_to_actor(object))
                 {
                     auto target_actor = (RE::Actor*)object;
@@ -10368,6 +10518,29 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = activator->GetModel();
+
+
+
+                        if (model.find("CasCoffinPuzzleBrazier01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            int position = get_pillar_face_name(object);
+
+                            float y_shift = -950.0f;
+
+                            if (position == 3)
+                                y_shift = -360.0f;
+
+                            if (position == 2)
+                                y_shift = -655.0f;
+
+                            if (position == 1)
+                                y_shift = -950.0f;
+
+
+                            RE::NiPoint3 base_shift_vector = { 0.0f, y_shift, 65.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (model.find("ApoScryeTrigger") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
@@ -13209,10 +13382,18 @@ namespace MiscThings {
 
                     std::string leads_to = get_door_teleport(object);
 
-                    if (leads_to != "")
-                        result = "[Door to " + leads_to + "]";
+                    if (object->formID == 0x20028b6 || object->formID == 0x2002887) //boat to dlc1 castle
+                    {
+                        result = "[Boat]";
+                    }
                     else
-                        result = "[Door]";
+                    {
+                        if (leads_to != "")
+                            result = "[Door to " + leads_to + "]";
+                        else
+                            result = "[Door]";
+                    }
+
 
                     bool is_locked = MiscThings::is_door_locked(object, true);
                     bool is_closed = is_door_closed(object);
@@ -13560,7 +13741,7 @@ namespace MiscThings {
                         std::string name_furniture = object->GetDisplayFullName();
                         if (name_furniture != "Bed")
                         {
-                            if (object->formID != 0x2006892)
+                            if (object->formID == 0x2006892)
                                 result = "[Interactive]";
                             else
                                 result = "[Furniture]";
@@ -15833,6 +16014,13 @@ namespace MiscThings {
             return result;
         }
 
+        if (MiscThings::is_vampirelord())
+        {
+            result.first = false;
+            result.second = "Cannot access inventory in vampire lord form. ";
+            return result;
+        }
+
 
         if (!inventory_valid)
         {
@@ -17097,6 +17285,35 @@ namespace MiscThings {
     }
 
 
+    bool is_vampirelord_banned_spell(RE::SpellItem* a_spell)
+    {
+        if (MiscThings::is_vampirelord())
+        {
+            //in werewolf form only several chosen spells are allowed
+
+            auto werewolf_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("PlayerWerewolfQuest");
+
+            if (werewolf_quest)
+            {
+                auto object_p = General::Script::GetObject(werewolf_quest, "PlayerWerewolfChangeScript");
+                if (object_p)
+                {
+                    RE::BSFixedString prop_name = "::CurrentHowl_var";
+                    auto current_howl = General::Script::GetVariable<RE::TESShout*>(object_p, prop_name);
+
+                    if (a_spell != (RE::SpellItem*)current_howl)
+                        return true;
+                }
+            }
+
+        }
+
+        return false;
+
+    }
+
+
+
 
     std::pair<bool, std::string> get_available_spells()
     {
@@ -17125,7 +17342,7 @@ namespace MiscThings {
 
             RE::BSContainer::ForEachResult Visit(RE::SpellItem* a_spell) override {
                 //if (active_spells && passive_effects && shouts && player)// && player->HasSpell(a_spell))
-                if (active_spells && passive_effects && player && !is_werewolf_banned_spell(a_spell))
+                if (active_spells && passive_effects && player && !is_werewolf_banned_spell(a_spell) && !is_vampirelord_banned_spell(a_spell))
                 {
                     std::string name = a_spell->GetFullName();
                     std::string description = "";
@@ -17261,7 +17478,7 @@ namespace MiscThings {
 
         for (auto* shout_p : std::span(shouts_pp, spellList->numShouts))
         {
-            if (shout_p && !is_werewolf_banned_spell((RE::SpellItem*)shout_p))
+            if (shout_p && !is_werewolf_banned_spell((RE::SpellItem*)shout_p) && !is_vampirelord_banned_spell((RE::SpellItem*)shout_p))
             {
                 int known_words = 0;
                 int unlocked_words = 0;

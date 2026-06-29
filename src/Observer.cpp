@@ -13,6 +13,11 @@ namespace Observer {
 
 	RE::BGSLocation* old_player_loc = nullptr;
 
+
+	int old_dlc1vq01_stage = 0;
+
+
+
 	bool old_blackbook_warp = false;
 
 	bool old_location_cleared = false;
@@ -1727,7 +1732,7 @@ namespace Observer {
 
 										if (a_ref->AsReference()->IsActor())
 										{
-											if (!MiscThings::is_object_in_the_list(a_ref) && (a_ref->GetDistance(player_ref) < 150.0f || ((MiscThings::is_carriage_driver(a_ref) && a_ref->GetDistance(player_ref) < 1300.0f) || MiscThings::raycastable(a_ref, scan_distance))))
+											if (!MiscThings::is_object_in_the_list(a_ref) && ((a_ref->GetDistance(player_ref) < 150.0f && a_ref->formID != 0x2002b74) || ((MiscThings::is_carriage_driver(a_ref) && a_ref->GetDistance(player_ref) < 1300.0f) || MiscThings::raycastable(a_ref, scan_distance))))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												if (info != "")
@@ -1749,7 +1754,8 @@ namespace Observer {
 											{
 												auto door = (RE::TESObjectDOOR*)base_obj;
 												std::string model = door->GetModel();
-												if (model.find("LoadMarker") != std::string::npos)
+												//dlc1 boat-to-castle-door
+												if (a_ref->formID == 0x2002887 || a_ref->formID == 0x20028b6 || model.find("LoadMarker") != std::string::npos)
 												{
 													if (distance < 1000.0f)
 													{
@@ -1793,6 +1799,9 @@ namespace Observer {
 												{
 													local_ignore_raycast = true;
 												}
+
+												if (a_ref->formID == 0x200f7f4)
+													local_ignore_raycast = true;
 
 
 												if (name.find("Nirnroot") != std::string::npos || name.find("Ashpile") != std::string::npos || (MiscThings::is_insect(a_ref) && distance < 1000.0f))
@@ -3720,18 +3729,24 @@ namespace Observer {
 
 										if (old_state.pillar_face_code != new_state.pillar_face_code)
 										{
-											if (new_state.pillar_face_code > 0 && new_state.pillar_face_code < 4)
-											{
-												std::string pillar_name = MiscThings::get_stateless_info(a_ref);
-												std::string pillar_face_name = MiscThings::get_pillar_face_name(a_ref, new_state.pillar_face_code);
+											//if (new_state.pillar_face_code > 0 && new_state.pillar_face_code < 21)
+											//{
+											std::string pillar_name = MiscThings::get_stateless_info(a_ref);
+											std::string pillar_face_name = MiscThings::get_pillar_face_name(a_ref, new_state.pillar_face_code);
 
-												std::string solved_text = "";
+											std::string solved_text = "";
 
-												//if (pillar_face_name != "")
-												//	solved_text = MiscThings::get_pillar_solved_text(a_ref);
+											//if (pillar_face_name != "")
+											//	solved_text = MiscThings::get_pillar_solved_text(a_ref);
 
+											if (pillar_name != "" && pillar_face_name != "")
 												result.push_back(pillar_name + " turned to" + pillar_face_name + solved_text);
+											else
+											{
+												if (new_state.pillar_face_code == 999 && a_ref->formID == 0x2003e8f) //one of serana's braziers in her tomb
+													result.push_back("[Purple Magic appears... all Braziers moved to Outer positions, the floor formed a circular staircase, revealing the Stone Monolith beneath it...");
 											}
+											//}
 										}
 
 										if (old_state.trap_firing == 6)
@@ -4557,6 +4572,12 @@ namespace Observer {
 					
 					old_player_loc = player_loc;
 
+
+					auto dlc1vq01_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ01");
+
+					if (dlc1vq01_quest)
+						old_dlc1vq01_stage = dlc1vq01_quest->currentStage;
+
 				}
 				else
 				{
@@ -4632,6 +4653,25 @@ namespace Observer {
 						}
 					}
 				}
+
+
+
+				auto dlc1vq01_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ01");
+
+				if (dlc1vq01_quest)
+				{
+					int dlc1vq01_stage = dlc1vq01_quest->currentStage;
+
+					if (dlc1vq01_stage == 19 && old_dlc1vq01_stage == 18)
+					{
+						send_random_context("You put your hand on the button... a huge spike comes out of it, right through your hand! Some purple magic light appears around...", false);
+					}
+
+					old_dlc1vq01_stage = dlc1vq01_stage;
+				}
+
+
+					
 
 
 
@@ -5206,7 +5246,7 @@ namespace Observer {
 
 					
 
-					if (!tried_to_heal && MiscThings::player_hp_less_than(60.0f) && !MiscThings::is_werewolf())
+					if (!tried_to_heal && MiscThings::player_hp_less_than(60.0f) && !MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
 					{
 						bool right_healing = MiscThings::is_self_healing_spell(true);
 						bool left_healing = MiscThings::is_self_healing_spell(false);
@@ -5238,18 +5278,18 @@ namespace Observer {
 					bool want_health = MiscThings::player_hp_less_than(30) && WalkerProcessor::is_fighting();
 					bool want_mana = (float)mana / (float)max_mana < 0.4f && WalkerProcessor::is_fighting();
 
-					if ((want_health || want_mana) && !MiscThings::is_werewolf())
+					if ((want_health || want_mana) && !MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
 					{
 						auto inventory = MiscThings::get_filtered_inventory();
 
 						for (auto& [item, data] : inventory)
 						{
-							if (want_health && MiscThings::get_restore_value(item, RE::ActorValue::kHealth) > 0)
+							if (want_health && MiscThings::get_restore_value(item, RE::ActorValue::kHealth) > 10)
 							{
 								MiscThings::activate_inventory_object_by_refr(item);
 							}
 
-							if (want_mana && MiscThings::get_restore_value(item, RE::ActorValue::kMagicka) > 0)
+							if (want_mana && MiscThings::get_restore_value(item, RE::ActorValue::kMagicka) > 10)
 							{
 								MiscThings::activate_inventory_object_by_refr(item);
 							}

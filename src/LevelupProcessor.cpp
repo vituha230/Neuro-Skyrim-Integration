@@ -192,7 +192,7 @@ namespace LevelupProcessor {
 				if (MiscThings::player_has_levelup() && !entered_levelup)
 				{
 					//MiscThings::pause actually calls tween menu which is illegal in vanila because pressing tab launches perk menu.. its still good for pre-battle pause but here it causes it to call normal menu. need to press tab
-					if (MiscThings::is_werewolf())
+					if (MiscThings::is_werewolf() || MiscThings::is_vampirelord())
 					{
 						press_tab();
 						set_universal_block(1.5f);

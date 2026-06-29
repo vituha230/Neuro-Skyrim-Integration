@@ -1708,7 +1708,7 @@ namespace WalkerProcessor {
 
                     direction_vector.Unitize();
 
-                    if (MiscThings::is_on_horse() || MiscThings::is_werewolf())
+                    if (MiscThings::is_on_horse() || MiscThings::is_werewolf() || MiscThings::is_vampirelord())
                         direction_vector.z -= 0.2f;
                     else
                         direction_vector.z -= 0.08f;
@@ -1770,7 +1770,7 @@ namespace WalkerProcessor {
 
                         direction_vector.Unitize();
 
-                        if (MiscThings::is_on_horse() || MiscThings::is_werewolf())
+                        if (MiscThings::is_on_horse() || MiscThings::is_werewolf() || MiscThings::is_vampirelord())
                             direction_vector.z -= 0.2f;
                         else
                             direction_vector.z -= 0.08f;
@@ -1815,7 +1815,7 @@ namespace WalkerProcessor {
             auto player_pos = RE::PlayerCharacter::GetSingleton()->GetPosition();
 
 
-            if (MiscThings::is_on_horse() || MiscThings::is_werewolf())
+            if (MiscThings::is_on_horse() || MiscThings::is_werewolf() || MiscThings::is_vampirelord())
                 return false;
 
             if (path_valid && !use_last_point_of_last_path)
@@ -2305,7 +2305,7 @@ namespace WalkerProcessor {
 
 
 
-                if (!player->IsSwimming() && !MiscThings::is_werewolf() && !MiscThings::is_on_horse() && !dont_shift && (always_shift || is_about_to_fall() || target_is_slowwalking))
+                if (!player->IsSwimming() && !MiscThings::is_werewolf() && !MiscThings::is_vampirelord() && !MiscThings::is_on_horse() && !dont_shift && (always_shift || is_about_to_fall() || target_is_slowwalking))
                 {
                     if (player->IsRunning() && !player->IsSneaking() && !was_slowwalking)
                     {
@@ -2317,14 +2317,15 @@ namespace WalkerProcessor {
                 else
                 {
 
-                    if (!MiscThings::is_werewolf() && !MiscThings::is_on_horse() && !always_shift && (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking))
+                    if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord() && !MiscThings::is_on_horse() && !always_shift && (!(player->IsRunning()) && !(player->IsSneaking()) && was_slowwalking))
                     {
                         was_slowwalking = false;
                         unslow_walk();
                     }
                     else
                     {
-                        if (!MiscThings::is_werewolf() && !MiscThings::is_on_horse() && !player->IsRunning() && !was_slowwalking && !turning_around && !always_shift)
+                        //if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord() && !MiscThings::is_on_horse() && !player->IsRunning() && !was_slowwalking && !turning_around && !always_shift)
+                        if (!MiscThings::is_on_horse() && !player->IsRunning() && !was_slowwalking && !turning_around && !always_shift)
                         {
                             //test if we are slowwalking for some reason
                             anti_slowwalk_timer += dtime_maybe_bad;
@@ -2885,7 +2886,17 @@ namespace WalkerProcessor {
 
         if (crosshair_data && crosshair_data->target)
         {
-            return crosshair_data->target.get().get(); //wtf is this
+            auto result_ref = crosshair_data->target.get().get();
+
+            if (result_ref)
+                if (result_ref->formID == 0x201a522) //boat out of castle
+                    result_ref = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2002887);
+                else
+                    if (result_ref->formID == 0x201a523) //boat to castle
+                        result_ref = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20028b6);
+
+
+            return result_ref;
         }
 
         if (target_ref)
@@ -4318,6 +4329,17 @@ namespace WalkerProcessor {
 
     
 
+    //remember that this is bonus (so 0 is no bonus and 1 is x2)
+    float werewolf_coef_pathpoint = 2.0f;
+    float werewolf_coef_attack = 1.8f;
+    float werewolf_coef_normal = 0.0f;
+
+    float vampirelord_coef_pathpoint = 2.0f;
+    float vampirelord_coef_attack = 1.8f;
+    float vampirelord_coef_normal = 0.0f;
+
+
+
 
 
 
@@ -4358,9 +4380,9 @@ namespace WalkerProcessor {
                 auto distance = pos_dif.Length();
 
                 if ((int)std::size(path) < 3)
-                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * 2.0f) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming(); //100
                 else
-                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * 2.0f) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming(); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
@@ -4443,7 +4465,7 @@ namespace WalkerProcessor {
                             result = distance < base_threshold + 70.0f * MiscThings::is_player_swimming(); //100
                         }
                         else
-                            result = distance < ((blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * 2.0f) + 70.0f*MiscThings::is_player_swimming()); //100
+                            result = distance < ((blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming()); //100
                     }
                     else
                         result = true;
@@ -5050,7 +5072,7 @@ namespace WalkerProcessor {
         have_blocking_targeted_time = 0.0f;
 
 
-        if (!MiscThings::is_werewolf() && !MiscThings::is_on_horse() && was_slowwalking)
+        if (!MiscThings::is_werewolf() && !MiscThings::is_vampirelord() && !MiscThings::is_on_horse() && was_slowwalking)
         {
             was_slowwalking = false;
             unslow_walk();
@@ -5303,7 +5325,7 @@ namespace WalkerProcessor {
             //search_next_fight_target = false;
             search_next_target_timer = 0.0f;
 
-            if (!!MiscThings::is_werewolf() && !MiscThings::is_on_horse() && was_slowwalking)
+            if (!!MiscThings::is_werewolf() && !MiscThings::is_vampirelord() && !MiscThings::is_on_horse() && was_slowwalking)
             {
                 was_slowwalking = false;
                 unslow_walk();
@@ -5541,11 +5563,6 @@ namespace WalkerProcessor {
 
         return false;
     }
-
-
-    //remember that this is bonus (so 0 is no bonus and 1 is x2)
-    float werewolf_coef_attack = 1.8f;
-    float werewolf_coef_normal = 0.0f;
 
 
     float successful_raycast_time = 0.0f;
@@ -5883,11 +5900,11 @@ namespace WalkerProcessor {
 
                         if (bound_dif.x > 100.0f || bound_dif.y > 100.0f)
                         {
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_attack)))
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_attack) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_attack)))
                                 return true;
                         }
                         else
-                            if (distance.Length() < 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_attack))
+                            if (distance.Length() < 150.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_attack) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_attack))
                                 return true;
 
                     }
@@ -5983,11 +6000,11 @@ namespace WalkerProcessor {
                                 threshold = 0.0f;
 
                             if (target_ref)// && target_ref->IsActor() && !target_ref->IsDead())
-                                if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal)))
+                                if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_normal)))
                                     return true;
                         }
                         else
-                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal))
+                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_normal))
                                 return true;
                     }
                     else
@@ -6010,13 +6027,13 @@ namespace WalkerProcessor {
                             threshold2 = weird_threshold2;
                         }
 
-                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal)))
+                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_normal)))
                         {
-                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal)))
+                            if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_normal)))
                                 return true;
                         }
                         else
-                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal))
+                            if (distance.Length() < threshold2 * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_normal))
                                 return true;
                     }
                 }
@@ -6694,7 +6711,7 @@ namespace WalkerProcessor {
                 }
 
 
-                if (!attack_friend_confirmed && (interaction == 3 && MiscThings::is_friend(object->second.object) && (MiscThings::is_dragon(object->second.object) || object->second.object->IsHumanoid())))
+                if (!attack_friend_confirmed && (interaction == 3 && MiscThings::is_friend(object->second.object) && (MiscThings::is_dragon(object->second.object) || object->second.object->IsHumanoid()) && !(object->second.object->IsActor() && object->second.object->IsDead())))
                 {
                     trying_to_attack_friend = true;
                     attack_friend_interaction = interaction;
@@ -10514,7 +10531,7 @@ namespace WalkerProcessor {
                                 }
 
 
-                                if (MiscThings::is_werewolf())
+                                if (!MiscThings::has_something_equipped(true) && (MiscThings::is_werewolf() || MiscThings::is_vampirelord()))
                                 {
                                     attacking_weapon = "claws. ";
                                 }
@@ -10704,7 +10721,7 @@ namespace WalkerProcessor {
                                     attack_action = 0;
 
 
-                                if (MiscThings::is_werewolf())
+                                if (!MiscThings::has_something_equipped(true) && (MiscThings::is_werewolf() || MiscThings::is_vampirelord()))
                                 {
                                     chance = 0.44f;
                                     if (choose_next_action < chance)
@@ -10904,7 +10921,7 @@ namespace WalkerProcessor {
                                     }
                                     else
                                     {
-                                        if (MiscThings::is_werewolf())
+                                        if (!MiscThings::has_something_equipped(false) && (MiscThings::is_werewolf() || MiscThings::is_vampirelord()))
                                         {
                                             attacking_weapon = "claws. ";
                                         }
@@ -11074,7 +11091,7 @@ namespace WalkerProcessor {
                                 else
                                     attack_action = 0;
 
-                                if (MiscThings::is_werewolf())
+                                if (!MiscThings::has_something_equipped(false) && (MiscThings::is_werewolf() || MiscThings::is_vampirelord()))
                                 {
                                     chance = 0.44f;
                                     if (choose_next_action < chance)
@@ -11199,7 +11216,7 @@ namespace WalkerProcessor {
                         active_attacking_time = 0.0f;
 
                         
-                        if (has_bow_equipped(true))
+                        if (has_bow_equipped(true) || has_crossbow_equipped(true))
                         {
                             int max_health = target_actor->GetActorValueMax(RE::ActorValue::kHealth);
                             int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
@@ -12055,6 +12072,27 @@ namespace WalkerProcessor {
                     }
                 }
 
+                if (quest_mode)
+                {
+                    if (target_ref && target_ref->formID == 0x2006892) //serana's button
+                    {
+                        auto tomb_activator = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200f7f4);
+                        auto the_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ01");
+
+                        if (the_quest && the_quest->currentStage == 19)
+                        {
+                            if (tomb_activator && tomb_activator->IsDisabled())
+                            {
+                                send_random_context("You walked up to the center of the room... There is this button you pressed, and several Braziers around it... looks like a puzzle.", false);
+                                reset_walker();
+                                return "";
+                            }
+                        }
+                    }
+                }
+
+
+
 
                 auto karthspire_pillars = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xad059);
 
@@ -12597,7 +12635,7 @@ namespace WalkerProcessor {
         if (!can_walk && !can_look)
         {
             result.first = false;
-            result.second = "You cannot spin yet";
+            result.second = "You cannot jump yet";
             return result;
         }
 
@@ -13818,7 +13856,7 @@ namespace WalkerProcessor {
                             auto caster_123 = player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
                             auto paralysis_spell = RE::TESForm::LookupByID(0x5AD5F)->As<RE::SpellItem>();
 
-                            if (caster_123 && paralysis_spell && !MiscThings::is_on_horse() && !MiscThings::is_werewolf())
+                            if (caster_123 && paralysis_spell && !MiscThings::is_on_horse() && !MiscThings::is_werewolf() && !MiscThings::is_vampirelord())
                             {
 
                                 auto old_delivery = paralysis_spell->GetDelivery();
@@ -13918,7 +13956,8 @@ namespace WalkerProcessor {
                                     if (MiscThings::is_werewolf())
                                         advice = "eat corpses to progress werewolf powers";
                                     else
-                                        advice = "loot dead enemies";
+                                        if (!MiscThings::is_vampirelord()) //vampire lord has no interaction with corpses (apart from resurrect.. but its tricky)
+                                            advice = "loot dead enemies";
 
                                 Observer::add_quicksave_timer(40.0f);
                             }
@@ -16487,6 +16526,9 @@ namespace WalkerProcessor {
                                                                                                     dont_autointerract = false;
                                                                                             }
                                                                                         }
+
+                                                                                        if (target_ref && target_ref->formID == 0x2006892) //serana's button
+                                                                                            dont_autointerract = true;
                                                                                         
 
                                                                                         
