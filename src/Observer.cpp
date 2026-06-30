@@ -5257,7 +5257,7 @@ namespace Observer {
 
 					bool send_info = false;
 
-					if (abs(health_dif) > 0.1f*max_health)
+					if (abs(health_dif) > 0.2f*max_health)
 					{
 						last_health_value = health;
 						send_info = true;
@@ -5288,7 +5288,7 @@ namespace Observer {
 						float mana_percent = ((float)mana) / ((float)max_mana) * 100.0f;
 
 						bool silent = true;
-						if (MiscThings::player_hp_less_than(40.0f) || mana_percent < 10.0f)
+						if (MiscThings::player_hp_less_than(35.0f) || mana_percent < 10.0f)
 							silent = false;
 
 						send_random_context(message, silent);

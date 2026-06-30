@@ -37,6 +37,8 @@
 //TODO test all cast_spell variations
 //TODO strange dragon aim sometimes when using magic
 //TODO "ult at target" function, necessary for ults that launch projectile (like vampire's reanimate powerful corpse ult)
+//TODO runaway action in combat? 
+
 
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
 //TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
