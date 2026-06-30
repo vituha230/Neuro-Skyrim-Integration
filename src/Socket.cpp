@@ -1111,32 +1111,41 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
     if (make_delayed_poke)
     {
-        if (delayed_poke_time > 1.0f)
+        if (time_walker_inactive > 0.0f) //ignore delayed pokes if walker is active (attempt to reduce adhd)
         {
-            if (!have_any_menus_open && something_is_registered)
+            if (delayed_poke_time > 1.0f)
             {
-                send_random_context(get_random_poke_phrase(), false);// . " + advice + "]", false);
-                delayed_poke_time = 0.0f;
-                make_delayed_poke = false;
-                ignore_menus_for_poke = false;
-
-                WalkerProcessor::reset_inactive_timer();
-                time_no_commands = 0.0f;
-                time_no_menus = 0.0f;
-            }
-            else
-            {
-                if (!ignore_menus_for_poke) //wait for something to get registered
+                if (!have_any_menus_open && something_is_registered)
                 {
+                    send_random_context(get_random_poke_phrase(), false);// . " + advice + "]", false);
                     delayed_poke_time = 0.0f;
                     make_delayed_poke = false;
+                    ignore_menus_for_poke = false;
+
+                    WalkerProcessor::reset_inactive_timer();
+                    time_no_commands = 0.0f;
+                    time_no_menus = 0.0f;
+                }
+                else
+                {
+                    if (!ignore_menus_for_poke) //wait for something to get registered
+                    {
+                        delayed_poke_time = 0.0f;
+                        make_delayed_poke = false;
+                    }
+
                 }
 
             }
-
+            else
+                delayed_poke_time += dtime;
         }
         else
-            delayed_poke_time += dtime;
+        {
+            delayed_poke_time = 0.0f;
+            make_delayed_poke = false;
+        }
+        
     }
 
     if (time_no_commands > time_threshold && (RaceProcessor::race_menu_wants_to_poke() || (time_walker_inactive > time_threshold && time_no_menus > time_threshold)))

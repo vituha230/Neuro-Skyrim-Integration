@@ -223,6 +223,8 @@ namespace MiscThings {
                         model.find("PuzzleDoorKeyHole") != std::string::npos)
                         if (two_state == 1)
                             return true;
+                        else
+                            return false;
                 }
 
                 if (two_state == 0)
@@ -1217,6 +1219,14 @@ namespace MiscThings {
         float result = 0.0f;
 
         auto meadery_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3cf65);
+
+
+        //redwater fountain
+        if (target && target->formID == 0x20149a5)
+        {
+            return 260.0f;
+        }
+
 
         if (target == meadery_door)
             return 300.0f;
@@ -4122,6 +4132,48 @@ namespace MiscThings {
 
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
 
+
+        //dlc1 redwaterden2
+        if (target && target->formID == 0x20149a5)
+        {
+            auto gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200996e);
+
+            if (gate2 && MiscThings::two_state_activator_state(gate2) == 1)
+            {
+                auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7089f11);
+                if (redirect) return redirect;
+            }
+            else
+            {
+                //auto redirect_activator = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x708f012);
+
+                ;// if (redirect_activator) return redirect_activator;
+            }
+        }
+
+
+
+        //dlc1 redwaterden1
+        if (target && target->formID == 0x20060a1)
+        {
+            auto bridge = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2005f98);
+
+            if (bridge && MiscThings::two_state_activator_state(bridge) != 1)
+            {
+                auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7089f0f);
+                if (redirect) return redirect;
+            }
+            else
+            {
+                auto stone_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200a5b5);
+
+                if (stone_door && MiscThings::two_state_activator_state(stone_door) == 1)
+                {
+                    auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7089f10);
+                    if (redirect) return redirect;
+                }
+            }
+        }
 
         //dlc1 boat to castle
         if (target && target->formID == 0x20028b6)
@@ -7794,6 +7846,23 @@ namespace MiscThings {
     {
         if (object)
         {
+            if (object->formID == 0x200618d)
+            {
+                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2006199); //redwater den first gate
+
+                if (handle)
+                {
+                    if (!MiscThings::is_object_in_the_list(handle))
+                    {
+                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                        if (temp_result != "")
+                            send_random_context("You see: " + temp_result, false);
+                    }
+                }
+            }
+
+
             if (object->formID == 0x4017b3a)
             {
                 auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017b2f); //miraak temple 1 handle for gate
@@ -10918,6 +10987,13 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = door->GetModel();
+
+                        if (model.find("FarmBTrapdoor02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 1.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
                         if (model.find("WRUnderforgedoor01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
@@ -18330,6 +18406,31 @@ namespace MiscThings {
         return result;
     }
 
+
+    bool banned_because_vampirelord(RE::TESObjectREFR* target, int interaction)
+    {
+        if (target)
+        {
+            if (MiscThings::is_vampirelord())
+            {
+                if (interaction == 1 || interaction == 2) //pickpocket or normal interact
+                {
+                    auto base_obj = target->GetBaseObject();
+
+                    if (base_obj)
+                    {
+                        auto base_type = base_obj->GetFormType();
+
+                        if (base_type == RE::FormType::Door || base_type == RE::FormType::Activator)
+                            return false;
+
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
 
 

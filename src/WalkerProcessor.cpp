@@ -13194,6 +13194,15 @@ namespace WalkerProcessor {
 
         if (have_this_spell)
         {
+            auto left_hand = MiscThings::get_hand_contents(false);
+            auto right_hand = MiscThings::get_hand_contents(true);
+
+            if (right_hand == spell)
+                attack_action = 0;
+
+            if (left_hand == spell)
+                attack_action = 1;
+
             spell_mode = true;
             spell_to_use = spell;
             return walk_to_object_by_refr(target, 3);
@@ -16915,6 +16924,18 @@ namespace WalkerProcessor {
                                                                     }  
                                                                     else
                                                                     {
+
+                                                                        if (MiscThings::banned_because_vampirelord(target_ref, interaction_after_walk))
+                                                                        {
+                                                                            if (lock_camera_onto_target(target_ref, dtime))
+                                                                            {
+                                                                                reset_walker();
+                                                                                send_random_context("[Cannot interact with this target while in Vampire Lord form]", false);
+                                                                                return;
+                                                                            }
+                                                                        }
+
+
                                                                         if (result_target && !move_obstacle_failed)
                                                                             if (result_target->CanBeMoved())
                                                                             {
@@ -16965,6 +16986,7 @@ namespace WalkerProcessor {
                                                                             }
                                                                         else
                                                                         {
+
                                                                             if (!tried_to_come_closer)
                                                                             {
                                                                                 if (backup_pickup_attempts <= 1 && !walk_fixed_time(true, 0.4f, dtime)) //was 0.2, revert if bad
@@ -17020,13 +17042,11 @@ namespace WalkerProcessor {
                                                                                             result_target = get_targeted_ref();
                                                                                             path_is_blocked_result(result_target);
                                                                                         }
-                                                                                        
+
                                                                                     }
 
                                                                                 }
                                                                             }
-                                                                            
-
                                                                         }
                                                                     }
                                                                 }

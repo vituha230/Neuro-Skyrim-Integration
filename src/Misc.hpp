@@ -433,6 +433,7 @@ namespace MiscThings {
 
     void save_loader(float dtime);
 
+    bool banned_because_vampirelord(RE::TESObjectREFR* target, int interaction);
 
     std::string replace_aliases_all_quests(std::string displaytext);
 
