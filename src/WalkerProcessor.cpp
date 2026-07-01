@@ -4119,10 +4119,14 @@ namespace WalkerProcessor {
                 sneak_failed = true;
             }
                 
+            bool key_condition = target_ref && interaction_after_walk == 3 && target_ref->formID == 0x200a58b && MiscThings::get_hand_contents(get_current_active_hand()) && MiscThings::get_hand_contents(get_current_active_hand())->formID == 0x1a4cc;
 
-            if (!lookat_used || stealth_arching)
-                if (stealth_arching || (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead())))
-                    if (!stop_sneaking && !using_custom_path && !location_mode && !(!stealth_arching && quest_mode && target->IsActor() && !target->IsDead()))
+            if (key_condition)
+                high_precision = true;
+
+            if (key_condition || !lookat_used || stealth_arching)
+                if (key_condition || stealth_arching || (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead())))
+                    if (key_condition || (!stop_sneaking && !using_custom_path && !location_mode && !(!stealth_arching && quest_mode && target->IsActor() && !target->IsDead())))
                     {
                         lock_camera_wants_to_crouch = true;
                         if (!player->IsSneaking())
@@ -5824,6 +5828,8 @@ namespace WalkerProcessor {
 
                 if (interaction_after_walk == 3)
                 {
+                    if (target_ref->formID == 0x200a58b && MiscThings::get_hand_contents(get_current_active_hand()) && MiscThings::get_hand_contents(get_current_active_hand())->formID == 0x1a4cc)
+                        return true;
 
                     if (target_ref->IsActor() && target_ref->IsDead() && !was_already_dead)
                     {
@@ -10094,6 +10100,11 @@ namespace WalkerProcessor {
                             else
                                 return 1500.0f;
                         }
+                        else
+                        {
+                            //all self-cast non-both-hand spells fall here
+                            return 500.0f;
+                        }
 
                     }
                         
@@ -11622,7 +11633,7 @@ namespace WalkerProcessor {
                             return false;
                         }
 
-
+                        LockpickProcessor::reset_lockpicking();
                         confirm(); //lockpick it
 
                         //then lockpicking could fail or succeed...
@@ -11680,6 +11691,7 @@ namespace WalkerProcessor {
                         auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
                         if (std::size(attackers) > 0 || (mzulft_door && target_ref == mzulft_door))
                         {
+                            LockpickProcessor::reset_lockpicking();
                             confirm(); //lockpick it
                             return true;
                         }
@@ -14411,6 +14423,10 @@ namespace WalkerProcessor {
                         return;
                     }
 
+
+                    if (test_targeted_ref->formID == 0x200a58b)
+                        confirm();
+
                 }
 
 
@@ -16838,7 +16854,7 @@ namespace WalkerProcessor {
                                                                             return;
                                                                         }
 
-
+                                                                        LockpickProcessor::reset_lockpicking();
                                                                         confirm(); //lockpick it
                                                                         catch_door_result = true;
                                                                         //set_universal_block(1.5f); //wait a little. then it should lock again and maybe it will lead to success.
@@ -16865,6 +16881,7 @@ namespace WalkerProcessor {
                                                                         auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
                                                                         if (std::size(attackers) > 0 || (target_ref == mzulft_door && mzulft_door))
                                                                         {
+                                                                            LockpickProcessor::reset_lockpicking();
                                                                             confirm(); //lockpick it
                                                                         }
                                                                         else
@@ -17185,6 +17202,7 @@ namespace WalkerProcessor {
                                                                     auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
                                                                     if (std::size(attackers) > 0 || (get_targeted_ref() == mzulft_door && mzulft_door))
                                                                     {
+                                                                        LockpickProcessor::reset_lockpicking();
                                                                         confirm(); //lockpick it
                                                                     }
                                                                     else
@@ -17283,7 +17301,7 @@ namespace WalkerProcessor {
                                                                                 return;
                                                                             }
 
-
+                                                                            LockpickProcessor::reset_lockpicking();
                                                                             confirm(); //lockpick it
 
                                                                             catch_door_result = true; //this will reset after its done 
@@ -17571,6 +17589,7 @@ namespace WalkerProcessor {
                                                     auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
                                                     if ((std::size(attackers) > 0 && runaway_mode) || (mzulft_door && get_targeted_ref() == mzulft_door))
                                                     {
+                                                        LockpickProcessor::reset_lockpicking();
                                                         confirm(); //lockpick it
                                                     }
                                                     else
@@ -17663,6 +17682,7 @@ namespace WalkerProcessor {
                                                                 return;
                                                             }
 
+                                                            LockpickProcessor::reset_lockpicking();
                                                             confirm(); //lockpick it
 
                                                             catch_door_result = true; //this will reset after its done 
