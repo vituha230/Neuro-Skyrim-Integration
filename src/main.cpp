@@ -19,7 +19,7 @@
 // 2nd book apocrypha. 1st book apocrypha. probably separate file for apocrypha navigation (zones, redirections)
 
 //TODO dawnguard dlc
-// check dawnguard side for first quest
+// maybe throw in some context when we get into jail and when harkon bites us
 
 
 //TODO bards 
@@ -30,9 +30,7 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO crossbows must be fixed. constant crouching must be fixed
 //TODO check whiterun house in the list of interesting places before player buys it
-//TODO fix constant crouch while using bow/crossbow (detection system is broken)
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
 //TODO test all cast_spell variations
 //TODO strange dragon aim sometimes when using magic

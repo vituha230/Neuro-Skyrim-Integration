@@ -4125,8 +4125,10 @@ namespace WalkerProcessor {
                 high_precision = true;
 
             if (key_condition || !lookat_used || stealth_arching)
+            {
                 if (key_condition || stealth_arching || (target_center.z < (player->GetHeight() * 0.25 + player->GetPosition().z) && !(target->IsActor() && target->IsDead())))
-                    if (key_condition || (!stop_sneaking && !using_custom_path && !location_mode && !(!stealth_arching && quest_mode && target->IsActor() && !target->IsDead())))
+                {
+                    if (key_condition || (!sneak_failed && !stop_sneaking && !using_custom_path && !location_mode && !(!stealth_arching && quest_mode && target->IsActor() && !target->IsDead())))
                     {
                         lock_camera_wants_to_crouch = true;
                         if (!player->IsSneaking())
@@ -4134,6 +4136,12 @@ namespace WalkerProcessor {
                     }
                     else
                         lock_camera_wants_to_crouch = false;
+                }
+                else
+                    lock_camera_wants_to_crouch = false;
+            }
+            else
+                lock_camera_wants_to_crouch = false;
 
             //if (MiscThings::sees_player(target) && player->IsSneaking() && is_fighting())
              //   crouch(); //test
@@ -9702,55 +9710,59 @@ namespace WalkerProcessor {
                 if (has_bow_equipped(true) && !no_ammo())
                     result = 2.6f;//result = 2.7f;
                 else
-                    if (has_staff_equipped(right))
-                    {
-                        auto staff = (RE::TESObjectWEAP*)spell;
+                    if (has_crossbow_equipped(true) && !no_ammo())
+                        result = 0.5f;
+                    else
 
-                        auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
-
-                        if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                        if (has_staff_equipped(right))
                         {
-                            if (ench->formEnchanting->avEffectSetting)
-                            {
-                                auto cast_type = ench->formEnchanting->avEffectSetting->data.castingType;
-                                if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                                {
-                                    auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
+                            auto staff = (RE::TESObjectWEAP*)spell;
 
-                                    if (mzulft_crystal_pickup_fake && player->GetDistance(mzulft_crystal_pickup_fake) < 300.0f)
-                                        result = 2.3f;
-                                    else
+                            auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                            if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                            {
+                                if (ench->formEnchanting->avEffectSetting)
+                                {
+                                    auto cast_type = ench->formEnchanting->avEffectSetting->data.castingType;
+                                    if (cast_type == RE::MagicSystem::CastingType::kConcentration)
                                     {
-                                        auto left_hand_contents = MiscThings::get_hand_contents(right);
-                                        if (left_hand_contents && left_hand_contents->GetFormID() == 0x35369) //staff of magnus
-                                        {
-                                            result = 10.0f;
-                                        }
+                                        auto mzulft_crystal_pickup_fake = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a55);
+
+                                        if (mzulft_crystal_pickup_fake && player->GetDistance(mzulft_crystal_pickup_fake) < 300.0f)
+                                            result = 2.3f;
                                         else
-                                            result = 7.0f;
+                                        {
+                                            auto left_hand_contents = MiscThings::get_hand_contents(right);
+                                            if (left_hand_contents && left_hand_contents->GetFormID() == 0x35369) //staff of magnus
+                                            {
+                                                result = 10.0f;
+                                            }
+                                            else
+                                                result = 7.0f;
+                                        }
                                     }
-                                }
-                                else
-                                    result = 1.2f;// +ench->formEnchanting->avEffectSetting->data.spellmakingChargeTime;
+                                    else
+                                        result = 1.2f;// +ench->formEnchanting->avEffectSetting->data.spellmakingChargeTime;
                                     //result = 0.3f;
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        auto weap = (RE::TESObjectWEAP*)spell;
-
-                        result = 0.8f;
-
-                        if (weap && !(left_is_block() && !right)) //for block leave it 0.8
+                        else
                         {
-                            auto speed = weap->GetSpeed();
+                            auto weap = (RE::TESObjectWEAP*)spell;
 
-                            if (speed > 0.0f)
-                                result = 1.0f / speed;
+                            result = 0.8f;
 
+                            if (weap && !(left_is_block() && !right)) //for block leave it 0.8
+                            {
+                                auto speed = weap->GetSpeed();
+
+                                if (speed > 0.0f)
+                                    result = 1.0f / speed;
+
+                            }
                         }
-                    }
             }
 
         }
@@ -10679,16 +10691,25 @@ namespace WalkerProcessor {
                                 }
                                 else
                                 {
-
-                                    if (can_power_attack && try_power_attack && !goto_attack_used)
+                                    if (has_crossbow_equipped(true))
                                     {
-                                        if (attack_action_time0 < get_attack_time(true)*0.1f || attack_action_time0 > get_attack_time(true) * 0.9f)
-                                            right_attack();
-                                        else
-                                            right_power_attack();
+                                        if (attack_action_time0 > 0.1f);
+                                        was_charging_ranged = true;
+                                        right_attack_bow();
                                     }
                                     else
-                                        right_attack();
+                                    {
+                                        if (can_power_attack && try_power_attack && !goto_attack_used)
+                                        {
+                                            if (attack_action_time0 < get_attack_time(true) * 0.1f || attack_action_time0 > get_attack_time(true) * 0.9f)
+                                                right_attack();
+                                            else
+                                                right_power_attack();
+                                        }
+                                        else
+                                            right_attack();
+                                    }
+                                    
                                 }
 
 
@@ -10707,7 +10728,7 @@ namespace WalkerProcessor {
                                     }
                                     else
                                     {
-                                        if (has_bow_equipped(true) && no_ammo())
+                                        if ((has_bow_equipped(true) || has_crossbow_equipped(true)) && no_ammo())
                                         {
                                             no_weapon = true;
                                             attacking_weapon = " left fist (you have no ammo to use with your " + get_equipped_weapon_name(true) + "). ";
