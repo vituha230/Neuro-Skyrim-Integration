@@ -19,7 +19,7 @@
 // 2nd book apocrypha. 1st book apocrypha. probably separate file for apocrypha navigation (zones, redirections)
 
 //TODO dawnguard dlc
-// telekinesis must work in the cell. something isnt right
+// check dawnguard side for first quest
 
 
 //TODO bards 

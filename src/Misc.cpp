@@ -4140,7 +4140,7 @@ namespace MiscThings {
 
             if (gate2 && MiscThings::two_state_activator_state(gate2) == 1)
             {
-                auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7089f11);
+                auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x708f011);
                 if (redirect) return redirect;
             }
             else
@@ -9335,6 +9335,9 @@ namespace MiscThings {
                 return true;
 
             if (object->formID == 0x2000f86) //dawnguard first dungeon pull chain
+                return true;
+
+            if (object->formID == 0x2006199) //dawnguard redwater den2 first chain
                 return true;
         }
 
