@@ -1209,6 +1209,18 @@ namespace MiscThings {
             auto temp_result = insert_object_into_list_and_get_info(tg08_lever1, true);
         }
 
+        if (object)
+        {
+            //dlc1 recruit sorine
+            if (object->formID == 0x2003475) //sorine
+            {
+                auto sorine_satchel = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200f7cb);
+                if (sorine_satchel)
+                    auto temp_result = insert_object_into_list_and_get_info(sorine_satchel, true);
+            }
+        }
+
+
     }
 
 

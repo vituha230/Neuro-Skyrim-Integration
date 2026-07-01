@@ -30,7 +30,7 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-
+//TODO crossbows must be fixed. constant crouching must be fixed
 //TODO check whiterun house in the list of interesting places before player buys it
 //TODO fix constant crouch while using bow/crossbow (detection system is broken)
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
