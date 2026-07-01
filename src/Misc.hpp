@@ -435,6 +435,8 @@ namespace MiscThings {
 
     bool banned_because_vampirelord(RE::TESObjectREFR* target, int interaction);
 
+    RE::NiPoint3 special_cave_entrance_redirect(RE::TESObjectREFR* object);
+
     std::string replace_aliases_all_quests(std::string displaytext);
 
     bool has_thrown_a_book();

@@ -15916,7 +15916,8 @@ namespace WalkerProcessor {
                     if (start_attacking)
                     {
 
-                        if ((is_melee_weapon(get_current_active_hand()) || !MiscThings::has_something_equipped(get_current_active_hand())) && !close_enough() && !shout_mode)
+                        //if ((is_melee_weapon(get_current_active_hand()) || !MiscThings::has_something_equipped(get_current_active_hand())) && !close_enough() && !shout_mode)
+                        if (!close_enough() && !shout_mode)
                         {
                             attacking_done = true;
                             start_attacking = false;

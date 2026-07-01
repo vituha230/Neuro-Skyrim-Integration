@@ -24,7 +24,7 @@
 
 //TODO bards 
 //TODO hearthfire
-//TODO random sidequests
+//TODO random sidequests (markarth conspiracy quest, windhelm investigation.. solstheim ash captain shit.. solitude something something?)
 
 
 //////////////////////////////////////////////////////
@@ -47,15 +47,11 @@
 
 
 //TODO test malborn and klimek chest and maybe all container types 
-//TODO spells in both hands
-//TODO dualcasting + attacking with both hands if 2 melee weapons
-//TODO conjuration should not summon if already summoned
+//TODO attacking with both hands if 2 melee weapons
 //TODO optional argument to equip function so player can specify hand
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 //TODO that nonpathfindable castle near riften lake (faldars tooth?)
 //TODO weapon advice enchantment take charge into account
-
-//opened static nameless objects (gates/bridges) dont appear as blocking objects if they are open
 
 //TODO letter aliases for locations (foreachscript scanner)
 
@@ -66,7 +62,6 @@
 //TODO put things into container/gift menu (i think for followers its give not take)
 //TODO QUESTIONABLE unique ID's for everything. after item picked up, try to keep ID the same in the inventory
 //TODO hand equip info (both spells and inventory. spells in the inventory will require insert_spell_into_list_and_get_info function)
-//TODO sneaking
 //TODO coop
 
 

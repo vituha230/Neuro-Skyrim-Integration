@@ -10393,6 +10393,21 @@ namespace MiscThings {
     }
 
 
+    RE::NiPoint3 special_cave_entrance_redirect(RE::TESObjectREFR* object)
+    {
+
+        if (object)
+        {
+            if (object->formID == 0x2003c99) //moth priest cave
+                return { -85273.2734, 68085.6797, -11697.6885 };
+        }
+
+        return RE::NiPoint3::Zero();
+    }
+
+
+
+
     bool weird_close_enough_checks(RE::TESObjectREFR* object)
     {
         if (object)
@@ -10434,6 +10449,15 @@ namespace MiscThings {
                     {
                         //auto pos = object->GetPosition();
                         auto nearest_navmesh_pos = MiscThings::get_nearest_navmesh_node(object);
+
+                        auto test = MiscThings::special_cave_entrance_redirect(object);
+
+                        if (test != RE::NiPoint3::Zero())
+                            nearest_navmesh_pos = test;
+
+
+
+
 
                         auto distance = player_pos.GetDistance(nearest_navmesh_pos);
 
@@ -11253,6 +11277,12 @@ namespace MiscThings {
                         {
                             auto pos = object->GetPosition();
                             auto nearest_navmesh_pos = MiscThings::get_nearest_navmesh_node(object);
+
+                            auto test = MiscThings::special_cave_entrance_redirect(object);
+
+                            if (test != RE::NiPoint3::Zero())
+                                nearest_navmesh_pos = test;
+
 
                             if (nearest_navmesh_pos != RE::NiPoint3::Zero())
                                 result = nearest_navmesh_pos - pos;
