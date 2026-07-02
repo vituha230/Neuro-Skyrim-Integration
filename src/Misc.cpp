@@ -17909,7 +17909,7 @@ namespace MiscThings {
                                 else
                                     if (!right_equipped && left_equipped)
                                     {
-                                        if (MiscThings::is_vampirelord())
+                                        if (MiscThings::is_vampirelord() || !MiscThings::is_offensive_spell(a_spell))
                                             equip_info = "[Equipped in left hand]";
                                         else
                                             equip_info = "[Equipped in left hand, can also be equipped in right hand]";
