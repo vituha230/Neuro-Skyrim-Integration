@@ -3223,127 +3223,141 @@ namespace MiscThings {
 
 
 
-    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* start)
+    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* start, RE::TESObjectREFR* phantom_target)
     {
         float result = 0.0f;
 
-        if (target)
+        if (phantom_target)
         {
             auto player = RE::PlayerCharacter::GetSingleton();
 
             if (player)
             {
+                result = player->GetDistance(phantom_target, false, true);
+            }
+        }
+        else
+        {
+            if (target)
+            {
+                auto player = RE::PlayerCharacter::GetSingleton();
 
-                if (!start)
-                    start = player->AsReference();
-            
-
-                auto player_worldspace = start->GetWorldspace();
-
-                //if any teleports are in the same worldspace where player is, start from that teleport
-
-
-                auto player_pos = start->GetPosition();
-
-                RE::NiPoint3 last_teleport_pos_end = RE::NiPoint3::Zero();
-
-                RE::ObjectRefHandle quest_ref_handle{};
-                target->GetTargetRef(quest_ref_handle, false, quest);
-                //target->GetTrackingRef(quest_ref_handle, quest);
-
-
-                RE::TESObjectREFR* quest_target_ref = nullptr;
-
-                if (quest_ref_handle)
-                    if (quest_ref_handle.get())
-                        quest_target_ref = quest_ref_handle.get().get();
-
-                RE::TESWorldSpace* quest_target_ref_worldspace = nullptr;
-
-                if (quest_target_ref)
-                    quest_target_ref_worldspace = quest_target_ref->GetWorldspace();
-
-                bool shortcut_used = false;
-
-
-                bool same_worldspace = player_worldspace == quest_target_ref_worldspace;
-
-                if (!same_worldspace || player_worldspace == nullptr)
+                if (player)
                 {
-                    for (auto teleport : target->teleportPath.teleportRefs)
+
+                    if (!start)
+                        start = player->AsReference();
+
+
+                    auto player_worldspace = start->GetWorldspace();
+
+                    //if any teleports are in the same worldspace where player is, start from that teleport
+
+
+                    auto player_pos = start->GetPosition();
+
+                    RE::NiPoint3 last_teleport_pos_end = RE::NiPoint3::Zero();
+
+                    RE::ObjectRefHandle quest_ref_handle{};
+                    target->GetTargetRef(quest_ref_handle, false, quest);
+                    //target->GetTrackingRef(quest_ref_handle, quest);
+
+
+                    RE::TESObjectREFR* quest_target_ref = nullptr;
+
+                    if (quest_ref_handle)
+                        if (quest_ref_handle.get())
+                            quest_target_ref = quest_ref_handle.get().get();
+
+                    RE::TESWorldSpace* quest_target_ref_worldspace = nullptr;
+
+                    if (quest_target_ref)
+                        quest_target_ref_worldspace = quest_target_ref->GetWorldspace();
+
+                    bool shortcut_used = false;
+
+
+                    bool same_worldspace = player_worldspace == quest_target_ref_worldspace;
+
+                    if (!same_worldspace || player_worldspace == nullptr)
                     {
-                        if (teleport.ref)
+                        for (auto teleport : target->teleportPath.teleportRefs)
                         {
-                            auto teleport_pos = teleport.ref->GetPosition(); //from where it teleports
-
-                            auto teleport_worldspace = teleport.ref->GetWorldspace();
-
-                            if (teleport_worldspace == player_worldspace && !shortcut_used)
+                            if (teleport.ref)
                             {
-                                shortcut_used = true;
-                                result = 0.0f;
-                                result += player_pos.GetDistance(teleport_pos);
-                                last_teleport_pos_end = teleport.teleportLocation;
-                            }
-                            else
-                            {
-                                if (last_teleport_pos_end == RE::NiPoint3::Zero())
+                                auto teleport_pos = teleport.ref->GetPosition(); //from where it teleports
+
+                                auto teleport_worldspace = teleport.ref->GetWorldspace();
+
+                                if (teleport_worldspace == player_worldspace && !shortcut_used)
                                 {
+                                    shortcut_used = true;
+                                    result = 0.0f;
                                     result += player_pos.GetDistance(teleport_pos);
+                                    last_teleport_pos_end = teleport.teleportLocation;
                                 }
                                 else
-                                    result += teleport_pos.GetDistance(last_teleport_pos_end);
+                                {
+                                    if (last_teleport_pos_end == RE::NiPoint3::Zero())
+                                    {
+                                        result += player_pos.GetDistance(teleport_pos);
+                                    }
+                                    else
+                                        result += teleport_pos.GetDistance(last_teleport_pos_end);
 
-                                last_teleport_pos_end = teleport.teleportLocation; //where it teleports
+                                    last_teleport_pos_end = teleport.teleportLocation; //where it teleports
+                                }
+
                             }
 
                         }
 
+                        if (quest_target_ref)
+                        {
+                            auto quest_target_ref_pos = quest_target_ref->GetPosition();
+                            if (last_teleport_pos_end != RE::NiPoint3::Zero())
+                                result += quest_target_ref_pos.GetDistance(last_teleport_pos_end);
+                            else
+                                result += quest_target_ref_pos.GetDistance(player_pos);
+                        }
                     }
-
-                    if (quest_target_ref)
+                    else
                     {
-                        auto quest_target_ref_pos = quest_target_ref->GetPosition();
-                        if (last_teleport_pos_end != RE::NiPoint3::Zero())
-                            result += quest_target_ref_pos.GetDistance(last_teleport_pos_end);
-                        else
-                            result += quest_target_ref_pos.GetDistance(player_pos);
+                        //if same worldspace - we can take direct distance
+                        if (quest_target_ref)
+                        {
+                            auto quest_target_ref_pos = quest_target_ref->GetPosition();
+                            result = quest_target_ref_pos.GetDistance(player_pos);
+                        }
                     }
-                }
-                else
-                {
-                    //if same worldspace - we can take direct distance
-                    if (quest_target_ref)
+
+
+                    if (result == 0.0f)
                     {
-                        auto quest_target_ref_pos = quest_target_ref->GetPosition();
-                        result = quest_target_ref_pos.GetDistance(player_pos);
+                        RE::ObjectRefHandle tracking_ref_handle{};
+
+                        target->GetTrackingRef(tracking_ref_handle, quest);
+
+                        RE::TESObjectREFR* tracking_ref = nullptr;
+
+                        if (tracking_ref_handle)
+                            if (tracking_ref_handle.get())
+                                tracking_ref = tracking_ref_handle.get().get();
+
+                        if (tracking_ref)
+                        {
+                            auto tracking_ref_pos = tracking_ref->GetPosition();
+
+                            result += tracking_ref_pos.GetDistance(player_pos);
+                        }
                     }
+
+
                 }
-
-
-                if (result == 0.0f)
-                {
-                    RE::ObjectRefHandle tracking_ref_handle{};
-
-                    target->GetTrackingRef(tracking_ref_handle, quest);
-
-                    RE::TESObjectREFR* tracking_ref = nullptr;
-
-                    if (tracking_ref_handle)
-                        if (tracking_ref_handle.get())
-                            tracking_ref = tracking_ref_handle.get().get();
-
-                    if (tracking_ref)
-                    {
-                        auto tracking_ref_pos = tracking_ref->GetPosition();
-
-                        result += tracking_ref_pos.GetDistance(player_pos);
-                    }
-                }
-
-
             }
         }
+
+        
 
         return result;
     }
@@ -3354,7 +3368,7 @@ namespace MiscThings {
 
 
 
-    std::string get_good_carriage_city_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest)
+    std::string get_good_carriage_city_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* phantom_target)
     {
 
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -3414,7 +3428,7 @@ namespace MiscThings {
 
 
                         //distance from target to location
-                        auto distance_quest_location = get_quest_target_distance(target, quest, real_marker);
+                        auto distance_quest_location = get_quest_target_distance(target, quest, real_marker, phantom_target);
 
                         //auto distance = real_marker->GetDistance(target, true, true);
 
@@ -3487,7 +3501,7 @@ namespace MiscThings {
 
 
 
-    std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest)
+    std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* phantom_target)
     {
 
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -3531,7 +3545,7 @@ namespace MiscThings {
 
 
                             //distance from quest to location
-                            auto distance_quest_location = get_quest_target_distance(target, quest, real_marker);
+                            auto distance_quest_location = get_quest_target_distance(target, quest, real_marker, phantom_target);
 
                             //auto distance = real_marker->GetDistance(target, true, true);
                             
@@ -4132,6 +4146,22 @@ namespace MiscThings {
         return false;
     }
 
+
+    bool dont_probe_navmesh()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto parent_cell = player->GetParentCell();
+
+            if (parent_cell && parent_cell->formID == 0x1fc66)
+                return true;
+        }
+
+
+        return false;
+    }
 
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
@@ -11840,7 +11870,7 @@ namespace MiscThings {
                                                 this_quest.category = 0;
 
 
-                                                this_quest.estimate_distance = get_quest_target_distance(target, this_quest.quest);
+                                                this_quest.estimate_distance = get_quest_target_distance(target, this_quest.quest, nullptr, this_quest.phantom_target);
 
                                                 
                                                 //if (std::size(target->teleportPath.teleportRefs) > 0)
@@ -12056,7 +12086,7 @@ namespace MiscThings {
                                                     this_quest.category = 0;
 
 
-                                                    this_quest.estimate_distance = get_quest_target_distance(target, this_quest.quest);
+                                                    this_quest.estimate_distance = get_quest_target_distance(target, this_quest.quest, nullptr, this_quest.phantom_target);
 
                                                     
                                                     //if (std::size(target->teleportPath.teleportRefs) > 0)
@@ -12130,7 +12160,163 @@ namespace MiscThings {
                 }
             }
         }
+
+
+        //companions quest-bridge 1 (the moment when we have no quest, before other npc redirects us)
+
+        RE::TESQuest* companions_bridge_quest1 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("C01");
+
+        if (companions_bridge_quest1 && companions_bridge_quest1->currentStage == 1)
+        {
+            //must create a bridge. quest is there but its completely hidden
+
+            auto farkas = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a693);
+
+            if (farkas)
+            {
+                quest this_quest{};
+
+                this_quest.id = id;
+                this_quest.quest = companions_bridge_quest1;
+                this_quest.name = companions_bridge_quest1->GetFullName();
+                this_quest.target = nullptr;
+
+                std::string displaytext = "";
+                this_quest.displaytext = "Talk to Companions about new work";
+
+                std::string target_name = "Farkas";
+
+                this_quest.target_name = target_name;
+
+                this_quest.objective = *companions_bridge_quest1->objectives.begin(); //we need to put some actual objective here even though it will get replaced
+                this_quest.description = "";
+                this_quest.category = 0;
+
+                this_quest.estimate_distance = player->GetDistance(farkas, false, true);
+
+                this_quest.phantom_objective = true;
+
+                this_quest.phantom_target = farkas;
+
+                this_quest.take_raw_description = true;
+
+                sortable_quests.push_back(this_quest);
+
+                id++;
+                got_any_quests = true;
+            }
+        }
            
+        RE::TESQuest* companions_bridge_quest2 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("C03");
+
+        if (companions_bridge_quest2 && companions_bridge_quest2->currentStage == 1)
+        {
+            //must create a bridge. quest is there but its completely hidden
+
+            auto skjor = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a691);
+
+            if (skjor)
+            {
+                quest this_quest{};
+
+                this_quest.id = id;
+                this_quest.quest = companions_bridge_quest2;
+                this_quest.name = companions_bridge_quest2->GetFullName();
+                this_quest.target = nullptr;
+
+                std::string displaytext = "";
+                this_quest.displaytext = "Talk to Companions about new work";
+
+                std::string target_name = "Skjor";
+
+                this_quest.target_name = target_name;
+
+                
+                this_quest.objective = *companions_bridge_quest1->objectives.begin(); //we need to put some actual objective here even though it will get replaced
+                this_quest.description = "";
+                this_quest.category = 0;
+
+                this_quest.estimate_distance = player->GetDistance(skjor, false, true);
+
+                this_quest.phantom_objective = true;
+
+                this_quest.phantom_target = skjor;
+
+                this_quest.take_raw_description = true;
+
+                sortable_quests.push_back(this_quest);
+
+                id++;
+                got_any_quests = true;
+            }
+        }
+
+
+        //aelas 2 quest shit
+        //if kodlaks c04 quest is not ready AND c03 is completed - this means we must have bridge-aela quest. but only if no radiant quest from her is running
+
+        RE::TESQuest* companions_bridge_quest3 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("C04");
+
+        if (companions_bridge_quest3 && companions_bridge_quest3->currentStage < 2)
+        {
+            RE::TESQuest* companions_bridge_quest4 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("C03");
+
+            if (companions_bridge_quest4 && companions_bridge_quest4->currentStage == 200)
+            {
+                //must create a bridge. quest is there but its completely hidden
+
+                RE::TESQuest* aela_radiant_quest1 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("CR09");
+                RE::TESQuest* aela_radiant_quest2 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("CR10");
+                RE::TESQuest* aela_radiant_quest3 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("CR11");
+
+                bool aela_randiant_1_online = aela_radiant_quest1->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !aela_radiant_quest1->data.flags.all(RE::QuestFlag::kCompleted);
+                bool aela_randiant_2_online = aela_radiant_quest2->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !aela_radiant_quest2->data.flags.all(RE::QuestFlag::kCompleted);
+                bool aela_randiant_3_online = aela_radiant_quest3->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !aela_radiant_quest3->data.flags.all(RE::QuestFlag::kCompleted);
+
+                if (!aela_randiant_1_online && !aela_randiant_2_online && !aela_randiant_3_online)
+                {
+                    auto aela = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1a697);
+                    if (aela)
+                    {
+                        quest this_quest{};
+
+                        this_quest.id = id;
+                        this_quest.quest = companions_bridge_quest3;
+                        this_quest.name = companions_bridge_quest3->GetFullName();
+                        this_quest.target = nullptr;
+
+                        std::string displaytext = "";
+                        this_quest.displaytext = "Talk to Companions about new work";
+
+                        std::string target_name = "Aela";
+
+                        this_quest.target_name = target_name;
+
+                        this_quest.objective = *companions_bridge_quest1->objectives.begin(); //we need to put some actual objective here even though it will get replaced
+                        this_quest.description = "";
+                        this_quest.category = 0;
+
+                        this_quest.estimate_distance = player->GetDistance(aela, false, true);
+
+                        this_quest.phantom_objective = true;
+
+                        this_quest.phantom_target = aela;
+
+                        this_quest.take_raw_description = true;
+
+                        sortable_quests.push_back(this_quest);
+
+                        id++;
+                        got_any_quests = true;
+                    }
+                }
+
+                
+            }
+            
+        }
+
+
 
 
         //test known quests that have places without objective and its inconvenient to edit quests other ways
@@ -12500,7 +12686,7 @@ namespace MiscThings {
                 target_name = " (" + target_name + ")";
 
 
-            float distance = MiscThings::get_quest_target_distance(sortable_quests.at(i - 1).target, sortable_quests.at(i - 1).quest);
+            float distance = MiscThings::get_quest_target_distance(sortable_quests.at(i - 1).target, sortable_quests.at(i - 1).quest, nullptr, sortable_quests.at(i - 1).phantom_target);
 
             
             std::string big_distance = "";//

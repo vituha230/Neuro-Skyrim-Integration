@@ -159,6 +159,7 @@ namespace MiscThings {
         float estimate_distance;
         bool phantom_objective;
         RE::TESObjectREFR* phantom_target;
+        bool take_raw_description;
     };
 
 
@@ -336,9 +337,11 @@ namespace MiscThings {
     bool sneak_is_allowed();
     bool have_any_enemies_nearby(float range);
 
-    std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest);
-    std::string get_good_carriage_city_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest);
+    std::string get_good_fasttravel_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* phantom_target = nullptr);
+    std::string get_good_carriage_city_marker_for_quest_target(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* phantom_target = nullptr);
 
+
+    bool dont_probe_navmesh();
 
     bool magnus_eye_attack_condition();
 
@@ -454,7 +457,7 @@ namespace MiscThings {
     bool is_immortal(RE::Actor* actor);
     bool is_player_hidden();
 
-    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* start = nullptr);
+    float get_quest_target_distance(RE::TESQuestTarget* target, RE::TESQuest* quest, RE::TESObjectREFR* start = nullptr, RE::TESObjectREFR* phantom_target = nullptr);
 
     std::string get_door_teleport(RE::TESObjectREFR* object);
 

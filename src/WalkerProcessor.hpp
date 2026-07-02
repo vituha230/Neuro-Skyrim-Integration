@@ -157,7 +157,7 @@ namespace WalkerProcessor {
 	bool processing_ustengrev();
 	bool ustengrev_off_the_cliff();
 
-
+	RE::TESObjectREFR* get_phantom_target(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective);
 
 	std::pair<bool, std::string> set_ruin_pillar_choice(int id);
 	std::pair<bool, std::string> set_change_quest_course_choice(int id);

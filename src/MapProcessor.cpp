@@ -233,7 +233,7 @@ namespace MapProcessor {
 									if (marker_ref && !marker_ref->IsDisabled() && marker_ref->data.objectReference)
 									{
 										//float distance = marker_ref->GetDistance(quest_ref, true, true);
-										auto distance = MiscThings::get_quest_target_distance(a_quest.target, a_quest.quest, marker_ref);
+										auto distance = MiscThings::get_quest_target_distance(a_quest.target, a_quest.quest, marker_ref, a_quest.phantom_target);
 
 
 										if (distance < min_location_dist)
@@ -406,7 +406,7 @@ namespace MapProcessor {
 									if (marker_ref && !marker_ref->IsDisabled() && marker_ref->data.objectReference)
 									{
 										//float distance = marker_ref->GetDistance(quest_ref, true, true);
-										auto distance = MiscThings::get_quest_target_distance(a_quest.target, a_quest.quest, marker_ref);
+										auto distance = MiscThings::get_quest_target_distance(a_quest.target, a_quest.quest, marker_ref, a_quest.phantom_target);
 
 
 										if (distance < min_location_dist)

@@ -1561,11 +1561,22 @@ namespace WalkerProcessor {
                                         else
                                             if (!navmesh_probe_result_valid)
                                             {
-                                                navmesh_probe_mode = true;
-                                                navmesh_probe_result = false;
-                                                navmesh_probe_result_valid = false;
-                                                return;
-                                                //and we hope whoever called us - calls us again and we get probe
+                                                if (MiscThings::dont_probe_navmesh())
+                                                {
+                                                    navmesh_probe_mode = false;
+                                                    navmesh_probe_result = false;
+                                                    navmesh_probe_result_valid = true;
+                                                    return; //fake "no navmesh" result so it gives a blind walk
+                                                }
+                                                else
+                                                {
+                                                    navmesh_probe_mode = true;
+                                                    navmesh_probe_result = false;
+                                                    navmesh_probe_result_valid = false;
+                                                    return;
+                                                    //and we hope whoever called us - calls us again and we get probe
+                                                }
+
                                             }
                                     }
                                 }
@@ -2516,7 +2527,7 @@ namespace WalkerProcessor {
                     
                     float distance = player->GetDistance(target_ref, true, true);
                    
-                    if (current_quest_target_followed && current_quest_followed)
+                    if (current_quest_target_followed && current_quest_followed && !get_phantom_target(current_quest_followed, last_quest_objective))
                     {
                         distance = MiscThings::get_quest_target_distance(current_quest_target_followed, current_quest_followed);
                     }
@@ -2527,7 +2538,7 @@ namespace WalkerProcessor {
                         distance = player->GetDistance(special_ref_for_distance_calculation, true, true);
                     }
 
-                    if (current_quest_target_followed && current_quest_followed)
+                    if (current_quest_target_followed && current_quest_followed && !get_phantom_target(current_quest_followed, last_quest_objective))
                     {
                         distance = MiscThings::get_quest_target_distance(current_quest_target_followed, current_quest_followed);
                     }
@@ -2545,7 +2556,7 @@ namespace WalkerProcessor {
                     {
                         if (current_quest_target_followed && current_quest_followed)
                         {
-                            std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
+                            std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed, get_phantom_target(current_quest_followed, last_quest_objective));
 
                             if (good_fasttravel_location != "")
                             {
@@ -2577,7 +2588,7 @@ namespace WalkerProcessor {
 
                             if (good_fasttravel_location == "")
                             {
-                                std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
+                                std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed, get_phantom_target(current_quest_followed, last_quest_objective));
 
                                 if (nearest_city != "")
                                 {
@@ -7770,6 +7781,21 @@ namespace WalkerProcessor {
 
                     }
                 }
+                else
+                {
+                    if (quest_entry.phantom_target)
+                    {
+                        float corrected_distance = quest_entry.estimate_distance;
+                        if (corrected_distance == 0.0f)
+                            corrected_distance = 9999999.0f;
+
+                        if (corrected_distance < min_distance)
+                        {
+                            best_id = quest_entry.id;
+                            min_distance = quest_entry.estimate_distance;
+                        }
+                    }
+                }
 
             }
 
@@ -8079,20 +8105,21 @@ namespace WalkerProcessor {
                                         }
 
 
-                                        if (!ignore_specified_target && target != quest_entry.target)
+                                        if (!ignore_specified_target && target != quest_entry.target && !phantom_objective)
                                             continue;
 
-                                        if (quest_ref_handle)
-                                            if (quest_ref_handle.get())
+                                        if (phantom_objective || quest_ref_handle)
+                                            if (phantom_objective || quest_ref_handle.get())
                                             {
-                                                auto quests_target_ref = quest_ref_handle.get().get();
-                                               
+                                                RE::TESObjectREFR* quests_target_ref = nullptr;
+                                                
                                                 auto helgen_tower_marker = RE::TESObjectREFR::LookupByID(0xe24c3);
 
-
-                                                if (phantom_objective)
+                                                if (!phantom_objective)
+                                                    quests_target_ref = quest_ref_handle.get().get();
+                                                else
                                                     quests_target_ref = get_phantom_target(quest_entry.quest, quest_entry.objective);
-
+                                                    
 
                                                 bool quest_is_questionable = false;
 
@@ -8317,7 +8344,7 @@ namespace WalkerProcessor {
                                                 std::string big_distance = "";
                                                 float distance = player->GetDistance(target_ref, true, true);
 
-                                                if (current_quest_target_followed && current_quest_followed)
+                                                if (current_quest_target_followed && current_quest_followed && !get_phantom_target(current_quest_followed, last_quest_objective))
                                                 {
                                                     distance = MiscThings::get_quest_target_distance(current_quest_target_followed, current_quest_followed);
                                                 }
@@ -8347,7 +8374,7 @@ namespace WalkerProcessor {
                                                 {
                                                     if (current_quest_target_followed && current_quest_followed)
                                                     {
-                                                        std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
+                                                        std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed, get_phantom_target(current_quest_followed, last_quest_objective));
                                                         if (good_fasttravel_location != "")
                                                         {
                                                             if (MapProcessor::map_is_allowed())
@@ -8380,7 +8407,7 @@ namespace WalkerProcessor {
 
                                                         if (good_fasttravel_location == "")
                                                         {
-                                                            std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed);
+                                                            std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed, get_phantom_target(current_quest_followed, last_quest_objective));
 
                                                             if (nearest_city != "")
                                                             {
@@ -8893,17 +8920,23 @@ namespace WalkerProcessor {
                                         if (!quest_ref_handle)
                                             target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
 
-                                        if (quest_ref_handle)
-                                            if (quest_ref_handle.get())
+                                        if (phantom_objective || quest_ref_handle)
+                                            if (phantom_objective || quest_ref_handle.get())
                                             {
-                                                auto quests_target_ref = quest_ref_handle.get().get();
-
-                                                quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref);
-
-                                                new_target_found = true;
+                                                RE::TESObjectREFR* quests_target_ref = nullptr;
 
                                                 if (phantom_objective)
+                                                {
                                                     quests_target_ref = get_phantom_target(quest, objective);
+                                                }
+                                                else
+                                                {
+                                                    quests_target_ref = quest_ref_handle.get().get();
+                                                    quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref);
+                                                }
+                                                    
+
+                                                new_target_found = true;
 
                                                 if (target_ref != quests_target_ref)
                                                 {
@@ -15916,6 +15949,7 @@ namespace WalkerProcessor {
                     if (start_attacking)
                     {
 
+                        //i forgot why i made it melee-only, needs testing. may be bad
                         //if ((is_melee_weapon(get_current_active_hand()) || !MiscThings::has_something_equipped(get_current_active_hand())) && !close_enough() && !shout_mode)
                         if (!close_enough() && !shout_mode)
                         {
