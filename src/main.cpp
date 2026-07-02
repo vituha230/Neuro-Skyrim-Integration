@@ -30,6 +30,9 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+//TODO self-cast spells ignore target (excluding wards if they are self cast)
+//TODO make settlement command work in good interior cells of settlements (at least taverns and shops and jarl house)
+//TODO try to fix -fire res debuff that shows no number. maybe improve remove-aliases function to replace global vars too
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
 //TODO test all cast_spell variations
 //TODO strange dragon aim sometimes when using magic
