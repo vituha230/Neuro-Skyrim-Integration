@@ -30,7 +30,6 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-//TODO check whiterun house in the list of interesting places before player buys it
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
 //TODO test all cast_spell variations
 //TODO strange dragon aim sometimes when using magic

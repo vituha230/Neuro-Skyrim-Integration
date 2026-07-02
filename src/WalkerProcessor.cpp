@@ -10655,6 +10655,14 @@ namespace WalkerProcessor {
 
                                     attack_action_done = true;
 
+
+                                    if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                    {
+                                        reset_walker();
+                                        return true;
+                                    }
+
+
                                     goto finalize_attack;
                                     //goto attack_action_1;
 
@@ -10680,6 +10688,14 @@ namespace WalkerProcessor {
                                         attack_spell_cast_timeout = 0.0f;
                                         right_attack_cancel();
                                         attack_action_time0 = 0.0f;
+
+                                        if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                        {
+                                            reset_walker();
+                                            return true;
+                                        }
+
+
                                     }
                                     else
                                         attack_spell_cast_timeout += dtime;
@@ -10953,6 +10969,13 @@ namespace WalkerProcessor {
                                 //set_universal_block(0.2f);
                             }
 
+
+                            if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                            {
+                                reset_walker();
+                                return true;
+                            }
+
                             
                         }
 
@@ -11011,6 +11034,14 @@ namespace WalkerProcessor {
 
                                     attack_action_done = true;
 
+                                    if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                    {
+                                        reset_walker();
+                                        return true;
+                                    }
+
+
+
                                     goto finalize_attack;
                                 }
 
@@ -11060,6 +11091,13 @@ namespace WalkerProcessor {
                                         
                                         attack_action_done = true;
 
+
+                                        if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                        {
+                                            reset_walker();
+                                            return true;
+                                        }
+
                                         goto finalize_attack;
 
                                     }
@@ -11085,6 +11123,14 @@ namespace WalkerProcessor {
                                             attack_spell_cast_timeout = 0.0f;
                                             left_attack_cancel();
                                             attack_action_time1 = 0.0f;
+
+                                            if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                            {
+                                                reset_walker();
+                                                return true;
+                                            }
+
+
                                         }
 
                                         else
@@ -11338,6 +11384,13 @@ namespace WalkerProcessor {
 
                             dualcasting = false;
                             
+
+                            if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                            {
+                                reset_walker();
+                                return true;
+                            }
+
                         }
                     }
                 }
