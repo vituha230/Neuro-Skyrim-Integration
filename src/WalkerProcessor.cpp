@@ -10656,7 +10656,7 @@ namespace WalkerProcessor {
                                     attack_action_done = true;
 
 
-                                    if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                    if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                     {
                                         reset_walker();
                                         return true;
@@ -10689,7 +10689,7 @@ namespace WalkerProcessor {
                                         right_attack_cancel();
                                         attack_action_time0 = 0.0f;
 
-                                        if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                        if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                         {
                                             reset_walker();
                                             return true;
@@ -10970,7 +10970,7 @@ namespace WalkerProcessor {
                             }
 
 
-                            if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                            if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                             {
                                 reset_walker();
                                 return true;
@@ -11034,7 +11034,7 @@ namespace WalkerProcessor {
 
                                     attack_action_done = true;
 
-                                    if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                    if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                     {
                                         reset_walker();
                                         return true;
@@ -11092,7 +11092,7 @@ namespace WalkerProcessor {
                                         attack_action_done = true;
 
 
-                                        if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                        if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                         {
                                             reset_walker();
                                             return true;
@@ -11124,7 +11124,7 @@ namespace WalkerProcessor {
                                             left_attack_cancel();
                                             attack_action_time1 = 0.0f;
 
-                                            if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                                            if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                             {
                                                 reset_walker();
                                                 return true;
@@ -11385,7 +11385,7 @@ namespace WalkerProcessor {
                             dualcasting = false;
                             
 
-                            if (spell_mode && target_ref && MiscThings::is_friend(target_ref))
+                            if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                             {
                                 reset_walker();
                                 return true;
