@@ -347,6 +347,8 @@ namespace MiscThings {
 
     int get_player_gold();
 
+    bool inside_of_kilkreath_post_parkour(RE::TESObjectREFR* object);
+
     int trap_firing(RE::TESObjectREFR* trap);
     int two_state_activator_state(RE::TESObjectREFR* activator);
     int get_destructible_state(RE::TESObjectREFR* web);

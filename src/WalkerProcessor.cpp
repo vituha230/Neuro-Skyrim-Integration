@@ -20,6 +20,7 @@ namespace WalkerProcessor {
     bool spell_mode_init_done = false;
 
 
+    bool custom_path_must_jump_on_last_point = false;
     
 
     //do not reset these in reset_walker()
@@ -1943,6 +1944,10 @@ namespace WalkerProcessor {
 
         bool result = false;
         try {
+
+            if (custom_path_must_jump_on_last_point && custom_path_appended && current_path_point == (int)std::size(path) - 1)
+                return true;
+
 
             if (MiscThings::object_inside_katariah_balcony(player))
                 return true;
@@ -5114,6 +5119,7 @@ namespace WalkerProcessor {
 
         custom_path_appended = false; 
 
+        custom_path_must_jump_on_last_point = false;
 
         just_teleported_timeout = 0.0f;
 
@@ -6581,6 +6587,64 @@ namespace WalkerProcessor {
         }
     }
 
+    void kilkreath_parkour_check(RE::TESObjectREFR* target)
+    {
+        if (target)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            auto parent_cell = player->GetParentCell();
+
+            if (parent_cell && parent_cell->formID == 0x4624f)
+            {
+                if (target && target->formID == 0xc5834)
+                {
+                    using_custom_path = true;
+                    allow_interrupt_custom_walk = true;
+                    custom_path_must_jump_on_last_point = true;
+                    dont_quicksave_after_custom_path = true;
+                    custom_path = CustomWalkerPaths::kilkreath_parkour_crystal;
+                }
+                else
+                {
+                    if (target && target->formID == 0xc583b)
+                    {
+                        using_custom_path = true;
+                        allow_interrupt_custom_walk = true;
+                        dont_quicksave_after_custom_path = true;
+                        //custom_path_must_jump_on_last_point = true;
+                        custom_path = CustomWalkerPaths::kilkreath_walk_crystal3;
+                    }
+                    /*
+                    else
+                    {
+                        if (MiscThings::inside_of_kilkreath_post_parkour(player) && !MiscThings::inside_of_kilkreath_post_parkour(target))
+                        {
+                            using_custom_path = true;
+                            allow_interrupt_custom_walk = true;
+                            custom_path_must_jump_on_last_point = true;
+                            walk_again_when_finished = true;
+                            custom_path = CustomWalkerPaths::kilkreath_parkour_crystal2_back;
+                        }
+                        else
+                        {
+                            if (!MiscThings::inside_of_kilkreath_post_parkour(player) && MiscThings::inside_of_kilkreath_post_parkour(target))
+                            {
+                                using_custom_path = true;
+                                allow_interrupt_custom_walk = true;
+                                custom_path_must_jump_on_last_point = true;
+                                walk_again_when_finished = true;
+                                custom_path = CustomWalkerPaths::kilkreath_parkour_crystal2;
+                            }
+                        }
+                    }
+                    */
+                }
+            }
+        }
+    }
+
+
 
     /*
     void special_pathfinding_checks(RE::TESObjectREFR* target)
@@ -6917,6 +6981,8 @@ namespace WalkerProcessor {
                 else
                     target_ref = object->second.object;
 
+
+                kilkreath_parkour_check(target_ref);
 
 
                 float silly_walk_chance = (float)std::rand() / RAND_MAX;
@@ -8296,9 +8362,12 @@ namespace WalkerProcessor {
                                                     //path_valid = true;
                                                 }
 
+
                                                 quest_mode = true;
                                                 target_ref = MiscThings::redirect_quest_target(quest_entry.quest, quests_target_ref);
 
+
+                                                kilkreath_parkour_check(target_ref);
 
                                                 current_quest_target_followed = quest_entry.target;
                                                 current_quest_followed = quest_entry.quest;

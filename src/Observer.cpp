@@ -19,6 +19,8 @@ namespace Observer {
 	bool old_vampire_melee = false;
 
 	int old_da10_stage = 0;
+	int old_da09_stage = 0;
+
 
 	bool old_blackbook_warp = false;
 
@@ -3305,8 +3307,6 @@ namespace Observer {
 																}
 															}
 
-															//
-
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRotatingDoor01")
 															{
 																std::string name = MiscThings::insert_object_into_list_custom_name("Rotating Stone Door", a_ref);
@@ -3945,6 +3945,15 @@ namespace Observer {
 												result.push_back(name + " stopped glowing...");
 											}
 											//only when close.
+
+
+
+											if (new_state.trap_firing == 19)
+											{
+												std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
+												
+												result.push_back(name + " activated and the crystal inside of it released white laser beam");
+											}
 
 
 
@@ -4600,6 +4609,12 @@ namespace Observer {
 					if (da10_quest)
 						old_da10_stage = da10_quest->currentStage;
 					
+					auto da09_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA09"); //meridiah quest
+
+					if (da09_quest)
+						old_da09_stage = da09_quest->currentStage;
+
+
 
 
 					
@@ -4717,8 +4732,21 @@ namespace Observer {
 					old_da10_stage = current_stage;
 				}
 					
+				auto da09_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA09"); //meridiah quest
+
+				if (da09_quest)
+				{
+					auto current_stage = da09_quest->currentStage;
+
+					if (current_stage == 200 && old_da09_stage < 200)
+						send_random_context("Some shining light brings you up into the sky! You hover very far above the ground... you can see entire skyrim from here", false);
+
+					if (current_stage == 300 && old_da09_stage < 300)
+						send_random_context("Meridia sends you back to earth...", false);
 
 
+					old_da09_stage = current_stage;
+				}
 					
 
 

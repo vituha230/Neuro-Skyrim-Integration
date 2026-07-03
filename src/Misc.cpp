@@ -19,6 +19,27 @@ namespace MiscThings {
     
 
 
+    bool inside_of_kilkreath_post_parkour(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto parent_cell = object->GetParentCell();
+
+            if (parent_cell && parent_cell->formID == 0x4624f)
+            {
+                auto object_pos = object->GetPosition();
+
+                if ((object_pos.x < -1600.0f && object_pos.z > 1500.0f) || (object_pos.z > 1800.0f))
+                    return true;
+            }
+        }
+
+
+        return false;
+    }
+
+
+
     //TODO THIS IS NOT PERFECT AT ALL
     RE::TESObjectREFR* find_hermaeus_mora_face()
     {
@@ -4197,6 +4218,56 @@ namespace MiscThings {
         auto player_worldspace = player->GetWorldspace();
 
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+        if (!quest)
+            return nullptr;
+
+        if (quest->formID == 0x4e4e1)
+        {
+            if (parent_cell)
+            {
+                if (parent_cell->formID == 0x15255)
+                {
+                    auto crystal1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc4de6);
+                    auto crystal2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5813);
+                    auto crystal3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5820);
+
+                    if (MiscThings::trap_firing(crystal1) != 19)
+                        if (crystal1) return crystal1;
+
+                    if (MiscThings::trap_firing(crystal2) != 19)
+                        if (crystal2) return crystal2;
+
+                    if (MiscThings::trap_firing(crystal3) != 19)
+                        if (crystal3) return crystal3;
+                }
+
+
+                if (parent_cell->formID == 0x4624f)
+                {
+                    auto crystal4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5831);
+                    auto crystal5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5834);
+                    auto crystal6 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc583b);
+
+                    if (MiscThings::trap_firing(crystal4) != 19)
+                        if (crystal4) return crystal4;
+
+                    if (MiscThings::trap_firing(crystal5) != 19)
+                        if (crystal5) return crystal5;
+
+                    if (MiscThings::trap_firing(crystal6) != 19)
+                        if (crystal6) return crystal6;
+                }
+
+                if (parent_cell->formID == 0x27d1c)
+                {
+                    auto crystal7 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc583d);
+
+                    if (MiscThings::trap_firing(crystal7) != 19)
+                        if (crystal7) return crystal7;
+                }
+            }
+        }
 
 
         if (quest && quest->formID == 0x22f08) //molag bal mace quest da10
@@ -8554,6 +8625,7 @@ namespace MiscThings {
         }
 
 
+
         object_p = General::Script::GetObject(activator, "DLC2DweRetractableStairScript");
 
         if (object_p)
@@ -9285,6 +9357,19 @@ namespace MiscThings {
             }
             */
         }
+
+
+        object_p = General::Script::GetObject(trap, "dunKilkreathCrystalPedastalSCRIPT");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "::isTriggered_var";
+
+            if (General::Script::GetVariable<bool>(object_p, prop_name))
+                return 19;
+        }
+
+
 
 
 
@@ -10907,6 +10992,14 @@ namespace MiscThings {
                         if (model.find("ApoScryeTrigger") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 75.0f };
+                            base_shift_vector *= object->GetScale();
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("CrystalPedestal") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 60.0f };
                             base_shift_vector *= object->GetScale();
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;

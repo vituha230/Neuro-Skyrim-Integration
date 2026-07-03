@@ -3,6 +3,28 @@
 
 namespace CustomWalkerPaths {
 
+    std::vector<RE::NiPoint3> kilkreath_parkour_crystal = {
+        {-1250.00562f, 182.507584f, 1660.03320f },
+        {-1252.83203f, -170.095764f, 1674.79553f }
+    };
+
+    /*
+    std::vector<RE::NiPoint3> kilkreath_parkour_crystal2 = {
+        {-1500.9986f, 291.171051f, 1689.92810f },
+        {-1800.12170f, 289.267242f, 1666.30579f }
+    };
+
+    std::vector<RE::NiPoint3> kilkreath_parkour_crystal2_back = {
+        {-1800.12170f, 289.267242f, 1666.30579f },
+        {-1500.9986f, 291.171051f, 1689.92810f }
+    };
+    */
+
+    std::vector<RE::NiPoint3> kilkreath_walk_crystal3 = {
+        {-496.778595, 2315.08008, 2025.47961 },
+        {-482.962067, 342.101166, 2058.73999 }
+    };
+
 
     std::vector<RE::NiPoint3> miraak_temple_2_staircase_down = {
         {-935.203369, 5581.19580, -1471.51489}, //launch if player is closer than 100 to this point, if our goal's X less than 5000.0
