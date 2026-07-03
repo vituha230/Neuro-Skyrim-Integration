@@ -18,6 +18,7 @@ namespace Observer {
 
 	bool old_vampire_melee = false;
 
+	int old_da10_stage = 0;
 
 	bool old_blackbook_warp = false;
 
@@ -4594,6 +4595,12 @@ namespace Observer {
 					if (dlc1vq01_quest)
 						old_dlc1vq01_stage = dlc1vq01_quest->currentStage;
 
+					auto da10_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA10"); //molag bal quest
+
+					if (da10_quest)
+						old_da10_stage = da10_quest->currentStage;
+					
+
 
 					
 					old_vampire_melee = MiscThings::vampirelord_melee_mode();
@@ -4690,6 +4697,26 @@ namespace Observer {
 
 					old_dlc1vq01_stage = dlc1vq01_stage;
 				}
+
+
+				auto da10_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA10"); //molag bal quest
+
+				if (da10_quest)
+				{
+					auto current_stage = da10_quest->currentStage;
+
+					if (current_stage == 40 && old_da10_stage < 40)
+						send_random_context("The ground is shaking! Items in the room are flying around!", false);
+
+					if (current_stage == 76 && old_da10_stage < 76)
+						send_random_context("The cage emerges around you from the floor! You are trapped", false);
+
+					if (current_stage == 95 && old_da10_stage < 95)
+						send_random_context("The cage emerges around Logrolf! He is trapped", false);
+
+					old_da10_stage = current_stage;
+				}
+					
 
 
 					

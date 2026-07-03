@@ -20,10 +20,14 @@ namespace WalkerProcessor {
     bool spell_mode_init_done = false;
 
 
+    
+
     //do not reset these in reset_walker()
     RE::TESQuest* last_quest_chosen = nullptr;
     RE::BGSQuestObjective* last_quest_objective_chosen = nullptr;
     RE::TESQuestTarget* last_quest_target_chosen = nullptr;
+
+    long long last_time_new_fight = 0;
     ///////////
 
     bool autoload_door_pathfinding_failed = false;
@@ -11765,8 +11769,10 @@ namespace WalkerProcessor {
                     if (MiscThings::is_door_superlocked(target_ref))
                     {
                         auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+                        auto haunted_house_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7be26);
+                        auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
-                        if (target_ref == mzulft_door && mzulft_door)
+                        if ((target_ref == mzulft_door && mzulft_door) || (target_ref == haunted_house_door && haunted_house_door) || (target_ref == haunted_house_door2 && haunted_house_door2))
                         {
                             ;
                         }
@@ -11794,9 +11800,11 @@ namespace WalkerProcessor {
                     {
                         
                         auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+                        auto haunted_house_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7be26);
+                        auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
                         auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
-                        if (std::size(attackers) > 0 || (mzulft_door && target_ref == mzulft_door))
+                        if (std::size(attackers) > 0 || (mzulft_door && target_ref == mzulft_door) || (haunted_house_door && target_ref == haunted_house_door) || (target_ref == haunted_house_door2 && haunted_house_door2))
                         {
                             LockpickProcessor::reset_lockpicking();
                             confirm(); //lockpick it
@@ -14249,7 +14257,7 @@ namespace WalkerProcessor {
                         chill_with_context = true;
 
                         walk_to_object_by_refr(new_target, 3);
-                        send_random_context("[You started fighting next target: " + new_target_name + "]", false);
+                        send_random_context("[You started fighting next target: " + new_target_name + "]", true);
                     }
                     else
                     {
@@ -15246,7 +15254,7 @@ namespace WalkerProcessor {
 
                             interaction_before_generic_redirect = interaction_after_walk;
 
-
+                            
                             auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
                             if (redirect_ref == redirect_chain || redirect_ref == redirect_ysgramor_chain || redirect_ref == redirect_ysgramor_statue || redirect_ref == mushroom_lift_up || redirect_ref == mushroom_lift_down)
                             {
@@ -15255,7 +15263,19 @@ namespace WalkerProcessor {
                                 interaction_after_walk = 1;
                             }
                             else
-                                generic_redirect_active = true; //for this chain - we must get close_enough so it interacts
+                            {
+                                auto redirect_forsworn = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x28450);
+
+                                if (redirect_ref == redirect_forsworn && interaction_after_walk != 3)
+                                {
+                                    generic_redirect_active = false;
+                                    backup_interaction_made = false;
+                                    interaction_after_walk = 1;
+                                }
+                                else
+                                    generic_redirect_active = true; //for this chain - we must get close_enough so it interacts
+                            }
+                                
 
                             target_ref = redirect_ref;
                             walk_again();
@@ -15270,7 +15290,9 @@ namespace WalkerProcessor {
                             auto mushroom_lift_up = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7d);
                             auto mushroom_lift_down = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7e);
 
-                            if (generic_redirect_active || (target_ref == redirect_chain && redirect_chain) || (target_ref == redirect_ysgramor_chain && redirect_ysgramor_chain) || (target_ref == redirect_ysgramor_statue && redirect_ysgramor_statue) || (target_ref == mushroom_lift_up && mushroom_lift_up) || (target_ref == mushroom_lift_down && mushroom_lift_down))
+                            auto redirect_forsworn = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x28450);
+
+                            if (generic_redirect_active || (target_ref == redirect_chain && redirect_chain) || (target_ref == redirect_ysgramor_chain && redirect_ysgramor_chain) || (target_ref == redirect_ysgramor_statue && redirect_ysgramor_statue) || (target_ref == mushroom_lift_up && mushroom_lift_up) || (target_ref == mushroom_lift_down && mushroom_lift_down) || (target_ref == redirect_forsworn && redirect_forsworn))
                             {
                                 //check for cancel
                                 if (!redirect_ref)
@@ -16667,9 +16689,9 @@ namespace WalkerProcessor {
                                                             result_target = target_ref;
 
 
-                                                        //
+                                                        bool logrolf_condition = target_ref && target_ref->formID == 0x198f3 && close_enough();
 
-                                                        if (!confirming_closed_door_interaction && (looking_mode || MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive()))//(quest_mode && !target_is_interactive()))
+                                                        if (!confirming_closed_door_interaction && (logrolf_condition || looking_mode || MiscThings::is_intro() || MiscThings::is_intro2() || location_mode || (result_target == target_ref) || !target_is_interactive()))//(quest_mode && !target_is_interactive()))
                                                         {
                                                             //all good
 
@@ -16986,9 +17008,11 @@ namespace WalkerProcessor {
                                                                     {
 
                                                                         auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+                                                                        auto haunted_house_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7be26);
+                                                                        auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
                                                                         auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
-                                                                        if (std::size(attackers) > 0 || (target_ref == mzulft_door && mzulft_door))
+                                                                        if (std::size(attackers) > 0 || (target_ref == mzulft_door && mzulft_door) || (target_ref == haunted_house_door && haunted_house_door) || (target_ref == haunted_house_door2 && haunted_house_door2))
                                                                         {
                                                                             LockpickProcessor::reset_lockpicking();
                                                                             confirm(); //lockpick it
@@ -17086,22 +17110,33 @@ namespace WalkerProcessor {
                                                                                 if (interaction_after_walk == 3)
                                                                                 {
                                                                                     reset_walker();
-                                                                                    auto next_targets = MiscThings::get_player_attackers(false, nullptr, true);
 
-                                                                                    if (std::size(next_targets) > 0)
+                                                                                    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+                                                                                    float delta_last_new_fight = (double)(now - last_time_new_fight) / 1000000000.0;
+
+                                                                                    if (delta_last_new_fight > 1.0f)
                                                                                     {
-                                                                                        auto new_target = next_targets.at(std::size(next_targets) - 1);
-                                                                                        std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
-                                                                                        right_attack_cancel();
-                                                                                        left_attack_cancel();
-                                                                                        walk_to_object_by_refr(new_target, 3);
-                                                                                        send_random_context("[You started fighting next target: " + new_target_name + "]", false);
+                                                                                        last_time_new_fight = now;
+
+                                                                                        auto next_targets = MiscThings::get_player_attackers(false, nullptr, true);
+
+                                                                                        if (std::size(next_targets) > 0)
+                                                                                        {
+                                                                                            auto new_target = next_targets.at(std::size(next_targets) - 1);
+                                                                                            std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
+                                                                                            right_attack_cancel();
+                                                                                            left_attack_cancel();
+                                                                                            walk_to_object_by_refr(new_target, 3);
+                                                                                            send_random_context("[You started fighting next target: " + new_target_name + "]", true);
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            search_next_fight_target = true;
+                                                                                            //path_is_blocked_result(result_target);
+                                                                                        }
                                                                                     }
-                                                                                    else
-                                                                                    {
-                                                                                        search_next_fight_target = true;
-                                                                                        //path_is_blocked_result(result_target);
-                                                                                    }
+
+                                                                                    //else - stay at reset no new redirect
 
                                                                                 }
                                                                                 else
@@ -17154,7 +17189,7 @@ namespace WalkerProcessor {
                                                                                                 right_attack_cancel();
                                                                                                 left_attack_cancel();
                                                                                                 walk_to_object_by_refr(new_target, 3);
-                                                                                                send_random_context("[You started fighting next target: " + new_target_name + "]", false);
+                                                                                                send_random_context("[You started fighting next target: " + new_target_name + "]", true);
                                                                                             }
                                                                                             else
                                                                                             {
@@ -17307,9 +17342,11 @@ namespace WalkerProcessor {
                                                                     //send_random_context("The path is blocked by a locked door!");
                                                                     
                                                                     auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+                                                                    auto haunted_house_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7be26);
+                                                                    auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
                                                                     auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
-                                                                    if (std::size(attackers) > 0 || (get_targeted_ref() == mzulft_door && mzulft_door))
+                                                                    if (std::size(attackers) > 0 || (get_targeted_ref() == mzulft_door && mzulft_door) || (get_targeted_ref() == haunted_house_door && haunted_house_door) || (get_targeted_ref() == haunted_house_door2 && haunted_house_door2))
                                                                     {
                                                                         LockpickProcessor::reset_lockpicking();
                                                                         confirm(); //lockpick it
@@ -17694,9 +17731,11 @@ namespace WalkerProcessor {
                                                     
                                                     //send_random_context("The path is blocked by a locked door!");
                                                     auto mzulft_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7d419);
+                                                    auto haunted_house_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7be26);
+                                                    auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
                                                     auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
-                                                    if ((std::size(attackers) > 0 && runaway_mode) || (mzulft_door && get_targeted_ref() == mzulft_door))
+                                                    if ((std::size(attackers) > 0 && runaway_mode) || (mzulft_door && get_targeted_ref() == mzulft_door) || (haunted_house_door && get_targeted_ref() == haunted_house_door) || (get_targeted_ref() == haunted_house_door && haunted_house_door))
                                                     {
                                                         LockpickProcessor::reset_lockpicking();
                                                         confirm(); //lockpick it

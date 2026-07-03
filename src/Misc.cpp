@@ -3932,7 +3932,6 @@ namespace MiscThings {
                 }
             }
 
-
             //this is when we get out of thieves guild
             auto redirect_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc7312);
 
@@ -3946,6 +3945,31 @@ namespace MiscThings {
                         return redirect_chain;
                 }
             }
+
+
+            auto redirect_forsworn = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x28450);
+
+            if (redirect_forsworn && target == redirect_forsworn)
+                return redirect_forsworn;
+
+
+            if (player_cell && player_cell->formID == 0x1529c)
+            {
+                //deepwood redoubt
+
+                auto expert_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x28420);
+
+                if (expert_door && MiscThings::is_door_locked(expert_door))
+                {
+                    if (target_pos.x > 610.0f && target_pos.y > -1630.0f)
+                    {
+                        if (redirect_forsworn)
+                            return redirect_forsworn;
+                    }
+                }
+            }
+
+
 
 
 
@@ -4173,6 +4197,77 @@ namespace MiscThings {
         auto player_worldspace = player->GetWorldspace();
 
         auto tamriel_worldspace = RE::TESForm::LookupByID(0x3c);
+
+
+        if (quest && quest->formID == 0x22f08) //molag bal mace quest da10
+        {
+            auto stage = quest->currentStage;
+
+            if (stage == 32)
+            {
+                //redirect to door he asks to pick
+                auto door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7be26);
+
+                if (door)
+                    return door;
+            }
+            else
+                if (stage == 37)
+                {
+                    //redirect to main door
+                    auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
+
+                    if (haunted_house_door2)
+                        return haunted_house_door2;
+                }
+        }
+
+
+
+        //hag's end interior
+
+        if (parent_cell && parent_cell->formID == 0x59398)
+        {
+            if (target)
+            {
+                auto target_pos = target->GetPosition();
+
+
+                if (target_pos.z > -2073.0f)
+                {
+                    auto bridge = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9d243);
+
+                    if (bridge && MiscThings::two_state_activator_state(bridge) != 1)
+                    {
+                        auto redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x709e314);
+                        if (redirect1) return redirect1;
+                    }
+                    else
+                    {
+                        auto gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9d3b4);
+
+                        if (gate1 && MiscThings::two_state_activator_state(gate1) != 0)
+                        {
+                            auto redirect2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x709e315);
+                            if (redirect2) return redirect2;
+                        }
+                        else
+                        {
+                            if (target_pos.z > -1708.0f)
+                            {
+                                auto gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x59c88);
+                                if (gate2 && MiscThings::two_state_activator_state(gate2) != 0)
+                                {
+                                    auto redirect3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x709e316);
+                                    if (redirect3) return redirect3;
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
 
 
         //dlc1 redwaterden2

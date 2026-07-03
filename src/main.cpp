@@ -31,6 +31,8 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
+
+//TODO enchanted jewelry should be adviced with some fixed value
 //TODO self-cast spells ignore target (excluding wards if they are self cast)
 //TODO make settlement command work in good interior cells of settlements (at least taverns and shops and jarl house)
 //TODO try to fix -fire res debuff that shows no number. maybe improve remove-aliases function to replace global vars too
