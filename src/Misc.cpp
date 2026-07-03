@@ -17,6 +17,26 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
     long long settlement_advice_timestamp = 0;
     
+    bool inside_of_hag_rock_pit(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto worldspace = object->GetWorldspace();
+
+            if (worldspace && worldspace->formID == 0x3c)
+            {
+                auto object_pos = object->GetPosition();
+
+                RE::NiPoint3 root = { -177745.438, -15671.0303, 4591.37598 };
+
+                if (object_pos.GetDistance(root) < 200.0f)
+                    return true;
+            }
+        }
+
+
+        return false;
+    }
 
 
     bool inside_of_kilkreath_post_parkour(RE::TESObjectREFR* object)
@@ -4295,8 +4315,26 @@ namespace MiscThings {
 
 
 
-        //hag's end interior
+        
+        //hag rock gate
+        if (parent_cell && parent_cell->formID == 0x15295)
+        {
+            if (target && target->formID == 0x326c3)
+            {
+                auto gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3275e);
 
+                if (gate && MiscThings::two_state_activator_state(gate) != 0)
+                {
+                    auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70a3417);
+
+                    if (redirect)
+                        return redirect;
+                }
+            }
+        }
+
+
+        //hag's end interior
         if (parent_cell && parent_cell->formID == 0x59398)
         {
             if (target)
@@ -10023,6 +10061,11 @@ namespace MiscThings {
                                             old_pos.z += 1000.0f;
                                             MiscThings::SetPosition_moveto(blocker_1, old_pos);
                                         }
+                                    }
+
+                                    if (var_string == "Quest completed: : PIECES OF THE PAST")
+                                    {
+                                        quicksave(); //daedras are kinda strong and doing all dialogues again is lame
                                     }
 
                                     WalkerProcessor::test_new_very_close_quest();

@@ -13,6 +13,7 @@
 
 namespace WalkerProcessor {
 
+
     bool close_enough_linger = false;
 
     bool map_was_unregistered_by_follow_quest = false;
@@ -209,7 +210,7 @@ namespace WalkerProcessor {
     float getting_into_carriage_time = 0.0f;
 
     float walker_inactive_time = 0.0f;
-
+    float walker_active_time = 0.0f;
 
     //bool reset_by_explorer = false;
 
@@ -497,7 +498,6 @@ namespace WalkerProcessor {
     RE::NiPoint3 last_point_of_last_path{};
 
     bool last_dragon_was_flying = false;
-
 
 
 
@@ -3164,7 +3164,7 @@ namespace WalkerProcessor {
 
                 if (last_targeted_ref == targeted_ref)
                 {
-                    if (have_door_targeted_time > threshold)//0.15f)
+                    if (have_door_targeted_time > threshold && walker_active_time > 1.0f)//0.15f)
                     {
                         //have_door_targeted_time = 0.0f;
                         //last_targeted_ref = nullptr;
@@ -3220,7 +3220,7 @@ namespace WalkerProcessor {
                 
                 if (last_blocking_targeted_ref == targeted_ref)
                 {
-                    if (have_blocking_targeted_time > 0.5f)//0.15f)
+                    if (have_blocking_targeted_time > 0.5f && walker_active_time > 2.0f)//0.15f)
                     {
                         //have_door_targeted_time = 0.0f;
                         //last_targeted_ref = nullptr;
@@ -6587,6 +6587,46 @@ namespace WalkerProcessor {
         }
     }
 
+
+
+
+    void hag_rock_pit_check(RE::TESObjectREFR* target)
+    {
+        if (target)
+        {
+            auto player = RE::PlayerCharacter::GetSingleton();
+            auto worldspace = player->GetWorldspace();
+
+            if (worldspace && worldspace->formID == 0x3c)
+            {
+                if (MiscThings::inside_of_hag_rock_pit(player) && !MiscThings::inside_of_hag_rock_pit(target))
+                {
+                    invalidate_path();
+                    using_custom_path = true;
+                    walk_again_when_finished = true;
+                    custom_path = CustomWalkerPaths::hag_rock_pit_up;
+                    path = custom_path;
+                    current_path_point = 0;
+                    path_valid = true;
+                    dont_shift = true;
+                }
+                else
+                {
+                    if (!MiscThings::inside_of_hag_rock_pit(player) && MiscThings::inside_of_hag_rock_pit(target))
+                    {
+                        using_custom_path = true;
+                        allow_interrupt_custom_walk = true;
+                        dont_quicksave_after_custom_path = true;
+                        custom_path = CustomWalkerPaths::hag_rock_pit_down;
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
     void kilkreath_parkour_check(RE::TESObjectREFR* target)
     {
         if (target)
@@ -6999,6 +7039,7 @@ namespace WalkerProcessor {
                 solitude_prison_out_of_bounds_check();
                 solitude_post_emperor_check(target_ref);
                 katariah_post_emperor_check(target_ref);
+                hag_rock_pit_check(target_ref);
 
                 reminder_start_pos = player->GetPosition();
                 reminder_start_pos = player->GetPosition();
@@ -7381,7 +7422,7 @@ namespace WalkerProcessor {
 
                     solitude_post_emperor_check(target_ref);
                     katariah_post_emperor_check(target_ref);
-
+                    hag_rock_pit_check(target_ref);
 
                     right_attack_cancel();
                     left_attack_cancel();
@@ -7465,6 +7506,7 @@ namespace WalkerProcessor {
 
                 solitude_post_emperor_check(target_ref);
                 katariah_post_emperor_check(target_ref);
+                hag_rock_pit_check(target_ref);
 
                 right_attack_cancel();
                 left_attack_cancel();
@@ -7554,6 +7596,7 @@ namespace WalkerProcessor {
 
                 solitude_post_emperor_check(target_ref);
                 katariah_post_emperor_check(target_ref);
+                hag_rock_pit_check(target_ref);
 
                 //clear_input_queue();
 
@@ -8409,6 +8452,7 @@ namespace WalkerProcessor {
 
                                                 solitude_post_emperor_check(target_ref);
                                                 katariah_post_emperor_check(target_ref);
+                                                hag_rock_pit_check(target_ref);
 
                                                 right_attack_cancel();
                                                 left_attack_cancel();
@@ -8856,6 +8900,8 @@ namespace WalkerProcessor {
 
                                                 solitude_post_emperor_check(target_ref);
                                                 katariah_post_emperor_check(target_ref);
+                                                hag_rock_pit_check(target_ref);
+
 
                                                 long long now = std::chrono::steady_clock::now().time_since_epoch().count();
 
@@ -9054,6 +9100,7 @@ namespace WalkerProcessor {
 
                                                     solitude_post_emperor_check(target_ref);
                                                     katariah_post_emperor_check(target_ref);
+                                                    hag_rock_pit_check(target_ref);
 
                                                     long long now = std::chrono::steady_clock::now().time_since_epoch().count();
 
@@ -9256,6 +9303,7 @@ namespace WalkerProcessor {
 
             solitude_post_emperor_check(target_ref);
             katariah_post_emperor_check(target_ref);
+            hag_rock_pit_check(target_ref);
 
             result.first = true;
             result.second = "[Started walking to " + reminder_target_name + "]";
@@ -9371,6 +9419,7 @@ namespace WalkerProcessor {
 
             solitude_post_emperor_check(target_ref);
             katariah_post_emperor_check(target_ref);
+            hag_rock_pit_check(target_ref);
         }
         else
         {
@@ -12773,12 +12822,23 @@ namespace WalkerProcessor {
             }
             else
             {
-                time_stuck += dtime;
 
-                if (time_stuck > 1.5f)
+                auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+                float delta_teleport = (double)(now - get_last_load_timestamp()) / 1000000000.0;
+
+                if (delta_teleport > 5.0f)
                 {
-                    result = true;
+                    time_stuck += dtime;
+
+                    if (time_stuck > 1.5f)
+                    {
+                        result = true;
+                    }
                 }
+
+
+
             }
         }
 
@@ -15853,7 +15913,10 @@ namespace WalkerProcessor {
 
                 if (have_target_to_walk)
                 {
+                    if (!using_custom_path)
+                        hag_rock_pit_check(target_ref);
 
+                    walker_active_time += dtime;
 
                     if (target_ref && MiscThings::is_dragon(target_ref))
                     { 
@@ -17943,6 +18006,7 @@ namespace WalkerProcessor {
                 {
                     //no target_to_walk
                     walker_inactive_time += dtime;
+                    walker_active_time = 0.0f;
                     reset_walker();
                 }
                     
