@@ -20,11 +20,12 @@
 
 //TODO dawnguard dlc
 // maybe throw in some context when we get into jail and when harkon bites us
+// soul cairn
 
 
 //TODO bards 
 //TODO hearthfire
-//TODO random sidequests (markarth conspiracy quest, windhelm investigation.. solstheim ash captain shit.. solitude something something?)
+//TODO random sidequests (markarth horror house, dibella steal statue + rescue girl, namira, windhelm investigation.. solstheim ash captain shit.. solitude ship robbery and potema?)
 
 
 //////////////////////////////////////////////////////

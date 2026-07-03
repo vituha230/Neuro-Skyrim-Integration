@@ -13536,7 +13536,21 @@ namespace MiscThings {
             auto escaping_jail = player->playerFlags.escaping;
             bool serving_jail = (bool)player->currentPrisonFaction && !escaping_jail && !MiscThings::is_intro() && !MiscThings::is_intro2() && MiscThings::escaped_helgen();
 
-            return serving_jail;
+            if (serving_jail)
+            {
+                auto markarth_superjail = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS02");
+                if (markarth_superjail && (markarth_superjail->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || markarth_superjail->data.flags.all(RE::QuestFlag::kEnabled)) && !markarth_superjail->data.flags.all(RE::QuestFlag::kCompleted))
+                {
+                    auto parent_cell = player->GetParentCell();
+
+                    if (parent_cell && (parent_cell->formID == 0x16203 || parent_cell->formID == 0x597d4))
+                        return false; //this jail should not count as jail since we need quests to escape
+                }
+
+                return true;
+            }
+
+            
         }
        
         return false;
