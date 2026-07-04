@@ -30,6 +30,7 @@ namespace WalkerProcessor {
     RE::TESQuestTarget* last_quest_target_chosen = nullptr;
 
     long long last_time_new_fight = 0;
+    RE::TESObjectREFR* last_attack_target = nullptr;
     ///////////
 
     bool autoload_door_pathfinding_failed = false;
@@ -14376,6 +14377,19 @@ namespace WalkerProcessor {
 
                     if (std::size(next_targets) > 0)
                     {
+
+                        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+                        float delta_last_new_fight = (double)(now - last_time_new_fight) / 1000000000.0;
+
+                        bool last_fight_long_ago = false;
+
+                        if (delta_last_new_fight > 5.0f)
+                        {
+                            last_fight_long_ago = true;
+                        }
+
+                        last_time_new_fight = now;
+
                         reset_walker();
                         auto new_target = next_targets.at(0);
                         std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
@@ -14386,7 +14400,11 @@ namespace WalkerProcessor {
                         chill_with_context = true;
 
                         walk_to_object_by_refr(new_target, 3);
-                        send_random_context("[You started fighting next target: " + new_target_name + "]", true);
+
+                        if (last_fight_long_ago || last_attack_target != new_target)
+                            send_random_context("[You started fighting next target: " + new_target_name + "]", false);
+
+                        last_attack_target = new_target;
                     }
                     else
                     {
@@ -17246,27 +17264,36 @@ namespace WalkerProcessor {
                                                                                     auto now = std::chrono::steady_clock::now().time_since_epoch().count();
                                                                                     float delta_last_new_fight = (double)(now - last_time_new_fight) / 1000000000.0;
 
-                                                                                    if (delta_last_new_fight > 1.0f)
+                                                                                    bool last_fight_long_ago = false;
+
+                                                                                    if (delta_last_new_fight > 5.0f)
                                                                                     {
-                                                                                        last_time_new_fight = now;
-
-                                                                                        auto next_targets = MiscThings::get_player_attackers(false, nullptr, true);
-
-                                                                                        if (std::size(next_targets) > 0)
-                                                                                        {
-                                                                                            auto new_target = next_targets.at(std::size(next_targets) - 1);
-                                                                                            std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
-                                                                                            right_attack_cancel();
-                                                                                            left_attack_cancel();
-                                                                                            walk_to_object_by_refr(new_target, 3);
-                                                                                            send_random_context("[You started fighting next target: " + new_target_name + "]", true);
-                                                                                        }
-                                                                                        else
-                                                                                        {
-                                                                                            search_next_fight_target = true;
-                                                                                            //path_is_blocked_result(result_target);
-                                                                                        }
+                                                                                        last_fight_long_ago = true;
                                                                                     }
+                                                                                    
+                                                                                    last_time_new_fight = now;
+
+                                                                                    auto next_targets = MiscThings::get_player_attackers(false, nullptr, true);
+
+                                                                                    if (std::size(next_targets) > 0)
+                                                                                    {
+                                                                                        auto new_target = next_targets.at(std::size(next_targets) - 1);
+                                                                                        std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
+                                                                                        right_attack_cancel();
+                                                                                        left_attack_cancel();
+                                                                                        walk_to_object_by_refr(new_target, 3);
+
+                                                                                        if (last_fight_long_ago || last_attack_target != new_target)
+                                                                                            send_random_context("[You started fighting next target: " + new_target_name + "]", false);
+
+                                                                                        last_attack_target = new_target;
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        search_next_fight_target = true;
+                                                                                        //path_is_blocked_result(result_target);
+                                                                                    }
+
 
                                                                                     //else - stay at reset no new redirect
 
@@ -17316,12 +17343,29 @@ namespace WalkerProcessor {
 
                                                                                             if (std::size(next_targets) > 0)
                                                                                             {
+
+                                                                                                auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+                                                                                                float delta_last_new_fight = (double)(now - last_time_new_fight) / 1000000000.0;
+
+                                                                                                bool last_fight_long_ago = false;
+
+                                                                                                if (delta_last_new_fight > 5.0f)
+                                                                                                {
+                                                                                                    last_fight_long_ago = true;
+                                                                                                }
+
+                                                                                                last_time_new_fight = now;
+
                                                                                                 auto new_target = next_targets.at(std::size(next_targets) - 1);
                                                                                                 std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
                                                                                                 right_attack_cancel();
                                                                                                 left_attack_cancel();
                                                                                                 walk_to_object_by_refr(new_target, 3);
-                                                                                                send_random_context("[You started fighting next target: " + new_target_name + "]", true);
+
+                                                                                                if (last_fight_long_ago || last_attack_target != new_target)
+                                                                                                    send_random_context("[You started fighting next target: " + new_target_name + "]", false);
+
+                                                                                                last_attack_target = new_target;
                                                                                             }
                                                                                             else
                                                                                             {
