@@ -3150,7 +3150,7 @@ namespace Observer {
 												}
 
 
-												if (model.find("TrapDoorALT01") != std::string::npos)
+												if (model.find("TrapDoorALT01") != std::string::npos || model.find("Ruins_TrapDoorSmaller01") != std::string::npos)
 												{
 													std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal floor gate", a_ref);
 
@@ -3738,6 +3738,10 @@ namespace Observer {
 															//
 
 
+
+
+															MiscThings::disable_enable_special_navcuts(a_ref, activation);
+
 														}
 													}
 												}
@@ -3952,7 +3956,7 @@ namespace Observer {
 											{
 												std::string name = MiscThings::insert_object_into_list_and_get_info(a_ref);
 												
-												result.push_back(name + " activated and the crystal inside of it released white laser beam");
+												result.push_back(name + " activated and the crystal inside of it released white laser beam... it opened a door");
 											}
 
 

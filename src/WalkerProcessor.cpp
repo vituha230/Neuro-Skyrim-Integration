@@ -12816,6 +12816,29 @@ namespace WalkerProcessor {
             auto player_pos = player->GetPosition();
             auto pos_dif = player_pos - last_player_pos;
 
+
+            //bard's dungeon swinging blades crap. invalidate path if we fall down
+
+            auto parent_cell = player->GetParentCell();
+
+            if (parent_cell && parent_cell->formID == 0x1529d) //dead mens respite
+            {
+                if (player_pos.z < -1400.0f && last_player_pos.z > -1400.0f)
+                {
+                    if (MiscThings::object_inside_of_deadmens_dungeon_swinging_blade_area(player))
+                    {
+                        send_random_context("Swinging blades knocked you down from bridge. You try again...", true);
+                        invalidate_path();
+                        last_player_pos = player_pos;
+                    }
+
+                }
+                    
+            }
+
+
+
+
             if (pos_dif.Length() > 50.0f)
             {
                 last_player_pos = player_pos;
@@ -16997,6 +17020,15 @@ namespace WalkerProcessor {
                                                                                             objective_name = last_quest_objective->displayText;
 
                                                                                             if (objective_name.find("Follow ") != std::string::npos)
+                                                                                                dont_autointerract = true;
+                                                                                        }
+
+
+                                                                                        if (target_ref && target_ref->formID == 0x198cb)
+                                                                                        {
+                                                                                            auto bard_quest = (RE::TESQuest*)RE::TESForm::LookupByID(0x53511);
+
+                                                                                            if (bard_quest && bard_quest->currentStage == 135)
                                                                                                 dont_autointerract = true;
                                                                                         }
 

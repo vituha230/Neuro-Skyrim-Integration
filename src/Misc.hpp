@@ -344,12 +344,14 @@ namespace MiscThings {
     bool dont_probe_navmesh();
 
     bool magnus_eye_attack_condition();
+    bool object_inside_of_deadmens_dungeon_swinging_blade_area(RE::TESObjectREFR* object);
 
     int get_player_gold();
 
     bool inside_of_kilkreath_post_parkour(RE::TESObjectREFR* object);
     bool inside_of_hag_rock_pit(RE::TESObjectREFR* object);
 
+    void disable_enable_special_navcuts(RE::TESObjectREFR* object, int activation);
 
     int trap_firing(RE::TESObjectREFR* trap);
     int two_state_activator_state(RE::TESObjectREFR* activator);

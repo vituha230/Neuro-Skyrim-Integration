@@ -39,6 +39,92 @@ namespace MiscThings {
     }
 
 
+
+    void disable_enable_special_navcuts(RE::TESObjectREFR* object, int activation)
+    {
+        if (object)
+        {
+            if (object->formID == 0x5d834)
+            {
+                auto navcutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70ad61b);
+                if (navcutter)
+                {
+                    if (activation == 0) navcutter->Disable();
+                    if (activation == 1) navcutter->Enable(false);
+                }
+
+            }
+
+            if (object->formID == 0x5d833)
+            {
+                auto navcutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70ad61c);
+                if (navcutter)
+                {
+                    if (activation == 0) navcutter->Disable();
+                    if (activation == 1) navcutter->Enable(false);
+                }
+
+            }
+
+            if (object->formID == 0x5d831)
+            {
+                auto navcutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70ad61d);
+                if (navcutter)
+                {
+                    if (activation == 0) navcutter->Disable();
+                    if (activation == 1) navcutter->Enable(false);
+                }
+
+            }
+
+            if (object->formID == 0x5d832)
+            {
+                auto navcutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70ad61e);
+                if (navcutter)
+                {
+                    if (activation == 0) navcutter->Disable();
+                    if (activation == 1) navcutter->Enable(false);
+                }
+
+            }
+
+            if (object->formID == 0x5d82e)
+            {
+                auto navcutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70ad61f);
+                if (navcutter)
+                {
+                    if (activation == 0) navcutter->Disable();
+                    if (activation == 1) navcutter->Enable(false);
+                }
+
+            }
+
+            if (object->formID == 0x5d82f)
+            {
+                auto navcutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70ad620);
+                if (navcutter)
+                {
+                    if (activation == 0) navcutter->Disable();
+                    if (activation == 1) navcutter->Enable(false);
+                }
+
+            }
+
+            if (object->formID == 0x5d835)
+            {
+                auto navcutter = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70ad621);
+                if (navcutter)
+                {
+                    if (activation == 0) navcutter->Disable();
+                    if (activation == 1) navcutter->Enable(false);
+                }
+
+            }
+        }
+    }
+
+
+
     bool inside_of_kilkreath_post_parkour(RE::TESObjectREFR* object)
     {
         if (object)
@@ -1355,6 +1441,10 @@ namespace MiscThings {
 
             if (target->formID == 0x401753b || target->formID == 0x40175ba) //nchardak sealed doors
                 return 30.0f;
+
+            if (target->formID == 0x18312) //bard's dungeon first chain
+                return 100.0f;
+
         }
 
         /*
@@ -4289,6 +4379,73 @@ namespace MiscThings {
             }
         }
 
+        if (parent_cell && parent_cell->formID == 0x1529d) //bard's dungeon quest
+        {
+            if (quest && quest->formID == 0x53511) 
+            {
+                auto gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5d412);
+                if (gate1 && MiscThings::two_state_activator_state(gate1) == 1)
+                {
+                    auto redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70a851a);
+                    if (redirect1) return redirect1;
+                }
+                else
+                {
+                    auto gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5d82d);
+                    auto gate3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5d833);
+
+                    if (gate2 && gate3)
+                    {
+                        if (MiscThings::two_state_activator_state(gate3) == 1)
+                        {
+                            if (MiscThings::two_state_activator_state(gate2) == 1)
+                            {
+                                auto redirect2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70a8518);
+                                if (redirect2) return redirect2;
+                            }
+                            else
+                            {
+                                auto redirect3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70a8519);
+                                if (redirect3) return redirect3;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            if (target && target->formID == 0x5d2ac)
+                if (player_pos.y > 1770.0f && player_pos.x > -1687.0f)
+                {
+                    auto master_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x61ce3);
+                    if (master_door && MiscThings::is_door_locked(master_door))
+                    {
+                        auto bard = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16c88);
+                        auto boss = (RE::Actor*)RE::TESObjectREFR::LookupByID(0x62864);
+
+                        if (boss && bard)
+                        {
+                            if (boss->IsActor() && boss->GetSitSleepState() == RE::SIT_SLEEP_STATE::kIsSleeping && !boss->IsDead())
+                                return bard;
+                            else
+                                return boss;
+                        }
+                    }
+                    else
+                    {
+                        auto secret_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x61ce9);
+
+                        if (secret_door && MiscThings::two_state_activator_state(secret_door) != 0)
+                        {
+                            auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70b2723);
+                            if (redirect) return redirect;
+                        }
+                    }
+                }
+            
+        }
+            
+
 
         if (quest && quest->formID == 0x22f08) //molag bal mace quest da10
         {
@@ -5262,6 +5419,8 @@ namespace MiscThings {
             }
         }
            
+
+
 
 
 
@@ -7351,6 +7510,35 @@ namespace MiscThings {
 
 
 
+    bool object_inside_of_deadmens_dungeon_swinging_blade_area(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto parent_cell = object->GetParentCell();
+
+            if (parent_cell && parent_cell->formID == 0x1529d)
+            {
+                auto player_pos = object->GetPosition();
+
+                if (player_pos.z < -1000.0f)
+                {
+                    RE::NiPoint2 a = { -4000.0f, 1940.0f }; //-5733.7241
+                    RE::NiPoint2 b = { -5150.0f, 1940.0f }; //-5633.2554
+                    RE::NiPoint2 c = { -5150.0f, 3280.0f }; //-5640.6494
+                    RE::NiPoint2 d = { -4000.0f, 3280.0f }; //-5724.9077
+
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+
+            }
+        }
+
+        return false;
+    }
+
+
 
     bool object_inside_of_trevas_watch(RE::TESObjectREFR* object)
     {
@@ -7988,7 +8176,7 @@ namespace MiscThings {
 
             }
 
-            if (model.find("TrapDoorALT01") != std::string::npos)
+            if (model.find("TrapDoorALT01") != std::string::npos || model.find("Ruins_TrapDoorSmaller01") != std::string::npos)
             {
                 std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal floor gate", a_ref);
                 result = name;
@@ -8095,6 +8283,38 @@ namespace MiscThings {
             if (object->formID == 0x200618d)
             {
                 auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2006199); //redwater den first gate
+
+                if (handle)
+                {
+                    if (!MiscThings::is_object_in_the_list(handle))
+                    {
+                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                        if (temp_result != "")
+                            send_random_context("You see: " + temp_result, false);
+                    }
+                }
+            }
+
+            if (object->formID == 0x5d833) 
+            {
+                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18318); //bard's note dungeon2 (rotating door cluster)
+
+                if (handle)
+                {
+                    if (!MiscThings::is_object_in_the_list(handle))
+                    {
+                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                        if (temp_result != "")
+                            send_random_context("You see: " + temp_result, false);
+                    }
+                }
+            }
+
+            if (object->formID == 0x5d412)
+            {
+                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5d40a); //bard's note dungeon1 (claw)
 
                 if (handle)
                 {
@@ -8311,6 +8531,10 @@ namespace MiscThings {
 
         RE::TESObjectREFR* blocking_object = nullptr;
 
+
+        std::vector<RE::TESObjectREFR*> all_blockers{};
+
+
         if (player_ref)
         {
             RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, range,
@@ -8328,8 +8552,8 @@ namespace MiscThings {
 
                     if (blocking_name != "")
                     {
-                        blocking_object = a_ref; //blocker found
-                        return RE::BSContainer::ForEachResult::kStop;
+                        all_blockers.push_back(a_ref); //blocker found
+                        //return RE::BSContainer::ForEachResult::kStop;
                     }
                         
 
@@ -8338,121 +8562,139 @@ namespace MiscThings {
         }
 
 
-        
-        if (blocking_object)
+
+        if (std::size(all_blockers) > 0)
         {
-            std::vector<RE::TESObjectREFR*> levers{};
+            std::sort(all_blockers.begin(), all_blockers.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
 
-            RE::TES::GetSingleton()->ForEachReferenceInRange(blocking_object, 3000.0f,
-                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
-                [&](RE::TESObjectREFR* a_ref) {
+                if (!left || !right)
+                    return false;
 
-                    if (a_ref == ignore_ref)
-                        return RE::BSContainer::ForEachResult::kContinue;
+                if (left->data.objectReference && right->data.objectReference && left->formID && right->formID)
+                    return left->GetDistance(player) < right->GetDistance(player); //switch > to < for inversed order. this is last->closest
+                else
+                    return false;
+                });
 
-                    if (!MiscThings::is_object_valid(a_ref))
-                        return RE::BSContainer::ForEachResult::kContinue;
+
+            blocking_object = all_blockers.at(0);
 
 
-                    auto base_obj = a_ref->GetBaseObject();
-                    if (base_obj)
-                    {
-                        auto base_type = base_obj->GetFormType();
+            if (blocking_object && blocking_object->formID != 0x5d412)
+            {
+                std::vector<RE::TESObjectREFR*> levers{};
 
-                        if (base_type == RE::FormType::Furniture) //pullchains/levers
+                RE::TES::GetSingleton()->ForEachReferenceInRange(blocking_object, 3000.0f,
+                    //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                    [&](RE::TESObjectREFR* a_ref) {
+
+                        if (a_ref == ignore_ref)
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+                        if (!MiscThings::is_object_valid(a_ref))
+                            return RE::BSContainer::ForEachResult::kContinue;
+
+
+                        auto base_obj = a_ref->GetBaseObject();
+                        if (base_obj)
                         {
-                            auto furniture = (RE::TESFurniture*)base_obj;
-                            auto workbenchtype = furniture->workBenchData.benchType;
+                            auto base_type = base_obj->GetFormType();
 
-                            bool found = false;
-
-                            if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                            if (base_type == RE::FormType::Furniture) //pullchains/levers
                             {
-                                if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
+                                auto furniture = (RE::TESFurniture*)base_obj;
+                                auto workbenchtype = furniture->workBenchData.benchType;
+
+                                bool found = false;
+
+                                if (workbenchtype == RE::TESFurniture::WorkBenchData::BenchType::kNone)
                                 {
-                                    //already checked for being valid above
-                                    levers.push_back(a_ref);
-                                    found = true;
+                                    if (furniture->HasKeywordString("ActivatorLever") || furniture->HasKeywordString("isPullChain"))
+                                    {
+                                        //already checked for being valid above
+                                        levers.push_back(a_ref);
+                                        found = true;
+                                    }
                                 }
+
+                                /*
+                                if (!found)
+                                {
+                                    std::string model = furniture->GetModel();
+
+                                    if (model.find("Lever") != std::string::npos || model.find("Chain") != std::string::npos)
+                                        levers.push_back(a_ref);
+                                }
+                                */
+
                             }
-                            
-                            /*
-                            if (!found)
+
+
+                            if (base_type == RE::FormType::Activator) //pullchains/levers
                             {
-                                std::string model = furniture->GetModel();
+                                auto activator = (RE::TESObjectACTI*)base_obj;
+
+                                std::string model = activator->GetModel();
 
                                 if (model.find("Lever") != std::string::npos || model.find("Chain") != std::string::npos)
                                     levers.push_back(a_ref);
                             }
-                            */
-
                         }
-
-
-                        if (base_type == RE::FormType::Activator) //pullchains/levers
-                        {
-                            auto activator = (RE::TESObjectACTI*)base_obj;
-
-                            std::string model = activator->GetModel();
-
-                            if (model.find("Lever") != std::string::npos || model.find("Chain") != std::string::npos)
-                                levers.push_back(a_ref);
-                        }
-                    }
-                    return RE::BSContainer::ForEachResult::kContinue;
-                });
-
-
-            if (std::size(levers) > 0)
-            {
-                //something is found... sort by distance from blocking object. if more than 1 - get 2nd (closest one is probably backside lever)
-
-                std::sort(levers.begin(), levers.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
-
-                    if (!left || !right)
-                        return false;
-
-                    if (left->data.objectReference && right->data.objectReference && left->formID && right->formID)
-                        return left->GetDistance(blocking_object) < right->GetDistance(blocking_object); //switch > to < for inversed order. this is last->closest
-                    else
-                        return false;
+                        return RE::BSContainer::ForEachResult::kContinue;
                     });
 
 
-                std::vector<RE::TESObjectREFR*> best_candidates{};
-
-                if (std::size(levers) > 1)
+                if (std::size(levers) > 0)
                 {
-                    auto closest_candidate = levers.at(0);
-                    float closest_distance = closest_candidate->GetDistance(blocking_object);
+                    //something is found... sort by distance from blocking object. if more than 1 - get 2nd (closest one is probably backside lever)
 
-                    if (closest_distance > 700.0f)
-                        best_candidates.push_back(closest_candidate); //add even closest if he is far enough
-                
-                    for (auto i = 1; i < std::size(levers); i++)
+                    std::sort(levers.begin(), levers.end(), [&](RE::TESObjectREFR* left, RE::TESObjectREFR* right) {
+
+                        if (!left || !right)
+                            return false;
+
+                        if (left->data.objectReference && right->data.objectReference && left->formID && right->formID)
+                            return left->GetDistance(blocking_object) < right->GetDistance(blocking_object); //switch > to < for inversed order. this is last->closest
+                        else
+                            return false;
+                        });
+
+
+                    std::vector<RE::TESObjectREFR*> best_candidates{};
+
+                    if (std::size(levers) > 1)
                     {
-                        best_candidates.push_back(levers.at(i));
+                        auto closest_candidate = levers.at(0);
+                        float closest_distance = closest_candidate->GetDistance(blocking_object);
+
+                        if (closest_distance > 700.0f)
+                            best_candidates.push_back(closest_candidate); //add even closest if he is far enough
+
+                        for (auto i = 1; i < std::size(levers); i++)
+                        {
+                            best_candidates.push_back(levers.at(i));
+                        }
                     }
-                }
-                else
-                {
-                    auto closest_candidate = levers.at(0);
-                    float closest_distance = closest_candidate->GetDistance(blocking_object);
+                    else
+                    {
+                        auto closest_candidate = levers.at(0);
+                        float closest_distance = closest_candidate->GetDistance(blocking_object);
 
-                    best_candidates.push_back(closest_candidate);
-                }
+                        best_candidates.push_back(closest_candidate);
+                    }
 
-                
-                    
-                std::string info = "";
-                for (auto best_candidate : best_candidates)
-                {
-                    info += MiscThings::insert_object_into_list_and_get_info(best_candidate) + "; ";
-                }
 
-                if (info != "")
-                {
-                    send_random_context("You see: " + info);
+
+                    std::string info = "";
+                    for (auto best_candidate : best_candidates)
+                    {
+                        info += MiscThings::insert_object_into_list_and_get_info(best_candidate) + "; ";
+                    }
+
+                    if (info != "")
+                    {
+                        send_random_context("You see: " + info);
+                    }
                 }
             }
         }
@@ -8736,6 +8978,9 @@ namespace MiscThings {
 
 
         object_p = General::Script::GetObject(activator, "DLC2norRotatingDoorSCRIPT");
+
+        if (!object_p)
+            object_p = General::Script::GetObject(activator, "dunDeadMensRotatingDoor");
 
         if (object_p)
         {
@@ -11178,7 +11423,9 @@ namespace MiscThings {
                             }
                             else
                             {
-                                RE::NiPoint3 base_shift_vector = { 7.0f, 0.0f, 10.0f };
+                                RE::NiPoint3 base_shift_vector = { 0.0f, 7.0f, 0.0f };
+                                base_shift_vector = base_shift_vector * object->GetScale();
+
                                 RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                                 result = rotated_shift_vector;
                             }
