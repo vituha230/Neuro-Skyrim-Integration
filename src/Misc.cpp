@@ -4379,6 +4379,19 @@ namespace MiscThings {
             }
         }
 
+
+        if (target && target->formID == 0xac7a1)
+        {
+            auto bridge = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xac776);
+
+            if (bridge && MiscThings::two_state_activator_state(bridge) != 1)
+            {
+                auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70bc924);
+                if (redirect) return redirect;
+            }
+        }
+
+
         if (parent_cell && parent_cell->formID == 0x1529d) //bard's dungeon quest
         {
             if (quest && quest->formID == 0x53511) 
@@ -4626,6 +4639,15 @@ namespace MiscThings {
             }
 
         }
+
+
+        if (target && target->formID == 0x41d94) //crazy door in skull cave for potema quest
+        {
+            auto actual_autoload_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x41f2d);
+
+            if (actual_autoload_door) return actual_autoload_door;
+        }
+
 
 
         //dlc1 (dawnguard) dimhollow cave 2
