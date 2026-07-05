@@ -11,9 +11,10 @@ namespace MiscThings {
     RE::TESObjectREFR* find_hermaeus_mora_face();
 
 
-    bool in_apocrypha(RE::TESObjectREFR* object = nullptr);
+    std::vector<std::string> niav_recurse_names(RE::NiAVObject* object);
+    std::vector<RE::NiPoint3> niav_recurse(RE::NiAVObject* object);
 
-
+    bool is_seeker(RE::TESObjectREFR* target);
 
     bool check_autolook_ban();
 

@@ -23,6 +23,13 @@
 // soul cairn
 
 
+//robbers gauge or bauge quest
+//morthal burnt house quest
+//casting conjuration is a bit weird
+//horse crash in solitude
+//shout glitch
+
+
 //TODO bards 
 //TODO hearthfire
 //TODO random sidequests (markarth horror house, dibella steal statue + rescue girl, namira, windhelm investigation.. solstheim ash captain shit.. solitude ship robbery and potema?)

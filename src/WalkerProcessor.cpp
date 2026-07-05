@@ -9,9 +9,12 @@
 #include <numbers>
 #include "CustomWalkerPaths.hpp"
 #include "Observer.hpp"
-
+#include "ApocryphaRedirects.hpp"
 
 namespace WalkerProcessor {
+
+    int current_apocrypha_action = 0;
+    int current_apocrypha_id = 0;
 
 
     bool close_enough_linger = false;
@@ -1157,7 +1160,7 @@ namespace WalkerProcessor {
             }
 
 
-            if (MiscThings::in_apocrypha())
+            if (Apocrypha::in_apocrypha())
                 return nullptr; //surely this is safe?
 
 
@@ -1283,41 +1286,51 @@ namespace WalkerProcessor {
                         auto marker_ref = marker->AsReference();
                         if (marker_ref)
                         {
-                            marker_ref->MoveTo(target_ref);
-
-
-                            auto shift = MiscThings::get_looking_point_shift(target_ref, false) + MiscThings::get_walking_point_shift(target_ref);
-                            auto pickpocket_shift = RE::NiPoint3::Zero();
-
-                            if (interaction_after_walk == 2 && target_ref && target_ref->IsHumanoid())
-                            {
-                                pickpocket_shift = MiscThings::get_looking_point_shift(target_ref, true);
-                            }
-
-
-                            if (autoload_door_pathfinding_failed && shift == RE::NiPoint3::Zero())
-                            {
-                                //it must have a shift. means door is not loaded yet, try marker but only if pathfinding failed.
-                                auto nearest_marker = MiscThings::get_nearest_mapmarker_to_object(target_ref);
-
-                                if (nearest_marker)
-                                {
-                                    auto pos = target_ref->GetPosition();
-                                    auto nearest_marker_pos = nearest_marker->GetPosition();
-
-                                    shift = nearest_marker_pos - pos;
-
-                                }
-                            }
-
 
                             if (using_custom_path)
-                                MiscThings::SetPosition_moveto(marker_ref, custom_path.at(0));
+                            {
+                                auto player = RE::PlayerCharacter::GetSingleton();
+                                if (player)
+                                {
+                                    marker_ref->MoveTo(player);
+                                    MiscThings::SetPosition_moveto(marker_ref, custom_path.at(0));
+                                }
+
+                            }
                             else
+                            {
+                                marker_ref->MoveTo(target_ref);
+
+
+                                auto shift = MiscThings::get_looking_point_shift(target_ref, false) + MiscThings::get_walking_point_shift(target_ref);
+                                auto pickpocket_shift = RE::NiPoint3::Zero();
+
+                                if (interaction_after_walk == 2 && target_ref && target_ref->IsHumanoid())
+                                {
+                                    pickpocket_shift = MiscThings::get_looking_point_shift(target_ref, true);
+                                }
+
+
+                                if (autoload_door_pathfinding_failed && shift == RE::NiPoint3::Zero())
+                                {
+                                    //it must have a shift. means door is not loaded yet, try marker but only if pathfinding failed.
+                                    auto nearest_marker = MiscThings::get_nearest_mapmarker_to_object(target_ref);
+
+                                    if (nearest_marker)
+                                    {
+                                        auto pos = target_ref->GetPosition();
+                                        auto nearest_marker_pos = nearest_marker->GetPosition();
+
+                                        shift = nearest_marker_pos - pos;
+
+                                    }
+                                }
+
+
                                 MiscThings::SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
 
-
-                            //correct_marker_pos();
+                                //correct_marker_pos();
+                            }
                         }
                         else
                             ;//idk do nothing? its probably already on target anyway
@@ -2182,6 +2195,9 @@ namespace WalkerProcessor {
                 path_point_pos = path.at(current_path_point);
             
             
+            Hooks::add_debug_line("Path point pos: " + std::to_string((int)path_point_pos.x) + ", " + std::to_string((int)path_point_pos.y) + ", " + std::to_string((int)path_point_pos.z), true);
+
+
             //auto path_point_pos = target_ref->GetPosition();
             auto pos_dif = path_point_pos - camera_pos;
             auto pos_dif_norm = pos_dif / pos_dif.Length();
@@ -3579,7 +3595,7 @@ namespace WalkerProcessor {
         bool lookat_used = false;
 
 
-        if (target->IsHumanoid())// && !target->IsDead())
+        if (target->IsHumanoid() || MiscThings::is_seeker(target))// && !target->IsDead())
         {
             auto target_actor = (RE::Actor*)target;
 
@@ -3613,7 +3629,7 @@ namespace WalkerProcessor {
             {
                 auto target_actor = (RE::Actor*)target;
 
-                if (MiscThings::is_enemy_to_actor(target))
+                if (MiscThings::is_enemy_to_actor(target) && !MiscThings::is_seeker(target))
                 {
                     if (target_actor->currentProcess)
                         if (target_actor->currentProcess->middleHigh)
@@ -3756,7 +3772,7 @@ namespace WalkerProcessor {
 
     bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, float speed_koef, bool force_speed_correction, bool force_high_precision)
     {
-        Hooks::add_debug_line("LOCK_CAMERA_CALLED", true);
+        //Hooks::add_debug_line("LOCK_CAMERA_CALLED", true);
 
         if (input_wants_to_look_down() || (start_attacking && MiscThings::is_summon_spell(get_current_active_hand())))
             return false;
@@ -3799,7 +3815,7 @@ namespace WalkerProcessor {
         bool lookat_used = false;
 
         
-        if (target->IsHumanoid())// && !target->IsDead())
+        if (target->IsHumanoid() || MiscThings::is_seeker(target))// && !target->IsDead())
         {
             auto target_actor = (RE::Actor*)target;
             //auto lookat_location = target_actor->GetLookingAtLocation(); //THIS IS ACTUALLY WHERE THEY LOOK AT AND NOT FROM WHERE. its from where until they have something to look at
@@ -3895,7 +3911,7 @@ namespace WalkerProcessor {
             {
                 auto target_actor = (RE::Actor*)target;
 
-                if (MiscThings::is_enemy_to_actor(target))
+                if (MiscThings::is_enemy_to_actor(target) && !MiscThings::is_seeker(target))
                 {
                     if (target_actor->currentProcess)
                         if (target_actor->currentProcess->middleHigh)
@@ -4908,6 +4924,12 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        Apocrypha::reset_apocrypha_redirects();
+
+        current_apocrypha_action = 0;
+        current_apocrypha_id = 0;
+
+
         spell_mode_init_done = false;
 
         close_enough_linger = false;
@@ -10454,7 +10476,7 @@ namespace WalkerProcessor {
 
         if (shout_mode || player->GetDistance(target_ref) < 400.0f)
         {
-            Hooks::add_debug_line("ATTACK_TARGET lock_camera", true);
+            //Hooks::add_debug_line("ATTACK_TARGET lock_camera", true);
             lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
         }
             
@@ -12793,7 +12815,6 @@ namespace WalkerProcessor {
 
     bool detect_stuck(float dtime)
     {
-
         if (is_stealthwalking(sneak_probe_sneak_checked) && (!MiscThings::safe_to_stealthwalk(sneak_probe_sneak_checked) || stealthwalk_was_unsafe) && fuck_it_lets_go_timer < 15.0f)
             return false;
 
@@ -12836,7 +12857,11 @@ namespace WalkerProcessor {
                     
             }
 
+            float threshold = 1.5f;
 
+
+            if (Apocrypha::in_apocrypha() && using_custom_path)
+                threshold = 5.0f;
 
 
             if (pos_dif.Length() > 50.0f)
@@ -12855,7 +12880,7 @@ namespace WalkerProcessor {
                 {
                     time_stuck += dtime;
 
-                    if (time_stuck > 1.5f)
+                    if (time_stuck > threshold)
                     {
                         result = true;
                     }
@@ -14942,6 +14967,148 @@ namespace WalkerProcessor {
                 }
                 
 
+                if (target_ref)
+                {
+                    Apocrypha::apocrypha_result apocrypha_redirects = Apocrypha::apocrypha_redirects(target_ref, current_apocrypha_action, current_apocrypha_id);
+
+                    switch (apocrypha_redirects.action)
+                    {
+
+                    case -888:
+                    {
+                        //reset walker
+
+
+
+                        //reset_walker();
+                        //return;
+                    }
+
+                    case -999:
+                    {
+                        //restore original target
+
+                        using_custom_path = false;
+                        custom_path.clear();
+                        current_path_point = -1;
+                        target_ref = target_before_generic_redirect;
+                        interaction_after_walk = interaction_before_generic_redirect;
+                        backup_interaction_made = false;
+                        current_apocrypha_action = 0;
+                        current_apocrypha_id = 0;
+                        invalidate_path();
+
+                        return;
+                    }
+
+
+
+                    case 1:
+                    {
+                        //normal redirect to some object, use normal navmesh
+
+
+                        if (!apocrypha_redirects.dont_save_target)
+                            target_before_generic_redirect = target_ref;
+
+                        target_ref = apocrypha_redirects.target;
+
+                        dont_check_quest_target_change = true;
+
+                        if (!apocrypha_redirects.dont_save_interaction)
+                            interaction_before_generic_redirect = interaction_after_walk;
+
+                        interaction_after_walk = apocrypha_redirects.interaction;
+
+                        current_apocrypha_action = apocrypha_redirects.action;
+
+                        if (apocrypha_redirects.clear_path)
+                        {
+                            invalidate_path();
+                            return;
+                        }
+
+
+                        break;
+                    }
+
+                    case 2:
+                    {
+                        //walk custom path
+                        target_before_generic_redirect = target_ref;
+                        dont_check_quest_target_change = true;
+                        interaction_before_generic_redirect = interaction_after_walk;
+
+                        interaction_after_walk = apocrypha_redirects.interaction;
+
+                        invalidate_path();
+                        custom_path = apocrypha_redirects.custom_path;
+
+                        if (!apocrypha_redirects.append_to_normal_path)
+                        {
+                            path_valid = true;
+                            path = custom_path;
+                        }
+
+
+                        using_custom_path = true;
+
+
+                        if (!apocrypha_redirects.dont_save_id)
+                            current_apocrypha_id = apocrypha_redirects.id;
+
+                        current_apocrypha_action = apocrypha_redirects.action;
+                        return;
+                    }
+
+                    case 3:
+                    {
+                        //wait and look at something
+                        lock_camera_onto_target(apocrypha_redirects.target, dtime);
+
+                        if (!apocrypha_redirects.dont_save_action)
+                            current_apocrypha_action = apocrypha_redirects.action;
+
+                        if (apocrypha_redirects.reset_curent_action)
+                            current_apocrypha_action = 0;
+
+                        if (!apocrypha_redirects.dont_save_id)
+                            current_apocrypha_id = apocrypha_redirects.id;
+
+                        return;
+                        //break;
+                    }
+
+                    case 4:
+                    {
+                        //correct id
+                        current_apocrypha_id = apocrypha_redirects.id;
+                        break;
+                    }
+
+                    default:
+                    {
+                        if (apocrypha_redirects.correct_custom_path)
+                        {
+                            //current_path_point = 0;
+                            custom_path = apocrypha_redirects.custom_path;
+                            path = custom_path;
+
+                        }
+
+                        break;
+                    }
+
+
+                    }
+
+                    bool stop_here = false;
+
+
+
+                }
+
+                
 
                 if (target_ref && !using_custom_path)
                 {
@@ -15382,6 +15549,7 @@ namespace WalkerProcessor {
                             return;
                         }
                     }
+
 
                         auto redirect_ref = MiscThings::get_generic_redirect(target_ref, quest_mode, runaway_mode, (generic_redirect_active || target_before_generic_redirect));
 

@@ -2,7 +2,7 @@
 #include "main.hpp"
 #include "Misc.hpp"
 #include "InputActions.hpp"
-
+#include "ApocryphaRedirects.hpp"
 #include <ctime>
 
 //TODO: at least put it in groups. maybe tell what can be done with each group
@@ -34,6 +34,20 @@ namespace MiscThings {
             }
         }
 
+
+        return false;
+    }
+
+
+    bool is_seeker(RE::TESObjectREFR* target)
+    {
+        if (target && target->IsActor())
+        {
+            auto race = ((RE::Actor*)target)->race;
+
+            if (race && race->formID == 0x401dcb9);
+                return true;
+        }
 
         return false;
     }
@@ -342,6 +356,9 @@ namespace MiscThings {
                 {
                     auto acti = (RE::TESObjectACTI*)base_obj;
                     std::string model = acti->GetModel();
+                    
+                    if (model.find("ApoParArchGates01") != std::string::npos)
+                        return false; //these can be 2-state so all states can be blocking
 
                     if (model.find("PortImpGate01") != std::string::npos ||
                         model.find("NorRetractableBridge01") != std::string::npos ||
@@ -1914,61 +1931,7 @@ namespace MiscThings {
     }
 
 
-    bool in_apocrypha(RE::TESObjectREFR* object)
-    {
-
-        auto player = RE::PlayerCharacter::GetSingleton();
-
-        if (!object)
-            object = player;
-
-        if (object)
-        {
-
-            auto object_worldspace = object->GetWorldspace();
-
-            if (object_worldspace && object_worldspace->formID == 0x04) //TODO!!! THIS IS WRONG. need to find that location where worldspace is used
-                return true;
-
-
-            auto loc = object->GetCurrentLocation();
-
-            RE::BGSLocation* apocrypha_location = (RE::BGSLocation*)RE::TESForm::LookupByID(0x04016E2B);
-
-            if (loc)
-            {
-                if (loc == apocrypha_location)
-                {
-                    return true;
-                }
-
-                unsigned int safeguard = 0;
-
-                auto* parent = loc->parentLoc;
-
-                while (parent && safeguard < 100)
-                {
-                    if (parent == apocrypha_location)
-                    {
-                        return true;
-                    }
-                    parent = parent->parentLoc;
-
-                    safeguard++;
-                }
-
-                //kind of bad but whatever
-                //if (safeguard == 100)
-                {
-                 //   return false
-                }
-            }
-        }
-
-
-
-        return false;
-    }
+    
 
 
 
@@ -8999,6 +8962,57 @@ namespace MiscThings {
         }
 
 
+        //
+
+
+        object_p = General::Script::GetObject(activator, "DLC2dunBookLevel4Bend");
+
+        if (object_p)
+        {
+            bool stop_here = false;
+        }
+
+
+        object_p = General::Script::GetObject(activator, "DLC2dunBookLevel4BendControl");
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "Bending";
+
+            //judging by relative bone positions
+
+            auto the_3d = activator->Get3D();
+
+            if (the_3d)
+            {
+                auto asnode = the_3d->AsNode();
+
+                //auto temp = niav_recurse(asnode);
+                //auto temp_names = niav_recurse_names(asnode);
+
+                auto branch_1 = asnode->GetObjectByName("bone08");
+                auto branch_2 = asnode->GetObjectByName("ApoendingHallway01");
+
+                if (branch_1 && branch_2)
+                {
+                    auto branch_1_pos = branch_1->world.translate;
+                    auto branch_2_pos = branch_2->world.translate;
+
+                    auto distance = branch_1_pos.GetDistance(branch_2_pos);// / activator->GetScale();
+
+                    if (distance > 1535.0f)
+                        result = 1;
+                    else
+                        if (distance < 1455.0f)
+                            result = 0;
+                        else
+                            result = 2;
+                }
+            }
+        }
+
+
+
         object_p = General::Script::GetObject(activator, "DLC2norRotatingDoorSCRIPT");
 
         if (!object_p)
@@ -9297,8 +9311,8 @@ namespace MiscThings {
                         {
                             auto asnode = the_3d->AsNode();
 
-                            auto temp = niav_recurse(asnode);
-                            auto temp_names = niav_recurse_names(asnode);
+                            //auto temp = niav_recurse(asnode);
+                            //auto temp_names = niav_recurse_names(asnode);
 
                             //Branch_01
                             //Branch_Small_U_03
@@ -11276,6 +11290,12 @@ namespace MiscThings {
 
                         std::string model = activator->GetModel();
 
+                        if (model.find("ApoForbiddenBook") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 70.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
 
 
                         if (model.find("CasCoffinPuzzleBrazier01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
@@ -21697,7 +21717,7 @@ namespace MiscThings {
 
 
                     bool no_faraways = false;
-                    if (is_interior_cell())
+                    if (is_interior_cell() && !Apocrypha::in_apocrypha())
                     {
                         std::string probe_name = insert_object_into_list_and_get_info(this_object);
 
@@ -21723,6 +21743,10 @@ namespace MiscThings {
                     float max_range = 10000.0f;
                     if (no_faraways)
                         max_range = 2000.0f;
+
+
+                    if (Apocrypha::in_apocrypha())
+                        max_range = 7000.0f;
 
                     if (player_ref->GetDistance(this_object) < max_range)
                     {
