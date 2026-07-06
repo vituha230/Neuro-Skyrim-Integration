@@ -2261,8 +2261,10 @@ namespace WalkerProcessor {
 
                 
 
-
-                desired_direction = along_next_path_points_vector();
+                if (!input_wants_to_look_down())
+                    desired_direction = along_next_path_points_vector();
+                else
+                    desired_direction = RE::NiPoint3::Zero();
 
 
 

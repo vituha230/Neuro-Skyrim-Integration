@@ -19397,9 +19397,10 @@ namespace MiscThings {
 
                             bool already_equipped = false;
 
-                            if (get_hand_contents(right_hand) == spell)
+                            if (get_hand_contents(true) == spell || get_hand_contents(false) == spell) //now it will not additionally equip spell on cast command if player already has it in any hand. if want to dualcast - must equip explicitly
                             {
                                 already_equipped = true;
+                                right_hand = !(get_hand_contents(false) == spell);
                             }
 
                             if (!already_equipped)
@@ -19438,16 +19439,18 @@ namespace MiscThings {
                                         }
                                         else
                                             try_casting_hand(right_hand);
+
+
                                     }
                                         
-
+                                    //result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                                 }
                                     
 
-                                result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                                result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + "]";
                             }
                             else
-                                result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                                result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + "]";
                         }
                         else
                         {

@@ -34,8 +34,8 @@ bool right_hand_cast = false;
 bool notified_cast = false;
 float spell_cast_time = 0.0f;
 bool was_actually_casting = false;
-
-
+float pause_post_cast = 0.0f;
+bool low_mana_notified = false;
 
 float fishing_timer = 0.0f;
 
@@ -59,7 +59,9 @@ void reset_input_processor()
     notified_cast = false;
     spell_cast_time = 0.0f;
     was_actually_casting = false;
-    
+    pause_post_cast = 0.0f;
+    low_mana_notified = false;
+
     need_look_down = false;
 
     fishing_timer = 0.0f;
@@ -1004,6 +1006,8 @@ void try_casting_hand(bool right)
         right_hand_cast = right;
         spell_cast_time = 0.0f;
         need_look_down = false;
+        pause_post_cast = 0.0f;
+        //low_mana_notified = false;
     }
 
 }
@@ -1091,7 +1095,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
     if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
     {
 
-        if (low_mana_check)
+        if (low_mana_check && !low_mana_notified)
         {
             auto max_mana = MiscThings::get_player_max_mana();
 
@@ -1099,13 +1103,40 @@ bool make_long_cast_spell_hand(bool right, float dtime)
                 send_random_context("Your maximum mana is less than this spell's mana cost! You will need to increase your max mana before casting this spell", false);
             else
                 send_random_context("You dont have enough mana to cast this spell! Wait or replenish your mana", false);
+
         }
 
+
+        //it should be here so it does not falsely check mana when we actually cast the spell successfully but its fire-and-forget and we will get here again, but this time we dont have mana for new cast.
+        //but we dont even want new cast so put flag here
+        low_mana_notified = true;
+
+
         //set_universal_block(1.0f);
-        if (right)
-            right_attack_cancel();
+
+
+        if (WalkerProcessor::is_fire_and_forget_spell(right))
+        {
+            if (pause_post_cast < 0.4f)
+            {
+                if (right)
+                    right_attack_cancel();
+                else
+                    left_attack_cancel();
+
+                pause_post_cast += dtime;
+                return false;
+            }
+        }
         else
-            left_attack_cancel();
+        {
+            if (right)
+                right_attack_cancel();
+            else
+                left_attack_cancel();
+        }
+
+
 
         return true;
     }
@@ -1116,7 +1147,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
             notified_cast = true;
             std::string cast_info = "[You are casting ";
             cast_info += WalkerProcessor::get_equipped_spell_name(right) + "]";
-            send_random_context(cast_info, false);
+            send_random_context(cast_info, true);
         }
 
 
@@ -1306,6 +1337,8 @@ void input_processor(float dtime)
             notified_cast = false;
             was_actually_casting = false;
             need_look_down = false;
+            pause_post_cast = 0.0f;
+            low_mana_notified = false;
         }
     }
 

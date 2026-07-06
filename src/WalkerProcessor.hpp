@@ -169,8 +169,8 @@ namespace WalkerProcessor {
 
 	void walk_karthspire_plates();
 
-
-	void set_last_teleport_timestamp(long long timestamp);
+	bool is_fire_and_forget_spell(bool right);
+	//void set_last_teleport_timestamp(long long timestamp);
 
 	std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout = false, RE::TESObjectREFR* refr_to_activate_when_done = nullptr);
 	std::pair<bool, std::string> cast_spell_at_target(RE::TESObjectREFR* target, RE::SpellItem* spell);
