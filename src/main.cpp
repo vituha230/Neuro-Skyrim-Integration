@@ -16,18 +16,20 @@
 
 
 //TODO dragonborn dlc
-// 2nd book apocrypha. 1st book apocrypha. probably separate file for apocrypha navigation (zones, redirections)
+// 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1 
+// 1st book apocrypha. probably separate file for apocrypha navigation (zones, redirections)
+
+
 
 //TODO dawnguard dlc
 // maybe throw in some context when we get into jail and when harkon bites us
 // soul cairn
 
 
-//robbers gauge or bauge quest
 //morthal burnt house quest
-//casting conjuration is a bit weird
-//horse crash in solitude
-//shout glitch
+//casting conjuration is a bit weird (especially when cast while walking)
+//horse crash in solitude (need logs, does not reproduce)
+//shout glitch 
 
 
 //TODO bards 
@@ -3335,7 +3337,7 @@ class MyHook {
 
                                 RE::TESObjectREFR* look_speaker = speaker;
 
-                                if (speaker && speaker->formID == 0x403219a)
+                                if (speaker && (speaker->formID == 0x403219a || speaker->formID == 0x401c0ac))
                                 {
                                     //auto hermaeus_mora_face = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4032171);
                                     auto hermaeus_mora_face = MiscThings::find_hermaeus_mora_face();

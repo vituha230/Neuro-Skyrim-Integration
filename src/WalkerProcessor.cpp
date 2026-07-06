@@ -2983,8 +2983,10 @@ namespace WalkerProcessor {
     
 
 
-    RE::TESObjectREFR* get_targeted_ref()
+
+    RE::TESObjectREFR* get_targeted_ref_raw()
     {
+
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
 
@@ -3120,6 +3122,23 @@ namespace WalkerProcessor {
 
         return nullptr;
 
+    }
+
+
+
+    RE::TESObjectREFR* get_targeted_ref()
+    {
+        auto temp_result = get_targeted_ref_raw();
+
+        if (target_ref && target_ref->formID == 0x401ee14 && temp_result && temp_result->formID == 0x40275f5) //black book2 inside apocrypha final
+        {
+            auto fake_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401ee14);
+
+            if (fake_target)
+                return fake_target;
+        }
+
+        return temp_result;
     }
 
 
@@ -5681,7 +5700,11 @@ namespace WalkerProcessor {
                 if (actor_refr->race->fullName == "Dragon Race" && MiscThings::is_flying(target_ref))
                 {
                     horizontal_max_distance = 8000.0f;
+
+                    if (player->GetDistance(target_ref) < 400.0f)
+                        return false;
                 }
+
             }
             
 
@@ -8323,6 +8346,25 @@ namespace WalkerProcessor {
                                                     }
 
                                                 }
+
+                                                if (quests_target_ref && quests_target_ref->formID == 0x401ee14) //blackbook2 final
+                                                {
+                                                    if (player->GetDistance(quests_target_ref) < 500.0f)
+                                                    {
+                                                        RE::TESObjectREFR* reward1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40275f7);
+                                                        RE::TESObjectREFR* to_soltsheim = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40275f6);
+
+                                                        if (reward1 && !reward1->IsDisabled() && to_soltsheim && to_soltsheim->IsDisabled())
+                                                        {
+                                                            reset_walker();
+                                                            result.first = false;
+                                                            result.second = "[The Book offers you several rewards, you need to pick one of provided options (interactive objects nearby)]";
+                                                            do_delayed_poke();
+                                                            return result;
+                                                        }
+                                                    }
+                                                }
+
 
 
                                                 if (quests_target_ref && quests_target_ref->formID == 0x4016FE0 && MapProcessor::map_is_allowed())
@@ -14708,7 +14750,6 @@ namespace WalkerProcessor {
                 }
 
                 
-
 
 
                 auto test_targeted_ref = get_targeted_ref();

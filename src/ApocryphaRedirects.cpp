@@ -2166,161 +2166,155 @@ namespace Apocrypha {
                             }
                             else
                             {
-                                if (inside_book2_zone3_segment_last(target_pos))
-                                {
-                                    //to book
-                                    result.action = 1; //initiate
-                                    result.dont_save_interaction = false;
-                                    result.dont_save_target = false;
-                                    result.custom_path = {};
-                                    result.target = exit_book;
-                                    result.interaction = 1;
-                                    //result.clear_path = true;
+                                bool target_in_last_segment = inside_book2_zone3_segment_last(target_pos);
 
-                                    return result;
+                                auto target_pos_actual = target_pos;
+
+                                if (target_in_last_segment)
+                                    target_pos = exit_book->GetPosition(); //pretend its our goal
+
+                                
+
+                                if ((target_pos.y < 10170.0f) && player_pos.y > 10170.0f)
+                                {
+                                    if (MiscThings::two_state_activator_state(gate_switch) == 0)
+                                    {
+                                        result.action = 1; //initiate
+                                        result.dont_save_interaction = false;
+                                        result.dont_save_target = false;
+                                        result.custom_path = {};
+                                        result.target = scrye_switch1;
+                                        result.interaction = 1;
+                                        //result.clear_path = true;
+
+                                        return result;
+                                    }
                                 }
                                 else
                                 {
-                                    if (target_pos.y < 10170.0f && player_pos.y > 10170.0f)
+                                    if (player_pos.y < 10170.0f)
                                     {
-                                        if (MiscThings::two_state_activator_state(gate_switch) == 0)
+                                        if (target_pos.x < 6520.0f && target_pos.y < 10170.0f)
                                         {
-                                            result.action = 1; //initiate
-                                            result.dont_save_interaction = false;
-                                            result.dont_save_target = false;
-                                            result.custom_path = {};
-                                            result.target = scrye_switch1;
-                                            result.interaction = 1;
-                                            //result.clear_path = true;
-
-                                            return result;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (player_pos.y < 10170.0f)
-                                        {
-                                            if (target_pos.x < 6520.0f && target_pos.y < 10170.0f)
+                                            if (MiscThings::two_state_activator_state(gate_switch) == 1)
                                             {
-                                                if (MiscThings::two_state_activator_state(gate_switch) == 1)
+                                                if (MiscThings::two_state_activator_state(passage_onetime1) == 1)
                                                 {
-                                                    if (MiscThings::two_state_activator_state(passage_onetime1) == 1)
+                                                    //some custom path
+                                                    result.action = 2; //initiate
+                                                    result.dont_save_interaction = false;
+                                                    result.dont_save_target = false;
+
+                                                    result.custom_path = ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass1;
+                                                    result.target = scrye_switch2;
+
+                                                    check_custom_path_end = true;
+                                                    custom_path_end = ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass1.at(std::size(ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass1) - 1);
+                                                    action_after_custom_path_end = -999;
+
+                                                    result.append_to_normal_path = true;
+
+
+                                                    result.id = 70;
+
+
+                                                    result.interaction = 1;
+                                                    return result;
+
+                                                }
+                                                else
+                                                {
+                                                    if (MiscThings::two_state_activator_state(passage_onetime1) == 0)
                                                     {
-                                                        //some custom path
-                                                        result.action = 2; //initiate
-                                                        result.dont_save_interaction = false;
-                                                        result.dont_save_target = false;
+                                                        //stand in front of bridge and wait for it to lower. there is also that lurker behind it..
 
-                                                        result.custom_path = ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass1;
-                                                        result.target = scrye_switch2;
-
-                                                        check_custom_path_end = true;
-                                                        custom_path_end = ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass1.at(std::size(ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass1) - 1);
-                                                        action_after_custom_path_end = -999;
-
-                                                        result.append_to_normal_path = true;
-
-
-                                                        result.id = 70;
-
-
-                                                        result.interaction = 1;
-                                                        return result;
-
-                                                    }
-                                                    else
-                                                    {
-                                                        if (MiscThings::two_state_activator_state(passage_onetime1) == 0)
+                                                        if (MiscThings::two_state_activator_state(bridge_lurker) != 0)
                                                         {
-                                                            //stand in front of bridge and wait for it to lower. there is also that lurker behind it..
+                                                            RE::NiPoint3 stand_here = { 8387.55176, 7848.67188, -399.649994 };
 
-                                                            if (MiscThings::two_state_activator_state(bridge_lurker) != 0)
+                                                            MiscThings::SetPosition_moveto(dummy, stand_here);
+
+                                                            result.action = 1; //initiate
+                                                            result.dont_save_interaction = false;
+                                                            result.dont_save_target = false;
+                                                            result.custom_path = {};
+                                                            result.target = dummy;
+                                                            result.interaction = 1;
+
+                                                            activator_to_check = bridge_lurker;
+
+                                                            return result;
+                                                        }
+                                                        else
+                                                        {
+                                                            if (MiscThings::two_state_activator_state(passage_onetime2) == 1)
                                                             {
-                                                                RE::NiPoint3 stand_here = { 8387.55176, 7848.67188, -399.649994 };
+                                                                //some custom path
+                                                                result.action = 2; //initiate
+                                                                result.dont_save_interaction = false;
+                                                                result.dont_save_target = false;
 
-                                                                MiscThings::SetPosition_moveto(dummy, stand_here);
+                                                                result.custom_path = ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass2;
+                                                                result.target = scrye_switch2;
 
+                                                                check_custom_path_end = true;
+                                                                custom_path_end = ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass2.at(std::size(ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass2) - 1);
+                                                                action_after_custom_path_end = -999;
+
+                                                                result.append_to_normal_path = true;
+
+
+                                                                result.id = 80;
+
+
+                                                                result.interaction = 1;
+                                                                return result;
+
+
+                                                            }
+                                                            else
+                                                            {
+                                                                //to scrye2
                                                                 result.action = 1; //initiate
                                                                 result.dont_save_interaction = false;
                                                                 result.dont_save_target = false;
                                                                 result.custom_path = {};
-                                                                result.target = dummy;
+                                                                result.target = scrye_switch2;
                                                                 result.interaction = 1;
-
-                                                                activator_to_check = bridge_lurker;
+                                                                //result.clear_path = true;
 
                                                                 return result;
                                                             }
-                                                            else
-                                                            {
-                                                                if (MiscThings::two_state_activator_state(passage_onetime2) == 1)
-                                                                {
-                                                                    //some custom path
-                                                                    result.action = 2; //initiate
-                                                                    result.dont_save_interaction = false;
-                                                                    result.dont_save_target = false;
-
-                                                                    result.custom_path = ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass2;
-                                                                    result.target = scrye_switch2;
-
-                                                                    check_custom_path_end = true;
-                                                                    custom_path_end = ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass2.at(std::size(ApocryphaCustomPaths::book2_zone3_onetime_rotating_pass2) - 1);
-                                                                    action_after_custom_path_end = -999;
-
-                                                                    result.append_to_normal_path = true;
-
-
-                                                                    result.id = 80;
-
-
-                                                                    result.interaction = 1;
-                                                                    return result;
-
-
-                                                                }
-                                                                else
-                                                                {
-                                                                    //to scrye2
-                                                                    result.action = 1; //initiate
-                                                                    result.dont_save_interaction = false;
-                                                                    result.dont_save_target = false;
-                                                                    result.custom_path = {};
-                                                                    result.target = scrye_switch2;
-                                                                    result.interaction = 1;
-                                                                    //result.clear_path = true;
-
-                                                                    return result;
-                                                                }
-                                                            }
                                                         }
-
-
-
-
-
                                                     }
+
+
+
+
+
                                                 }
-                                                else
+                                            }
+                                            else
+                                            {
+                                                //all the way is ready for book. go to wherever we need or redirect to book if target is in last zone
+                                                if (inside_book2_zone3_segment_last(target_pos_actual))
                                                 {
-                                                    //all the way is ready for book. go to wherever we need or redirect to book if target is in last zone
-                                                    if (inside_book2_zone3_segment_last(target_pos))
-                                                    {
-                                                        //to book
-                                                        result.action = 1; //initiate
-                                                        result.dont_save_interaction = false;
-                                                        result.dont_save_target = false;
-                                                        result.custom_path = {};
-                                                        result.target = exit_book;
-                                                        result.interaction = 1;
-                                                        //result.clear_path = true;
+                                                    //to book
+                                                    result.action = 1; //initiate
+                                                    result.dont_save_interaction = false;
+                                                    result.dont_save_target = false;
+                                                    result.custom_path = {};
+                                                    result.target = exit_book;
+                                                    result.interaction = 1;
+                                                    //result.clear_path = true;
 
-                                                        return result;
-                                                    }
+                                                    return result;
                                                 }
                                             }
                                         }
                                     }
                                 }
+
                             }
                         }
                     }

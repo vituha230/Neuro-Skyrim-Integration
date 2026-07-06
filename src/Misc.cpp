@@ -3867,7 +3867,7 @@ namespace MiscThings {
                     if (target == redirect_out_tower)
                         return redirect_out_tower; //continue
 
-                     
+
                     //player inside, target outside
                     if (player_pos.GetDistance(forthragg_tower) <= 677.246515f && target_pos.GetDistance(forthragg_tower) > 677.246515f)
                     {
@@ -3920,7 +3920,7 @@ namespace MiscThings {
                             if (redirect_marker1)
                                 return redirect_marker1;
                         }
-                        
+
                     }
 
 
@@ -4093,7 +4093,6 @@ namespace MiscThings {
             }
 
 
-
             RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
             RE::TESObjectREFR* redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x702c923);
 
@@ -4114,6 +4113,17 @@ namespace MiscThings {
                 if (player->GetDistance(shoot_point_marker) >= 300.0f)
                     return shoot_point_marker;
             }
+
+
+
+
+
+            auto redirect_hermaeus_book2_end_speak_activator = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c0ad);
+            auto redirect_hermaeus_book2_end = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c0ac);
+
+            if (redirect_hermaeus_book2_end_speak_activator && target == redirect_hermaeus_book2_end)
+                return redirect_hermaeus_book2_end_speak_activator;
+
         }
 
         
@@ -4343,6 +4353,24 @@ namespace MiscThings {
         }
 
 
+
+
+
+        if (quest && quest->formID == 0x40179de) //dlc2 book2 quest 
+        {
+            if (target && target->formID == 0x401ee14)
+            {
+                RE::TESObjectREFR* to_soltsheim = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40275f6);
+
+                if (to_soltsheim && !to_soltsheim->IsDisabled())
+                    return to_soltsheim;
+            }
+        }
+
+
+
+
+
         if (target && target->formID == 0xac7a1)
         {
             auto bridge = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xac776);
@@ -4421,6 +4449,19 @@ namespace MiscThings {
             
         }
             
+
+        
+        auto redirect_hermaeus_book2_end = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c0ac);
+
+
+
+        if (target && target->formID == 0x401c0ac) //hermaeus mora book2 end
+        {
+            auto redirect_hermaeus_book2_end_speak_activator = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401c0ad);
+            if (redirect_hermaeus_book2_end_speak_activator) return redirect_hermaeus_book2_end_speak_activator;
+        }
+
+
 
 
         if (quest && quest->formID == 0x22f08) //molag bal mace quest da10
@@ -11068,6 +11109,17 @@ namespace MiscThings {
                 }
                 */
 
+                /*
+                if (object->formID == 0x401c0ac) //hermaeus mora book2 end
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 60.0f, 0.0f, 100.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    result = rotated_shift_vector;
+                    return result;
+                }
+                */
+
 
                 auto saartal_fx = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x106bba);
 
@@ -11296,6 +11348,31 @@ namespace MiscThings {
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }
+
+                        if (model.find("ApoRewardAct01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { -63.0f, 0.0f, 133.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+                        if (model.find("ApoRewardAct02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 15.0f, 148.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+                        if (model.find("ApoRewardAct03") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
+                        {
+                            RE::NiPoint3 base_shift_vector = { 63.0f, 0.0f, 133.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+
 
 
                         if (model.find("CasCoffinPuzzleBrazier01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
@@ -15064,6 +15141,9 @@ namespace MiscThings {
         {
             if (!no_chains)
                 chain_insert_twin_object(refr);
+
+            if (refr->formID == 0x40275f5) //apocrypha book2 final book duplicate
+                return "";
 
 
             auto base_obj = refr->GetBaseObject();

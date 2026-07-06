@@ -1804,7 +1804,7 @@ namespace Observer {
 
 												model = MiscThings::lowercase_string(model);
 
-												if (model.find("effects\\ashpile") != std::string::npos || model.find("effects\\dlc2ashspawnpile") != std::string::npos)
+												if (model.find("effects\\ashpile") != std::string::npos || model.find("effects\\dlc2ashspawnpile") != std::string::npos|| model.find("aporewardact") != std::string::npos)
 												{
 													local_ignore_raycast = true;
 												}
