@@ -21,15 +21,20 @@
 
 
 
+//TODO ADD CONTEXT INFO FOR DAWNGUARD !!!!
+
+
+
+
+
+
 //TODO dawnguard dlc
 // maybe throw in some context when we get into jail and when harkon bites us
 // soul cairn
 
 
 //morthal burnt house quest
-//casting conjuration is a bit weird (especially when cast while walking)
-//horse crash in solitude (need logs, does not reproduce)
-//shout glitch 
+//dual casting using cast-spell? (from input_processor) - should be worth it
 
 
 //TODO bards 

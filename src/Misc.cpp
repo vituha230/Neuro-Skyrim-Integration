@@ -16197,7 +16197,7 @@ namespace MiscThings {
 
             if (shout_cooldown > 0.0f && shout_cooldown == last_shout_cooldown)
             {
-                if (shout_cooldown_doesnt_change_timer > 1.0f)
+                if (shout_cooldown_doesnt_change_timer > 5.0f)
                 {
                     if (!shout_cooldown_broken)
                         MiscThings::set_shout_cooldown_broken(true);
