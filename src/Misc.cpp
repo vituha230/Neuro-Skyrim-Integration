@@ -18514,6 +18514,24 @@ namespace MiscThings {
     
 
 
+    std::string get_casting_perk_info(RE::SpellItem* spell)
+    {
+        if (spell)
+        {
+            auto perk = spell->data.castingPerk;
+
+            if (perk)
+            {
+                std::string perk_name = perk->GetName();
+
+                if (perk_name != "")
+                    return "[" + perk_name + "]";
+            }
+        }
+
+        return "";
+    }
+
 
     std::pair<bool, std::string> get_available_spells()
     {
@@ -18584,6 +18602,9 @@ namespace MiscThings {
 
                             std::string equip_info = "";
                            
+                            std::string perk_info = get_casting_perk_info(a_spell);
+
+
                             if (!right_equipped && !left_equipped)
                                 equip_info = "[Unequipped]";
                             else
@@ -18606,7 +18627,7 @@ namespace MiscThings {
                                         equip_info = "[Equipped in both hands]";
 
 
-                            *active_spells += "[id " + std::to_string(i) + "]" + equip_info + " " + name + " - " + description + "\n";
+                            *active_spells += "[id " + std::to_string(i) + "]" + perk_info + equip_info + " " + name + " - " + description + "\n";
                             spells.insert({ i, {a_spell, nullptr } });
                             i++;
                             *max_id = i;
