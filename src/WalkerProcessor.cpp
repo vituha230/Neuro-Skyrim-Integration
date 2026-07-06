@@ -6995,7 +6995,7 @@ namespace WalkerProcessor {
 
                         if (interaction_after_walk == 3)
                         {
-                            if (!MiscThings::player_brawling() && player_actor->GetVoiceRecoveryTime() <= 0.0f)
+                            if (!MiscThings::player_brawling() && MiscThings::get_shout_cooldown() <= 0.0f)
                                 MiscThings::use_random_offensive_shout(target_ref);
 
                             result.first = true;
@@ -10439,7 +10439,7 @@ namespace WalkerProcessor {
                 {
                     if (!gate_shout || (gate_shout && gate_shout_condition()))
                     {
-                        if (player_actor->GetVoiceRecoveryTime() <= 0.0f)
+                        if (MiscThings::get_shout_cooldown() <= 0.0f)
                         {
                             std::string shout_name = shout_to_use->GetFullName();;
 
@@ -10536,7 +10536,7 @@ namespace WalkerProcessor {
         {
             auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
 
-            if (MiscThings::player_has_spell((RE::SpellItem*)dragonrend) && player_actor->GetVoiceRecoveryTime() <= 0.0f)
+            if (MiscThings::player_has_spell((RE::SpellItem*)dragonrend) && MiscThings::get_shout_cooldown() <= 0.0f)
             {
                 WalkerProcessor::shout_at_target(target_ref, dragonrend);
                 return false;
@@ -15321,7 +15321,7 @@ namespace WalkerProcessor {
                                         {
                                             auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
 
-                                            if (MiscThings::player_has_spell((RE::SpellItem*)dragonrend) && player_actor->GetVoiceRecoveryTime() <= 0.0f)
+                                            if (MiscThings::player_has_spell((RE::SpellItem*)dragonrend) && MiscThings::get_shout_cooldown() <= 0.0f)
                                             {
                                                 WalkerProcessor::shout_at_target(odahviing, dragonrend);
                                                 return;

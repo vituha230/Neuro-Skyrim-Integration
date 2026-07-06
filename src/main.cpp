@@ -1394,6 +1394,9 @@ namespace Hooks {
 
                 MiscThings::reset_settlement();
                 
+                MiscThings::reset_shout_cooldown_monitor();
+
+
                 Observer::reset_observer();
                 Observer::clear_objects_to_track();
                 Observer::reset_quest_puzzles();
@@ -3229,7 +3232,7 @@ class MyHook {
         {
             WalkerProcessor::processor(dtime);
             DialogueProcessor::processor(dtime);
-            MiscThings::book_reader(dtime);
+            MiscThings::shout_cooldown_fix(dtime);
 
             Hooks::update_debug_text();
         }

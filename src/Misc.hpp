@@ -6,6 +6,10 @@
 namespace MiscThings {
 
 
+    void set_shout_cooldown_broken(bool broken);
+    void reset_shout_cooldown_monitor();
+
+
     bool is_blocker_open(RE::TESObjectREFR* object);
 
     RE::TESObjectREFR* find_hermaeus_mora_face();
@@ -439,7 +443,8 @@ namespace MiscThings {
     bool is_reanimate_spell(bool right);
     bool player_has_summon();
 
-    void book_reader(float dtime);
+    float get_shout_cooldown();
+    void shout_cooldown_fix(float dtime);
 
     void save_loader(float dtime);
 

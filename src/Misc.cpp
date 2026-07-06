@@ -12,6 +12,11 @@
 namespace MiscThings {
 
 
+    float last_shout_cooldown = -1.0f;
+    float shout_cooldown_doesnt_change_timer = 0.0f;
+
+
+
     bool threw_a_book_out_to_read = false;
 
     long long gave_interesting_notification_timestamp = 0;
@@ -37,6 +42,44 @@ namespace MiscThings {
 
         return false;
     }
+
+
+
+    bool shout_cooldown_broken = false;
+
+
+    void set_shout_cooldown_broken(bool broken)
+    {
+        shout_cooldown_broken = broken;
+    }
+
+
+    void reset_shout_cooldown_monitor()
+    {
+        last_shout_cooldown = -1.0f;
+        shout_cooldown_doesnt_change_timer = 0.0f;
+        MiscThings::set_shout_cooldown_broken(false);
+    }
+
+
+
+
+    float get_shout_cooldown()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        
+        if (shout_cooldown_broken)
+            return -1.0f; //pretend its recovered
+
+        if (player)
+        {
+            return player->GetVoiceRecoveryTime();
+        }
+
+
+        return -1.0f;
+    }
+
 
 
     bool is_seeker(RE::TESObjectREFR* target)
@@ -15827,7 +15870,6 @@ namespace MiscThings {
 
     void reset_misc()
     {
-    
         //quest_list_valid = false; //they usually stay the same after saveload
         //quests.clear();
 
@@ -16143,9 +16185,41 @@ namespace MiscThings {
         return threw_a_book_out_to_read;
     }
 
-    //replaced with proper reading
-    void book_reader(float dtime)
+    void shout_cooldown_fix(float dtime)
     {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            //fix for broken shout cooldown
+
+            float shout_cooldown = player->GetVoiceRecoveryTime();
+
+            if (shout_cooldown > 0.0f && shout_cooldown == last_shout_cooldown)
+            {
+                if (shout_cooldown_doesnt_change_timer > 1.0f)
+                {
+                    if (!shout_cooldown_broken)
+                        MiscThings::set_shout_cooldown_broken(true);
+                }
+                else
+                    shout_cooldown_doesnt_change_timer += dtime;
+            }
+            else
+            {
+                MiscThings::set_shout_cooldown_broken(false);
+                shout_cooldown_doesnt_change_timer = 0.0f;
+            }
+
+
+            last_shout_cooldown = shout_cooldown;
+        }
+
+        
+        /*
+
+
+
         if (threw_a_book_out_to_read)
         {
             if (book_activate_time > 2.0f)
@@ -16159,7 +16233,7 @@ namespace MiscThings {
         else
             book_activate_time = 0.0f;
 
-        /*
+        
         if (book_to_activate)
         {
             if (book_activate_time > 2.0f)
@@ -19476,7 +19550,7 @@ namespace MiscThings {
                     {
                         if (slot_id == 0x00025BEE) //voice
                         {
-                            if (player_actor->GetVoiceRecoveryTime() <= 0.0f)
+                            if (MiscThings::get_shout_cooldown() <= 0.0f)
                             {
                                 int unlocked_words = 0;
 
@@ -19950,7 +20024,7 @@ namespace MiscThings {
                     {
                         if (slot_id == 0x00025BEE) //voice
                         {
-                            if (player_actor->GetVoiceRecoveryTime() <= 0)
+                            if (MiscThings::get_shout_cooldown() <= 0)
                             {
                                 int unlocked_words = 0;
 
