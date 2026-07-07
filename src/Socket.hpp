@@ -525,9 +525,9 @@ namespace Capabilities
 
     namespace GetGold
     {
-        constexpr char Name[] = "check_gold";
+        constexpr char Name[] = "check_character_stats";
         constexpr char Desc[] =
-            R"(Check amount of gold you have)";
+            R"(Check amount of gold you have, your health, magicka and stamina)";
         //constexpr char JsonSchema[] = null;
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };

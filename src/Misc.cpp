@@ -20164,10 +20164,16 @@ namespace MiscThings {
         if (!have_gold)
             inventory_contents += " 0 ";
 
-        inventory_contents += " gold";
+        inventory_contents += " gold, ";
+
+        std::string health = "Health: " + std::to_string((int)MiscThings::get_player_health()) + "/" + std::to_string((int)MiscThings::get_player_max_health());
+        std::string mana = "Magicka: " + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana());
+        std::string stamina = "Stamina: " + std::to_string((int)MiscThings::get_player_stamina()) + "/" + std::to_string((int)MiscThings::get_player_max_stamina());
+
+        std::string stats = health + ", " + mana + ", " + stamina;
 
         result.first = true;
-        result.second = inventory_contents;
+        result.second = inventory_contents + stats;
 
         return result;
     }
