@@ -21423,10 +21423,40 @@ namespace MiscThings {
             std::string letter_to_replace = "";
             auto pos_letter = description.find("_letter.png");
 
+            auto pos2 = description.find(">");
+
+            //fancy letters
             if (pos_letter != std::string::npos)
                 letter_to_replace = " " + description.substr(pos_letter - 1, 1);
+            else
+            {
+                pos_letter = description.find("Global=");
+                if (pos_letter != std::string::npos)
+                {
+                    auto pos_global_name_start = pos + 8;
 
-            auto pos2 = description.find(">");
+                    if (pos_global_name_start < pos2)
+                    {
+                        std::string var_name = description.substr(pos_global_name_start, pos2 - pos_global_name_start);
+
+                         auto var_form = RE::TESForm::LookupByEditorID(var_name);
+
+                         if (var_form && var_form->formType == RE::FormType::Global)
+                         {
+                             auto var_global = (RE::TESGlobal*)var_form;
+                             auto var_val = (int)var_global->value;
+
+                             letter_to_replace = std::to_string(var_val);
+                         }
+                    }
+
+                }
+            }
+            //global variables (useful for quests and other stuff)
+
+
+
+            
             description.erase(pos, pos2 - pos + 1);
 
             if (pos_letter <= pos2 && pos_letter >= pos)

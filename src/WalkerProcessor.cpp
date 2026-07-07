@@ -8047,7 +8047,11 @@ namespace WalkerProcessor {
                 result.second = "You do not have any quests right now. ";
             }
             else
+            {
+                get_quest_result.second = MiscThings::fix_book_description(get_quest_result.second);
                 send_random_context("Active quests: " + get_quest_result.second);
+            }
+                
 
 
         }
@@ -8107,6 +8111,7 @@ namespace WalkerProcessor {
             if (!quest_found)
             {
                 auto get_quest_result = MiscThings::get_current_quests();
+                get_quest_result.second = MiscThings::fix_book_description(get_quest_result.second);
                 send_random_context("Active quests: " + get_quest_result.second);
             }
         }
