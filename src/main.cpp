@@ -42,9 +42,7 @@
 //TODO enchanted jewelry should be advised with some fixed value
 //TODO self-cast spells ignore target (excluding wards if they are self cast)
 //TODO make settlement command work in good interior cells of settlements (at least taverns and shops and jarl house)
-//TODO try to fix -fire res debuff that shows no number. maybe improve remove-aliases function to replace global vars too
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
-//TODO test all cast_spell variations
 //TODO strange dragon aim sometimes when using magic
 //TODO "ult at target" function, necessary for ults that launch projectile (like vampire's reanimate powerful corpse ult)
 //TODO runaway action in combat? 

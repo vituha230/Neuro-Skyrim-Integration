@@ -446,6 +446,9 @@ namespace MiscThings {
     float get_shout_cooldown();
     void shout_cooldown_fix(float dtime);
 
+
+    bool is_digits(std::string& str, bool include_minus = false);
+
     void save_loader(float dtime);
 
     bool banned_because_vampirelord(RE::TESObjectREFR* target, int interaction);

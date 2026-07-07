@@ -18285,11 +18285,11 @@ namespace MiscThings {
 
 
 
-    bool is_digits(std::string& str)
+    bool is_digits(std::string& str, bool include_minus)
     {
         for (char ch : str) {
             int v = ch; // ASCII Val converted
-            if (!((ch >= 48 && ch <= 57) || ch == 45)) {
+            if (!((ch >= 48 && ch <= 57) || (include_minus && (ch == 45 || ch == 37)))) {
                 return false;
             }
         }
@@ -18327,7 +18327,7 @@ namespace MiscThings {
                     }
 
 
-                if (is_digits(keyword))
+                if (is_digits(keyword, true))
                 {
                     something_found = true;
                     replacement = keyword;
@@ -18382,7 +18382,7 @@ namespace MiscThings {
                     }
 
 
-                if (is_digits(keyword))
+                if (is_digits(keyword, true))
                 {
                     something_found = true;
                     replacement = keyword;
