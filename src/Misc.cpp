@@ -12324,6 +12324,47 @@ namespace MiscThings {
     }
 
 
+    bool compare_condition_function(RE::CONDITION_ITEM_DATA::OpCode opcode, void* val1, void* val2, float compare_val)
+    {
+        switch (opcode)
+        {
+        case (RE::CONDITION_ITEM_DATA::OpCode::kEqualTo):
+        {
+            return (val1 == val2) == compare_val;
+            break;
+        }
+        case (RE::CONDITION_ITEM_DATA::OpCode::kGreaterThan):
+        {
+            return (val1 > val2) == compare_val;
+            break;
+        }
+        case (RE::CONDITION_ITEM_DATA::OpCode::kGreaterThanOrEqualTo):
+        {
+            return (val1 >= val2) == compare_val;
+            break;
+        }
+        case (RE::CONDITION_ITEM_DATA::OpCode::kLessThan):
+        {
+            return (val1 < val2) == compare_val;
+            break;
+        }
+        case (RE::CONDITION_ITEM_DATA::OpCode::kLessThanOrEqualTo):
+        {
+            return (val1 <= val2) == compare_val;
+            break;
+        }
+        case (RE::CONDITION_ITEM_DATA::OpCode::kNotEqualTo):
+        {
+            return (val1 != val2) == compare_val;
+            break;
+        }
+        }
+
+        return false;
+    }
+
+
+
     bool recursive_quest_condition_check(RE::TESConditionItem* condition, RE::TESQuest* quest, RE::TESQuestTarget* target)
     {
         if (condition)
@@ -12370,7 +12411,34 @@ namespace MiscThings {
 
             params.actionRef = params.targetRef;
 
-            if (condition->IsTrue(params))
+
+
+            //could not make this condition work with IsTrue function, even though it is correctly calculated in the game. tried to implement it myself
+            bool manual_check = false;
+
+            if (condition->data.functionData.function == RE::FUNCTION_DATA::FunctionID::kGetIsAliasRef)
+            {
+                auto target = params.targetRef; //compare if this target ref is equal to alias ref
+                
+                int compare_alias_id = (int)condition->data.functionData.params[0];
+
+                if (quest->refAliasMap.find(compare_alias_id) != quest->refAliasMap.end())
+                {
+                    auto compare_alias_handle = quest->refAliasMap.find(compare_alias_id)->second;
+
+                    if (compare_alias_handle && compare_alias_handle.get() && compare_alias_handle.get().get())
+                    {
+                        auto compare_ref = compare_alias_handle.get().get();
+
+                        manual_check = compare_condition_function(condition->data.flags.opCode, target, compare_ref, condition->data.comparisonValue.f);
+                    }
+                }
+            }
+
+
+
+
+            if (manual_check || condition->IsTrue(params))
             {//this one is true
                 if (!condition->data.flags.isOR && condition->next)
                     return recursive_quest_condition_check(condition->next, quest, target); //if its not OR and have next, check next.
