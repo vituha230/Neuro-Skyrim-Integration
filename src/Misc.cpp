@@ -4419,7 +4419,6 @@ namespace MiscThings {
 
 
 
-
         if (quest && quest->formID == 0x40179de) //dlc2 book2 quest 
         {
             if (target && target->formID == 0x401ee14)
@@ -4431,6 +4430,29 @@ namespace MiscThings {
             }
         }
 
+
+
+        if (target)
+        {
+            //blacksmith tutorial
+            if (target->formID == 0x105388)
+            {
+                auto blacksmith = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd6987);
+                if (blacksmith) return blacksmith;
+            }
+
+            if (target->formID == 0x105571)
+            {
+                auto blacksmith = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc430a);
+                if (blacksmith) return blacksmith;
+            }
+
+            if (target->formID == 0x105578)
+            {
+                auto blacksmith = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x99b8a);
+                if (blacksmith) return blacksmith;
+            }
+        }
 
 
 
