@@ -18289,7 +18289,7 @@ namespace MiscThings {
     {
         for (char ch : str) {
             int v = ch; // ASCII Val converted
-            if (!(ch >= 48 && ch <= 57)) {
+            if (!((ch >= 48 && ch <= 57) || ch == 45)) {
                 return false;
             }
         }
