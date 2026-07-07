@@ -3927,6 +3927,26 @@ namespace MiscThings {
 
             }
 
+            
+            if (player_cell && player_cell->formID == 0x1526f) //movarths lair up
+            {
+                RE::NiPoint3 initiate_player_pos = { 362.539062, -53.9366684, 5796.30371 };
+
+                auto redirect_movarth = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70cbc26);
+
+                if (target == redirect_movarth)
+                    return redirect_movarth; //continue
+
+                if (redirect_movarth && target_pos.z >= 6000.0f)
+                {
+                    if (player_pos.GetDistance(initiate_player_pos) < 360.0f && player_pos.z < 6000.0f)
+                    {
+                        return redirect_movarth;
+                    }
+                }
+            }
+
+
 
             if (player_cell && player_cell->formID == 0x15254) //ysgramor tomb
             {

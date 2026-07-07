@@ -6574,7 +6574,6 @@ namespace WalkerProcessor {
                 }
             }
         }
-        
     }
 
 
@@ -12298,13 +12297,23 @@ namespace WalkerProcessor {
                                             {
                                                 RE::TESObjectREFR* skuldafn_web = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab25b);
 
-                                                if (target_ref == skuldafn_web)
+                                                if (target_ref && target_ref->formID == 0x70e7e) //coffin morthal
                                                 {
-                                                    send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "... You need to destroy it to proceed]", false);
-                                                    reset_walker();
+                                                    auto game_hour = MiscThings::get_ingame_hour();
+
+                                                    if (game_hour < 21 && game_hour > 5)
+                                                        send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "... Nothing happens... the ghost said something about after dark?]", false);
+                                                    else
+                                                        send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
                                                 }
                                                 else
-                                                    send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
+                                                    if (target_ref == skuldafn_web)
+                                                    {
+                                                        send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "... You need to destroy it to proceed]", false);
+                                                        reset_walker();
+                                                    }
+                                                    else
+                                                        send_random_context("[Interacting with " + target_name + "..." + no_result + lever_advice + "]", true);
 
                                             }
 
@@ -15155,7 +15164,6 @@ namespace WalkerProcessor {
 
                 if (target_ref && !using_custom_path)
                 {
-
                     riften_watchtower_check();
                     trevas_watch_check();
                     miraak_temple2_check();
@@ -15622,6 +15630,7 @@ namespace WalkerProcessor {
                             auto mushroom_lift_up = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7d);
                             auto mushroom_lift_down = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7e);
 
+                            auto redirect_movarth = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70cbc26);
 
                             if (!target_before_generic_redirect && target_ref == redirect_ysgramor_statue)
                             {
@@ -16055,6 +16064,29 @@ namespace WalkerProcessor {
                                 }
                             }
                         }
+                    }
+                }
+
+
+                auto redirect_movarth = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70cbc26);
+
+                if (redirect_movarth && target_ref == redirect_movarth)
+                {
+                    if (player->GetDistance(redirect_movarth) < 120.0f)
+                    {
+                        walk_again(); //"soft reset"
+
+                        target_ref = target_before_generic_redirect;
+                        have_target_to_walk = true;
+                        using_custom_path = true;
+                        dont_quicksave_after_custom_path = true;
+                        dont_use_bounds_for_close_enough = true;
+                        walk_again_when_finished = true;
+
+                        custom_path = CustomWalkerPaths::movarths_lair_up;
+                        path = custom_path;
+                        current_path_point = 0;
+                        return;
                     }
                 }
 

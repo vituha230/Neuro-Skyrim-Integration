@@ -17,14 +17,11 @@
 
 //TODO dragonborn dlc
 // 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1 
-// 1st book apocrypha. probably separate file for apocrypha navigation (zones, redirections)
+// 1st book apocrypha
 
 
 
 //TODO ADD CONTEXT INFO FOR DAWNGUARD !!!!
-
-
-
 
 
 
@@ -33,20 +30,18 @@
 // soul cairn
 
 
-//morthal burnt house quest
-//dual casting using cast-spell? (from input_processor) - should be worth it
-
-
-//TODO bards 
+//TODO morthal burnt house quest
+//TODO dual casting using cast-spell? (from input_processor) - should be worth it
+//TODO mage guild entry quest - create a target that can be used as dummy for entry quest. reveal it when quest is on "demonstrate spell" stage
 //TODO hearthfire
-//TODO random sidequests (markarth horror house, dibella steal statue + rescue girl, namira, windhelm investigation.. solstheim ash captain shit.. solitude ship robbery and potema?)
+//TODO random sidequests (dibella steal statue + rescue girl, namira, windhelm investigation.. solstheim ash captain shit.. solitude ship robbery and potema?)
 
 
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
 
-//TODO enchanted jewelry should be adviced with some fixed value
+//TODO enchanted jewelry should be advised with some fixed value
 //TODO self-cast spells ignore target (excluding wards if they are self cast)
 //TODO make settlement command work in good interior cells of settlements (at least taverns and shops and jarl house)
 //TODO try to fix -fire res debuff that shows no number. maybe improve remove-aliases function to replace global vars too
