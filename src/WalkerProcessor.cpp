@@ -16,6 +16,7 @@ namespace WalkerProcessor {
     int current_apocrypha_action = 0;
     int current_apocrypha_id = 0;
 
+    std::string mana_info_for_reminder = "";
 
     bool close_enough_linger = false;
 
@@ -4945,6 +4946,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        mana_info_for_reminder = "";
+
         Apocrypha::reset_apocrypha_redirects();
 
         current_apocrypha_action = 0;
@@ -10830,7 +10833,11 @@ namespace WalkerProcessor {
                                 bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
 
                                 if (low_mana_check)
+                                {
+                                    mana_info_for_reminder = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(true)) + ", current mana:" + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
                                     low_mana_detected = true;
+                                }
+                                    
 
                                 if (low_mana_check || (MiscThings::is_self_healing_spell(true) && MiscThings::player_hp_more_than(100.0f)))
                                 {
@@ -10846,6 +10853,24 @@ namespace WalkerProcessor {
 
                                     if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                     {
+
+                                        if (low_mana_detected)
+                                        {
+                                            auto max_mana = MiscThings::get_player_max_mana();
+
+                                            if (max_mana < WalkerProcessor::get_spell_cost(true))
+                                            {
+                                                std::string mana_info = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(true)) + ", max mana:" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
+                                                send_random_context("Your maximum mana is less than this spell's mana cost! You will need to increase your max mana before casting this spell " + mana_info, false);
+                                            }
+                                            else
+                                            {
+                                                std::string mana_info = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(true)) + ", current mana:" + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
+                                                send_random_context("You dont have enough mana to cast this spell! Wait or replenish your mana " + mana_info, true);
+                                            }
+                                        }
+
+
                                         reset_walker();
                                         return true;
                                     }
@@ -11265,7 +11290,10 @@ namespace WalkerProcessor {
                                     bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
 
                                     if (low_mana_check)
+                                    {
+                                        mana_info_for_reminder = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(false)) + ", current mana:" + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
                                         low_mana_detected = true;
+                                    }
 
                                     if (low_mana_check || (MiscThings::is_self_healing_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
                                     {
@@ -11282,6 +11310,25 @@ namespace WalkerProcessor {
 
                                         if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                         {
+                                            if (low_mana_detected)
+                                            {
+                                                auto max_mana = MiscThings::get_player_max_mana();
+
+                                                if (max_mana < WalkerProcessor::get_spell_cost(false))
+                                                {
+                                                    std::string mana_info = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(false)) + ", max mana:" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
+                                                    send_random_context("Your maximum mana is less than this spell's mana cost! You will need to increase your max mana before casting this spell " + mana_info, false);
+                                                }
+                                                else
+                                                {
+                                                    std::string mana_info = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(false)) + ", current mana:" + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
+                                                    send_random_context("You dont have enough mana to cast this spell! Wait or replenish your mana " + mana_info, false);
+                                                }
+                                                    
+                                            }
+
+
+
                                             reset_walker();
                                             return true;
                                         }
@@ -12710,7 +12757,7 @@ namespace WalkerProcessor {
 
                 RE::TESObjectREFR* college_entrance_spell_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51190);
 
-                if (target_ref == college_entrance_spell_target)
+                if (target_ref == college_entrance_spell_target && interaction_after_walk != 3)
                 {
                     send_random_context("You are looking at the target. You can now cast the spell they asked", false);
                     reset_walker();
@@ -14259,7 +14306,7 @@ namespace WalkerProcessor {
             if (!low_mana_notified)
             {
                 low_mana_notified = true;
-                send_random_context("[You dont have enough mana to cast the spell! You can try to replenish mana with potions or equip some other weapon instead of spells]", false);
+                send_random_context("[You dont have enough mana to cast the spell! You can try to replenish mana with potions or equip some other weapon instead of spells " + mana_info_for_reminder + "]", false);
             }
             else
             {
@@ -17279,10 +17326,10 @@ namespace WalkerProcessor {
 
                                                                                         RE::TESObjectREFR* college_entrance_spell_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51190);
 
-                                                                                        if (target_ref == college_entrance_spell_target)
+                                                                                        if (target_ref == college_entrance_spell_target && interaction_after_walk != 3)
                                                                                         {
                                                                                             dont_autointerract = true;
-                                                                                            send_random_context("You are looking at the target. You can not cast the spell they asked", false);
+                                                                                            send_random_context("You are looking at the target. You can now cast the spell they asked", false);
                                                                                             reset_walker();
                                                                                         }
                                                                                             

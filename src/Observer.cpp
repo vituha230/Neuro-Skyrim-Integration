@@ -21,6 +21,8 @@ namespace Observer {
 	int old_da10_stage = 0;
 	int old_da09_stage = 0;
 
+	int old_mg01_stage = 0;
+
 
 	bool old_blackbook_warp = false;
 
@@ -4619,6 +4621,10 @@ namespace Observer {
 						old_da09_stage = da09_quest->currentStage;
 
 
+					auto mg01_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG01"); //mage guild demonstate spell entry quest
+
+					if (mg01_quest)
+						old_mg01_stage = mg01_quest->currentStage;
 
 
 					
@@ -4752,6 +4758,36 @@ namespace Observer {
 					old_da09_stage = current_stage;
 				}
 					
+
+				auto mg01_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MG01"); //meridiah quest
+
+				if (mg01_quest)
+				{
+					auto current_stage = mg01_quest->currentStage;
+				
+					if (current_stage >= 20 && current_stage < 24)
+					{
+						auto target_mg01 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x51190);
+						if (target_mg01)
+						{
+							if (old_mg01_stage < 20) //24 is healing hands spell and it targets faralda herself
+							{
+								std::string target_mg01_info = MiscThings::insert_object_into_list_custom_name("Target for your spell", target_mg01);
+								if (target_mg01_info != "")
+									send_random_context("[Faralda wants you to cast your spell at this target: " + target_mg01_info + "]", false);
+							}
+							else
+							{
+								if (target_mg01 && player->GetDistance(target_mg01) < 500.0f)
+									if (!MiscThings::is_object_in_the_list(target_mg01))
+										std::string target_mg01_info = MiscThings::insert_object_into_list_custom_name("Target for your spell", target_mg01); // and now it is inserted
+							}
+						} 
+					}
+					
+
+					old_mg01_stage = current_stage;
+				}
 
 
 
@@ -5316,7 +5352,7 @@ namespace Observer {
 
 					bool send_info = false;
 
-					if (abs(health_dif) > 0.2f*max_health)
+					if (abs(health_dif) > 0.15f*max_health)
 					{
 						last_health_value = health;
 						send_info = true;
@@ -5328,7 +5364,7 @@ namespace Observer {
 						//send_info = true;
 					}
 
-					if (abs(mana_dif) > 0.5f*max_mana)
+					if (abs(mana_dif) > 0.2f*max_mana)
 					{
 						last_mana_value = mana;
 						send_info = true;
@@ -5347,7 +5383,7 @@ namespace Observer {
 						float mana_percent = ((float)mana) / ((float)max_mana) * 100.0f;
 
 						bool silent = true;
-						if (MiscThings::player_hp_less_than(35.0f) || mana_percent < 10.0f)
+						if (MiscThings::player_hp_less_than(35.0f))// || mana_percent < 10.0f)
 							silent = false;
 
 						send_random_context(message, silent);

@@ -30,9 +30,7 @@
 // soul cairn
 
 
-//TODO morthal burnt house quest
 //TODO dual casting using cast-spell? (from input_processor) - should be worth it
-//TODO mage guild entry quest - create a target that can be used as dummy for entry quest. reveal it when quest is on "demonstrate spell" stage
 //TODO hearthfire
 //TODO random sidequests (dibella steal statue + rescue girl, namira, windhelm investigation.. solstheim ash captain shit.. solitude ship robbery and potema?)
 

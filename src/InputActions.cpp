@@ -1100,9 +1100,15 @@ bool make_long_cast_spell_hand(bool right, float dtime)
             auto max_mana = MiscThings::get_player_max_mana();
 
             if (max_mana < WalkerProcessor::get_spell_cost(right))
-                send_random_context("Your maximum mana is less than this spell's mana cost! You will need to increase your max mana before casting this spell", false);
+            {
+                std::string mana_info = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(right)) + ", max mana:" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
+                send_random_context("Your maximum mana is less than this spell's mana cost! You will need to increase your max mana before casting this spell " + mana_info, false);
+            }
             else
-                send_random_context("You dont have enough mana to cast this spell! Wait or replenish your mana", false);
+            {
+                std::string mana_info = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(right)) + ", current mana:" + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
+                send_random_context("You dont have enough mana to cast this spell! Wait or replenish your mana " + mana_info, true);
+            }
 
         }
 
