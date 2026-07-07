@@ -12209,22 +12209,34 @@ namespace MiscThings {
 
     std::string replace_aliases(RE::TESQuest* quest, std::string displaytext)
     {
-    
 
-        if (displaytext.find("<Alias=") != std::string::npos)
+        auto alias_start = displaytext.find("<Alias=");
+
+        int shift = 7;
+
+        if (alias_start == std::string::npos)
+        {
+            alias_start = displaytext.find("<Alias.ShortName=");
+            shift = 17;
+        }
+            
+        if (alias_start != std::string::npos)
         {
             //<Alias=RiverwoodFriend>
-            auto alias_start = displaytext.find("<Alias=");
+            
             auto alias_end = displaytext.find(">");
             if (alias_start < alias_end)
             {
-                std::string alias_name = displaytext.substr(alias_start + 7, alias_end - alias_start - 7);
+                std::string alias_name = displaytext.substr(alias_start + shift, alias_end - alias_start - shift);
                 for (auto alias : quest->aliases)
                 {
                     if (alias)
                     {
                         std::string alias_codename = "";
                         alias_codename = alias->aliasName;
+
+                        alias_codename = MiscThings::lowercase_string(alias_codename);
+                        alias_name = MiscThings::lowercase_string(alias_name);
 
                         if (alias_codename == alias_name)
                         {
@@ -13424,8 +13436,12 @@ namespace MiscThings {
                 big_distance = ". Distance to target : " + std::to_string((int)distance / 100) + " m. ";
 
 
+            std::string name_semicolon = sortable_quests.at(i - 1).name;
 
-            result_text += "[id " + std::to_string(sortable_quests.at(i - 1).id) + "]" + get_quest_type_text(sortable_quests.at(i - 1).quest) + " " + sortable_quests.at(i - 1).name + ": " + sortable_quests.at(i - 1).displaytext + target_name + big_distance;
+            if (name_semicolon != "")
+                name_semicolon += ": ";
+
+            result_text += "[id " + std::to_string(sortable_quests.at(i - 1).id) + "] " + get_quest_type_text(sortable_quests.at(i - 1).quest) + " " + name_semicolon + sortable_quests.at(i - 1).displaytext + target_name + big_distance;
             result_text += "\n";
 
         }
