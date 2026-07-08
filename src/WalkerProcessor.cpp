@@ -8108,12 +8108,14 @@ namespace WalkerProcessor {
                 actual_id++;
             }
 
+            /*
             if (!quest_found)
             {
                 auto get_quest_result = MiscThings::get_current_quests();
                 get_quest_result.second = MiscThings::fix_book_description(get_quest_result.second);
                 send_random_context("Active quests: " + get_quest_result.second);
             }
+            */
         }
 
 
