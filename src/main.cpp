@@ -25,13 +25,12 @@
 
 //TODO ADD CONTEXT INFO FOR DAWNGUARD !!!!
 
-//TODO falkreath quests!
-
 //TODO dawnguard dlc
 // maybe throw in some context when we get into jail and when harkon bites us
 // soul cairn
 
 
+//TODO description for items with special description (hircin ring and others)
 //TODO dual casting using cast-spell? (from input_processor) - should be worth it
 //TODO hearthfire
 //TODO random sidequests (dibella steal statue + rescue girl, namira, windhelm investigation.. solstheim ash captain shit.. solitude ship robbery and potema?)

@@ -6675,6 +6675,40 @@ namespace MiscThings {
 
 
 
+    bool quest_target_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective, RE::TESQuestTarget* target)
+    {
+        //special for sam gaven "help cleanup temple" where it does not clear an item after player picks it up and it looks bad
+
+        if (quest && objective && target)
+        {
+            if (quest->formID == 0x1bb9b)
+            {
+                if (objective->index == 20)
+                {
+                    RE::ObjectRefHandle quest_ref_handle{};
+                    target->GetTrackingRef(quest_ref_handle, quest); //try tracked
+                    if (!quest_ref_handle)
+                    {
+                        //target->GetTrackingRef(quest_ref_handle, quest_entry.quest); //try tracked
+                        target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
+                    }
+
+                    if (quest_ref_handle && quest_ref_handle.get() && quest_ref_handle.get().get())
+                    {
+                        auto test = quest_ref_handle.get().get();
+
+                        if (test->formID == 0x14) //player
+                            return true;
+                    }
+
+                }
+                    
+            }
+        }
+
+        return false;
+    }
+
 
 
     bool quest_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective)
@@ -12670,6 +12704,10 @@ namespace MiscThings {
                                 for (auto* target : std::span(quest_targets, objective->numTargets)) {
                                     if (target)
                                     {
+
+                                        if (quest_target_is_hidden(the_quest, objective, target))
+                                            continue;
+
                                         if (the_quest)
                                         {
                                             bool conditions_met = false;

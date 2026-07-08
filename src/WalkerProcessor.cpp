@@ -7724,7 +7724,7 @@ namespace WalkerProcessor {
                                         {
                                             for (auto* target : std::span(objective->targets, objective->numTargets))
                                             {
-                                                if (target && (!specific_target || target == specific_target))
+                                                if (target && (!specific_target || target == specific_target) && !MiscThings::quest_target_is_hidden(quest, objective, target))
                                                 {
                                                     result = quest_entry.id;
                                                     return result;
@@ -7878,7 +7878,7 @@ namespace WalkerProcessor {
                     {
                         if (quest_entry.quest == last_quest_chosen)
                         {
-                            if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                            if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)) && !MiscThings::quest_target_is_hidden(quest_entry.quest, quest_entry.objective, quest_entry.target))
                             {
                                 quest_is_still_there = true;
                                 break;
@@ -7936,7 +7936,7 @@ namespace WalkerProcessor {
 
                     if (corrected_distance < min_distance)
                     {
-                        if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                        if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)) && !MiscThings::quest_target_is_hidden(quest_entry.quest, quest_entry.objective, quest_entry.target))
                         {
                             best_id = quest_entry.id;
                             min_distance = quest_entry.estimate_distance;
@@ -8089,7 +8089,7 @@ namespace WalkerProcessor {
                                     {
                                         for (auto* target : std::span(objective->targets, objective->numTargets))
                                         {
-                                            if (target && target == quest_entry.target)
+                                            if (target && target == quest_entry.target && !MiscThings::quest_target_is_hidden(quest_entry.quest, quest_entry.objective, quest_entry.target))
                                             {
                                                 if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
                                                 {
@@ -8134,7 +8134,7 @@ namespace WalkerProcessor {
                 {
                     if (quest_entry.id == index)
                     {
-                        if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)))
+                        if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)) && !MiscThings::quest_target_is_hidden(quest_entry.quest, quest_entry.objective, quest_entry.target))
                         {
                             quest_found = true;
                             break;
@@ -8205,6 +8205,10 @@ namespace WalkerProcessor {
 
                                     if (conditions_met)
                                     {
+
+                                        if (!ignore_specified_target && target != quest_entry.target && !phantom_objective)
+                                            continue;
+
                                         RE::ObjectRefHandle quest_ref_handle{};
                                         target->GetTrackingRef(quest_ref_handle, quest_entry.quest); //try tracked
                                         //target->GetTargetRef(quest_ref_handle, false, quest_entry.quest); //no tracked - try actual target
@@ -8215,6 +8219,9 @@ namespace WalkerProcessor {
                                         }
                                         else
                                         {
+
+
+
                                             if (quest_ref_handle.get())
                                             {
                                                 auto test_quests_target_ref = quest_ref_handle.get().get();
@@ -8271,10 +8278,6 @@ namespace WalkerProcessor {
                                             }
 
                                         }
-
-
-                                        if (!ignore_specified_target && target != quest_entry.target && !phantom_objective)
-                                            continue;
 
                                         if (phantom_objective || quest_ref_handle)
                                             if (phantom_objective || quest_ref_handle.get())

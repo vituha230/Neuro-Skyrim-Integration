@@ -9,6 +9,7 @@ namespace MiscThings {
     void set_shout_cooldown_broken(bool broken);
     void reset_shout_cooldown_monitor();
 
+    bool quest_target_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective, RE::TESQuestTarget* target);
 
     bool is_blocker_open(RE::TESObjectREFR* object);
 
