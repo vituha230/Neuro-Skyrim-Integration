@@ -17353,7 +17353,7 @@ namespace WalkerProcessor {
                                                                                             std::string objective_name = "";
                                                                                             objective_name = last_quest_objective->displayText;
 
-                                                                                            if (objective_name.find("Follow ") != std::string::npos)
+                                                                                            if (objective_name.find("Follow ") != std::string::npos && target_ref->IsActor())
                                                                                                 dont_autointerract = true;
                                                                                         }
 

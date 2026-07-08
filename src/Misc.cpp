@@ -13074,6 +13074,54 @@ namespace MiscThings {
         }
 
 
+
+        //da16 erandur skull quest
+        RE::TESQuest* vermina_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA16");
+
+        if (vermina_quest && vermina_quest->currentStage == 40)
+        {
+            //last objective completed, new is not shown. will not happen unless player quits dialogue inbetween which is possible so cover it here
+
+            quest this_quest{};
+
+            this_quest.id = id;
+            this_quest.quest = vermina_quest;
+            this_quest.name = vermina_quest->GetFullName();
+            this_quest.target = nullptr;
+
+            std::string displaytext = "";
+
+            auto objective = MiscThings::get_quest_objective_by_index(this_quest.quest, 30);
+            if (objective)
+                displaytext = objective->displayText;
+
+            std::string target_name = "";
+
+            this_quest.displaytext += replace_aliases(this_quest.quest, displaytext);
+
+            this_quest.target_name = target_name;
+
+            this_quest.objective = objective;
+            this_quest.description = "";
+            this_quest.category = 0;
+
+            this_quest.estimate_distance = 0.0f;
+
+            this_quest.phantom_objective = true;
+
+            this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x24280); //erandur
+
+
+            sortable_quests.push_back(this_quest);
+
+
+
+            id++;
+            got_any_quests = true;
+
+        }
+
+
         //companions quest-bridge 1 (the moment when we have no quest, before other npc redirects us)
 
         RE::TESQuest* companions_bridge_quest1 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("C01");
