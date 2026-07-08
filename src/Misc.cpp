@@ -4377,6 +4377,18 @@ namespace MiscThings {
         if (!quest)
             return nullptr;
 
+
+        if (quest->formID == 0x1bb9b)
+        {
+            if (target && target->formID == 0x3dc3f) //some door
+                if (parent_cell && parent_cell->formID == 0x3d62b) //inside misty grove
+                {
+                    auto dining_table = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3d8b6);
+                    if (dining_table) return dining_table;
+                }
+        }
+
+
         if (quest->formID == 0x4e4e1)
         {
             if (parent_cell)

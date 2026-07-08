@@ -12608,7 +12608,24 @@ namespace WalkerProcessor {
 
 
 
+                
+
+                if (target_ref && target_ref->formID == 0xeb7) //this is a very strange formid for a xmarker reference.
+                {
+                    auto actual_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3dc45);
+                    if (actual_portal)
+                    {
+                        //misty grove portal for sam gaven
+                        send_random_context("You walked to some portal... You feel like it leads to some place called Misty Grove... (use walk command to walk into it)", false);
+                        reset_walker();
+                        look_at_object_by_refr(actual_portal);
+                        return "";
+                    }
+
+                }
+
                 auto redirect_marker_alikr_prisoner = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7058726);
+
 
                 if (target_ref == redirect_marker_alikr_prisoner)
                 {
