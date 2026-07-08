@@ -21,7 +21,7 @@
 
 //TODO potema part2
 //TODO crazy daedra
-//TODO dawnstar daedra + other quests 
+
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //TODO ADD CONTEXT INFO FOR DAWNGUARD !!!!
@@ -65,8 +65,6 @@
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 //TODO that nonpathfindable castle near riften lake (faldars tooth?)
 //TODO weapon advice enchantment take charge into account
-
-//TODO letter aliases for locations (foreachscript scanner)
 
 //TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 

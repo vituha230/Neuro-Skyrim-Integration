@@ -12373,6 +12373,21 @@ namespace MiscThings {
 
 
 
+    RE::BGSLocation* GetLocAlias(RE::TESQuest* quest, std::uint32_t a_aliasID)
+    {
+        if (quest)
+        {
+            RE::BSReadLockGuard locker(quest->aliasAccessLock);
+
+            RE::BSTHashMap<uint32_t, RE::BGSLocation*> test = *(RE::BSTHashMap<uint32_t, RE::BGSLocation*>*)(&quest->unk0A0);
+
+            auto it = test.find(a_aliasID);
+            return it != test.end() ? it->second : nullptr;
+        }
+        return nullptr;
+    }
+
+
 
     std::string replace_aliases(RE::TESQuest* quest, std::string displaytext)
     {
@@ -12411,32 +12426,13 @@ namespace MiscThings {
 
                             if (type_name == "Loc")
                             {
+                                auto location = GetLocAlias(quest, alias->aliasID);
 
-                                if (alias->flags.any(RE::BGSBaseAlias::FLAGS::kStoreName))
+                                if (location && location->formType == RE::FormType::Location)
                                 {
-                                    //???
+                                    std::string ref_name = "";
+                                    ref_name = location->fullName;
 
-                                    //auto object_p = General::Script::GetObject(quest, "TrapTriggerHinge");
-
-                                    //RE::BSScript::IForEachScriptObjectFunctor* my_functor = &my_functor_idk;
-
-
-                                    //General::Script::ForEachScript(quest, 
-                                     //   [&]();
-                                }
-
-                                auto loc_alias = (RE::BGSLocAlias*)alias;
-                                RE::TESObjectREFR* the_ref = nullptr;
-                                const auto     owner = loc_alias->owningQuest;
-                                if (owner) {
-                                    auto       handle = owner->GetAliasedRef(alias->aliasID);
-                                    const auto refPtr = handle.get();
-                                    the_ref = refPtr.get();
-                                }
-
-                                if (the_ref)
-                                {
-                                    std::string ref_name = the_ref->GetDisplayFullName();
                                     displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
                                     displaytext.insert(alias_start, ref_name);
 
