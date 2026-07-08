@@ -1505,6 +1505,13 @@ namespace MiscThings {
             if (target->formID == 0x18312) //bard's dungeon first chain
                 return 100.0f;
 
+
+            if (target->formID == 0xe7c4d) //clavicus vile
+                return 200.0f;
+
+            if (target->formID == 0xd3fa9) //clavicus vile axe
+                return 200.0f;
+
         }
 
         /*
@@ -4417,6 +4424,29 @@ namespace MiscThings {
         }
 
 
+
+        if (parent_cell && parent_cell->formID == 0x216bb) //clavicus statue dungeon
+        {
+            if (target && target->formID == 0x52067)
+            {
+                auto clavicus_statue = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe7c4d);
+
+                if (clavicus_statue && player->GetDistance(clavicus_statue, true) < 2100.0f)
+                {
+                    auto cool_exit = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5253f);
+                    auto chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7cef3);
+                    auto pole = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7cef1);
+
+                    if (cool_exit && chain && pole)
+                    {
+                        if (MiscThings::two_state_activator_state(pole) != 0)
+                            return chain;
+                        else
+                            return cool_exit;
+                    }
+                }
+            }
+        }
 
 
         if (quest && quest->formID == 0x40179de) //dlc2 book2 quest 
@@ -11218,6 +11248,7 @@ namespace MiscThings {
                     return result;
                 }
 
+
                 auto whiterun_bridge_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x6bbfd);
                 
                 if (whiterun_bridge_1 && object == whiterun_bridge_1)
@@ -11260,6 +11291,15 @@ namespace MiscThings {
                 }
 
 
+                if (object->formID == 0xe7c4d) //clavicus vile
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 0.0f, -60.0f, -70.0f };
+                    base_shift_vector *= object->GetScale();
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+
+                    return rotated_shift_vector;
+                }
                 
                 //if (object->formID == 0x2003e39) //serana tomb
                 if (object->formID == 0x200f7f4) //serana tomb activator

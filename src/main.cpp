@@ -19,7 +19,9 @@
 // 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1 
 // 1st book apocrypha
 
-
+//TODO drunk daedra quest
+//TODO potema part2
+//TODO crazy daedra
 
 //TODO ADD CONTEXT INFO FOR DAWNGUARD !!!!
 
