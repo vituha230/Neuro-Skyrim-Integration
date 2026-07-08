@@ -1298,7 +1298,8 @@ namespace MiscThings {
             if (door->formID == 0xa9530)
                 return true; //silverhand skinner base exit door
 
-
+            if (door->formID == 0x17080)
+                return true; //bloodlet throne bar door
         }
 
         return false;
@@ -4422,6 +4423,64 @@ namespace MiscThings {
                 }
             }
         }
+
+
+        if (parent_cell && parent_cell->formID == 0x16ea1) //bloodlet throne kill vampire
+        {
+            if (target && target->formID == 0x16f7b) //exit 
+            {
+                auto pole2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x24d91);
+                auto vighar = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5b824);
+                auto redirect2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70d0d28);
+
+                if (pole2 && vighar && redirect2)
+                {
+                    bool player_inside_of_arena = player_pos.x > -2201.0f && player_pos.x < -446.0f && player_pos.y < -726.0f;
+
+                    if (vighar->IsDead() && MiscThings::two_state_activator_state(pole2) != 0 && player_inside_of_arena)
+                        return redirect2;
+                }
+
+                
+            }
+
+            if (target && target->formID == 0x5b824)
+            {
+                auto pole1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x24ce8);
+                auto pole2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x24d91);
+                auto redirect1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70d0d27);
+                auto redirect2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70d0d28);
+
+                if (pole1 && pole2 && redirect1 && redirect2)
+                {
+                    bool player_inside_of_arena = player_pos.x > -2201.0f && player_pos.x < -446.0f && player_pos.y < -726.0f;
+                    bool player_inside_of_shitzone = false;
+
+                    RE::NiPoint2 a = { -214.967453, -950.432983 }; //-5733.7241
+                    RE::NiPoint2 b = { -214.967453, 409.578125 }; //-5633.2554
+                    RE::NiPoint2 c = { 1941.23523, 409.578125 }; //-5640.6494
+                    RE::NiPoint2 d = { 1941.23523, -950.432983 }; //-5724.9077
+
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        player_inside_of_shitzone = player_pos.z < 865.0f;
+
+                    if (player_inside_of_shitzone)
+                    {
+                        auto bloodlet_throne_custompath_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70d0d2a);
+                        if (bloodlet_throne_custompath_marker) return bloodlet_throne_custompath_marker;
+                    }
+
+
+                    if (!player_inside_of_arena && MiscThings::two_state_activator_state(pole1) != 0)
+                        return redirect1;
+
+                    if (MiscThings::two_state_activator_state(pole2) != 0)
+                        return redirect2;
+                }
+            }
+        }
+
 
 
 

@@ -3662,6 +3662,22 @@ namespace Observer {
 
 															if (anim_name == "PortGatePole01")
 															{
+
+																if (a_ref && a_ref->formID == 0x24ce8)
+																	if (activation == 0)
+																	{
+																		auto navcut_bloodlet_throne = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70d0d29);
+
+																		if (navcut_bloodlet_throne)
+																		{
+																			auto current_pos = navcut_bloodlet_throne->GetPosition();
+																			current_pos.z += 1000.0f;
+
+																			MiscThings::SetPosition_moveto(navcut_bloodlet_throne, current_pos);
+
+																		}
+																	}
+
 																if (!no_spam)
 																{
 																	std::string name = MiscThings::insert_object_into_list_custom_name("Nordic metal pole gate", a_ref);

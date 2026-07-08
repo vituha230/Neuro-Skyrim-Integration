@@ -14905,6 +14905,23 @@ namespace WalkerProcessor {
                     }
 
 
+                    auto bloodlet_throne_custompath_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70d0d2a);
+
+                    if (target_ref == bloodlet_throne_custompath_marker && target_ref)
+                    {
+                        if (player->GetDistance(bloodlet_throne_custompath_marker) < 200.0f)
+                        {
+                            walk_again(); //soft reset
+                            using_custom_path = true;
+                            custom_path = CustomWalkerPaths::bloodletthrone_shitzone;
+                            dont_quicksave_after_custom_path = true;
+                            allow_interrupt_custom_walk = true;
+                            walk_again_when_finished = true;
+                            return;
+                        }
+                    }
+
+
                     if (generic_redirect_active)
                     {
                         auto labyrinth_marker1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a5a);
