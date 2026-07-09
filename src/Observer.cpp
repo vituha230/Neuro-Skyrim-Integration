@@ -15,6 +15,9 @@ namespace Observer {
 
 
 	int old_dlc1vq01_stage = 0;
+	int old_dlc1vq02_stage = 0;
+	int old_dlc_redwater_quest_stage = 0;
+
 
 	bool old_vampire_melee = false;
 
@@ -4626,6 +4629,16 @@ namespace Observer {
 					if (dlc1vq01_quest)
 						old_dlc1vq01_stage = dlc1vq01_quest->currentStage;
 
+					auto dlc1vq02_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ02");
+
+					if (dlc1vq02_quest)
+						old_dlc1vq02_stage = dlc1vq02_quest->currentStage;
+
+
+					auto dlc_redwater_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1dunRedwaterDenQST");
+					if (dlc_redwater_quest)
+						old_dlc_redwater_quest_stage = dlc_redwater_quest->currentStage;
+
 					auto da10_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA10"); //molag bal quest
 
 					if (da10_quest)
@@ -4737,6 +4750,35 @@ namespace Observer {
 					}
 
 					old_dlc1vq01_stage = dlc1vq01_stage;
+				}
+
+
+				auto dlc1vq02_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ02");
+
+				if (dlc1vq02_quest)
+				{
+					int dlc1vq02_stage = dlc1vq02_quest->currentStage;
+
+					if (dlc1vq02_stage == 40 && old_dlc1vq02_stage < 40)
+					{
+						send_random_context("Harkon bites you in the neck! You lose conciousness... and wake up in some big hall", false);
+					}
+
+					old_dlc1vq02_stage = dlc1vq02_stage;
+				}
+
+
+				auto dlc_redwater_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1dunRedwaterDenQST");
+				if (dlc_redwater_quest)
+				{
+					int dlc_redwater_stage = dlc_redwater_quest->currentStage;
+
+					if (dlc_redwater_stage == 10 && old_dlc_redwater_quest_stage < 10)
+					{
+						send_random_context("You take the skooma... your vision turned red...", false);
+					}
+
+					old_dlc_redwater_quest_stage = dlc_redwater_stage;
 				}
 
 

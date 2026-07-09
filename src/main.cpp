@@ -18,27 +18,33 @@
 //TODO dragonborn dlc
 // 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1 
 // 1st book apocrypha
+// next quests (talk to skaal)
 
+
+//TODO dawnguard dlc
+// soul cairn
+
+
+//  RANDOM QUESTS TODO
+// 
 //TODO potema part2
 //TODO crazy daedra
 //TODO ship robbery solitude quest
 //TODO riften skooma investigation, mead quest, dwemer cube quest, check what fishing quest looks like
 //TODO that seducers AE quest
-
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//TODO ADD CONTEXT INFO FOR DAWNGUARD !!!!
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-//TODO dawnguard dlc
-// maybe throw in some context when we get into jail and when harkon bites us
-// soul cairn
+//TODO solstheim ash captain shit
+//TODO windhelm investigation (probably give a way to follow the bloodtrail? and stuff after that too)
+//TODO markarth dibella quest
+//TODO markarth namira quest
+//TODO dwemer shield daedra
+//TODO black armor daedra
+//TODO black sword daedra
+//TODO check hermaeus book-blood quest
 
 
 //TODO description for items with special description (hircin ring and others)
 //TODO dual casting using cast-spell? (from input_processor) - should be worth it
 //TODO hearthfire
-//TODO random sidequests (dibella steal statue + rescue girl, namira, windhelm investigation.. solstheim ash captain shit.. solitude ship robbery and potema?)
 
 
 //////////////////////////////////////////////////////
@@ -62,14 +68,11 @@
 // for later random stuff
 
 
-//TODO test malborn and klimek chest and maybe all container types 
 //TODO attacking with both hands if 2 melee weapons
 //TODO optional argument to equip function so player can specify hand
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 //TODO that nonpathfindable castle near riften lake (faldars tooth?)
 //TODO weapon advice enchantment take charge into account
-
-//TODO 3rd view clothes demonstration, do it when delphine says "cant go dressed like that"
 
 //for later:
 
@@ -3311,6 +3314,12 @@ class MyHook {
 
                         if (subtitle_msg.find("This is far as I can take you. Krif voth ahkrin.") != std::string::npos)
                             quicksave();
+
+
+                        if (subtitle_msg.find("That's the last of them. Poor sods can't resist after they get a taste of your dosed Skooma.") != std::string::npos)
+                        {
+                            send_random_context("You passed out, and then woke up in a cage!", false);
+                        }
 
                         send_speech_context(speaker, subtitle_msg, the_subtitle_data->forceDisplay);
 
