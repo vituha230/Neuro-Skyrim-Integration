@@ -12416,10 +12416,10 @@ namespace MiscThings {
 
     std::string remove_aliases(std::string displaytext)
     {
-        if (displaytext.find("<Alias=") != std::string::npos)
+        if (displaytext.find("<Alias") != std::string::npos)
         {
             //<Alias=RiverwoodFriend>
-            auto alias_start = displaytext.find("<Alias=");
+            auto alias_start = displaytext.find("<Alias");
             auto alias_end = displaytext.find(">");
             if (alias_start < alias_end)
             {
@@ -12448,7 +12448,7 @@ namespace MiscThings {
 
 
 
-    std::string replace_aliases(RE::TESQuest* quest, std::string displaytext)
+    std::string replace_aliases(RE::TESQuest* quest, std::string displaytext, bool dont_remove)
     {
 
         auto alias_start = displaytext.find("<Alias=");
@@ -12495,13 +12495,13 @@ namespace MiscThings {
                                     displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
                                     displaytext.insert(alias_start, ref_name);
 
-                                    displaytext = replace_aliases(quest, displaytext); //if there are more
+                                    displaytext = replace_aliases(quest, displaytext, dont_remove); //if there are more
                                 }
                                 else
                                 {
                                     //just erase it idk what to do with it
                                     displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
-                                    displaytext = replace_aliases(quest, displaytext); //if there are more
+                                    displaytext = replace_aliases(quest, displaytext, dont_remove); //if there are more
                                 }
                             }
 
@@ -12515,12 +12515,12 @@ namespace MiscThings {
                                     displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
                                     displaytext.insert(alias_start, ref_name);
 
-                                    displaytext = replace_aliases(quest, displaytext); //if there are more
+                                    displaytext = replace_aliases(quest, displaytext, dont_remove); //if there are more
                                 }
                                 else
                                 {
                                     displaytext = displaytext.substr(0, alias_start) + displaytext.substr(alias_end + 1, displaytext.length() - alias_end);
-                                    displaytext = replace_aliases(quest, displaytext); //if there are more
+                                    displaytext = replace_aliases(quest, displaytext, dont_remove); //if there are more
                                 }
                             }
 
@@ -12531,10 +12531,14 @@ namespace MiscThings {
             }
         }
 
-        if (displaytext.find("<Alias=") != std::string::npos)
+        if (!dont_remove)
         {
-            displaytext = remove_aliases(displaytext); //clear strays if they werent replaced
+            if (displaytext.find("<Alias") != std::string::npos)
+            {
+                displaytext = remove_aliases(displaytext); //clear strays if they werent replaced
+            }
         }
+
 
 
         return displaytext;
@@ -12545,13 +12549,13 @@ namespace MiscThings {
 
     std::string replace_aliases_all_quests(std::string displaytext)
     {
-        if (displaytext.find("<Alias=") != std::string::npos)
+        if (displaytext.find("<Alias") != std::string::npos)
         {
             auto player = RE::PlayerCharacter::GetSingleton();
             auto quest_targets = player->questTargets;
 
             for (auto quest_target : quest_targets)
-                displaytext = replace_aliases(quest_target.first, displaytext); //if there are more
+                displaytext = replace_aliases(quest_target.first, displaytext, true); //if there are more
         }
 
         return displaytext;
@@ -18248,6 +18252,9 @@ namespace MiscThings {
         {
             auto entry_ptr = inventory.find(item);
 
+            if (entry_ptr == inventory.end())
+                return "";
+
             auto entry = entry_ptr->second.second.get();
 
             //if (entry->extraLists && entry->IsEnchanted())
@@ -18274,6 +18281,51 @@ namespace MiscThings {
 
                             result = "[Enchanted: " + descr + "]";
                         }
+
+                        if (descr == "")
+                        {
+                            if (entry->object)
+                            {
+                                std::string special_descr = "";
+                                //auto test armor
+                                if (entry->object->IsArmor())
+                                {
+                                    auto armor = (RE::TESObjectARMO*)entry->object;
+
+                                    RE::BSString a_string = "";
+
+                                    armor->GetDescription(a_string, entry->object);
+
+                                    special_descr = a_string;
+
+                                    special_descr = fix_enchantment_description(special_descr, enchantment);
+
+                                    if (special_descr != "")
+                                        return "[Enchanted: " + special_descr + "]";
+
+                                }
+
+                                if (entry->object->IsWeapon())
+                                {
+                                    auto armor = (RE::TESObjectWEAP*)entry->object;
+
+                                    RE::BSString a_string = "";
+
+                                    armor->GetDescription(a_string, entry->object);
+
+                                    special_descr = a_string;
+
+                                    special_descr = fix_enchantment_description(special_descr, enchantment);
+
+                                    if (special_descr != "")
+                                        return "[Enchanted: " + special_descr + "]";
+
+                                }
+                                
+                            }
+                            
+                        }
+
 
                         if (descr == "")
                         {
@@ -18440,15 +18492,7 @@ namespace MiscThings {
                 if (item_name != "" && item_name != gold_name)
                 {
 
-                    if (item_name.find("<Alias=") != std::string::npos)
-                    {
-                        auto player = RE::PlayerCharacter::GetSingleton();
-                        auto quest_targets = player->questTargets;
-
-                        for (auto quest_target : quest_targets)
-                            item_name = replace_aliases(quest_target.first, item_name); //if there are more
-                    }
-
+                    item_name = MiscThings::replace_aliases_all_quests(item_name);
 
                     result += get_object_category(item_form, item);
                     result += actions + " ";

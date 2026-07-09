@@ -32,6 +32,8 @@
 //TODO solstheim ash captain shit
 //TODO windhelm investigation (probably give a way to follow the bloodtrail? and stuff after that too)
 //TODO markarth dibella quest
+//TODO whiterun save the guy from talmor quest
+//TODO falkreath help the hunter spriggan cave
 
 //TODO crazy daedra
 //TODO markarth namira quest
@@ -44,7 +46,6 @@
 
 
 
-//TODO description for items with special description (hircin ring and others)
 //TODO dual casting using cast-spell? (from input_processor) - should be worth it
 //TODO hearthfire
 

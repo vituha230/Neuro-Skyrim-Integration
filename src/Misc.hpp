@@ -6,6 +6,8 @@
 namespace MiscThings {
 
 
+    std::string replace_aliases(RE::TESQuest* quest, std::string displaytext, bool dont_remove = false);
+
     void set_shout_cooldown_broken(bool broken);
     void reset_shout_cooldown_monitor();
 
