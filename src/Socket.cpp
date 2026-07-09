@@ -765,7 +765,18 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         {
                             if (!was_exit_dungeon_registered())
                             {
-                                if (!is_action_on_cooldown(Capabilities::ExploreWorld::Name))
+                                bool ignore_cooldown = false;
+                                if (player)
+                                {
+                                    auto parent_cell = player->GetParentCell();
+
+                                    if (parent_cell && (parent_cell->formID == 0x16203 || parent_cell->formID == 0x597d4))
+                                        ignore_cooldown = true;
+                                }
+
+
+
+                                if (ignore_cooldown || !is_action_on_cooldown(Capabilities::ExploreWorld::Name))
                                 {
                                     actions_to_register[action_pos] = Capabilities::ExploreWorld::Action; action_pos++;
                                 }

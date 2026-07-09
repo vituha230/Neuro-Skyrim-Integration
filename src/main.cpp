@@ -28,17 +28,20 @@
 //  RANDOM QUESTS TODO
 // 
 //TODO potema part2
-//TODO crazy daedra
 //TODO riften skooma investigation, mead quest, dwemer cube quest, check what fishing quest looks like
-//TODO that seducers AE quest
 //TODO solstheim ash captain shit
 //TODO windhelm investigation (probably give a way to follow the bloodtrail? and stuff after that too)
 //TODO markarth dibella quest
+
+//TODO crazy daedra
 //TODO markarth namira quest
 //TODO dwemer shield daedra
 //TODO black armor daedra
 //TODO black sword daedra
 //TODO check hermaeus book-blood quest
+
+//TODO that seducers AE quest
+
 
 
 //TODO description for items with special description (hircin ring and others)
@@ -710,6 +713,16 @@ void clear_map_cooldown()
 
 bool unregister_explore_action()
 {
+    auto player = RE::PlayerCharacter::GetSingleton();
+
+    if (player)
+    {
+        auto parent_cell = player->GetParentCell();
+
+        if (parent_cell && (parent_cell->formID == 0x16203 || parent_cell->formID == 0x597d4))
+            return true; //dont unregister it here because we need it to even serve jailtime
+    }
+
     const char* action_names[] = { Capabilities::ExploreWorld::Name };
 
     if (m_neuroSocket->unregister_actions(action_names, std::size(action_names)))
