@@ -6428,7 +6428,7 @@ namespace WalkerProcessor {
         }
 
 
-        put_explore_on_cooldown(40.0f);
+        put_explore_on_cooldown(30.0f);
         unregister_explore_action();
 
         right_attack_cancel();

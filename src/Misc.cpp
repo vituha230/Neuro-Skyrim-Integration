@@ -7418,6 +7418,15 @@ namespace MiscThings {
             if (objects_around.second.find("Ancient Nordic Door") != std::string::npos)
                 very_interesting_objects.push_back("Ancient Nordic Door");
 
+            if (objects_around.second.find("Fishing Supplies") != std::string::npos)
+                very_interesting_objects.push_back("Fishing Supplies");
+
+            if (objects_around.second.find("Butterfly") != std::string::npos)
+                very_interesting_objects.push_back("Butterfly");
+
+            if (objects_around.second.find("Torchbug") != std::string::npos)
+                very_interesting_objects.push_back("Torchbug");
+
 
             if (std::size(very_interesting_objects) > 0)
             {
@@ -7436,7 +7445,7 @@ namespace MiscThings {
 
                 gave_interesting_notification_timestamp = now;
 
-                return "[You look around and see interesting objects: " + message + ". Maybe it's worth investigating it?";
+                return "[You look around and see interesting objects: " + message;// +". Maybe it's worth investigating it?";
             }
         }
         
