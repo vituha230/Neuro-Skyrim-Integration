@@ -6,6 +6,8 @@
 namespace MiscThings {
 
 
+    void notify_walker_to_stop_autolockpick_on_enemies();
+
     std::string replace_aliases(RE::TESQuest* quest, std::string displaytext, bool dont_remove = false);
 
     void set_shout_cooldown_broken(bool broken);

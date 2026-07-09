@@ -8,6 +8,8 @@ namespace WalkerProcessor {
 	void lower_processor(float dtime);
 
 
+	void notify_walker_to_stop_autolockpick_on_enemies();
+
 	void stop_casting();
 
 	bool have_doors_nearby(float range = 800.0f, bool ignore_raycast = false);

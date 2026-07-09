@@ -13,6 +13,9 @@
 
 namespace WalkerProcessor {
 
+
+    bool stop_autolockpick = false;
+
     int current_apocrypha_action = 0;
     int current_apocrypha_id = 0;
 
@@ -505,6 +508,12 @@ namespace WalkerProcessor {
     bool last_dragon_was_flying = false;
 
 
+
+
+    void notify_walker_to_stop_autolockpick_on_enemies()
+    {
+        stop_autolockpick = true;
+    }
 
     //
 
@@ -4946,6 +4955,8 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        stop_autolockpick = false;
+
         mana_info_for_reminder = "";
 
         Apocrypha::reset_apocrypha_redirects();
@@ -12270,6 +12281,10 @@ namespace WalkerProcessor {
                         auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
                         auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
+
+                        if (stop_autolockpick)
+                            attackers.clear();
+
                         if (std::size(attackers) > 0 || (mzulft_door && target_ref == mzulft_door) || (haunted_house_door && target_ref == haunted_house_door) || (target_ref == haunted_house_door2 && haunted_house_door2))
                         {
                             LockpickProcessor::reset_lockpicking();
@@ -17774,6 +17789,10 @@ namespace WalkerProcessor {
                                                                         auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
                                                                         auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
+
+                                                                        if (stop_autolockpick)
+                                                                            attackers.clear();
+
                                                                         if (std::size(attackers) > 0 || (target_ref == mzulft_door && mzulft_door) || (target_ref == haunted_house_door && haunted_house_door) || (target_ref == haunted_house_door2 && haunted_house_door2))
                                                                         {
                                                                             LockpickProcessor::reset_lockpicking();
@@ -18134,6 +18153,11 @@ namespace WalkerProcessor {
                                                                     auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
                                                                     auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
+
+                                                                    if (stop_autolockpick)
+                                                                        attackers.clear();
+
+
                                                                     if (std::size(attackers) > 0 || (get_targeted_ref() == mzulft_door && mzulft_door) || (get_targeted_ref() == haunted_house_door && haunted_house_door) || (get_targeted_ref() == haunted_house_door2 && haunted_house_door2))
                                                                     {
                                                                         LockpickProcessor::reset_lockpicking();
@@ -18523,6 +18547,11 @@ namespace WalkerProcessor {
                                                     auto haunted_house_door2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18bf9);
 
                                                     auto attackers = MiscThings::get_player_attackers(false, nullptr, true);
+
+                                                    if (stop_autolockpick)
+                                                        attackers.clear();
+
+
                                                     if ((std::size(attackers) > 0 && runaway_mode) || (mzulft_door && get_targeted_ref() == mzulft_door) || (haunted_house_door && get_targeted_ref() == haunted_house_door) || (get_targeted_ref() == haunted_house_door && haunted_house_door))
                                                     {
                                                         LockpickProcessor::reset_lockpicking();

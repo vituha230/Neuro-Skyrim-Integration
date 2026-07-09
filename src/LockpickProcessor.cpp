@@ -47,6 +47,7 @@ namespace LockpickProcessor {
 
 	bool quit_menu()
 	{
+		WalkerProcessor::notify_walker_to_stop_autolockpick_on_enemies();
 		RE::UIMessageQueue::GetSingleton()->AddMessage(RE::LockpickingMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 		set_universal_block(0.5f);
 		return true;
