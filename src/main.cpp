@@ -21,6 +21,9 @@
 
 //TODO potema part2
 //TODO crazy daedra
+//TODO ship robbery solitude quest
+//TODO riften skooma investigation, mead quest, dwemer cube quest, check what fishing quest looks like
+//TODO that seducers AE quest
 
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

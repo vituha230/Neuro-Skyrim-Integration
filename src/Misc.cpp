@@ -6726,6 +6726,13 @@ namespace MiscThings {
     bool quest_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective)
     {
 
+        //seducers quest. temporary disable because its high level and needs checking
+        if (quest && quest->formID == 0x6000912)
+        {
+            return true;
+        }
+
+
         //dlc2 quest 1
         if (quest && quest->formID == 0x4017f8e)
         {
@@ -13702,15 +13709,12 @@ namespace MiscThings {
             if (quest->data.questType == RE::QUEST_DATA::Type::kSideQuest || quest->data.questType == RE::QUEST_DATA::Type::kMiscellaneous)
                 return "[Side Quest]";
 
-            /*
             if (quest->data.questType == RE::QUEST_DATA::Type::kThievesGuild)
                 return "[Thieves Guild] ";
 
             if (quest->data.questType == RE::QUEST_DATA::Type::kDarkBrotherhood)
                 return "[Dark Brotherhood] ";
 
-
-           
             if (quest->data.questType == RE::QUEST_DATA::Type::kMagesGuild)
                 return "[Mage College] ";
 
@@ -13722,7 +13726,10 @@ namespace MiscThings {
 
             if (quest->data.questType == RE::QUEST_DATA::Type::kDLC02_Dragonborn)
                 return "[Dragonborn] ";
-            */
+
+            if (quest->data.questType == RE::QUEST_DATA::Type::kDLC01_Vampire)
+                return "[Dawnguard] ";
+            
         }
 
         return "";
