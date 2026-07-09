@@ -44,6 +44,36 @@ namespace MiscThings {
     }
 
 
+    bool inside_of_lighthouse_top(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto object_pos = object->GetPosition();
+            auto object_worldspace = object->GetWorldspace();
+            //auto riften_worldspace = RE::TESForm::LookupByID(0x16bb4);
+
+            if (object_worldspace && object_worldspace->formID == 0x3c) //tamriel
+            {
+                if (object_pos.z > -12100.0f && object_pos.z < -11000.0)
+                {
+                    RE::NiPoint2 a = { -47702.7578, 128086.852 }; //-5733.7241
+                    RE::NiPoint2 b = { -47702.7578, 129032.820 }; //-5633.2554
+                    RE::NiPoint2 c = { -46491.8594, 129032.820 }; //-5640.6494
+                    RE::NiPoint2 d = { -46491.8594, 128086.852 }; //-5724.9077
+
+                    RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+
 
     bool shout_cooldown_broken = false;
 
@@ -1496,24 +1526,30 @@ namespace MiscThings {
 
         if (target)
         {
-            if (target->formID == 0xc629d) //trevas watch lever
+            switch (target->formID)
+            {
+            case (0xc629d): //trevas watch lever
                 return 100.0f;
 
-
-            if (target->formID == 0x401753b || target->formID == 0x40175ba) //nchardak sealed doors
+            case (0x401753b):
+            case (0x40175ba): //nchardak sealed doors
                 return 30.0f;
 
-            if (target->formID == 0x18312) //bard's dungeon first chain
+            case (0x18312): //bard's dungeon first chain
                 return 100.0f;
 
-
-            if (target->formID == 0xe7c4d) //clavicus vile
+            case (0xe7c4d): //clavicus vile
                 return 200.0f;
 
-            if (target->formID == 0xd3fa9) //clavicus vile axe
+            case (0xd3fa9): //clavicus vile axe
                 return 200.0f;
 
+            case (0x7526c): //solitude lighthouse ship robbery fire
+                return 300.0f;
+
+            }
         }
+        
 
         /*
         RE::TESObjectREFR* mage_force_field_2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x10d99d);
@@ -3857,6 +3893,10 @@ namespace MiscThings {
                     }
                 }
 
+                auto redirect_lighthouse = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70d5e2c);
+
+                if (redirect_lighthouse && (target == redirect_lighthouse || (inside_of_lighthouse_top(player) && !inside_of_lighthouse_top(target))))
+                    return redirect_lighthouse;
 
                 //dustman cairn door
                 if (target && (target->formID == 0xf5b80 || target->formID == 0x705b5f2))
@@ -4288,6 +4328,11 @@ namespace MiscThings {
 
         return false;
     }
+
+
+
+   
+
 
 
     bool is_inside_of_riften_watchtower(RE::TESObjectREFR* object)
@@ -11402,6 +11447,13 @@ namespace MiscThings {
 
                 }
 
+                if (object->formID == 0x7526c) //ship robbery lighthouse fire
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
+                    base_shift_vector *= object->GetScale();
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                }
 
                 if (object->formID == 0xe7c4d) //clavicus vile
                 {

@@ -5441,6 +5441,7 @@ namespace WalkerProcessor {
             if (!dont_invalidate_path_on_walk_again)
             {
                 path_valid = false;
+                path.clear();
                 current_path_point = -1;
             }
                 
@@ -15721,7 +15722,7 @@ namespace WalkerProcessor {
                             auto mushroom_lift_up = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7d);
                             auto mushroom_lift_down = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403bd7e);
 
-                            auto redirect_movarth = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70cbc26);
+                            //auto redirect_movarth = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70cbc26);
 
                             if (!target_before_generic_redirect && target_ref == redirect_ysgramor_statue)
                             {
@@ -16182,7 +16183,28 @@ namespace WalkerProcessor {
                 }
 
 
+                auto redirect_lighthouse = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70d5e2c);
 
+                if (redirect_lighthouse && target_ref == redirect_lighthouse)
+                {
+                    if (player->GetDistance(redirect_lighthouse) < 120.0f)
+                    {
+                        walk_again(); //"soft reset"
+
+                        target_ref = target_before_generic_redirect;
+                        have_target_to_walk = true;
+                        using_custom_path = true;
+                        //dont_quicksave_after_custom_path = true;
+                        dont_use_bounds_for_close_enough = true;
+                        walk_again_when_finished = true;
+                        dont_shift = true;
+
+                        custom_path = CustomWalkerPaths::solitude_lighthouse_down;
+                        //path = custom_path;
+                        //current_path_point = 0;
+                        return;
+                    }
+                }
 
 
                 if (pause_pre_stealing)
