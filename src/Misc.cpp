@@ -4423,7 +4423,28 @@ namespace MiscThings {
             return nullptr;
 
 
-        if (quest->formID == 0x1bb9b)
+        if (quest->formID == 0x85d40) //riften skooma
+        {
+            if (target && target->formID == 0x85d54) //the note
+            {
+                auto the_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x8e3aa);
+
+                auto sarthis = MiscThings::get_alias_ref_by_name(quest, "FFRiften20SarthisAlias");
+
+                if (the_door && sarthis)
+                {
+                    if (MiscThings::is_door_locked(the_door))
+                        return sarthis; //want to pick his key
+                    else
+                        if (MiscThings::is_door_locked(the_door, true))
+                            return the_door; //it will have scuffed pathfinding so just direct to the door
+                }
+                
+            }
+        }
+
+
+        if (quest->formID == 0x1bb9b) //drunk daedra final
         {
             if (target && target->formID == 0x3dc3f) //some door
                 if (parent_cell && parent_cell->formID == 0x3d62b) //inside misty grove
@@ -13103,36 +13124,82 @@ namespace MiscThings {
                                 {
                                     //objective is displayed but has no targets. potentially quest without a target. still add in the list
 
-                                    quest this_quest{};
 
-                                    this_quest.id = id;
-                                    this_quest.quest = the_quest;
-                                    this_quest.name = the_quest->GetFullName();
-                                    this_quest.target = nullptr;
+                                    RE::TESQuest* riften_skooma_2 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("FreeformRiften01");
 
-                                    std::string displaytext = "";
-                                    displaytext = objective->displayText;
+                                    if (the_quest == riften_skooma_2 && riften_skooma_2->currentStage == 30)
+                                    {
+                                        //objective no targets
 
-                                    std::string target_name = "";
+                                        quest this_quest{};
 
-                                    this_quest.displaytext += replace_aliases(the_quest, displaytext);
+                                        this_quest.id = id;
+                                        this_quest.quest = riften_skooma_2;
+                                        this_quest.name = riften_skooma_2->GetFullName();
+                                        this_quest.target = nullptr;
 
-                                    this_quest.target_name = target_name;
+                                        std::string displaytext = "";
 
-                                    this_quest.objective = objective;
-                                    this_quest.description = "";
-                                    this_quest.category = 0;
+                                        auto objective = MiscThings::get_quest_objective_by_index(this_quest.quest, 30);
+                                        if (objective)
+                                            displaytext = objective->displayText;
 
-                                    this_quest.estimate_distance = 0.0f;
+                                        std::string target_name = "";
 
-                                    this_quest.phantom_objective = false;
+                                        this_quest.displaytext += replace_aliases(this_quest.quest, displaytext);
 
-                                    sortable_quests.push_back(this_quest);
+                                        this_quest.target_name = target_name;
 
-                                    id++;
-                                    got_any_quests = true;
+                                        this_quest.objective = objective;
+                                        this_quest.description = "";
+                                        this_quest.category = 0;
 
-                                    found_objective = true;
+
+                                        this_quest.phantom_objective = true;
+
+                                        this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd81fb); //boss?
+
+                                        this_quest.estimate_distance = get_quest_target_distance(nullptr, this_quest.quest, nullptr, this_quest.phantom_target);
+
+                                        sortable_quests.push_back(this_quest);
+
+                                        id++;
+                                        got_any_quests = true;
+
+                                    }
+                                    else
+                                    {
+                                        quest this_quest{};
+
+                                        this_quest.id = id;
+                                        this_quest.quest = the_quest;
+                                        this_quest.name = the_quest->GetFullName();
+                                        this_quest.target = nullptr;
+
+                                        std::string displaytext = "";
+                                        displaytext = objective->displayText;
+
+                                        std::string target_name = "";
+
+                                        this_quest.displaytext += replace_aliases(the_quest, displaytext);
+
+                                        this_quest.target_name = target_name;
+
+                                        this_quest.objective = objective;
+                                        this_quest.description = "";
+                                        this_quest.category = 0;
+
+                                        this_quest.estimate_distance = 0.0f;
+
+                                        this_quest.phantom_objective = false;
+
+                                        sortable_quests.push_back(this_quest);
+
+                                        id++;
+                                        got_any_quests = true;
+
+                                        found_objective = true;
+                                    }
                                 }
                             }
                         }
@@ -13140,6 +13207,7 @@ namespace MiscThings {
                 }
             }
         }
+
 
 
 

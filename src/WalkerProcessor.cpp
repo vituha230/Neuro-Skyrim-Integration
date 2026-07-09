@@ -8669,12 +8669,236 @@ namespace WalkerProcessor {
                     }
                     else
                     {
-                        //no target
-                        result.first = false;
-                        result.second = "This quest has no target to walk to. Perhaps you need to do something else to complete it...";
-                        //return result;
-                        //maybe it will find another objective that will actually work
-                        return result;
+
+                        if (phantom_objective)
+                        {
+                            RE::TESObjectREFR* quests_target_ref = nullptr;
+
+                            quests_target_ref = get_phantom_target(quest_entry.quest, quest_entry.objective);
+
+                            bool quest_is_questionable = false;
+
+                            if (last_quest_chosen && quest_entry.quest != last_quest_chosen)
+                            {
+                                //check if last quest is still there and ask for confirmation to digress from it
+                                if (!MiscThings::quest_is_hidden(last_quest_chosen, last_quest_objective_chosen))
+                                {
+                                    bool quest_is_still_there = false;
+                                    for (auto quest_entry : *quest_list)
+                                    {
+                                        if (quest_entry.quest == last_quest_chosen)
+                                        {
+                                            quest_is_still_there = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (quest_is_still_there)
+                                    {
+                                        quest_is_questionable = true;
+                                        new_quest_chosen = quest_entry.quest;
+                                        new_objective_chosen = quest_entry.objective;
+                                        new_target_chosen = quest_entry.target;
+                                        new_quest_chosen_name = quest_entry.name + ": " + quest_entry.displaytext;
+
+                                        trying_to_change_quest_course = true;
+                                    }
+                                }
+
+                            }
+
+                            if (!quest_is_questionable)
+                            {
+                                last_quest_chosen = quest_entry.quest;
+                                last_quest_objective_chosen = quest_entry.objective;
+                                last_quest_target_chosen = quest_entry.target;
+                                last_quest_chosen_name = quest_entry.name + ": " + quest_entry.displaytext;
+                            }
+                            else
+                            {
+                                //dont accept right away
+                                result.first = true;
+                                result.second = "[Processing...]";
+                                return result;
+                            }
+
+
+                            Observer::reset_threats();
+
+                            if (have_target_to_walk)
+                            {
+                                if (target_ref != quests_target_ref || last_quest != quest_entry.quest || last_quest_objective_chosen != quest_entry.objective || backup_interaction_made)
+                                    reset_walker();
+                                else
+                                {
+                                    if (detect_quest_target_changed_and_walk(true))
+                                    {
+                                        had_successful_walk = false;
+                                    }
+
+                                    result.first = true;
+                                    result.second = "You keep following quest...";
+
+                                    auto player = RE::PlayerCharacter::GetSingleton();
+
+                                    return result;
+                                }
+                            }
+
+
+                            quest_mode = true;
+                            target_ref = MiscThings::redirect_quest_target(quest_entry.quest, quests_target_ref);
+
+
+                            kilkreath_parkour_check(target_ref);
+
+                            current_quest_target_followed = quest_entry.target;
+                            current_quest_followed = quest_entry.quest;
+
+                            reminder_target_name = "[id " + std::to_string(quest_entry.id) + "] " + quest_entry.name + ": " + quest_entry.displaytext;
+                            reminder_start_pos = player->GetPosition();
+
+
+                            solitude_prison_out_of_bounds_check();
+
+
+
+                            have_target_to_walk = true;
+                            interaction_after_walk = -1;
+
+
+                            auto base_obj = quests_target_ref->GetBaseObject();
+
+                            if (base_obj && base_obj->GetFormType() == RE::FormType::Container)
+                                interaction_after_walk = 1;
+
+                            if (base_obj && base_obj->IsInventoryObject())
+                                interaction_after_walk = 1;
+
+
+                            last_quest = quest_entry.quest;
+                            last_quest_objective = objective;
+                            last_quest_target = nullptr;
+
+                            solitude_post_emperor_check(target_ref);
+                            katariah_post_emperor_check(target_ref);
+                            hag_rock_pit_check(target_ref);
+
+                            right_attack_cancel();
+                            left_attack_cancel();
+
+
+                            std::string big_distance = "";
+                            float distance = player->GetDistance(target_ref, true, true);
+
+                            if (current_quest_target_followed && current_quest_followed && !get_phantom_target(current_quest_followed, last_quest_objective))
+                            {
+                                distance = MiscThings::get_quest_target_distance(current_quest_target_followed, current_quest_followed);
+                            }
+
+                            big_distance = " Distance to target: " + std::to_string((int)distance / 100) + " m. ";
+
+
+
+                            result.first = true;
+                            result.second = "[Started following quest: " + reminder_target_name + "..." + big_distance + "]";
+
+
+                            if (distance > 40000.0f)
+                            {
+                                if (current_quest_target_followed && current_quest_followed)
+                                {
+                                    std::string good_fasttravel_location = MiscThings::get_good_fasttravel_marker_for_quest_target(current_quest_target_followed, current_quest_followed, get_phantom_target(current_quest_followed, last_quest_objective));
+                                    if (good_fasttravel_location != "")
+                                    {
+                                        if (MapProcessor::map_is_allowed())
+                                        {
+                                            if (fasttravel_advice_counter < 1)
+                                            {
+                                                fasttravel_advice_counter++;
+
+                                                fasttravel_advice_last_quest = last_quest;
+                                                fasttravel_advice_last_quest_objective = last_quest_objective;
+                                                fasttravel_advice_last_quest_target = last_quest_target;
+
+                                                //advice
+                                                std::string advice = big_distance + " Closest fast-travel location: " + good_fasttravel_location + ". (You can use map to fast travel)";
+                                                add_delayed_message(advice);
+                                            }
+
+
+                                            //unlock map if we can actually fast travel
+                                            if (!get_open_map_action_status())
+                                            {
+                                                clear_map_cooldown();
+
+                                                if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                    register_open_map();
+                                            }
+                                        }
+                                    }
+
+
+                                    if (good_fasttravel_location == "")
+                                    {
+                                        std::string nearest_city = MiscThings::get_good_carriage_city_marker_for_quest_target(current_quest_target_followed, current_quest_followed, get_phantom_target(current_quest_followed, last_quest_objective));
+
+                                        if (nearest_city != "")
+                                        {
+                                            if (MapProcessor::map_is_allowed())
+                                            {
+
+                                                if (fasttravel_advice_counter < 1)
+                                                {
+                                                    fasttravel_advice_counter++;
+
+                                                    fasttravel_advice_last_quest = last_quest;
+                                                    fasttravel_advice_last_quest_objective = last_quest_objective;
+                                                    fasttravel_advice_last_quest_target = last_quest_target;
+
+
+                                                    //advice
+                                                    std::string advice = big_distance + " Closest big city: " + nearest_city + ". (You can try hiring a carriage to get there, or fast travel if you have been there)";
+
+                                                    add_delayed_message(advice);
+                                                }
+
+
+                                                if (!get_open_map_action_status())
+                                                {
+                                                    clear_map_cooldown();
+
+                                                    if (!MiscThings::have_force_only_menu_open() && get_active_force() == -1 && is_something_registered())
+                                                        register_open_map();
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+                            else
+                            {
+                                if (distance < 15000.0f)
+                                {
+                                    if (get_open_map_action_status())
+                                    {
+                                        map_was_unregistered_by_follow_quest = true;
+                                        unregister_open_map();
+                                    }
+                                }
+                            }
+
+                            return result;
+
+                        }
+                        else
+                        {
+                            //no objective
+                            result.first = false;
+                            result.second = "This quest has no target to walk to. Perhaps you need to do something else to complete it...";
+                            return result;
+                        }
                     }
                 }
                 else
