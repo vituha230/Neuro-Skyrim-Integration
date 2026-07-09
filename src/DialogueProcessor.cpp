@@ -249,11 +249,29 @@ namespace DialogueProcessor {
                                                                             {
                                                                                 auto the_quest = dialogue->parentQuest;
                                                                                 //if ((the_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || the_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !the_quest->data.flags.all(RE::QuestFlag::kCompleted))
+                                                                                std::string quest_tag = "";
+                                                                                std::string already_said_tag = "";
+                                                                                
+                                                                                std::string delimeter = "";
+
+                                                                                bool do_delimeter = false;
+
                                                                                 if (MiscThings::is_quest_active(the_quest))
-                                                                                    text = "[QUEST-RELATED] " + text;
-                                                                                else
-                                                                                    if (!dialogue->neverSaid)
-                                                                                        text = "[Already said] " + text;
+                                                                                {
+                                                                                    quest_tag = "[QUEST-RELATED]";
+                                                                                    do_delimeter = true;
+                                                                                }
+
+                                                                                if (!dialogue->neverSaid)
+                                                                                {
+                                                                                    already_said_tag = "[Already said]";
+                                                                                    do_delimeter = true;
+                                                                                }
+                                                                                    
+                                                                                if (do_delimeter)
+                                                                                    delimeter = " ";
+
+                                                                                text = quest_tag + already_said_tag + delimeter + text;
 
                                                                                 MenuOption option;
                                                                                 option.id = line_number;// index;
