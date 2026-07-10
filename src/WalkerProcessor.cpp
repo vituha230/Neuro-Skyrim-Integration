@@ -4170,7 +4170,7 @@ namespace WalkerProcessor {
 
             bool stealth_arching = false;
 
-            if ((is_fighting() || Observer::threat_response_choice_pending()) && (has_bow_equipped(true) || has_crossbow_equipped(true)) && !no_ammo() && target && target->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
+            if ((is_fighting() || Observer::threat_response_choice_pending()) && (has_bow_equipped(true) || has_crossbow_equipped(true)) && !no_ammo() && target && target->IsActor() && (!MiscThings::is_dragon(target)))// || !MiscThings::is_flying(target_ref)))
             {
                 stealth_arching = !MiscThings::sees_player(target, sneak_probe_sneak_checked);
             }
@@ -4188,7 +4188,7 @@ namespace WalkerProcessor {
                 sneak_failed = true;
             }
                 
-            bool key_condition = target_ref && interaction_after_walk == 3 && target_ref->formID == 0x200a58b && MiscThings::get_hand_contents(get_current_active_hand()) && MiscThings::get_hand_contents(get_current_active_hand())->formID == 0x1a4cc;
+            bool key_condition = target && interaction_after_walk == 3 && target->formID == 0x200a58b && MiscThings::get_hand_contents(get_current_active_hand()) && MiscThings::get_hand_contents(get_current_active_hand())->formID == 0x1a4cc;
 
             if (key_condition)
                 high_precision = true;
