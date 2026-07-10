@@ -10184,7 +10184,7 @@ namespace WalkerProcessor {
                             
                     } 
                     else
-                        result = 1.4f + spell->avEffectSetting->data.spellmakingChargeTime;
+                        result = 0.6f + spell->avEffectSetting->data.spellmakingChargeTime;
                 }
             }
             else
