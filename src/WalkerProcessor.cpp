@@ -6980,8 +6980,8 @@ namespace WalkerProcessor {
                     
                 }
 
-
-                if (!attack_friend_confirmed && (interaction == 3 && MiscThings::is_friend(object->second.object) && (MiscThings::is_dragon(object->second.object) || object->second.object->IsHumanoid()) && !(object->second.object->IsActor() && object->second.object->IsDead())))
+                                                                            //calixto
+                if (!attack_friend_confirmed && (interaction == 3 && object->second.object->formID != 0x1b11d && MiscThings::is_friend(object->second.object) && (MiscThings::is_dragon(object->second.object) || object->second.object->IsHumanoid()) && !(object->second.object->IsActor() && object->second.object->IsDead())))
                 {
                     trying_to_attack_friend = true;
                     attack_friend_interaction = interaction;
@@ -9040,7 +9040,7 @@ namespace WalkerProcessor {
                                             if (quest_ref_handle.get())
                                             {
                                                 auto quests_target_ref = quest_ref_handle.get().get();
-                                                if (target_ref == quests_target_ref && conditions_met)
+                                                if (!manual_check && target_ref == quests_target_ref && conditions_met)
                                                     return false; //dont check if old objective is still valid
                                             }
 
@@ -9058,7 +9058,7 @@ namespace WalkerProcessor {
                                             if (quest_ref_handle.get())
                                             {
                                                 auto quests_target_ref = quest_ref_handle.get().get();
-                                                if (target_ref == quests_target_ref && conditions_met)
+                                                if (!manual_check && target_ref == quests_target_ref && conditions_met)
                                                     return false; //dont check if old objective is still valid
                                             }
                                     }
@@ -9077,7 +9077,7 @@ namespace WalkerProcessor {
                                         if (quest_ref_handle.get())
                                         {
                                             auto quests_target_ref = quest_ref_handle.get().get();
-                                            if (target_ref == quests_target_ref && conditions_met)
+                                            if (!manual_check && target_ref == quests_target_ref && conditions_met)
                                                 return false; //dont check if old objective is still valid
                                         }
                                 }
@@ -9318,6 +9318,11 @@ namespace WalkerProcessor {
                                                 current_quest_followed = quest;
 
                                                 result = true;
+                                            }
+                                            else
+                                            {
+                                                if (manual_check)
+                                                    return false;
                                             }
                                         }
                                             
@@ -15355,6 +15360,49 @@ namespace WalkerProcessor {
                         }
 
                     }
+
+
+                    
+                    if (quest_mode)
+                    {
+                        if (target_ref->formID == 0x1b11d) //windhelm killer
+                        {
+                            auto ms11_quest1 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS11");
+                            auto ms11_quest2 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS11b");
+
+                            if (ms11_quest1 && ms11_quest2)
+                            {
+                                auto objective1 = MiscThings::get_quest_objective_by_index(ms11_quest1, 120);
+                                auto objective2 = MiscThings::get_quest_objective_by_index(ms11_quest2, 120);
+
+                                if (objective1 && objective2)
+                                {
+                                    if ((objective1->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective1->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective1->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed)) ||
+                                        (objective2->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !objective2->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !objective2->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed)))
+                                    {
+                                        auto player_worldspace = player->GetWorldspace();
+
+                                        if (player_worldspace && player_worldspace->formID == 0x1691d && player->GetDistance(target_ref) < 500.0f && MiscThings::raycastable(target_ref, 500.0f))
+                                        {
+                                            auto killer = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b11d);
+                                            std::string info = MiscThings::insert_object_into_list_and_get_info(killer);
+
+                                            if (info != "")
+                                            {
+                                                send_random_context(info + " pulled out a knife and slowly approaches Viola from behind!", false);
+                                                reset_walker();
+                                                look_at_object_by_refr(killer);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+
 
                 }
                 

@@ -4499,7 +4499,6 @@ namespace MiscThings {
             }
         }
 
-
         if (quest->formID == 0x1f7a3) //windhelm blood on ice ms11
         {
             if (target && target->formID == 0x20554) //crime scene
