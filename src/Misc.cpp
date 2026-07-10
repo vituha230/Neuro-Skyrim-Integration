@@ -4444,6 +4444,23 @@ namespace MiscThings {
 
 
 
+    bool item_is_inside_of_target_inventory(RE::TESObjectREFR* item, RE::TESObjectREFR* target)
+    {
+        if (item && target)
+        {
+            auto extra_handle = (RE::ExtraReferenceHandle*)item->extraList.GetByType(RE::ExtraDataType::kReferenceHandle);
+
+            if (extra_handle)
+            {
+                if (extra_handle->containerRef && extra_handle->containerRef.get() && extra_handle->containerRef.get().get() && extra_handle->containerRef.get().get() == target)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+
 
 
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
@@ -4458,7 +4475,6 @@ namespace MiscThings {
 
         if (!quest)
             return nullptr;
-
 
 
         if (quest->formID == 0x1f7a3) //windhelm blood on ice ms11
@@ -4480,6 +4496,23 @@ namespace MiscThings {
                     }
                 }
             }
+
+            if (target && target->formID == 0xe0e51) //hjerim chest
+            {
+                auto chest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe0e51);
+                auto journal2_ref = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x66183);
+
+                if (chest && journal2_ref)
+                {
+                    if (MiscThings::is_container_empty(chest))
+                        if (!MiscThings::item_is_inside_of_target_inventory(journal2_ref, player))
+                            return journal2_ref;
+
+                    //here is a problem - if player empties container but then loses butchers journal1. in this case i cannot track first journal
+                }
+
+            }
+
         }
 
 
@@ -6835,13 +6868,54 @@ namespace MiscThings {
                     {
                         auto test = quest_ref_handle.get().get();
 
-                        if (test->formID == 0x14) //player
+                        if (test && test->formID == 0x14) //player
                             return true;
                     }
 
                 }
                     
             }
+
+            if (quest->formID == 0x1f7a3) //blood on ise ms11 windhelm
+            {
+                if (objective->index == 70)
+                {
+                    RE::ObjectRefHandle quest_ref_handle{};
+                    //target->GetTrackingRef(quest_ref_handle, quest); //try tracked
+                    //if (!quest_ref_handle)
+                    //{
+                        //target->GetTrackingRef(quest_ref_handle, quest_entry.quest); //try tracked
+                        target->GetTargetRef(quest_ref_handle, false, quest); //no tracked - try actual target
+                    //}
+
+                    if (quest_ref_handle && quest_ref_handle.get() && quest_ref_handle.get().get())
+                    {
+                        auto test = quest_ref_handle.get().get();
+
+                        if (test)
+                        {
+                            test = MiscThings::redirect_quest_target(quest, test);
+
+                            if (test)
+                            {
+                                if (test->formID == 0x14) //this is for situation where we already picked up butcher' journal (this actually never works because we redirect clears journal if its in player's inventory anyway but just in case)
+                                    return true;
+
+                                auto base_obj = test->GetBaseObject();
+                                
+                                //auto hjerim_chest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe0e51);
+
+                                if (base_obj && base_obj->formType == RE::FormType::Container)
+                                    return test->formID == 0xe0e51 && MiscThings::is_container_empty(test); //this is for situation where we already emptied the chest
+                            }
+                        }
+                    }
+                }
+            }
+                
+                
+
+
         }
 
         return false;
@@ -12500,6 +12574,15 @@ namespace MiscThings {
                     {
                         if (alias_id == 17)
                             return "Tova";
+
+                        if (alias_id == 13)
+                            return "Viola";
+
+                        if (alias_id == 19)
+                            return "Calixto";
+
+                        if (alias_id == 37)
+                            return "Hjerim House";
                     }
                     //std::string result = "";
                     //result = alias->aliasName;
@@ -12712,6 +12795,9 @@ namespace MiscThings {
             auto player_ref = RE::PlayerCharacter::GetSingleton()->AsReference();
 
 
+            if (quest->formID == 0x1f7a3)
+                bool stop_here = false;
+
 
             int run_on_who_flag = condition->data.object.underlying();
 
@@ -12772,8 +12858,6 @@ namespace MiscThings {
                     }
                 }
             }
-
-
 
 
             if (manual_check || condition->IsTrue(params))

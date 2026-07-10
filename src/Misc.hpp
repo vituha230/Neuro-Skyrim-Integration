@@ -156,6 +156,8 @@ namespace MiscThings {
     int get_city_sieged();
     
 
+    bool item_is_inside_of_target_inventory(RE::TESObjectREFR* item, RE::TESObjectREFR* target);
+
     struct quest {
         int id;
         RE::TESQuest* quest;

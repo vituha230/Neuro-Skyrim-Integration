@@ -8957,6 +8957,14 @@ namespace WalkerProcessor {
                 return false;
 
 
+            if (last_quest && last_quest->formID == 0x1f7a3) //ms11 blood on ice windhelm
+            {
+                if (parent_cell && parent_cell->formID == 0x16778)
+                    return false; //dont autocollect every single clue
+            }
+
+
+
             auto skuldafn_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ303");
             if (skuldafn_quest && last_quest == skuldafn_quest)
             {
