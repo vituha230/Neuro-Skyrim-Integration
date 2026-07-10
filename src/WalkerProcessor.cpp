@@ -10176,10 +10176,10 @@ namespace WalkerProcessor {
                             auto left_hand_contents = MiscThings::get_hand_contents(right);
                             if (left_hand_contents && left_hand_contents->GetFormID() == 0x35369) //staff of magnus
                             {
-                                result = 10.0f;
+                                result = 7.0f;
                             }
                             else
-                                result = 7.0f;
+                                result = 5.0f;
                         }
                             
                     } 
@@ -10220,10 +10220,10 @@ namespace WalkerProcessor {
                                             auto left_hand_contents = MiscThings::get_hand_contents(right);
                                             if (left_hand_contents && left_hand_contents->GetFormID() == 0x35369) //staff of magnus
                                             {
-                                                result = 10.0f;
+                                                result = 7.0f;
                                             }
                                             else
-                                                result = 7.0f;
+                                                result = 5.0f;
                                         }
                                     }
                                     else
