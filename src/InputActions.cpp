@@ -37,7 +37,7 @@ bool was_actually_casting = false;
 float pause_post_cast = 0.0f;
 bool low_mana_notified = false;
 bool input_dualcasting = false;
-
+float spell_cast_time_timeout = 0.0f;
 
 
 float fishing_timer = 0.0f;
@@ -65,6 +65,7 @@ void reset_input_processor()
     pause_post_cast = 0.0f;
     low_mana_notified = false;
     input_dualcasting = false;
+    spell_cast_time_timeout = 0.0f;
 
     need_look_down = false;
 
@@ -1009,6 +1010,7 @@ void try_casting_hand(bool right)
         do_cast = true;
         right_hand_cast = right;
         spell_cast_time = 0.0f;
+        spell_cast_time_timeout = 0.0f;
         need_look_down = false;
         pause_post_cast = 0.0f;
         input_dualcasting = false;
@@ -1200,7 +1202,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         if (input_dualcasting)
         {
 
-            if (spell_cast_time < 0.000001f)
+            if (spell_cast_time < 0.1f)
             {
                 right_attack();
                 left_attack();
@@ -1216,14 +1218,14 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         {
             if (right)
             {
-                if (spell_cast_time < 0.000001f)
+                if (spell_cast_time < 0.1f)
                     right_attack();
                 else
                     right_attack_spell();
             }
             else
             {
-                if (spell_cast_time < 0.000001f)
+                if (spell_cast_time < 0.1f)
                     left_attack();
                 else
                     left_attack_spell();
@@ -1237,7 +1239,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
         is_actually_casting |= input_dualcasting && WalkerProcessor::is_casting_walker(!right);
 
-
+        /*
         if (!was_actually_casting)
         {
             if (is_actually_casting)
@@ -1247,7 +1249,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         {
             if (!is_actually_casting)
             {
-                bool stop_here = WalkerProcessor::is_casting_walker(right);
+                bool stop_here = WalkerProcessor::is_casting_walker2(right);
 
                 //casting stopped for whatever reason. clear cast so new cast can happen.
                 if (input_dualcasting)
@@ -1267,13 +1269,14 @@ bool make_long_cast_spell_hand(bool right, float dtime)
                 return true;
             }
         }
+        */
 
-
-        if (!was_actually_casting)
+        //if (!was_actually_casting)
+        if (!is_actually_casting)
         {
-            float timeout_val = WalkerProcessor::get_spell_timeout(true);
+            float timeout_val = WalkerProcessor::get_spell_timeout(right);
 
-            if (spell_cast_time > timeout_val)
+            if (spell_cast_time_timeout > timeout_val)
             {
                 if (input_dualcasting)
                 {
@@ -1291,7 +1294,11 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
                 return true;
             }
+            else
+                spell_cast_time_timeout += dtime;
         }
+        else
+            spell_cast_time_timeout = 0.0f;
 
 
 
@@ -1413,17 +1420,23 @@ void input_processor(float dtime)
 
     if (do_cast)
     {
-        if (MiscThings::is_player_swimming() || make_long_cast_spell_hand(right_hand_cast, dtime))
+        if (WalkerProcessor::pause_attacking(dtime))
         {
-            do_cast = false;
-            right_hand_cast = false;
-            notified_cast = false;
-            was_actually_casting = false;
-            need_look_down = false;
-            pause_post_cast = 0.0f;
-            low_mana_notified = false;
-            input_dualcasting = false;
+            if (MiscThings::is_player_swimming() || make_long_cast_spell_hand(right_hand_cast, dtime))
+            {
+                do_cast = false;
+                right_hand_cast = false;
+                notified_cast = false;
+                was_actually_casting = false;
+                need_look_down = false;
+                pause_post_cast = 0.0f;
+                low_mana_notified = false;
+                input_dualcasting = false;
+                WalkerProcessor::unpause_attacking();
+            }
         }
+
+
     }
 
 

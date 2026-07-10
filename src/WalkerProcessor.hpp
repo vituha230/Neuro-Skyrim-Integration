@@ -15,6 +15,7 @@ namespace WalkerProcessor {
 	bool have_doors_nearby(float range = 800.0f, bool ignore_raycast = false);
 	RE::TESObjectREFR* get_nearest_door(bool ignore_raycast = false);
 
+	bool is_casting_walker2(bool right);
 	bool is_casting_walker3(bool right);
 
 	bool detect_quest_target_changed_and_walk(bool manual_check = false);
@@ -175,7 +176,7 @@ namespace WalkerProcessor {
 	//void set_last_teleport_timestamp(long long timestamp);
 
 	std::pair<bool, std::string> shout_at_target(RE::TESObjectREFR* target, RE::TESShout* shout, bool is_gate_shout = false, RE::TESObjectREFR* refr_to_activate_when_done = nullptr);
-	std::pair<bool, std::string> cast_spell_at_target(RE::TESObjectREFR* target, RE::SpellItem* spell);
+	std::pair<bool, std::string> cast_spell_at_target(RE::TESObjectREFR* target, RE::SpellItem* spell, bool check_fight_condition = false);
 
 
 	bool is_objective_phantom(RE::TESQuest* quest, RE::BGSQuestObjective* specific_objective);

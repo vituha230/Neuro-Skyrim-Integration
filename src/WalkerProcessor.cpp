@@ -10136,9 +10136,9 @@ namespace WalkerProcessor {
                     if (spell->avEffectSetting->data.spellmakingChargeTime > 2.0f)
                     {
                         if (cast_type == RE::MagicSystem::CastingType::kConcentration)
-                            return 6.0f;
+                            return 2.0f;
                         else
-                            return 5.0f;
+                            return 2.0f;
                     }
 
                 }
@@ -10835,6 +10835,11 @@ namespace WalkerProcessor {
         }
             
 
+        if (is_casting_cast()) //from inputprocessor
+            return false;
+
+
+
 
         bool actually_attacked = false;
 
@@ -11061,11 +11066,16 @@ namespace WalkerProcessor {
 
 
 
-
-                            if (attack_action_time0 < 0.000001f)
-                                right_attack();
-                            else
+                            if (is_concentration_spell(true))
                                 right_attack_spell();
+                            else
+                            {
+                                if (attack_action_time0 < 0.000001f)
+                                    right_attack();
+                                else
+                                    right_attack_spell();
+                            }
+
 
 
                             if (MiscThings::is_summon_spell(true))
@@ -11179,10 +11189,16 @@ namespace WalkerProcessor {
 
                                 if (!skip_cast)
                                 {
-                                    if (attack_action_time0 < 0.000001f)
-                                        right_attack();
-                                    else
+                                    if (is_concentration_spell(true))
                                         right_attack_spell();
+                                    else
+                                    {
+                                        if (attack_action_time0 < 0.000001f)
+                                            right_attack();
+                                        else
+                                            right_attack_spell();
+                                    }
+
 
 
                                     if (MiscThings::is_summon_spell(true))
@@ -11519,11 +11535,16 @@ namespace WalkerProcessor {
                                 }
 
 
-
-                                if (attack_action_time1 < 0.000001f)
-                                    left_attack();
-                                else
+                                if (is_concentration_spell(false))
                                     left_attack_spell();
+                                else
+                                {
+                                    if (attack_action_time1 < 0.000001f)
+                                        left_attack();
+                                    else
+                                        left_attack_spell();
+                                }
+
 
                                 if (MiscThings::is_summon_spell(false))
                                     look_down_for_summon();
@@ -11642,11 +11663,16 @@ namespace WalkerProcessor {
 
                                     if (!skip_cast)
                                     {
-
-                                        if (attack_action_time1 < 0.000001f)
-                                            left_attack();
-                                        else
+                                        if (is_concentration_spell(false))
                                             left_attack_spell();
+                                        else
+                                        {
+                                            if (attack_action_time1 < 0.000001f)
+                                                left_attack();
+                                            else
+                                                left_attack_spell();
+                                        }
+
 
                                         if (MiscThings::is_summon_spell(false))
                                             look_down_for_summon();
@@ -13870,7 +13896,7 @@ namespace WalkerProcessor {
         }
     }
 
-    std::pair<bool, std::string> cast_spell_at_target(RE::TESObjectREFR* target, RE::SpellItem* spell)
+    std::pair<bool, std::string> cast_spell_at_target(RE::TESObjectREFR* target, RE::SpellItem* spell, bool check_fight_condition)
     {
         std::pair<bool, std::string> result{};
 
@@ -13878,8 +13904,53 @@ namespace WalkerProcessor {
 
         bool have_this_spell = MiscThings::player_has_spell(spell);
 
-        if (have_this_spell)
+        if (have_this_spell && target)
         {
+
+            if (check_fight_condition && target_ref)
+            {
+                if (is_fighting() && target_ref->IsActor() && !target_ref->IsDead() && (!target->IsActor() || target->IsDead() || !MiscThings::is_enemy_to_actor(target)))
+                {
+                    //already fighting and current target isnt dead, but new target is dead or isnt an actor
+
+                    RE::TESObjectREFR* eye_of_magnus = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
+
+                    if (target == target_ref || (target && eye_of_magnus && target == eye_of_magnus) || (target && MiscThings::get_destructible_state(target) != 0))
+                    {
+                        ;//dont block this
+                    }
+                    else
+                    {
+                        std::string reason = "";
+                        if (target->IsActor() && target->IsDead())
+                        {
+                            reason = ". New target is already dead!";
+                        }
+
+                        if (!target->IsActor())
+                        {
+                            reason = ". This object isnt a threat";
+                        }
+
+
+                        if (target->IsActor() && !MiscThings::is_enemy_to_actor(target))
+                        {
+                            reason = ". This object is not an enemy";
+                        }
+
+                        result.first = false;
+                        result.second = "You are in the middle of a fight!" + reason;
+                        return result;
+                    }
+
+                }
+            }
+
+
+
+
+
+
             auto left_hand = MiscThings::get_hand_contents(false);
             auto right_hand = MiscThings::get_hand_contents(true);
 

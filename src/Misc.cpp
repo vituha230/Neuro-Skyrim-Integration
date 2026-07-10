@@ -20209,7 +20209,10 @@ namespace MiscThings {
 
                                     if (spell_target)
                                     {
-                                        WalkerProcessor::cast_spell_at_target(spell_target, spell);
+                                        auto temp = WalkerProcessor::cast_spell_at_target(spell_target, spell, true);
+
+                                        if (!temp.first)
+                                            return temp;
                                     }
                                     else
                                     {
