@@ -162,6 +162,10 @@ long long context_chars_sent = 0;
 
 long long last_load_timestamp = 0;
 
+
+
+bool loading_menu_lock = false;
+
 /////////////////////////////////////////////////////////
 
 
@@ -1346,6 +1350,9 @@ namespace Hooks {
 
 
 
+                loading_menu_lock = true;
+
+
 
                 auto player = RE::PlayerCharacter::GetSingleton();
 
@@ -1432,7 +1439,6 @@ namespace Hooks {
 
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS CLOSED");
-
 
                 last_load_timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
 
@@ -1567,6 +1573,8 @@ namespace Hooks {
                         }
                             
 
+
+                        loading_menu_lock = false;
 
                         //send_random_context(, false);
                     }
@@ -2360,7 +2368,7 @@ private:
         if (!universal_block)
         {
             const auto ui = RE::UI::GetSingleton();
-            if (ui && !ui->IsMenuOpen(RE::Console::MENU_NAME))
+            if (ui && !ui->IsMenuOpen(RE::Console::MENU_NAME) && !loading_menu_lock)
             {
                 Observer::cleanup_invalid_objects(dtime);
 
@@ -2413,10 +2421,19 @@ private:
             }
             else
             {
-                if (ui)
+                if (ui && !loading_menu_lock)
                 {
                     WalkerProcessor::lower_processor(dtime);
                 }
+
+
+                if (loading_menu_lock)
+                {
+                    if (ui && !ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME) && !ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+                        loading_menu_lock = false;
+                }
+
+
             }
                 
         }
@@ -3244,13 +3261,18 @@ class MyHook {
         
         input_processor(dtime);
 
-        if (!universal_block)
+        if (!universal_block && !loading_menu_lock)
         {
             WalkerProcessor::processor(dtime);
             DialogueProcessor::processor(dtime);
             MiscThings::shout_cooldown_fix(dtime);
 
             Hooks::update_debug_text();
+        }
+        else
+        {
+            if (loading_menu_lock)
+                bool stop_here = false;
         }
 
         

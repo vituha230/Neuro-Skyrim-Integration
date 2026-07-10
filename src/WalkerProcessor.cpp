@@ -3185,7 +3185,8 @@ namespace WalkerProcessor {
                 if (target_ref && target_ref->formID == 0x7058726 && targeted_ref->formID == 0xa7615)
                     return false; //ignore this door for this target
 
-
+                if (target_ref && target_ref->formID == 0x1b132 && targeted_ref->formID == 0x105fbc)
+                    return false; //ignore this door for this target
 
                 float threshold = 0.2f;
 
@@ -3716,21 +3717,21 @@ namespace WalkerProcessor {
 
         if (lookat_used)
         {
-            if (MiscThings::is_dragon(target_ref) && !is_fighting())
+            if (MiscThings::is_dragon(target) && !is_fighting())
                 dont_use_bounds_for_close_enough = true;
         }
 
 
         if (specific_shift != RE::NiPoint3::Zero())
         {
-            if (!must_use_bounds && !(MiscThings::is_dragon(target_ref) && is_fighting()))
+            if (!must_use_bounds && !(MiscThings::is_dragon(target) && is_fighting()))
                 dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
         }
 
 
-        if (MiscThings::is_inventory_object(target_ref) && !must_use_bounds)
+        if (MiscThings::is_inventory_object(target) && !must_use_bounds)
             dont_use_bounds_for_close_enough = true;
 
         auto path_point_pos = target_center;

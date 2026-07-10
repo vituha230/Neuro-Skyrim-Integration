@@ -1547,6 +1547,13 @@ namespace MiscThings {
             case (0x7526c): //solitude lighthouse ship robbery fire
                 return 300.0f;
 
+            case (0x1b132): //wulfhart in prison for windhelm investigation
+            {
+                if (target->parentCell && target->parentCell->formID == 0x1677a)
+                    return 200.0f;
+                break;
+            }
+
             }
         }
         
@@ -4477,6 +4484,22 @@ namespace MiscThings {
             return nullptr;
 
 
+        if (quest->formID == 0x20556)//windhelm blood on ice ms11b
+        {
+            if (target && target->formID == 0x20557)
+            {
+                int game_hour = MiscThings::get_ingame_hour();
+
+                if (game_hour >= 21 || game_hour <= 5)
+                {
+                    auto killer = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b11d);
+                    if (killer)
+                        return killer;
+                }
+            }
+        }
+
+
         if (quest->formID == 0x1f7a3) //windhelm blood on ice ms11
         {
             if (target && target->formID == 0x20554) //crime scene
@@ -4497,6 +4520,8 @@ namespace MiscThings {
                 }
             }
 
+
+
             if (target && target->formID == 0xe0e51) //hjerim chest
             {
                 auto chest = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe0e51);
@@ -4511,6 +4536,18 @@ namespace MiscThings {
                     //here is a problem - if player empties container but then loses butchers journal1. in this case i cannot track first journal
                 }
 
+            }
+
+            if (target && target->formID == 0x20557)
+            {
+                int game_hour = MiscThings::get_ingame_hour();
+
+                if (game_hour >= 21 || game_hour <= 5)
+                {
+                    auto killer = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1b11d);
+                    if (killer)
+                        return killer;
+                }
             }
 
         }
