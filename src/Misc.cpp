@@ -1166,9 +1166,17 @@ namespace MiscThings {
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
-        bool trespassing = player && player->IsTrespassing();
+        if (player)
+        {
+            bool trespassing = player->IsTrespassing();
 
-        return MiscThings::is_interior_cell() && (MiscThings::have_any_enemies_nearby(9000.0f) || trespassing);
+            if (player->parentCell && player->parentCell->formID == 0x3ea9d) //dibella temple
+                trespassing = true;
+
+            return MiscThings::is_interior_cell() && (MiscThings::have_any_enemies_nearby(9000.0f) || trespassing);
+        }
+
+        return false;
     }
 
 
@@ -11670,6 +11678,16 @@ namespace MiscThings {
                 {
                     RE::NiPoint3 object_angles = { 0.0f, 0.0f, 0.0f };
                     RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+
+                    return rotated_shift_vector;
+                }
+
+
+                if (object->formID == 0x10076a) //dibella altar
+                {
+                    RE::NiPoint3 object_angles = { 0.0f, 0.0f, 0.0f };
+                    RE::NiPoint3 base_shift_vector = { 80.0f, 30.0f, -50.0f };
                     RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
 
                     return rotated_shift_vector;

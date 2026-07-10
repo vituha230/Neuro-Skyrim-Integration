@@ -17808,7 +17808,7 @@ namespace WalkerProcessor {
                                                                                     if (explore_mode)
                                                                                     {
                                                                                         if (!dont_autointerract && MiscThings::object_is_interactive(target_ref) && !MiscThings::is_insect(target_ref) && MiscThings::is_stealing(target_ref) == "")
-                                                                                            auto remp_result = walk_to_object_by_refr(target_ref, 1);
+                                                                                            auto temp_result = walk_to_object_by_refr(target_ref, 1);
                                                                                         else
                                                                                             reset_walker(); //success  
                                                                                     }

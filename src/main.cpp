@@ -30,7 +30,6 @@
 //TODO potema part2
 //TODO riften mead quest, dwemer cube quest, check what fishing quest looks like
 //TODO solstheim ash captain shit
-//TODO markarth dibella quest
 //TODO whiterun save the guy from talmor quest
 //TODO falkreath help the hunter spriggan cave
 
