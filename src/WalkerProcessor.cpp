@@ -7736,7 +7736,7 @@ namespace WalkerProcessor {
                                         {
                                             for (auto* target : std::span(objective->targets, objective->numTargets))
                                             {
-                                                if (target && (!specific_target || target == specific_target) && !MiscThings::quest_target_is_hidden(quest, objective, target))
+                                                if (target && (!specific_target || (target == specific_target && quest_entry.target == target)) && !MiscThings::quest_target_is_hidden(quest, objective, target))
                                                 {
                                                     result = quest_entry.id;
                                                     return result;

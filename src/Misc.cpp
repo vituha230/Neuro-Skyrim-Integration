@@ -4409,6 +4409,43 @@ namespace MiscThings {
     }
 
 
+
+
+    //this might be not working
+    bool is_quest_stage_done(RE::TESQuest* quest, int stage)
+    {
+        if (quest && quest->executedStages)
+        {
+            for (auto executed_stage : *quest->executedStages)
+            {
+                if (executed_stage && executed_stage.data.index == stage)
+                    return true;
+            }
+        }
+        
+        return false;
+    }
+
+
+    bool is_quest_objective_completed(RE::TESQuest* quest, int index)
+    {
+        if (quest)
+        {
+            auto objective = MiscThings::get_quest_objective_by_index(quest, index);
+
+            if (objective)
+            {
+                return objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) || objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed);
+            }
+        }
+
+        return false;
+    }
+
+
+
+
+
     RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -4421,6 +4458,29 @@ namespace MiscThings {
 
         if (!quest)
             return nullptr;
+
+
+
+        if (quest->formID == 0x1f7a3) //windhelm blood on ice ms11
+        {
+            if (target && target->formID == 0x20554) //crime scene
+            {
+                auto ms11_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MS11");
+
+                if (ms11_quest)
+                {
+                    bool talk_hegrid_stagedone = MiscThings::is_quest_objective_completed(ms11_quest, 41);
+
+                    if (talk_hegrid_stagedone)
+                    {
+                        auto the_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16970);
+                        
+                        if (the_door)
+                            return the_door;
+                    }
+                }
+            }
+        }
 
 
         if (quest->formID == 0x85d40) //riften skooma
@@ -12430,14 +12490,24 @@ namespace MiscThings {
 
     std::string get_alias_name_by_id(RE::TESQuest* quest, int alias_id)
     {
-        for (auto alias : quest->aliases)
+        if (quest)
         {
-            if (alias && alias->aliasID == alias_id)
+            for (auto alias : quest->aliases)
             {
-                std::string result = "";
-                result = alias->aliasName;
+                if (alias && alias->aliasID == alias_id)
+                {
+                    if (quest->formID == 0x1f7a3)
+                    {
+                        if (alias_id == 17)
+                            return "Tova";
+                    }
+                    //std::string result = "";
+                    //result = alias->aliasName;
+                    //return result;
+                }
             }
         }
+
 
         return "";
     }

@@ -28,7 +28,7 @@
 //  RANDOM QUESTS TODO
 // 
 //TODO potema part2
-//TODO riften skooma investigation, mead quest, dwemer cube quest, check what fishing quest looks like
+//TODO riften mead quest, dwemer cube quest, check what fishing quest looks like
 //TODO solstheim ash captain shit
 //TODO windhelm investigation (probably give a way to follow the bloodtrail? and stuff after that too)
 //TODO markarth dibella quest
