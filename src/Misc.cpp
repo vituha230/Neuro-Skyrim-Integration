@@ -6970,6 +6970,23 @@ namespace MiscThings {
     bool quest_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective)
     {
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!player)
+            return false;
+
+
+        auto worldspace = player->GetWorldspace();
+
+        if (worldspace && worldspace->formID == 0x34240) //sheogorath world
+        {
+            if (quest && quest->formID != 0x2ac68) //hide everything but this quest
+                return true; 
+        }
+
+
+
+
         //seducers quest. temporary disable because its high level and needs checking
         if (quest && quest->formID == 0x6000912)
         {
@@ -22222,6 +22239,17 @@ namespace MiscThings {
 
 
 
+    bool in_madman_head()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player && player->GetWorldspace())
+            return player->GetWorldspace()->formID == 0x34240;
+
+        return false;
+    }
+
+
 
     std::pair<bool, std::string> GetObjectsAround(int type)
     {
@@ -22642,7 +22670,7 @@ namespace MiscThings {
 
 
                     bool no_faraways = false;
-                    if (is_interior_cell() && !Apocrypha::in_apocrypha())
+                    if ((is_interior_cell() || MiscThings::in_madman_head()) && !Apocrypha::in_apocrypha()) //sheogorath world, no faraways
                     {
                         std::string probe_name = insert_object_into_list_and_get_info(this_object);
 

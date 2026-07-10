@@ -2427,7 +2427,7 @@ private:
 
                 if (loading_menu_lock)
                 {
-                    if (ui && !ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME) && !ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+                    if (ui && !ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME))
                         loading_menu_lock = false;
                 }
 

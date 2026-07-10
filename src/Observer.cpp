@@ -1517,6 +1517,11 @@ namespace Observer {
 				if (!player->IsDead())
 				{
 
+
+					if (MiscThings::in_madman_head())
+						ignore_raycast = true;
+
+
 					std::map<RE::FormType, int> dbg_test{};
 
 
