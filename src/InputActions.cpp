@@ -36,6 +36,9 @@ float spell_cast_time = 0.0f;
 bool was_actually_casting = false;
 float pause_post_cast = 0.0f;
 bool low_mana_notified = false;
+bool input_dualcasting = false;
+
+
 
 float fishing_timer = 0.0f;
 
@@ -61,6 +64,7 @@ void reset_input_processor()
     was_actually_casting = false;
     pause_post_cast = 0.0f;
     low_mana_notified = false;
+    input_dualcasting = false;
 
     need_look_down = false;
 
@@ -1007,6 +1011,7 @@ void try_casting_hand(bool right)
         spell_cast_time = 0.0f;
         need_look_down = false;
         pause_post_cast = 0.0f;
+        input_dualcasting = false;
         //low_mana_notified = false;
     }
 
@@ -1081,16 +1086,29 @@ bool make_long_cast_spell_hand(bool right, float dtime)
     }
 
 
+    bool dualcasting_no_mana = MiscThings::has_spell_equipped(!right) && MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(!right) * 2.8f;
+
+    if (!dualcasting_no_mana && MiscThings::get_hand_contents(!right) == MiscThings::get_hand_contents(right) && MiscThings::has_spell_equipped(right))
+    {
+        //dualcasting 
+        input_dualcasting = true;
+    }
+
+
+
     bool low_mana_detected = false;
     bool dont_check_mana = false;
 
-    dont_check_mana = !WalkerProcessor::is_concentration_spell(right) && WalkerProcessor::is_casting_walker(right);
+    dont_check_mana = !WalkerProcessor::is_concentration_spell(right) && (WalkerProcessor::is_casting_walker(right) || (input_dualcasting && WalkerProcessor::is_casting_walker(!right)));
 
     bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(right) && (low_mana_detected || (MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(right))));
 
     bool check_time = !MiscThings::is_self_healing_spell(right);
 
-    
+
+    //if (input_dualcasting && dualcasting_no_mana)
+    //    low_mana_check = true;
+
 
     if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
     {
@@ -1125,10 +1143,19 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         {
             if (pause_post_cast < 0.4f)
             {
-                if (right)
+                if (input_dualcasting)
+                {
                     right_attack_cancel();
-                else
                     left_attack_cancel();
+                }
+                else
+                {
+                    if (right)
+                        right_attack_cancel();
+                    else
+                        left_attack_cancel();
+                }
+
 
                 pause_post_cast += dtime;
                 return false;
@@ -1136,10 +1163,18 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         }
         else
         {
-            if (right)
-                right_attack_cancel();
+            if (input_dualcasting)
+            {
+
+            }
             else
-                left_attack_cancel();
+            {
+                if (right)
+                    right_attack_cancel();
+                else
+                    left_attack_cancel();
+            }
+
         }
 
 
@@ -1158,26 +1193,50 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
 
 
+
         if (MiscThings::is_summon_spell(right))
             look_down_for_summon(true);
 
-        if (right)
+        if (input_dualcasting)
         {
+
             if (spell_cast_time < 0.000001f)
+            {
                 right_attack();
+                left_attack();
+            }
             else
+            {
                 right_attack_spell();
+                left_attack_spell();
+            }
+
         }
         else
         {
-            if (spell_cast_time < 0.000001f)
-                left_attack();
+            if (right)
+            {
+                if (spell_cast_time < 0.000001f)
+                    right_attack();
+                else
+                    right_attack_spell();
+            }
             else
-                left_attack_spell();
+            {
+                if (spell_cast_time < 0.000001f)
+                    left_attack();
+                else
+                    left_attack_spell();
+            }
         }
 
 
+
+
         bool is_actually_casting = WalkerProcessor::is_casting_walker(right);
+
+        is_actually_casting |= input_dualcasting && WalkerProcessor::is_casting_walker(!right);
+
 
         if (!was_actually_casting)
         {
@@ -1191,10 +1250,19 @@ bool make_long_cast_spell_hand(bool right, float dtime)
                 bool stop_here = WalkerProcessor::is_casting_walker(right);
 
                 //casting stopped for whatever reason. clear cast so new cast can happen.
-                if (right)
+                if (input_dualcasting)
+                {
                     right_attack_cancel();
-                else
                     left_attack_cancel();
+                }
+                else
+                {
+                    if (right)
+                        right_attack_cancel();
+                    else
+                        left_attack_cancel();
+                }
+
 
                 return true;
             }
@@ -1207,10 +1275,19 @@ bool make_long_cast_spell_hand(bool right, float dtime)
 
             if (spell_cast_time > timeout_val)
             {
-                if (right)
+                if (input_dualcasting)
+                {
                     right_attack_cancel();
-                else
                     left_attack_cancel();
+                }
+                else
+                {
+                    if (right)
+                        right_attack_cancel();
+                    else
+                        left_attack_cancel();
+                }
+
 
                 return true;
             }
@@ -1345,6 +1422,7 @@ void input_processor(float dtime)
             need_look_down = false;
             pause_post_cast = 0.0f;
             low_mana_notified = false;
+            input_dualcasting = false;
         }
     }
 
