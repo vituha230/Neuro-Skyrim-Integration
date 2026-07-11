@@ -1425,6 +1425,379 @@ namespace Observer {
 
 	
 
+	//object MUST BE VALID but can be disabled
+	std::string special_message_on_object_deletion(RE::TESObjectREFR* object)
+	{
+		if (object)
+		{
+			switch (object->formID)
+			{
+
+			//atronach team 1
+			case (0x9b2a6):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a3);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+				break;
+			}
+
+			case (0x9b2a3):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a4);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+				break;
+			}
+
+			case (0x9b2a4):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a6);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+				break;
+			}
+
+
+			//atronach team 2
+			case (0x9b2a5):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a7);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a8);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+				break;
+			}
+
+			case (0x9b2a7):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a8);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a5);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+				break;
+			}
+
+			case (0x9b2a8):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a5);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b2a7);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+
+
+
+
+			case (0x9f85f):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f861);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+			case (0x9f85d):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f860);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+
+			//nightmare transformations
+			case (0x9f835):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f836);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+			case (0x9f832):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f838);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+			case (0x9f834):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f837);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+
+
+			//anger confidence situation
+			case (0x9f843):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f853);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f854);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+			case (0x9f853):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f843);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f854);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+			case (0x9f854):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f843);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f853);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+
+
+
+
+			case (0x9f856):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f855);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f850);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+			case (0x9f855):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f856);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f850);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+			case (0x9f850):
+			{
+				auto transformation = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f856);
+				auto transformation2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f855);
+				if (MiscThings::is_object_valid(transformation))
+				{
+					std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+					std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation);
+					return name_old + " turned into " + name_new + "!";
+				}
+				else
+					if (MiscThings::is_object_valid(transformation2))
+					{
+						std::string name_old = MiscThings::insert_object_into_list_and_get_info(object);
+						std::string name_new = MiscThings::insert_object_into_list_and_get_info(transformation2);
+						return name_old + " turned into " + name_new + "!";
+					}
+					else
+						return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+
+				break;
+			}
+
+
+
+
+
+
+
+			//all disappears
+			case (0x9f848): //selfdoubt1
+			case (0x9f84b): //selfdoubt2
+			case (0x9b286): //pelagius
+			case (0x9f861): //wolf1
+			case (0x9f860): //wolf2
+			case (0x9f833): //nightmare atronach
+			case (0x9f83c): //nightmare dragonpriest
+			{
+				return MiscThings::insert_object_into_list_and_get_info(object) + " disappeared";
+			}
+
+
+
+			}
+		}
+
+		return "";
+	}
+
+
+
+
 	void cleanup_invalid_objects(float dtime, bool force)
 	{
 		if (object_cleanup_timer > 0.5f || force)
@@ -1458,11 +1831,29 @@ namespace Observer {
 					{
 						if (!MiscThings::is_object_valid(object.second.object))
 						{
+							if (MiscThings::is_object_valid(object.second.object, false, true))
+							{
+								std::string special_msg = special_message_on_object_deletion(object.second.object); 
+								if (special_msg != "")
+									send_random_context(special_msg, true);
+
+							}
+
 							MiscThings::nullify_object_by_id(object.first);
 						}
 					}
 					else
 					{
+
+						if (MiscThings::is_object_valid(object.second.object, false, true))
+						{
+							std::string special_msg = special_message_on_object_deletion(object.second.object);
+							if (special_msg != "")
+								send_random_context(special_msg, true);
+
+						}
+
+
 						//it doesnt exist anymore within 30k range
 						MiscThings::nullify_object_by_id(object.first);
 					}
@@ -1757,6 +2148,7 @@ namespace Observer {
 
 										if (a_ref->AsReference()->IsActor())
 										{
+
 											if (!MiscThings::is_object_in_the_list(a_ref) && ((a_ref->GetDistance(player_ref) < 150.0f && a_ref->formID != 0x2002b74) || ((MiscThings::is_carriage_driver(a_ref) && a_ref->GetDistance(player_ref) < 1300.0f) || MiscThings::raycastable(a_ref, scan_distance))))
 											{
 												std::string info = MiscThings::insert_object_into_list_and_get_info(a_ref);

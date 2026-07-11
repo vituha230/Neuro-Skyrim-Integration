@@ -33,7 +33,6 @@
 //TODO whiterun save the guy from talmor quest
 //TODO falkreath help the hunter spriggan cave
 
-//TODO crazy daedra
 //TODO markarth namira quest
 //TODO dwemer shield daedra
 //TODO black armor daedra

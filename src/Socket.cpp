@@ -703,8 +703,13 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                         {
                             actions_to_register[action_pos] = Capabilities::AttackObject::Action; action_pos++;
                             actions_to_register[action_pos] = Capabilities::GetSpells::Action; action_pos++;
-                            actions_to_register[action_pos] = Capabilities::CastSpell::Action; action_pos++;
-                            actions_to_register[action_pos] = Capabilities::EquipSpell::Action; action_pos++;
+
+                            if (!MiscThings::in_madman_head())
+                            {
+                                actions_to_register[action_pos] = Capabilities::CastSpell::Action; action_pos++;
+                                actions_to_register[action_pos] = Capabilities::EquipSpell::Action; action_pos++;
+                            }
+
 
 
                             if (!MiscThings::is_vampirelord() && !MiscThings::is_werewolf())
@@ -751,8 +756,14 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
                             }
 
                             actions_to_register[action_pos] = Capabilities::GetInventory::Action; action_pos++;
-                            actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
-                            actions_to_register[action_pos] = Capabilities::DropInventoryItem::Action; action_pos++;
+
+                            if (!MiscThings::in_madman_head())
+                            {
+                                actions_to_register[action_pos] = Capabilities::UseInventoryItem::Action; action_pos++;
+                                actions_to_register[action_pos] = Capabilities::DropInventoryItem::Action; action_pos++;
+                            }
+
+
                             actions_to_register[action_pos] = Capabilities::GetGold::Action; action_pos++;
                         }
 

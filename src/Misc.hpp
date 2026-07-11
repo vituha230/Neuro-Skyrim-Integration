@@ -138,6 +138,9 @@ namespace MiscThings {
     void reset_settlement();
     std::pair<bool, std::string> visit_interesting_place_by_index(int id);
 
+    RE::TESObjectREFR* look_at_something_after_quest_target_reached(RE::TESObjectREFR* target);
+
+    bool is_wabbajack(bool right);
 
     RE::TESObjectREFR* GetRaycastRef(RE::NiPoint3 from, RE::NiPoint3 aimVector, float distance, RE::TESObjectREFR* target = nullptr, uint32_t filter = 0);
 
@@ -249,7 +252,7 @@ namespace MiscThings {
     bool player_has_spell(RE::SpellItem* spell);
 
     //int insert_ref_into_obj_list(RE::TESObjectREFR* refr);
-    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains = false, bool no_linked_chains = false, bool ignore_modelstate = false);
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains = false, bool no_linked_chains = false, bool ignore_modelstate = false, bool ignore_disabled = false);
     std::string insert_quest_into_list_and_get_info(std::string quest_text);
     std::string insert_object_into_list_custom_name(std::string name, RE::TESObjectREFR* refr);
 
@@ -389,9 +392,9 @@ namespace MiscThings {
     bool player_hp_more_than(float val_percent);
     bool player_hp_less_than(float val_percent);
 
-    bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state = true);
+    bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state = true, bool ignore_disabled = false);
     bool is_object_still_valid(RE::TESObjectREFR* test_object);
-    bool is_new_object_valid(RE::TESObjectREFR* a_ref, bool ignore_modelstate = false);
+    bool is_new_object_valid(RE::TESObjectREFR* a_ref, bool ignore_modelstate = false, bool ignore_disabled = false);
     bool in_soltsheim(RE::TESObjectREFR* object = nullptr);
     bool in_skuldafn();
     bool player_inside_of_soltsteim_midgates();
@@ -676,7 +679,7 @@ namespace MiscThings {
 
 
 
-/*
+
 
 
 
@@ -1214,7 +1217,7 @@ namespace DebugAPI_IMPL {
 
 
 
-*/
+
 
 
 

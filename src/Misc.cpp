@@ -44,6 +44,36 @@ namespace MiscThings {
     }
 
 
+
+    RE::TESObjectREFR* look_at_something_after_quest_target_reached(RE::TESObjectREFR* target)
+    {
+        if (target)
+        {
+            switch (target->formID)
+            {
+            case (0x105b42): //sheogorath marker1
+                return (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9b298); //gates under throne
+
+            case (0x105b44): //sheogorath marker2
+                return (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f82c); //sleeping guy
+
+            case (0x105b43): //sheogorath marker3
+                return (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f850); //anger guy
+            }
+        }
+
+        return nullptr;
+    }
+
+    bool is_wabbajack(bool right)
+    {
+        auto hand_contents = get_hand_contents(right);
+
+        return hand_contents && hand_contents->formID == 0x9b2b2;
+    }
+
+
+
     bool inside_of_lighthouse_top(RE::TESObjectREFR* object)
     {
         if (object)
@@ -620,6 +650,12 @@ namespace MiscThings {
 
             result = {true, "Skyrim time: " + std::to_string(hour) + ":" + std::to_string((int)calendar->GetMinutes()) + am_pm};
         }
+
+
+        if (MiscThings::in_madman_head() || Apocrypha::in_apocrypha())
+            result = { true, "Skyrim time: ... unknown" };
+
+
 
         return result;
     }
@@ -8296,7 +8332,12 @@ namespace MiscThings {
 
             if (race && (race->formID == 0x131f7 || race->formID == 0x131f6))
                 return true;
+
+            if (target->formID == 0x9f850 || target->formID == 0x9f854 || target->formID == 0x4f829) //sheogorath big guys and tsun
+                return true;
         }
+
+
 
         return false;
     }
@@ -10509,10 +10550,25 @@ namespace MiscThings {
 
         auto saartal_pole_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xde086);
 
-        if (object == saartal_pole_gate && saartal_pole_gate)
+
+        switch (object->formID)
         {
-            result = "[Linked to pole gate, blocking the path]";
+        case (0xde086):
+            return "[Linked to pole gate, blocking the path]";
+
+        case (0x9f843):
+        case (0x9f856):
+            return "[Small]";
+
+        case (0x9f853):
+        case (0x9f855):
+            return "[Medium]";
+
+        case (0x9f854):
+        case (0x9f850):
+            return "[Big]";
         }
+
 
         return result;
     }
@@ -15635,13 +15691,14 @@ namespace MiscThings {
                 //if (actor_object->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting)
                 //    sitsleep = "[Sitting]";
 
-
+                std::string special_text = get_special_text(object);
 
                 result += mount_text;
                 result += sitsleep;
                 result += enemy_text;
                 result += ghost;
                 result += driver_text;
+                result += special_text;
             }
             
 
@@ -15984,8 +16041,31 @@ namespace MiscThings {
     }
 
 
+    std::string check_special_message_new_object(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            switch (object->formID)
+            {
+            case (0x9f848): //selfdoubt1
+            case (0x9f84b): //selfdoubt2
+            case (0x9f835):
+            case (0x9f832):
+            case (0x9f834):
+            case (0x9f833):
+            case (0x9f83c):
+                return insert_object_into_list_and_get_info(object) + " appeared!";
+            }
+        }
 
-    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains, bool no_linked_chains, bool ignore_modelstate)
+        return "";
+    }
+
+
+
+
+
+    std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains, bool no_linked_chains, bool ignore_modelstate, bool ignore_disabled)
     {
         std::string result = "";
 
@@ -16122,13 +16202,20 @@ namespace MiscThings {
                 }
             }
         
-            if (!found && is_new_object_valid(refr, ignore_modelstate))
+            if (!found && is_new_object_valid(refr, ignore_modelstate, ignore_disabled))
             {
                 int new_id = std::size(objects_around);
 
                 objects_around.insert({ new_id, {refr, ""} });
+
                 if (!objects_around_valid)
                     objects_around_valid = true;
+
+                std::string special_message = MiscThings::check_special_message_new_object(refr); //this must be called after object is added so it doesnt loop because this function calls insert_object_get_info function to generate message
+
+                if (special_message != "")
+                    send_random_context(special_message, true);
+
 
                 std::string info = get_object_full_info(refr, no_linked_chains);
                 if (info != "")
@@ -21475,7 +21562,10 @@ namespace MiscThings {
         if (!can_walk && !can_look)
             return result;
 
-        
+        if (MiscThings::in_madman_head() && player->GetPositionX() < -3000.0f)
+            return result;
+
+
         //float scan_distance = 3000.0f;
         //auto player_cell = player->GetParentCell();
         //if (player_cell && player_cell->IsInteriorCell())
@@ -21563,7 +21653,7 @@ namespace MiscThings {
     }
 
 
-    bool is_new_object_valid(RE::TESObjectREFR* a_ref, bool ignore_modelstate)
+    bool is_new_object_valid(RE::TESObjectREFR* a_ref, bool ignore_modelstate, bool ignore_disabled)
     {
         if (!a_ref)
             return false;
@@ -21607,8 +21697,8 @@ namespace MiscThings {
                 if (a_ref->AsReference()->modelState == 0)
                     return false; //skip objects without world model
 
-
-            if (a_ref->IsDisabled())
+            
+            if (!ignore_disabled && a_ref->IsDisabled())
                 return false;
 
             if (base_type == RE::FormType::Activator)
@@ -22113,7 +22203,7 @@ namespace MiscThings {
 
 
 
-    bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state)
+    bool is_object_valid(RE::TESObjectREFR* a_ref, bool use_model_state, bool ignore_disabled)
     {
         if (!a_ref || !a_ref->data.objectReference || !a_ref->formID || !a_ref->data.objectReference->formID)
             return false;
@@ -22128,7 +22218,7 @@ namespace MiscThings {
         if (use_model_state && a_ref->AsReference()->modelState == 0)
             return false;
 
-        if (a_ref->IsDisabled())
+        if (!ignore_disabled && a_ref->IsDisabled())
             return false;
 
 
@@ -22802,9 +22892,14 @@ namespace MiscThings {
                             no_faraways = true;
                     }
 
+                    float faraway_cutoff = 2000.0f;
+
+                    if (MiscThings::in_madman_head())
+                        faraway_cutoff = 5000.0f;
+
                     if (!no_faraways)
                     {
-                        if (player_ref->GetDistance(this_object) >= 2000.0f && player_ref->GetDistance(this_object) < 10000.0f)
+                        if (player_ref->GetDistance(this_object) >= faraway_cutoff && player_ref->GetDistance(this_object) < 10000.0f)
                             if (!faraway_line_made)
                             {
                                 if (type == 1)
@@ -22819,7 +22914,7 @@ namespace MiscThings {
 
                     float max_range = 10000.0f;
                     if (no_faraways)
-                        max_range = 2000.0f;
+                        max_range = faraway_cutoff;
 
 
                     if (Apocrypha::in_apocrypha())

@@ -3661,7 +3661,7 @@ namespace WalkerProcessor {
             {
                 auto target_actor = (RE::Actor*)target;
 
-                if (MiscThings::is_enemy_to_actor(target) && !MiscThings::is_seeker(target))
+                if (MiscThings::dont_use_head_node(target) || (MiscThings::is_enemy_to_actor(target) && !MiscThings::is_seeker(target)))
                 {
                     if (target_actor->currentProcess)
                         if (target_actor->currentProcess->middleHigh)
@@ -3847,7 +3847,7 @@ namespace WalkerProcessor {
         bool lookat_used = false;
 
         
-        if (target->IsHumanoid() || MiscThings::is_seeker(target))// && !target->IsDead())
+        if ((target->IsHumanoid() || MiscThings::is_seeker(target)) && !MiscThings::dont_use_head_node(target))// && !target->IsDead())
         {
             auto target_actor = (RE::Actor*)target;
             //auto lookat_location = target_actor->GetLookingAtLocation(); //THIS IS ACTUALLY WHERE THEY LOOK AT AND NOT FROM WHERE. its from where until they have something to look at
@@ -3863,7 +3863,7 @@ namespace WalkerProcessor {
             if (target_actor->currentProcess)
                 if (target_actor->currentProcess->middleHigh)
                 {
-                    if (is_pickpocketing() || (player->GetDistance(target) > 400.0f && is_fighting() && has_ranged_weapon_equipped(get_current_active_hand())) || (target_actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kBleedout))
+                    if (MiscThings::dont_use_head_node(target) || is_pickpocketing() || (player->GetDistance(target) > 400.0f && is_fighting() && has_ranged_weapon_equipped(get_current_active_hand())) || (target_actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kBleedout))
                     {
                         if (target_actor->currentProcess->middleHigh->torsoNode)
                         {
@@ -3873,8 +3873,8 @@ namespace WalkerProcessor {
 
                             auto player_temp_pos = player->GetPosition();
 
-                            if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro() && !(sneak_mode_on || player->IsSneaking()))
-                                lookat_location.z -= 30.0f;
+                            //if (target_actor->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kIsSitting && !MiscThings::is_intro() && !(sneak_mode_on || player->IsSneaking()))
+                            //    lookat_location.z -= 30.0f;
 
                             target_center = lookat_location;
                             height = 0.0f;
@@ -3943,7 +3943,7 @@ namespace WalkerProcessor {
             {
                 auto target_actor = (RE::Actor*)target;
 
-                if (MiscThings::is_enemy_to_actor(target) && !MiscThings::is_seeker(target))
+                if (MiscThings::dont_use_head_node(target) || (MiscThings::is_enemy_to_actor(target) && !MiscThings::is_seeker(target)))
                 {
                     if (target_actor->currentProcess)
                         if (target_actor->currentProcess->middleHigh)
@@ -5964,6 +5964,19 @@ namespace WalkerProcessor {
 
                         auto delta_pos = aim_pos - camera_pos;
 
+                        auto camera_pos_debug = camera_pos;
+
+                        camera_pos_debug.z -= 5.0f;
+
+
+                        /*
+                        DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                        DebugAPI_IMPL::DrawDebug::draw_line(camera_pos_debug, aim_pos);
+                        DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+                        */
+
+
+
                         float range = get_weapon_range(get_current_active_hand());
 
                         if (shout_mode)
@@ -6960,7 +6973,7 @@ namespace WalkerProcessor {
 
                 }
                 
-                if (interaction == 3 && is_fighting() && target_ref->IsActor() && !target_ref->IsDead() && (!object->second.object->IsActor() || object->second.object->IsDead() || !MiscThings::is_enemy_to_actor(object->second.object)))
+                if (interaction == 3 && is_fighting() && target_ref->IsActor() && !target_ref->IsDead() && MiscThings::is_enemy_to_actor(target_ref) && (!object->second.object->IsActor() || object->second.object->IsDead() || !MiscThings::is_enemy_to_actor(object->second.object)))
                 {
                     //already fighting and current target isnt dead, but new target is dead or isnt an actor
 
@@ -6995,7 +7008,7 @@ namespace WalkerProcessor {
                 }
 
                                                                             //calixto
-                if (!attack_friend_confirmed && (interaction == 3 && object->second.object->formID != 0x1b11d && MiscThings::is_friend(object->second.object) && (MiscThings::is_dragon(object->second.object) || object->second.object->IsHumanoid()) && !(object->second.object->IsActor() && object->second.object->IsDead())))
+                if (!MiscThings::in_madman_head() && !attack_friend_confirmed && (interaction == 3 && object->second.object->formID != 0x1b11d && MiscThings::is_friend(object->second.object) && (MiscThings::is_dragon(object->second.object) || object->second.object->IsHumanoid()) && !(object->second.object->IsActor() && object->second.object->IsDead())))
                 {
                     trying_to_attack_friend = true;
                     attack_friend_interaction = interaction;
@@ -7024,7 +7037,7 @@ namespace WalkerProcessor {
 
                         if (interaction_after_walk == 3)
                         {
-                            if (!MiscThings::player_brawling() && MiscThings::get_shout_cooldown() <= 0.0f)
+                            if (!MiscThings::player_brawling() && MiscThings::get_shout_cooldown() <= 0.0f && !MiscThings::in_madman_head())
                                 MiscThings::use_random_offensive_shout(target_ref);
 
                             result.first = true;
@@ -11930,12 +11943,25 @@ namespace WalkerProcessor {
             finalize_attack:
 
             {
-                if (spell_mode && attack_action_done)
+
+                if (attack_action_done)
                 {
-                    spell_mode = false;
-                    spell_to_use = nullptr;
-                    return true;
+                    if (spell_mode)
+                    {
+                        spell_mode = false;
+                        spell_to_use = nullptr;
+                        return true;
+                    }
+
+                    if (MiscThings::is_wabbajack(!last_attack_action))
+                    {
+                        return true;
+                    }
                 }
+
+
+
+
 
 
                 if (target_ref->IsActor() && !was_already_dead && !target_ref->IsDisabled())
@@ -12833,7 +12859,7 @@ namespace WalkerProcessor {
                     auto target_actor = (RE::Actor*)target_ref;
                     int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
                     ignore_alive = MiscThings::is_immortal(target_actor) && cur_health < 2;
-
+                    ignore_alive |= MiscThings::is_wabbajack(!last_attack_action);
 
                 }
 
@@ -13916,7 +13942,7 @@ namespace WalkerProcessor {
 
             if (check_fight_condition && target_ref)
             {
-                if (is_fighting() && target_ref->IsActor() && !target_ref->IsDead() && (!target->IsActor() || target->IsDead() || !MiscThings::is_enemy_to_actor(target)))
+                if (is_fighting() && target_ref->IsActor() && !target_ref->IsDead() && MiscThings::is_enemy_to_actor(target_ref) && (!target->IsActor() || target->IsDead() || !MiscThings::is_enemy_to_actor(target)))
                 {
                     //already fighting and current target isnt dead, but new target is dead or isnt an actor
 
@@ -17521,6 +17547,23 @@ namespace WalkerProcessor {
                                             if (got_close_for_pickpocket || close_enough() || MiscThings::is_intro() || looking_mode)
                                             {
 
+
+                                                if (quest_mode)
+                                                {
+                                                    auto look_target123 = MiscThings::look_at_something_after_quest_target_reached(target_ref);
+
+                                                    if (look_target123)
+                                                    {
+                                                        send_random_context("You arrived to the quest target point", true);
+                                                        reset_walker();
+                                                        look_at_object_by_refr(look_target123);
+                                                        return;
+                                                    }
+
+                                                }
+
+
+
                                                 if (MiscThings::is_cave_autoloader_door(target_ref))
                                                 {
                                                     //we came to nearest navmesh node. not do custom path to the loader
@@ -17577,6 +17620,7 @@ namespace WalkerProcessor {
                                                     }
                                                     else
                                                         stable_target = 0;
+
 
                                                     if (looking_mode || MiscThings::is_intro() || locking_failed || ((get_targeted_ref() == target_ref) && stable_target > 2) || lock_camera_onto_target(target_ref, dtime) || location_mode)
                                                     {
