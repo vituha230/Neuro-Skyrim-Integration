@@ -1167,7 +1167,8 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         {
             if (input_dualcasting)
             {
-
+                right_attack_cancel();
+                left_attack_cancel();
             }
             else
             {

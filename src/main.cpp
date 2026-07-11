@@ -1438,6 +1438,7 @@ namespace Hooks {
             if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kHide) {
                 RE::ConsoleLog::GetSingleton()->Print("LOADING MENU WAS CLOSED");
 
+
                 last_load_timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
 
                 WalkerProcessor::clear_just_teleported();
@@ -1707,6 +1708,7 @@ namespace Hooks {
                 RE::ConsoleLog::GetSingleton()->Print("HUDMenu WAS OPENED");
 
 
+
                 //auto scale_manager = RE::BSScaleformManager::GetSingleton();
                 
                 //RE::IMenu my_menu{};
@@ -1731,6 +1733,7 @@ namespace Hooks {
                 {
                     if (a_message.type.get() == RE::UI_MESSAGE_TYPE::kUpdate)
                     {
+
                         SKSE::GetTaskInterface()->AddUITask([]()
                             {
 
@@ -3007,8 +3010,7 @@ class MyHook {
 
 
         
-
-
+        //DebugAPI_IMPL::DrawDebug::draw_sphere(RE::PlayerCharacter::GetSingleton()->GetPosition());
 
         std::string result = "";
 

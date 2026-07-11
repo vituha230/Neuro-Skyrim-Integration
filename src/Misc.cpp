@@ -74,6 +74,17 @@ namespace MiscThings {
 
 
 
+    uint64_t GetTickCount64() //when i include windows.h some functions break so i made my own (its for debug draw lines)
+    {
+        long long now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        return (uint64_t)(now / 1000000);
+    }
+
+
+
+
+
 
     bool shout_cooldown_broken = false;
 
@@ -8275,6 +8286,23 @@ namespace MiscThings {
 
 
 
+    bool dont_use_head_node(RE::TESObjectREFR* target)
+    {
+        if (target && target->IsActor())
+        {
+            auto actor = (RE::Actor*)target;
+
+            auto race = actor->race;
+
+            if (race && (race->formID == 0x131f7 || race->formID == 0x131f6))
+                return true;
+        }
+
+        return false;
+    }
+
+
+
 
 
 
@@ -8307,12 +8335,29 @@ namespace MiscThings {
     //The layer is in the first 7 bits and that's why filterInfo & 0x7f is the layer.
     //    One of the bhkCollisionFilter funcs takes in 2 filter infos and returns whether they should collide or not if you want to see exactly how the two infos are compared
 
+
+    //SO FOR IT TO NOT COLLIDE WITH PLAYER - NEED TO USE SAME GROUP (1001)
+
+
+
     //                                      |15     |7     |0
     uint32_t my_filter4 = 0b00000101011001110000000000011110; //whiterun guard
     uint32_t my_filter0 = 0b00000101011010101000000000011110; //bjorlams filter (has bit 15 set)
-    uint32_t my_filter1 = 0b00000000000010010000000000011110; //player filter
-    uint32_t my_filter2 = 0b00000000000010010000000000001110; //filter without invisible zones, that doesnt work on bjorlam
+
+    uint32_t my_filter1 = 0b00000000000010010000000000011110; //player filter //kCharController = 30,
+    uint32_t my_filter2 = 0b00000000000010010000000000001110; //filter without invisible zones, that doesnt work on bjorlam //kTrap = 14,
+
     uint32_t my_filter3 = 0b00011000101111000000000000011110; //alduin filter (maybe all dragons)
+
+  //uint32_t my_filter5 = 0b00011000101111000000000000101001;//kLineOfSight = 41,
+    uint32_t my_filter5 = 0b00000000000010010000000000000110;//kProjectile = 6, (may be the best?)
+  //uint32_t my_filter5 = 0b00011000101111000000000000100111;//39 - camerapick //collides with player
+
+    
+
+
+    RE::COL_LAYER test_layer1234567890; //shortcut
+
 
     RayCastResult RayCast(RE::NiPoint3 rayStart, RE::NiPoint3 rayDir, float maxDist,
         RE::Actor* actor, RE::TESObjectREFR* target) {
@@ -8353,12 +8398,19 @@ namespace MiscThings {
                 linked = true;
         }
 
-
+        auto player = RE::PlayerCharacter::GetSingleton();
 
         if (linked)
             pickData.rayInput.filterInfo = (RE::CFilter)my_filter1; //idk why but for sitting actors filter2 doesnt work
         else
             pickData.rayInput.filterInfo = (RE::CFilter)my_filter2;
+
+        
+        if (MiscThings::in_madman_head()) //has some invisible walls. now i think maybe use this filter everywhere?
+        {
+            pickData.rayInput.filterInfo = (RE::CFilter)my_filter5;
+        }
+          
 
         // static_cast<RE::CFilter>(cFilter.filter | static_cast<uint32_t>(layerMask));
 
@@ -8374,17 +8426,89 @@ namespace MiscThings {
             result.hitObjectRef = RE::TESHavokUtilities::FindCollidableRef(*pickData.rayOutput.rootCollidable);
         }
 
+
         return result;
     }
 
 
+    RayCastResult RayCast_debug(RE::NiPoint3 rayStart, RE::NiPoint3 rayDir, float maxDist,
+        RE::Actor* actor, RE::TESObjectREFR* target, uint32_t filter) {
+        RayCastResult result{};
+        result.distance = maxDist;
+
+        if (!actor) {
+            return result;
+        }
+        const auto& cell = actor->GetParentCell();
+        if (!cell) {
+            return result;
+        }
+        const auto& bhkWorld = cell->GetbhkWorld();
+        if (!bhkWorld) {
+            return result;
+        }
+
+        RE::bhkPickData pickData;
+        const auto& havokWorldScale = RE::bhkWorld::GetWorldScale();
+
+        // Set ray start and end points (scaled to Havok world)
+        pickData.rayInput.from = rayStart * havokWorldScale;
+        rayDir.Unitize();
+        pickData.rayInput.to = (rayStart + rayDir * maxDist) * havokWorldScale;
+
+
+
+        bool linked = false;
+
+        if (target && target->IsActor())
+        {
+            auto target_actor = (RE::Actor*)target;
+            RE::CFilter cFilter_info{};
+            target_actor->GetCollisionFilterInfo(cFilter_info);
+
+            if (cFilter_info.filter & (1 << 15))
+                linked = true;
+        }
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        pickData.rayInput.filterInfo = (RE::CFilter)filter;
+
+        // static_cast<RE::CFilter>(cFilter.filter | static_cast<uint32_t>(layerMask));
+
+        // Perform the raycast
+        if (bhkWorld->PickObject(pickData) && pickData.rayOutput.HasHit()) {
+            result.didHit = true;
+            result.didHit = true;
+            result.distance = maxDist * pickData.rayOutput.hitFraction;
+            result.normalOut = pickData.rayOutput.normal;
+
+            result.layer = pickData.rayOutput.rootCollidable->GetCollisionLayer();
+
+            result.hitObjectRef = RE::TESHavokUtilities::FindCollidableRef(*pickData.rayOutput.rootCollidable);
+        }
+
+
+        return result;
+    }
+
+
+
+
+
     //excludes player
-    RE::TESObjectREFR* GetRaycastRef(RE::NiPoint3 from, RE::NiPoint3 aimVector, float distance, RE::TESObjectREFR* target)
+    RE::TESObjectREFR* GetRaycastRef(RE::NiPoint3 from, RE::NiPoint3 aimVector, float distance, RE::TESObjectREFR* target, uint32_t filter)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_actor = (RE::Actor*)player->AsReference();
 
-        auto raycast_result = RayCast(from, aimVector, distance, player_actor, target);
+        MiscThings::RayCastResult raycast_result{};
+        
+        if (filter)
+            raycast_result = RayCast_debug(from, aimVector, distance, player_actor, target, filter);
+        else
+            raycast_result = RayCast(from, aimVector, distance, player_actor, target);
+
 
         return raycast_result.hitObjectRef;
     }

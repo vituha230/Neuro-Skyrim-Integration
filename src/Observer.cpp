@@ -1518,8 +1518,14 @@ namespace Observer {
 				{
 
 
-					if (MiscThings::in_madman_head())
-						ignore_raycast = true;
+					//decided to try another way (use different collision mask in raycast function)
+					//bool super_ignore_raycast = false;
+					//if (MiscThings::in_madman_head())
+					//{
+					//	ignore_raycast = true;
+					//	super_ignore_raycast = true;
+					//}
+						
 
 
 					std::map<RE::FormType, int> dbg_test{};

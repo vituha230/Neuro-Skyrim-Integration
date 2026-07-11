@@ -3627,7 +3627,7 @@ namespace WalkerProcessor {
         bool lookat_used = false;
 
 
-        if (target->IsHumanoid() || MiscThings::is_seeker(target))// && !target->IsDead())
+        if ((target->IsHumanoid() || MiscThings::is_seeker(target)) && !MiscThings::dont_use_head_node(target))// && !target->IsDead())
         {
             auto target_actor = (RE::Actor*)target;
 
@@ -5985,11 +5985,25 @@ namespace WalkerProcessor {
                             range = 50000.0f;
 
 
+                        //REMOVE THIS LATER
+                        /*
+                        auto debug_marker1 = get_runaway_target();
 
-                        auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range, target_ref);
+                        if (debug_marker1->GetWorldspace() != player->GetWorldspace())
+                            debug_marker1->MoveTo(player);
+
+                        MiscThings::SetPosition_moveto(debug_marker1, aim_pos);
+                        auto debug_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7001834);
+                        MiscThings::SetPosition_moveto(debug_marker2, camera_pos);
+                        */
+
+                        auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range, target_ref, 0b00000000000010010000000000000110); //projectile layer in player group
 
                         //if (target_ref->IsActor() && target_ref->IsDead())
                         //    return true;
+
+                        if (raycast_ref && raycast_ref->formID == 0x14)
+                            bool stop_here = false; //to detect when raycast caught player
 
                         auto raycast_test = raycast_ref == target_ref;
                         bool target_visible = false;
@@ -11377,13 +11391,6 @@ namespace WalkerProcessor {
                             }
                         }
 
-
-
-                            
-
-
-
-                        
                     }
                     else
                     {
@@ -11395,7 +11402,7 @@ namespace WalkerProcessor {
 
                             if (has_staff_equipped(true) || is_fire_and_forget_spell(true))
                             {
-                                if (pause_post_attack < 0.6f)
+                                if (pause_post_attack < 1.0f)
                                 {
                                     right_attack_cancel();
                                     pause_post_attack += dtime;
@@ -11848,7 +11855,7 @@ namespace WalkerProcessor {
 
                             if (has_staff_equipped(false) || is_fire_and_forget_spell(false))
                             {
-                                if (pause_post_attack < 0.6f)
+                                if (pause_post_attack < 1.0f)
                                 {
                                     left_attack_cancel();
                                     pause_post_attack += dtime;
