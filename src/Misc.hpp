@@ -15,6 +15,10 @@ namespace MiscThings {
 
     bool quest_target_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective, RE::TESQuestTarget* target);
 
+
+    RE::ObjectRefHandle get_occupied_furniture_all_process(RE::TESObjectREFR* object);
+
+
     bool is_blocker_open(RE::TESObjectREFR* object);
 
     RE::TESObjectREFR* find_hermaeus_mora_face();
@@ -71,6 +75,7 @@ namespace MiscThings {
     RE::NiPoint3 EXP_get_nearest_navmesh_node(RE::TESObjectREFR* object, RE::NiPoint3 loop1, RE::NiPoint3 loop2, bool inverse_orth_loop_evasion);
 
     bool is_cave_autoloader_door(RE::TESObjectREFR* object);
+    bool is_actually_autoloader_door(RE::TESObjectREFR* object);
 
     RE::TESObjectREFR* get_nearest_mapmarker_to_object(RE::TESObjectREFR* target);
 
@@ -565,6 +570,10 @@ namespace MiscThings {
 
     RE::NiPoint3 get_farthest_navmesh_node(RE::TESObjectREFR* object);
     
+
+    bool same_worldspace(RE::TESObjectREFR* object1, RE::TESObjectREFR* object2);
+
+
 
 
     bool is_settlement_advice_on_cooldown();

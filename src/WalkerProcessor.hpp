@@ -67,6 +67,9 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> explore_world(bool internal_call);
 
 
+	bool close_enough();
+
+
 	bool is_running_away();
 
 	bool autoloader_door_evasion_active();

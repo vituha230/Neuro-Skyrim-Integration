@@ -46,6 +46,7 @@ namespace WalkerProcessor {
     ///////////
 
     bool autoload_door_pathfinding_failed = false;
+    bool dragon_pathfinding_failed = false;
 
     bool allow_interrupt_custom_walk = false;
 
@@ -1282,7 +1283,7 @@ namespace WalkerProcessor {
 
 
                     auto marker = RE::TESObjectREFR::LookupByID(0x7001834);
-
+                    auto player = RE::PlayerCharacter::GetSingleton();
 
                     if (target_ref && marker)
                     {
@@ -1350,6 +1351,52 @@ namespace WalkerProcessor {
 
                                     }
                                 }
+                                else
+                                    if (autoload_door_pathfinding_failed && shift != RE::NiPoint3::Zero())
+                                        autoload_door_pathfinding_failed = false;
+
+
+                                if (dragon_pathfinding_failed && player->GetDistance(target_ref) > 10000.0f)
+                                {
+                                    //dragon pathfinding failed. he might be sitting on some giant stone wall or flying. exclude flying (its excluded when this flag is raised)
+
+                                    auto nearest_marker = MiscThings::get_nearest_mapmarker_to_object(target_ref);
+
+                                    if (player->GetWorldspace() && player->GetWorldspace()->formID != 0x3c && MiscThings::is_dragon(target_ref) && MiscThings::same_worldspace(target_ref, player))
+                                    {
+                                        //this is actual dragon who is somewhere in skyrim but we are in some worlspace like riften/whiterun city. dragons are all loaded in case they want to come in to siege the city
+                                        //so the game thinks its actually right there in this very worldspace. therefore no doors. therefore if dragon is behind some fucked up door or cave door it will fail to pathfind even to
+                                        //map marker because the marker itself is fucked relatively to player's position. redirect to 0.0.0 so we just exit this worldspace hopefully
+                                        //auto pos = target_ref->GetPosition();
+
+                                        auto runaway = get_runaway_target();
+                                        auto pos = target_ref->GetPosition();
+                                        if (runaway)
+                                        {
+                                            shift = runaway->GetPosition() - pos;
+                                            marker_ref->MoveTo(runaway); //to properly change worldspaces?
+                                        }
+                                        
+                                    }
+                                    else
+                                    {
+                                        if (nearest_marker)
+                                        {
+                                            auto pos = target_ref->GetPosition();
+                                            auto nearest_marker_pos = nearest_marker->GetPosition();
+
+                                            shift = nearest_marker_pos - pos;
+
+                                        }
+                                    }
+                                    
+
+
+                                }
+                                else
+                                    if (dragon_pathfinding_failed && player->GetDistance(target_ref) <= 10000.0f)
+                                        dragon_pathfinding_failed = false;
+
 
 
                                 MiscThings::SetPosition_moveto(marker_ref, marker_ref->GetPosition() + shift + pickpocket_shift);
@@ -1365,7 +1412,7 @@ namespace WalkerProcessor {
                     //10529
                     //8481
 
-                    auto player = RE::PlayerCharacter::GetSingleton();
+                    
                     auto targets = player->questTargets;
 
                     std::vector<std::pair<RE::TESQuest*, bool>> quests_to_restore{};
@@ -1629,7 +1676,7 @@ namespace WalkerProcessor {
                             {
                                 if (target_ref)
                                 {
-                                    if (target_is_too_high())
+                                    if (target_is_too_high() && !close_enough())
                                     {
                                         if (!too_high_notified)
                                         {
@@ -1647,32 +1694,37 @@ namespace WalkerProcessor {
                                             return;
                                         }
                                         else
-                                            if (!navmesh_probe_result_valid)
+                                        {
+                                            if (!is_fighting() && !dragon_pathfinding_failed && (MiscThings::is_dragon(target_ref) && (!MiscThings::is_flying(target_ref) || (MiscThings::same_worldspace(player, target_ref) && player->GetDistance(target_ref) > 30000.0f))) || (player->GetDistance(target_ref) > 10000.0f && player->GetWorldspace() && player->GetWorldspace()->formID == 0x3c))
                                             {
-                                                if (MiscThings::dont_probe_navmesh())
-                                                {
-                                                    navmesh_probe_mode = false;
-                                                    navmesh_probe_result = false;
-                                                    navmesh_probe_result_valid = true;
-                                                    return; //fake "no navmesh" result so it gives a blind walk
-                                                }
-                                                else
-                                                {
-                                                    navmesh_probe_mode = true;
-                                                    navmesh_probe_result = false;
-                                                    navmesh_probe_result_valid = false;
-                                                    return;
-                                                    //and we hope whoever called us - calls us again and we get probe
-                                                }
-
+                                                dragon_pathfinding_failed = true;
+                                                return;
                                             }
+                                            else
+                                            {
+                                                if (!navmesh_probe_result_valid)
+                                                {
+                                                    if (MiscThings::dont_probe_navmesh())
+                                                    {
+                                                        navmesh_probe_mode = false;
+                                                        navmesh_probe_result = false;
+                                                        navmesh_probe_result_valid = true;
+                                                        return; //fake "no navmesh" result so it gives a blind walk
+                                                    }
+                                                    else
+                                                    {
+                                                        navmesh_probe_mode = true;
+                                                        navmesh_probe_result = false;
+                                                        navmesh_probe_result_valid = false;
+                                                        return;
+                                                        //and we hope whoever called us - calls us again and we get probe
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-
-                                
-
                             }
-
                         }
 
 
@@ -5034,6 +5086,7 @@ namespace WalkerProcessor {
         dualcasting = false;
 
         autoload_door_pathfinding_failed = false;
+        dragon_pathfinding_failed = false;
 
         allow_interrupt_custom_walk = false;
 
@@ -5603,7 +5656,7 @@ namespace WalkerProcessor {
             walk_unstuck_time += dtime;
 
             if (target_ref)
-                if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
+                if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed() && MiscThings::same_worldspace(player, target_ref) && player->GetDistance(target_ref) < 30000.0f)
                 {
                     failed_wiggles = 0;
                     lock_camera_onto_target(target_ref, dtime);
@@ -5825,7 +5878,7 @@ namespace WalkerProcessor {
         if (MiscThings::weird_close_enough_checks(target_ref))
             return true;
 
-        if (MiscThings::is_cave_autoloader_door(target_ref))
+        if (MiscThings::is_actually_autoloader_door(target_ref))
             return false; //it must pass using weird_close check
 
 
@@ -6038,7 +6091,7 @@ namespace WalkerProcessor {
                         camera_pos_debug.z -= 5.0f;
 
 
-                        /*
+                        /* //this is working draw_line 
                         DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
                         DebugAPI_IMPL::DrawDebug::draw_line(camera_pos_debug, aim_pos);
                         DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
@@ -6066,18 +6119,6 @@ namespace WalkerProcessor {
                         if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
                             range = 50000.0f;
 
-
-                        //REMOVE THIS LATER
-                        /*
-                        auto debug_marker1 = get_runaway_target();
-
-                        if (debug_marker1->GetWorldspace() != player->GetWorldspace())
-                            debug_marker1->MoveTo(player);
-
-                        MiscThings::SetPosition_moveto(debug_marker1, aim_pos);
-                        auto debug_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7001834);
-                        MiscThings::SetPosition_moveto(debug_marker2, camera_pos);
-                        */
 
                         auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range, target_ref, 0b00000000000010010000000000000110); //projectile layer in player group
 
@@ -10976,6 +11017,10 @@ namespace WalkerProcessor {
             left_is_useless |= has_staff_equipped(false) && no_charge(false);
             right_is_useless |= has_staff_equipped(true) && no_charge(true);
 
+
+            left_is_useless |= !right_is_useless && !MiscThings::has_something_equipped(false) && MiscThings::has_something_equipped(true);
+            right_is_useless |= !left_is_useless && MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true);
+
             bool left_is_resurrect = MiscThings::is_reanimate_spell(false);
             bool right_is_resurrect = MiscThings::is_reanimate_spell(true);
 
@@ -11008,7 +11053,7 @@ namespace WalkerProcessor {
 
             dont_use_right |= (right_is_useless || ((has_ranged_weapon_equipped(true) && no_ammo()) || (MiscThings::has_something_equipped(false) && !MiscThings::has_something_equipped(true) && !left_is_useless)));
 
-            
+
 
             bool staff_of_magnus_in_left = false;
             auto magnus_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x25224);
@@ -11072,6 +11117,12 @@ namespace WalkerProcessor {
 
             bool goto_attack_used = false;
             
+
+            if (dont_use_right)
+                bool stop_here = false;
+
+            if (!left_is_useless)
+                bool stop_here = false;
 
             if (left_is_useless && right_is_useless && !spell_mode)
                 goto finalize_attack;
@@ -12126,7 +12177,7 @@ namespace WalkerProcessor {
                             active_attacking_time = 0.0f;
 
 
-                            if (has_bow_equipped(true) || has_crossbow_equipped(true))
+                            if (has_ranged_weapon_equipped(get_current_active_hand()))//    has_bow_equipped(true) || has_crossbow_equipped(true))
                             {
                                 int max_health = target_actor->GetActorValueMax(RE::ActorValue::kHealth);
                                 int cur_health = target_actor->GetActorValue(RE::ActorValue::kHealth);
@@ -12792,7 +12843,7 @@ namespace WalkerProcessor {
                     }
                     else
                     {
-                        if (MiscThings::get_door_teleport(target_ref) != "" && quest_mode)
+                        if (!MiscThings::is_cave_autoloader_door(target_ref) && MiscThings::get_door_teleport(target_ref) != "" && quest_mode)
                             just_teleported = true;
 
                         confirm();
@@ -15262,8 +15313,15 @@ namespace WalkerProcessor {
                     my_handle = target_ref->GetHandle();
 
                 if (target_ref && (!my_handle || !my_handle.get() || !my_handle.get().get()))
+                {
                     reset_walker();
+                    return;
+                }
+                    
 
+
+                if (target_ref)
+                    Hooks::add_debug_line(std::to_string(player->GetDistance(target_ref)), true);
 
 
                 if (looking_mode)
@@ -17052,8 +17110,8 @@ namespace WalkerProcessor {
                                 if (lock_camera_onto_target(target_ref, dtime))
                                     reset_walker();
                             }
-
                             return;
+
                         }
                         else
                             walk_again();
@@ -17145,7 +17203,7 @@ namespace WalkerProcessor {
                                 {
                                     if (!get_targeted_ref() || target_ref == get_targeted_ref())
                                     {
-                                        if (target_ref == get_targeted_ref() && is_door(target_ref) && (MiscThings::get_door_teleport(target_ref) != "") && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
+                                        if (!MiscThings::is_cave_autoloader_door(target_ref) && target_ref == get_targeted_ref() && is_door(target_ref) && (MiscThings::get_door_teleport(target_ref) != "") && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
                                         {
                                             just_teleported = true;
                                             catch_door_result = false;
@@ -17674,7 +17732,7 @@ namespace WalkerProcessor {
 
 
 
-                                                if (MiscThings::is_cave_autoloader_door(target_ref))
+                                                if (MiscThings::is_cave_autoloader_door(target_ref))// || (autoload_door_pathfinding_failed && WalkerProcessor::is_door(target_ref) && MiscThings::get_door_teleport(target_ref) != ""))
                                                 {
                                                     //we came to nearest navmesh node. not do custom path to the loader
 
@@ -17693,6 +17751,12 @@ namespace WalkerProcessor {
                                                     custom_path = { player_pos, target_ref->GetPosition()};
                                                     path = custom_path;
                                                     path_valid = true;
+
+                                                    //if (!MiscThings::is_actually_autoloader_door(target_ref))
+                                                    //{
+                                                    //    activate_refr_after_walker_is_done = target_ref;
+                                                    //}
+
                                                     return;
                                                 }
 
@@ -18417,7 +18481,7 @@ namespace WalkerProcessor {
                                                                         return;
                                                                     }
 
-                                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
+                                                                    if (!MiscThings::is_cave_autoloader_door(get_targeted_ref()) && MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
                                                                         just_teleported = true;
 
                                                                     RE::TESObjectREFR* katriah_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc3870);
@@ -18813,7 +18877,7 @@ namespace WalkerProcessor {
                                                         return;
                                                     }
 
-                                                    if (MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
+                                                    if (!MiscThings::is_cave_autoloader_door(get_targeted_ref()) && MiscThings::get_door_teleport(get_targeted_ref()) != "" && (quest_mode || runaway_mode || (target_ref != get_targeted_ref())))
                                                         just_teleported = true;
 
                                                     RE::TESObjectREFR* katriah_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc3870);
