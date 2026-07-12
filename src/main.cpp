@@ -29,8 +29,6 @@
 ///////////////////////
 
 
-//whiterun jarl house should have visit_interesting action its too big
-
 // fix npcs blocking crafting
 // spellcasting still afks sometimes? check other functions that can meddle with it (DO THIS AFTER SOME QUESTS)
 
@@ -51,7 +49,7 @@
 //TODO whiterun save the guy from talmor quest
 //TODO falkreath help the hunter spriggan cave
 
-//TODO markarth namira quest
+//TODO markarth namira quest !!!!!!!!
 //TODO dwemer shield daedra
 //TODO black armor daedra
 //TODO black sword daedra

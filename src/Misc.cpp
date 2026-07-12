@@ -2894,10 +2894,67 @@ namespace MiscThings {
         }
         else
         {
-            auto settlement_worldspace = settlements.find(player_worldspace);
+            if (player_worldspace)
+            {
+                auto settlement_worldspace = settlements.find(player_worldspace);
 
-            if (settlement_worldspace != settlements.end())
-                return settlement_worldspace->first;
+                if (settlement_worldspace != settlements.end())
+                    return settlement_worldspace->first;
+            }
+            else
+            {
+                if (player_cell)
+                {
+                    switch (player_cell->formID)
+                    {
+                    case (0x165a3): //whiterun palace1
+                    case (0x80c6a): //whiterun palace2
+                    {
+                        auto settlement_worldspace = settlements.find(RE::TESForm::LookupByID(0x1a26f));
+
+                        if (settlement_worldspace != settlements.end())
+                            return settlement_worldspace->first;
+
+                        break;
+                    }
+
+                    case (0x16df2): //markarth palace
+                    {
+                        auto settlement_worldspace = settlements.find(RE::TESForm::LookupByID(0x16d71));
+
+                        if (settlement_worldspace != settlements.end())
+                            return settlement_worldspace->first;
+
+                        break;
+                    }
+
+                    case (0x1677c): //windhelm palace1
+                    case (0x97299): //windhelm palace2
+                    {
+                        auto settlement_worldspace = settlements.find(RE::TESForm::LookupByID(0x1691d));
+
+                        if (settlement_worldspace != settlements.end())
+                            return settlement_worldspace->first;
+
+                        break;
+                    }
+                    case (0x16a04): //solitude palace
+                    {
+                        auto settlement_worldspace = settlements.find(RE::TESForm::LookupByID(0x37edf));
+
+                        if (settlement_worldspace != settlements.end())
+                            return settlement_worldspace->first;
+
+                        break;
+                    }
+                    }
+                }
+            }
+
+
+           
+
+
         }
 
         return nullptr;
@@ -2960,6 +3017,19 @@ namespace MiscThings {
             if (settlement_worldspace != settlements.end() && settlement_worldspace->first)
                 return true;
 
+            if (player_cell)
+            {
+                switch (player_cell->formID)
+                {
+                case (0x165a3): //whiterun palace1
+                case (0x80c6a): //whiterun palace2
+                case (0x16df2): //markarth palace
+                case (0x1677c): //windhelm palace
+                case (0x97299): //windhelm palace
+                case (0x16a04): //solitude palace
+                    return true;
+                }
+            }
         }
 
 
@@ -3022,6 +3092,20 @@ namespace MiscThings {
 
             if (settlement_worldspace != settlements.end() && settlement_worldspace->first)
                 return false;
+
+            if (player_cell)
+            {
+                switch (player_cell->formID)
+                {
+                case (0x165a3): //whiterun palace1
+                case (0x80c6a): //whiterun palace2
+                case (0x16df2): //markarth palace
+                case (0x1677c): //windhelm palace
+                case (0x97299): //windhelm palace
+                case (0x16a04): //solitude palace
+                    return false;
+                }
+            }
 
         }
 
