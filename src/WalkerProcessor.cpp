@@ -11008,7 +11008,7 @@ namespace WalkerProcessor {
                 goto finalize_attack;
 
 
-            if (MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
+            if (!spell_mode && !shout_mode && MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false) && MiscThings::player_hp_more_than(90.0f))
             {
                 //cannot attack. notify
                 if (!no_weapons_notified)
