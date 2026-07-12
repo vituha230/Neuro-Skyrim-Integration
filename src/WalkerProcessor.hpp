@@ -69,6 +69,8 @@ namespace WalkerProcessor {
 
 	bool is_running_away();
 
+	bool autoloader_door_evasion_active();
+
 
 	std::pair<bool, std::string> set_closed_door_choice(int choice);
 

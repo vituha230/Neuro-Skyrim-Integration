@@ -14,6 +14,11 @@
 namespace WalkerProcessor {
 
 
+    bool autoloader_door_evasion_mode = false; //reset this on normal reset
+    bool autoloader_door_evasion_mode_tried_onetime = false; //reset this only on saveload
+
+
+
     bool stop_autolockpick = false;
 
     int current_apocrypha_action = 0;
@@ -518,6 +523,13 @@ namespace WalkerProcessor {
     //
 
 
+    bool autoloader_door_evasion_active()
+    {
+        return autoloader_door_evasion_mode && !autoloader_door_evasion_mode_tried_onetime;
+    }
+
+
+
     std::pair<bool, std::string> switch_vampirelord_mode_up()
     {
         std::pair<bool, std::string> result{};
@@ -700,6 +712,9 @@ namespace WalkerProcessor {
 
     void clear_loop_evasion() //basically load of save reset
     {
+        autoloader_door_evasion_mode_tried_onetime = false;
+
+
         emergency_swim_up = false;
 
         potential_loop_points.clear();
@@ -1470,6 +1485,50 @@ namespace WalkerProcessor {
 
                         }
                     }
+
+
+
+
+                    //autoloader door fix
+
+                    if (!autoloader_door_evasion_mode_tried_onetime)
+                    {
+                        if (!autoloader_door_evasion_mode)
+                        {
+                            if (MiscThings::is_cave_autoloader_door(target_ref) && player->GetDistance(target_ref) < 300.0f) //it should have teleported us. if it did not - it probably is broken, need to walk away a little
+                            {
+                                autoloader_door_evasion_mode = true;
+                            }
+                        }
+
+                        if (autoloader_door_evasion_mode)
+                        {
+                            if (MiscThings::is_cave_autoloader_door(target_ref) && player->GetDistance(target_ref) > 300.0f + 100.0f) //should be enough
+                            {
+                                autoloader_door_evasion_mode = false;
+                                autoloader_door_evasion_mode_tried_onetime = true;
+                            }
+                            else
+                            {
+                                //make up some navmesh node nearby
+                                auto test_point = MiscThings::get_farthest_navmesh_node(target_ref);
+
+                                auto marker_ref = marker->AsReference();
+
+                                if (test_point != RE::NiPoint3::Zero() && marker_ref)
+                                    MiscThings::SetPosition_moveto(marker_ref, test_point);
+                                else
+                                {
+                                    autoloader_door_evasion_mode = false;
+                                    autoloader_door_evasion_mode_tried_onetime = true;
+                                }
+                            }
+                        }
+                    }
+                    
+
+
+
 
                     ////////////////////////////////////////////////////////
                     ////////////////////////////////////////////////////////
@@ -4956,6 +5015,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+
+        autoloader_door_evasion_mode = false;
+
         stop_autolockpick = false;
 
         mana_info_for_reminder = "";
@@ -5773,6 +5835,13 @@ namespace WalkerProcessor {
 
 
         auto player = RE::PlayerCharacter::GetSingleton();
+
+
+        if (MiscThings::is_cave_autoloader_door(target_ref))
+        {
+            return false;
+        }
+
 
         auto odawing_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x46efb);
 

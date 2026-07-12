@@ -29,7 +29,6 @@
 ///////////////////////
 
 
-// cave entrances fix (when it gets disabled)
 // dragon-mega-faraway pathfinding bug when we are in whiterun (and maybe not only in whiterun)
 
 

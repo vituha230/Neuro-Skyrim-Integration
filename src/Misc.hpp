@@ -563,6 +563,9 @@ namespace MiscThings {
     std::pair<bool, std::string> set_double_confirm_choice(int id);
 
 
+    RE::NiPoint3 get_farthest_navmesh_node(RE::TESObjectREFR* object);
+    
+
 
     bool is_settlement_advice_on_cooldown();
     void set_settlement_advice_timestamp();

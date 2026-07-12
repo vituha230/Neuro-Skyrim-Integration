@@ -1844,7 +1844,7 @@ namespace Observer {
 					}
 					else
 					{
-
+						/* //causes crashes on saveloading
 						if (MiscThings::is_object_valid(object.second.object, false, true))
 						{
 							std::string special_msg = special_message_on_object_deletion(object.second.object);
@@ -1852,7 +1852,7 @@ namespace Observer {
 								send_random_context(special_msg, true);
 
 						}
-
+						*/
 
 						//it doesnt exist anymore within 30k range
 						MiscThings::nullify_object_by_id(object.first);
