@@ -59,7 +59,9 @@
         specify_quest_path,
         confirm_attack_friend,
         visit_places,
-        change_character
+        change_character,
+        confirm_cast_parthurnax,
+        double_confirm
     };
 
     int get_active_force();

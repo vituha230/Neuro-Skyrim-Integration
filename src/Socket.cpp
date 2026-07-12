@@ -1395,6 +1395,12 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                         case force_type::visit_places:
                             command_result = MiscThings::visit_interesting_place_by_index(json.id); break;
 
+                        case force_type::confirm_cast_parthurnax:
+                            command_result = MiscThings::set_parthurnax_friendly_fire_choice(json.id); break;
+
+                        case force_type::double_confirm:
+                            command_result = MiscThings::set_double_confirm_choice(json.id); break;
+
 
                         default:
                         {

@@ -29,8 +29,6 @@
 ///////////////////////
 
 
-// PARTHURNAX ATTACK DOUBLE CONFIRM
-// casting offensive spells on top of mountain should have confirmation too
 // todo elemental immunity info when using magic (fire and fire atronachs)
 // cave entrances fix (when it gets disabled)
 
@@ -1434,6 +1432,8 @@ namespace Hooks {
 
                 MiscThings::reset_settlement();
                 
+                MiscThings::reset_parthurnax_friendly_fire();
+
                 MiscThings::reset_shout_cooldown_monitor();
 
 

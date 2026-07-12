@@ -12,6 +12,15 @@
 namespace MiscThings {
 
 
+    bool parthurnax_friendly_fire_confirmed = false;
+    bool parthurnax_friendly_fire_confirm = false;
+    int parthurnax_friendly_fire_spell_id = false;
+    int parthurnax_friendly_fire_target_id = false;
+    bool parthurnax_friendly_fire_request_sent = false;
+    bool parthurnax_friendly_fire_choice_valid = false;
+    bool parthurnax_friendly_fire_choice = false;
+
+
     float last_shout_cooldown = -1.0f;
     float shout_cooldown_doesnt_change_timer = 0.0f;
 
@@ -42,6 +51,131 @@ namespace MiscThings {
 
         return false;
     }
+
+
+
+    //only yes or no
+
+    bool double_confirm_request_sent = false;
+    bool double_confirm_choice_valid = false;
+    bool double_confirm_choice = false;
+
+
+    bool make_double_confirm() //returns true if choice valid
+    {
+
+        if (!double_confirm_request_sent)
+        {
+            std::vector<MenuOption> options{};
+            options.push_back({ 0, "No" });
+            options.push_back({ 1, "Yes" });
+
+            unregister_all_actions();
+
+            if (force_choice(options, "Are you absolutely sure?", force_type::double_confirm))
+            {
+                double_confirm_request_sent = true;
+            }
+        }
+        else
+        {
+            if (double_confirm_choice_valid)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    bool get_double_confirm_choice()
+    {
+        return double_confirm_choice;
+    }
+
+
+    void reset_double_confirm()
+    {
+        double_confirm_request_sent = false;
+        double_confirm_choice_valid = false;
+        double_confirm_choice = false;
+    }
+
+
+
+
+    std::pair<bool, std::string> set_double_confirm_choice(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!double_confirm_request_sent)
+        {
+            result.first = true;
+            result.second = "[Error]";
+        }
+        else
+        {
+            if (id == 0 || id == 1)
+            {
+                double_confirm_choice = id;
+                double_confirm_choice_valid = true;
+                result.first = true;
+                result.second = "[Processing...]";
+            }
+            else
+            {
+                result.first = false;
+                result.second = "[Invalid choice ID]";
+            }
+        }
+        return result;
+    }
+
+
+
+
+
+
+
+    bool parthurnax_friendly_fire_check()
+    {
+        if (WalkerProcessor::is_fighting())
+            return false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto player_worldspace = player->GetWorldspace();
+            if (player_worldspace && player_worldspace->formID == 0x3c) //tamriel
+            {
+                RE::TESObjectREFR* timewound = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x430a3);
+                if (timewound && player->GetDistance(timewound) < 2000.0f)
+                {
+                    //danger zone. now check if we really dont want to hit parthurnax
+                    RE::TESObjectREFR* alduin = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4424b);
+                    if (alduin && MiscThings::is_object_valid(alduin))
+                        return false; //allow doing whatever if alduin is present
+
+                    RE::TESObjectREFR* parthurnax = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3c57d);
+                    if (parthurnax && MiscThings::is_object_valid(parthurnax) && !parthurnax->IsDead())
+                        if (player->GetDistance(parthurnax) < 2000.0f)
+                        {
+                            auto kill_parthurnax_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQPaarthurnax");
+                            if (kill_parthurnax_quest && kill_parthurnax_quest->currentStage < 10)
+                                return true; //no alduin, parthurnax is nearby and is alive, we are not fighting, no kill parthurnax quest present. tread carefully
+                        }
+                }
+            }
+        }
+
+
+        return false;
+    }
+
+
+
 
 
 
@@ -11015,8 +11149,91 @@ namespace MiscThings {
         old_topleft_notification = new_notif;
     }
 
+
+
+
+    void reset_parthurnax_friendly_fire()
+    {
+        reset_double_confirm(); //since its called only on saveloads
+
+        parthurnax_friendly_fire_confirmed = false;
+        parthurnax_friendly_fire_confirm = false;
+        parthurnax_friendly_fire_spell_id = false;
+        parthurnax_friendly_fire_target_id = false;
+        parthurnax_friendly_fire_request_sent = false;
+        parthurnax_friendly_fire_choice_valid = false;
+        parthurnax_friendly_fire_choice = false;
+    }
+
+
+
+
+    std::pair<bool, std::string> set_parthurnax_friendly_fire_choice(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!parthurnax_friendly_fire_confirm)
+        {
+            result.first = true;
+            result.second = "[Error]";
+        }
+        else
+        {
+            if (id == 0 || id == 1)
+            {
+                parthurnax_friendly_fire_choice_valid = true;
+                parthurnax_friendly_fire_choice = id;
+                result.first = true;
+                result.second = "[Processing...]";
+            }
+            else
+            {
+                result.first = false;
+                result.second = "[Invalid choice ID]";
+            }
+        }
+        return result;
+    }
+
+
     void notifications()
     {
+
+        if (parthurnax_friendly_fire_confirm)
+        {
+            if (!parthurnax_friendly_fire_request_sent)
+            {
+                std::vector<MenuOption> options{};
+                options.push_back({ 0, "No" });
+                options.push_back({ 1, "Yes" });
+
+                unregister_all_actions();
+
+                if (force_choice(options, "You are trying to cast a dangerous spell, but there is Paarthurnax nearby... if you accidentely hit him, he might get mad at you. Are you sure you want to cast it?", force_type::confirm_cast_parthurnax))
+                {
+                    parthurnax_friendly_fire_request_sent = true;
+                }
+            }
+            else
+            {
+                if (parthurnax_friendly_fire_choice_valid)
+                {
+                    register_allowed_actions();
+                    if (parthurnax_friendly_fire_choice)
+                    {
+                        parthurnax_friendly_fire_confirmed = true;
+                        cast_spell_by_index(parthurnax_friendly_fire_spell_id, false, true, parthurnax_friendly_fire_target_id);
+                    }
+
+                    reset_parthurnax_friendly_fire();
+                }
+            }
+        }
+
+
+
+
+
         RE::GFxValue var1;
         RE::UI* ui = RE::UI::GetSingleton();
         if (ui)
@@ -20404,6 +20621,22 @@ namespace MiscThings {
                                 slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
 
 
+                            if (is_offensive_spell(spell) && MiscThings::parthurnax_friendly_fire_check())
+                            {
+                                if (!parthurnax_friendly_fire_confirmed)
+                                {
+                                    parthurnax_friendly_fire_confirm = true;
+                                    parthurnax_friendly_fire_spell_id = id;
+                                    parthurnax_friendly_fire_target_id = target_index;
+                                    result.first = true;
+                                    result.second = "Processing...";
+                                    return result;
+                                }
+                            }
+
+
+
+
                             if (slot_id == 0x00013F42)
                                 slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand forced
 
@@ -20542,6 +20775,8 @@ namespace MiscThings {
                                     left_attack_cancel();
 
                                     auto dragonrend = (RE::TESShout*)RE::TESForm::LookupByID(0x44250);
+                                    auto spell_target = MiscThings::get_object_by_index(target_index);
+
 
                                     if (player_issued && shout == dragonrend)
                                     {
@@ -20553,7 +20788,15 @@ namespace MiscThings {
                                             goto finalize_shout; //skip casting part
                                         }
                                     }
-                                    
+
+                                    if (spell_target)
+                                    {
+                                        auto temp = WalkerProcessor::shout_at_target(spell_target, shout);
+
+                                        return temp;
+                                    }
+
+
 
                                     if (!fast)
                                         make_long_ult_cast();

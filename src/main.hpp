@@ -17,7 +17,7 @@
 
 float get_stealthmeter();
 
-
+void reset_parthurnax_friendly_fire();
 
 long long get_last_load_timestamp();
 

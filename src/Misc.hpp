@@ -551,6 +551,18 @@ namespace MiscThings {
 
     uint64_t GetTickCount64();
 
+    std::pair<bool, std::string> set_parthurnax_friendly_fire_choice(int id);
+    void reset_parthurnax_friendly_fire();
+
+    bool parthurnax_friendly_fire_check();
+
+
+    bool make_double_confirm();
+    bool get_double_confirm_choice();
+    void reset_double_confirm();
+    std::pair<bool, std::string> set_double_confirm_choice(int id);
+
+
 
     bool is_settlement_advice_on_cooldown();
     void set_settlement_advice_timestamp();

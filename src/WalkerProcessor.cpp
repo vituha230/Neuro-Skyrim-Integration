@@ -15036,10 +15036,47 @@ namespace WalkerProcessor {
                     {
                         if (attack_friend_choice_valid)
                         {
-                            register_allowed_actions();
+                            
                             if (attack_friend_choice)
                             {
+                                if (MiscThings::parthurnax_friendly_fire_check())
+                                {
+                                    auto desired_target = MiscThings::get_object_by_index(attack_friend_id);
 
+                                    if (desired_target && desired_target->formID == 0x3c57d) //parthurnax
+                                    {
+                                        //trying to attack friendly parthurnax and it is phase when if he gets mad we need to run away 1km.. double confirm
+
+                                        if (MiscThings::make_double_confirm())
+                                        {
+                                            if (!MiscThings::get_double_confirm_choice())
+                                            {
+                                                MiscThings::reset_double_confirm();
+
+                                                //cancelled
+                                                register_allowed_actions();
+
+                                                //continue doing whatever we were doing
+                                                trying_to_attack_friend = false;
+                                                attack_friend_request_sent = false;
+                                                attack_friend_choice_valid = false;
+                                                attack_friend_choice = -1;
+                                                attack_friend_interaction = -1;
+                                                attack_friend_id = -1;
+                                                attack_friend_confirmed = false;
+                                                return;
+                                            }
+                                            else
+                                                MiscThings::reset_double_confirm(); //fall through down and perform attack
+                                        }
+                                        else
+                                            return;
+
+                                    }
+                                }
+
+
+                                register_allowed_actions();
 
                                 attack_friend_confirmed = true;
 
@@ -15058,6 +15095,8 @@ namespace WalkerProcessor {
                             }
                             else
                             {
+                                register_allowed_actions();
+
                                 //continue doing whatever we were doing
                                 trying_to_attack_friend = false;
                                 attack_friend_request_sent = false;
