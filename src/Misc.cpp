@@ -54,6 +54,32 @@ namespace MiscThings {
 
 
 
+    bool is_workbench(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto base_obj = object->GetBaseObject();
+
+            if (base_obj)
+            {
+                if (base_obj->formType == RE::FormType::Furniture)
+                {
+                    bool this_isnt_a_furniture = false;
+                    auto furniture = (RE::TESFurniture*)base_obj;
+                    auto workbenchtype = furniture->workBenchData.benchType;
+                    if (workbenchtype != RE::TESFurniture::WorkBenchData::BenchType::kNone)
+                        return true;
+                }
+            }
+
+        }
+
+        return false;
+    }
+
+
+
+
 
     RE::ObjectRefHandle get_occupied_furniture_all_process(RE::TESObjectREFR* object)
     {
@@ -11793,6 +11819,14 @@ namespace MiscThings {
                                                         old_topleft_notification = result_string;
                                                         if (result_string != "Autosaving..." && result_string != "Quicksaving..." && result_string != "Quickloading..." && result_string.find("is too powerful") == std::string::npos)
                                                         {
+
+                                                            if (result_string == "Someone else is using this.")
+                                                            {
+                                                                //dont send it if walker is actively interacting with it
+                                                                if (WalkerProcessor::interacting_with_workbench())
+                                                                    return;
+                                                            }
+
 
                                                             if (result_string == "Heart consumed, werewolf perk progress increased")
                                                             {

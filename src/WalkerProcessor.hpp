@@ -67,6 +67,11 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> explore_world(bool internal_call);
 
 
+	bool interacting_with_workbench();
+
+
+
+
 	bool close_enough();
 
 

@@ -17,6 +17,7 @@ namespace WalkerProcessor {
     bool autoloader_door_evasion_mode = false; //reset this on normal reset
     bool autoloader_door_evasion_mode_tried_onetime = false; //reset this only on saveload
 
+    bool having_interaction_with_workbench = false;
 
 
     bool stop_autolockpick = false;
@@ -514,6 +515,12 @@ namespace WalkerProcessor {
     bool last_dragon_was_flying = false;
 
 
+
+
+    bool interacting_with_workbench()
+    {
+        return having_interaction_with_workbench;
+    }
 
 
     void notify_walker_to_stop_autolockpick_on_enemies()
@@ -12707,6 +12714,29 @@ namespace WalkerProcessor {
                                 }
 
                                 
+                                if (MiscThings::is_workbench(target_ref)) //might be occupied by npc
+                                {
+                                    
+                                    having_interaction_with_workbench = true;
+
+                                    if (!backup_pickup)
+                                    {
+                                        if (backup_pickup_attempts <= 3)
+                                        {
+                                            backup_pickup_attempts++;
+                                            backup_pickup = true;
+                                            backup_pickup_object = target_ref;
+                                        }
+                                        else
+                                        {
+                                            backup_pickup_attempts = 0;
+                                            backup_pickup = false;
+                                            backup_pickup_object = nullptr;
+                                            backup_pickup_time = 0.0f;
+                                        }
+                                    }
+                                }
+
 
                                 if (MiscThings::is_insect(target_ref))
                                 {
@@ -14360,6 +14390,8 @@ namespace WalkerProcessor {
         backup_pickup = false;
         backup_pickup_object = nullptr;
         backup_pickup_time = 0.0f;
+
+        having_interaction_with_workbench = false;
     }
 
 

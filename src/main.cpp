@@ -29,9 +29,7 @@
 ///////////////////////
 
 
-// fix npcs blocking crafting
 // spellcasting still afks sometimes? check other functions that can meddle with it (DO THIS AFTER SOME QUESTS)
-
 
 
 

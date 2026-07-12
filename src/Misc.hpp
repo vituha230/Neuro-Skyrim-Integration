@@ -16,6 +16,8 @@ namespace MiscThings {
     bool quest_target_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective, RE::TESQuestTarget* target);
 
 
+    bool is_workbench(RE::TESObjectREFR* object);
+
     RE::ObjectRefHandle get_occupied_furniture_all_process(RE::TESObjectREFR* object);
 
 
