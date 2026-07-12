@@ -20621,7 +20621,7 @@ namespace MiscThings {
                                 slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
 
 
-                            if (is_offensive_spell(spell) && MiscThings::parthurnax_friendly_fire_check())
+                            if (player_issued && is_offensive_spell(spell) && MiscThings::parthurnax_friendly_fire_check())
                             {
                                 if (!parthurnax_friendly_fire_confirmed)
                                 {
