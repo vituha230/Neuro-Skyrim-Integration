@@ -1682,8 +1682,12 @@ namespace WalkerProcessor {
                                         {
                                             too_high_notified = true;
 
+                                            std::string ranged_weapon_advice = "";
+                                            if (interaction_after_walk == 3)
+                                                ranged_weapon_advice = "Or equip some weapons/magic with longer range";
+
                                             if (!check_special_too_high_message())
-                                                send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
+                                                send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. " + ranged_weapon_advice, false);
                                         }
                                     }
                                     else
@@ -11270,7 +11274,6 @@ namespace WalkerProcessor {
 
                                     if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                     {
-
                                         if (low_mana_detected)
                                         {
                                             auto max_mana = MiscThings::get_player_max_mana();
@@ -11283,7 +11286,7 @@ namespace WalkerProcessor {
                                             else
                                             {
                                                 std::string mana_info = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(true)) + ", current magicka:" + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
-                                                send_random_context("You dont have enough magicka to cast this spell! Wait or replenish your magicka " + mana_info, true);
+                                                send_random_context("You dont have enough magicka to cast this spell! Wait or replenish your magicka " + mana_info, false);
                                             }
                                         }
 
@@ -18395,7 +18398,13 @@ namespace WalkerProcessor {
                                                     {
                                                         too_high_notified = true;
                                                         if (!check_special_too_high_message())
-                                                            send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. ", false);
+                                                        {
+                                                            std::string ranged_weapon_advice = "";
+                                                            if (interaction_after_walk == 3)
+                                                                ranged_weapon_advice = "Or equip some weapons/magic with longer range";
+                                                            send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. " + ranged_weapon_advice, false);
+                                                        }
+                                                            
                                                     }
                                                     lock_camera_onto_target(target_ref, dtime);
                                                     return;
