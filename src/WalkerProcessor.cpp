@@ -13181,7 +13181,9 @@ namespace WalkerProcessor {
 
                 case 3:
                 {
-                    result += " and started attacking";
+                    //lets try removing this because we get "You are attacking ... " message right afterwards anyway
+                    return "";
+                    //result += " and started attacking";
                     break;
                 }
 

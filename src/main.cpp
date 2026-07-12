@@ -29,7 +29,6 @@
 ///////////////////////
 
 
-// todo elemental immunity info when using magic (fire and fire atronachs)
 // cave entrances fix (when it gets disabled)
 
 
@@ -949,6 +948,9 @@ void send_speech_context(RE::TESObjectREFR* speaker, std::string speech_text, bo
 
 
 
+long long last_time_resist_info = 0;
+
+
 
 void send_random_context(std::string context, bool silent)
 {
@@ -959,7 +961,21 @@ void send_random_context(std::string context, bool silent)
         return;
 
     if (context.find(" resisted ") != std::string::npos)
-        return;
+    {
+        if ((WalkerProcessor::is_fighting() && MiscThings::is_offensive_spell(WalkerProcessor::get_current_active_hand())) || is_casting_cast())
+        {
+            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+            float delta_resist_info = (double)(now - last_time_resist_info) / 1000000000.0;
+
+            if (delta_resist_info > 10.0f)
+                last_time_resist_info = now; //and fall down sending it
+            else
+                return; //abort
+        }
+        else
+            return; //abort
+    }
+        
 
     if (context.find("No soul gem large enough") != std::string::npos)
         return;
