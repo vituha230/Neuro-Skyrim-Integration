@@ -25,6 +25,28 @@
 // soul cairn
 
 
+
+///////////////////////
+
+
+// PARTHURNAX ATTACK DOUBLE CONFIRM
+// casting offensive spells on top of mountain should have confirmation too
+// todo elemental immunity info when using magic (fire and fire atronachs)
+// cave entrances fix (when it gets disabled)
+
+
+
+
+
+
+
+
+//TODO hearthfire dlc
+
+
+//TODO that seducers AE quest
+
+
 //  RANDOM QUESTS TODO
 // 
 //TODO potema part2
@@ -39,12 +61,10 @@
 //TODO black sword daedra
 //TODO check hermaeus book-blood quest
 
-//TODO that seducers AE quest
 
 
 
-//TODO dual casting using cast-spell? (from input_processor) - should be worth it
-//TODO hearthfire
+
 
 
 //////////////////////////////////////////////////////

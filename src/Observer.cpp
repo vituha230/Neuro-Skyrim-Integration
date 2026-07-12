@@ -1989,6 +1989,15 @@ namespace Observer {
 								{
 									if (!MiscThings::is_object_in_the_list(a_ref))
 									{
+										if (a_ref->formID == 0x430a3) //timewound
+										{
+											auto mq206 = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ206");
+											if (mq206 && mq206->GetCurrentStageID() < 10)
+												return RE::BSContainer::ForEachResult::kContinue; //too soon
+										}
+
+
+
 										auto word_of_power = MiscThings::get_word_of_power(a_ref);
 
 										if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
