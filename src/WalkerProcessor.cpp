@@ -1699,7 +1699,7 @@ namespace WalkerProcessor {
                                         }
                                         else
                                         {
-                                            if (!is_fighting() && !dragon_pathfinding_failed && ((MiscThings::is_dragon(target_ref) && (!MiscThings::is_flying(target_ref) || (MiscThings::same_worldspace(player, target_ref) && player->GetDistance(target_ref) > 30000.0f))) || (player->GetDistance(target_ref) > 10000.0f && player->GetWorldspace() && player->GetWorldspace()->formID == 0x3c)))
+                                            if (!is_fighting() && !dragon_pathfinding_failed && ((MiscThings::is_dragon(target_ref) && (!MiscThings::is_flying(target_ref) || (MiscThings::same_worldspace(player, target_ref) && player->GetDistance(target_ref) > 30000.0f)))))// || (player->GetDistance(target_ref) > 10000.0f && player->GetWorldspace() && player->GetWorldspace()->formID == 0x3c)))
                                             {
                                                 dragon_pathfinding_failed = true;
                                                 return;
@@ -6122,6 +6122,10 @@ namespace WalkerProcessor {
                         //this is for melee
                         if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref))// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
                             range = 50000.0f;
+
+
+                        if (MiscThings::is_player_swimming())
+                            range = 1.0f; //mega low range so it never returns true
 
 
                         auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range, target_ref, 0b00000000000010010000000000000110); //projectile layer in player group
