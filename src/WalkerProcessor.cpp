@@ -1699,7 +1699,7 @@ namespace WalkerProcessor {
                                         }
                                         else
                                         {
-                                            if (!is_fighting() && !dragon_pathfinding_failed && (MiscThings::is_dragon(target_ref) && (!MiscThings::is_flying(target_ref) || (MiscThings::same_worldspace(player, target_ref) && player->GetDistance(target_ref) > 30000.0f))) || (player->GetDistance(target_ref) > 10000.0f && player->GetWorldspace() && player->GetWorldspace()->formID == 0x3c))
+                                            if (!is_fighting() && !dragon_pathfinding_failed && ((MiscThings::is_dragon(target_ref) && (!MiscThings::is_flying(target_ref) || (MiscThings::same_worldspace(player, target_ref) && player->GetDistance(target_ref) > 30000.0f))) || (player->GetDistance(target_ref) > 10000.0f && player->GetWorldspace() && player->GetWorldspace()->formID == 0x3c)))
                                             {
                                                 dragon_pathfinding_failed = true;
                                                 return;

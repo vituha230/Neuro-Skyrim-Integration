@@ -29,7 +29,7 @@
 ///////////////////////
 
 
-// dragon-mega-faraway pathfinding bug when we are in whiterun (and maybe not only in whiterun)
+//whiterun jarl house should have visit_interesting action its too big
 
 // fix npcs blocking crafting
 // spellcasting still afks sometimes? check other functions that can meddle with it (DO THIS AFTER SOME QUESTS)
