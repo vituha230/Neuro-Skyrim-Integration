@@ -20078,6 +20078,77 @@ namespace MiscThings {
     }
 
 
+    float get_spell_range(RE::SpellItem* spell)
+    {
+        if (spell)
+        {
+            auto range1 = spell->GetRange();
+            if (range1 > 0)
+                return range1;
+
+            if (spell->GetDelivery() != RE::MagicSystem::Delivery::kSelf)
+            {
+                for (auto effect : spell->effects)
+                {
+                    auto effectSetting = effect->baseEffect;
+
+                    if (effectSetting && effectSetting->data.projectileBase)
+                    {
+                        auto range2 = effectSetting->data.projectileBase->data.range;
+
+                        if (range2 > 0.0f)
+                            return range2 * 0.9f;
+                    }
+
+                }
+            }
+            else
+            {
+                auto slot_both_hands = RE::TESForm::LookupByID(0x00013F45);
+
+                if (spell->GetEquipSlot() == slot_both_hands)
+                {
+                    std::string perk_name = "";
+
+                    if (spell->data.castingPerk)
+                        perk_name = spell->data.castingPerk->GetFullName();
+                    else
+                    {
+                        auto spell_id = spell->GetFormID();
+
+                        if (spell_id == 0xA44B2 || spell_id == 0xA44B1)
+                            return 300.0f;
+                    }
+
+
+                    if (perk_name.find("Master Destruction") != std::string::npos)
+                    {
+                        auto cast_type = spell->avEffectSetting->data.castingType;
+
+                        if (cast_type == RE::MagicSystem::CastingType::kConcentration)
+                            return 20000.0f;
+                        else
+                            return 300.0f;
+                    }
+                    else
+                        return 1500.0f;
+                }
+                else
+                {
+                    //all self-cast non-both-hand spells fall here
+                    return 0.0f;
+                }
+
+            }
+        }
+
+        return 0.0f;
+    }
+
+
+
+
+
     std::pair<bool, std::string> get_available_spells()
     {
         std::pair<bool, std::string> result{};
@@ -20172,7 +20243,18 @@ namespace MiscThings {
                                         equip_info = "[Equipped in both hands]";
 
 
-                            *active_spells += "[id " + std::to_string(i) + "]" + perk_info + equip_info + " " + name + " - " + description + "\n";
+                            std::string range_info = "";
+
+                            float range = MiscThings::get_spell_range(a_spell);
+
+                            if (range > 3000.0f)
+                                range_info = "[Long range]";
+                            else
+                                if (range > 0.0f)
+                                    range_info = "[Short range]";
+
+
+                            *active_spells += "[id " + std::to_string(i) + "]" + perk_info + range_info + equip_info + " " + name + " - " + description + "\n";
                             spells.insert({ i, {a_spell, nullptr } });
                             i++;
                             *max_id = i;
