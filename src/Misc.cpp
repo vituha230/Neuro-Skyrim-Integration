@@ -250,6 +250,9 @@ namespace MiscThings {
 
             case (0x105b43): //sheogorath marker3
                 return (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x9f850); //anger guy
+
+            case (0x2c361): //namira priest death
+                return (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1bb8f); //priest
             }
         }
 
@@ -1774,6 +1777,9 @@ namespace MiscThings {
         {
             switch (target->formID)
             {
+            case (0x2c361): //namira shrine
+                return 250.0f;
+
             case (0xc629d): //trevas watch lever
                 return 100.0f;
 
@@ -1854,7 +1860,8 @@ namespace MiscThings {
 
             switch (object->formID) //known shit doors that are not autoloader doors
             {
-            case (0x60c77):
+            case (0x60c77): //northwind dragon mine
+            case (0xdae8e): //namira base secret entrance
                 return true;
 
             }
@@ -5020,6 +5027,21 @@ namespace MiscThings {
 
         if (!quest)
             return nullptr;
+
+
+        if (quest->formID == 0x7d949) //namira quest (maybe intro only)
+        {
+            auto current_stage = quest->currentStage;
+            if (current_stage == 5) //leads through the hall of the dead before we even talked to the guy for some reason. redirect to the castle so it looks normal
+            {
+                if (target && target->formID == 0x16f70) //crypt door
+                {
+                    auto castle_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16e47);
+                    if (castle_door) return castle_door;
+                }
+            }
+        }
+
 
 
         if (quest->formID == 0x20556)//windhelm blood on ice ms11b
