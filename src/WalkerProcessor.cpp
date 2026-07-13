@@ -2327,7 +2327,7 @@ namespace WalkerProcessor {
                 path_point_pos = path.at(current_path_point);
             
             
-            Hooks::add_debug_line("Path point pos: " + std::to_string((int)path_point_pos.x) + ", " + std::to_string((int)path_point_pos.y) + ", " + std::to_string((int)path_point_pos.z), true);
+            //Hooks::add_debug_line("Path point pos: " + std::to_string((int)path_point_pos.x) + ", " + std::to_string((int)path_point_pos.y) + ", " + std::to_string((int)path_point_pos.z), true);
 
 
             //auto path_point_pos = target_ref->GetPosition();
@@ -4027,36 +4027,7 @@ namespace WalkerProcessor {
 
                             lookat_used = true;
                         }
-                }
-
-
-            /*
-            if (biped)
-            {
-                if (biped->root && std::size(biped->root->children) > 0 && biped->root->children[0])
-                {
-
-                    float root_shift = bound_dif.z * 0.4;
-                    auto root_pos = biped->root->children[0]->world.translate;
-                    root_pos.z += root_shift;
-
-                    auto lookat_location = root_pos;
-
-                    auto player_temp_pos = player->GetPosition();
-
-                    target_center = lookat_location;
-                    height = 0.0f;
-                    specific_shift = RE::NiPoint3::Zero();
-
-                    lookat_used = true;
-                }
-                else
-                    bool breakpoint123 = false;
-            }
-            else
-                bool breakpoint123 = false;
-               */ 
-                    
+                }         
         }
         else
         {
@@ -4073,10 +4044,17 @@ namespace WalkerProcessor {
                             {
                                 auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
 
+                                if (MiscThings::is_dragon(target))
+                                {
+                                    torso_pos = target->GetPosition();
+                                    torso_pos.z += 190.0f;
+                                }
+
+
                                 auto lookat_location = torso_pos;
 
-                                if (MiscThings::is_dragon(target))
-                                    torso_pos.z += 100.0f;
+
+                                    
 
 
                                 auto player_temp_pos = player->GetPosition();
@@ -4135,7 +4113,7 @@ namespace WalkerProcessor {
         auto path_point_pos = target_center;
         auto pos_dif = path_point_pos - camera_pos;
 
-        if (force_speed_correction || (interaction_after_walk == 3 && start_attacking && (has_ranged_weapon_equipped(true) || shout_mode)))
+        if (force_speed_correction || (interaction_after_walk == 3 && start_attacking && (has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
         {
             //assuming its always pulled to the max
 
@@ -4145,7 +4123,7 @@ namespace WalkerProcessor {
 
             if (lasttime > 0)
             {
-                dtime_better = (double)(now - lasttime) / 1000000000.0;
+                ;// dtime_better = (double)(now - lasttime) / 1000000000.0;
             }
             
 
@@ -4225,8 +4203,16 @@ namespace WalkerProcessor {
                     speed_shift = { 0.0f, 0.0f, 0.0f };
 
                     //arc_coef3 * delta_target_pos * distance;
+
+                //Hooks::add_debug_line(std::to_string(speed_shift.x) + ", " + std::to_string(speed_shift.y) + ", " + std::to_string(speed_shift.z), true);
+               
+
+
+
                 target_center += speed_shift;
             }
+
+            Hooks::add_debug_line(std::to_string(dtime_better), true);
 
 
             //auto distance = pos_dif.Length();
@@ -5870,9 +5856,9 @@ namespace WalkerProcessor {
         if (close_enough_force_fail)
         {
             auto now = std::chrono::steady_clock::now().time_since_epoch().count();
-            float delta_cancel_fal = (double)(now - close_enough_force_fail_time_start) / 1000000000.0;
+            float delta_cancel_fail = (double)(now - close_enough_force_fail_time_start) / 1000000000.0;
 
-            if (delta_cancel_fal > 10.0f)
+            if (delta_cancel_fail > 10.0f)
             {
                 close_enough_force_fail = false;
                 close_enough_force_fail_time_start = 0;
@@ -15359,8 +15345,8 @@ namespace WalkerProcessor {
                     
 
 
-                if (target_ref)
-                    Hooks::add_debug_line(std::to_string(player->GetDistance(target_ref)), true);
+                //if (target_ref)
+                //   Hooks::add_debug_line(std::to_string(player->GetDistance(target_ref)), true);
 
 
                 if (looking_mode)
@@ -16901,7 +16887,7 @@ namespace WalkerProcessor {
 
                 if (attack_paused)
                 {
-                    if (start_attacking || (spell_mode && target_ref && target_ref->IsActor()))
+                    if (start_attacking || ((shout_mode || spell_mode) && target_ref && target_ref->IsActor()))
                     {
                         bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
                         lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);

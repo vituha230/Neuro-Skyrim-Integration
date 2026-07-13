@@ -29,8 +29,9 @@
 ///////////////////////
 
 
-// spellcasting still afks sometimes? check other functions that can meddle with it (DO THIS AFTER SOME QUESTS)
 
+// spellcasting still afks sometimes? check other functions that can meddle with it (DO THIS AFTER SOME QUESTS)
+// fix horizontal bow shift, maybe cap enemy speed
 
 
 //TODO hearthfire dlc

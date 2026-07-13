@@ -350,7 +350,7 @@ namespace MiscThings {
         {
             auto race = ((RE::Actor*)target)->race;
 
-            if (race && race->formID == 0x401dcb9);
+            if (race && race->formID == 0x401dcb9)
                 return true;
         }
 
