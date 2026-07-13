@@ -14,6 +14,9 @@
 namespace WalkerProcessor {
 
 
+    bool lock_camera_used_this_cycle = false;
+
+
     bool autoloader_door_evasion_mode = false; //reset this on normal reset
     bool autoloader_door_evasion_mode_tried_onetime = false; //reset this only on saveload
 
@@ -3926,6 +3929,7 @@ namespace WalkerProcessor {
 
     bool lock_camera_onto_target(RE::TESObjectREFR* target, float dtime, float speed_koef, bool force_speed_correction, bool force_high_precision)
     {
+
         //Hooks::add_debug_line("LOCK_CAMERA_CALLED", true);
 
         if (input_wants_to_look_down() || (start_attacking && MiscThings::is_summon_spell(get_current_active_hand())))
@@ -3944,6 +3948,19 @@ namespace WalkerProcessor {
 
         if (!target || !player)
             return false;
+
+
+
+        bool dont_send_inputs = false;
+
+
+        if (lock_camera_used_this_cycle)
+            dont_send_inputs = true;
+
+
+
+        lock_camera_used_this_cycle = true;
+
 
         
         //auto height = target->GetHeight();
@@ -4183,7 +4200,8 @@ namespace WalkerProcessor {
                     //u *= 1.2f;
 
                     //u = u_new;
-                    last_u = u_new;
+                    if (!dont_send_inputs)
+                        last_u = u_new;
 
 
                 }
@@ -4191,8 +4209,13 @@ namespace WalkerProcessor {
                 {
                     a = RE::NiPoint3::Zero();
                     u = (delta_target_pos / dtime_better);
-                    last_u = u;
-                    last_u_valid = true;
+
+                    if (!dont_send_inputs)
+                    {
+                        last_u = u;
+                        last_u_valid = true;
+                    }
+
                 }
 
                 auto projectile_speed = get_weapon_projectile_speed(get_current_active_hand());
@@ -4225,7 +4248,7 @@ namespace WalkerProcessor {
                 //Hooks::add_debug_line(std::to_string(a.x) + ", " + std::to_string(a.y) + ", " + std::to_string(a.z), true);
 
 
-                if (speed_koef < 2.0f)
+                if (!shout_mode && speed_koef < 2.0f && has_bow_equipped(get_current_active_hand())) //bows have reduced mouse sensitivity while charging
                     speed_koef = 2.0f;
 
 
@@ -4265,8 +4288,12 @@ namespace WalkerProcessor {
 
         }
 
-        last_target_pos_valid = true;
-        last_target_pos = path_point_pos;
+        if (!dont_send_inputs)
+        {
+            last_target_pos_valid = true;
+            last_target_pos = path_point_pos;
+        }
+
         
 
 
@@ -4551,7 +4578,8 @@ namespace WalkerProcessor {
             else
             {
                 if (abs(mulX) < 0.4 && mulY >= 0)
-                    walk_forward();
+                    if (!dont_send_inputs)
+                        walk_forward();
             }
                 
 
@@ -4575,8 +4603,8 @@ namespace WalkerProcessor {
 
         }
 
-
-        mouse_look(mouse_x, -mouse_y);
+        if (!dont_send_inputs)
+            mouse_look(mouse_x, -mouse_y);
         //mouse_mouse_x_y(mouse_x, -mouse_y);
 
         /*
@@ -10963,7 +10991,7 @@ namespace WalkerProcessor {
         if (shout_mode || player->GetDistance(target_ref) < 400.0f)
         {
             //Hooks::add_debug_line("ATTACK_TARGET lock_camera", true);
-            lock_camera_onto_target(target_ref, dtime, 1.5f, speed_correction);
+            lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
         }
             
 
@@ -14665,6 +14693,9 @@ namespace WalkerProcessor {
 
 	void processor(float dtime)
 	{
+        lock_camera_used_this_cycle = false;
+
+
         if (emergency_swim_up)
         {
             if (!is_walking_important_path() && !MiscThings::have_force_only_menu_open())
