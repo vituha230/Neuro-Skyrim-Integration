@@ -40,7 +40,7 @@
 //  RANDOM QUESTS TODO
 // 
 //TODO potema part2
-//TODO riften mead quest, dwemer cube quest, check what fishing quest looks like
+//TODO riften mead quest, dwemer cube quest
 //TODO solstheim ash captain shit
 //TODO whiterun save the guy from talmor quest
 //TODO falkreath help the hunter spriggan cave

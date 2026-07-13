@@ -1690,7 +1690,7 @@ namespace WalkerProcessor {
                                             too_high_notified = true;
 
                                             std::string ranged_weapon_advice = "";
-                                            if (interaction_after_walk == 3)
+                                            if (interaction_after_walk == 3 && get_weapon_range(get_current_active_hand()) < 4000.0f)
                                                 ranged_weapon_advice = "Or equip some weapons/magic with longer range";
 
                                             if (!check_special_too_high_message())
@@ -14695,7 +14695,7 @@ namespace WalkerProcessor {
         }
 
 
-        if (have_target_to_walk && interaction_after_walk != 0 && MiscThings::is_on_horse() && close_enough())
+        if (have_target_to_walk && interaction_after_walk != 0 && MiscThings::is_on_horse() && close_enough() && !(target_ref && target_ref->IsActor() && ((RE::Actor*)target_ref)->IsAMount()))
         {
             confirm();
             set_universal_block(1.0f);
@@ -18462,7 +18462,7 @@ namespace WalkerProcessor {
                                                         if (!check_special_too_high_message())
                                                         {
                                                             std::string ranged_weapon_advice = "";
-                                                            if (interaction_after_walk == 3)
+                                                            if (interaction_after_walk == 3 && get_weapon_range(get_current_active_hand()) < 4000.0f)
                                                                 ranged_weapon_advice = "Or equip some weapons/magic with longer range";
                                                             send_random_context(MiscThings::insert_object_into_list_and_get_info(target_ref) + " is too high! Looking at it instead. " + ranged_weapon_advice, false);
                                                         }

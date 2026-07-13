@@ -5028,6 +5028,16 @@ namespace MiscThings {
         if (!quest)
             return nullptr;
 
+        if (quest->formID == 0x1da3c) //riften steal horse
+        {
+            auto horse = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x97e1f);
+            if (target == horse && MiscThings::is_on_horse())
+            {
+                auto the_guy = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x19dca);
+                if (the_guy)
+                    return the_guy;
+            }
+        }
 
         if (quest->formID == 0x7d949) //namira quest (maybe intro only)
         {
