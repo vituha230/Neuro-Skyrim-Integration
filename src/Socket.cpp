@@ -28,6 +28,7 @@ struct action_status {
     bool registered;
     bool dont_autoregister;
     float autoregister_cooldown;
+    int cooldown_charges_used;
 };
 
 std::map<std::string, action_status> actions_status{};
@@ -52,7 +53,13 @@ bool is_action_on_cooldown(std::string action_name)
 
     if (action_status != actions_status.end())
     {
-        return action_status->second.dont_autoregister;
+        if (action_name == Capabilities::ExploreWorld::Name)
+        {
+            return action_status->second.cooldown_charges_used >= 3;
+        }
+        else
+            return action_status->second.dont_autoregister;
+        
     }
 
     return false;
@@ -64,10 +71,30 @@ void neuro::set_action_cooldown(std::string action_name, float cooldown)
 
     if (action_status != actions_status.end())
     {
-        action_status->second.dont_autoregister = true;
-        action_status->second.autoregister_cooldown = cooldown;
+        if (action_name == Capabilities::ExploreWorld::Name)
+        {
+            if (action_status->second.cooldown_charges_used < 3)
+            {
+                action_status->second.cooldown_charges_used++;
+                action_status->second.autoregister_cooldown = cooldown;
+                action_status->second.dont_autoregister = false;
+            }
+            else
+            {
+                action_status->second.cooldown_charges_used = 3;
+                action_status->second.autoregister_cooldown = cooldown;
+                action_status->second.dont_autoregister = true;
+            }
+        }
+        else
+        {
+            action_status->second.dont_autoregister = true;
+            action_status->second.autoregister_cooldown = cooldown;
+        }
+
     }
 }
+
 
 void neuro::clear_action_cooldown(std::string action_name)
 {
@@ -75,9 +102,41 @@ void neuro::clear_action_cooldown(std::string action_name)
 
     if (action_status != actions_status.end())
     {
-        action_status->second.dont_autoregister = false;
-        action_status->second.autoregister_cooldown = 0.0f;
+        if (action_name == Capabilities::ExploreWorld::Name)
+        {
+            if (action_status->second.cooldown_charges_used > 0)
+            {
+                action_status->second.cooldown_charges_used--;
+                action_status->second.dont_autoregister = false;
+
+                if (action_status->second.cooldown_charges_used > 0)
+                {
+                    action_status->second.autoregister_cooldown = 60.0f;
+                }
+            }
+            else
+            {
+                action_status->second.cooldown_charges_used = 0;
+                action_status->second.dont_autoregister = false;
+                action_status->second.autoregister_cooldown = 0.0f;
+            }
+        }
+        else
+        {
+            action_status->second.dont_autoregister = false;
+            action_status->second.autoregister_cooldown = 0.0f;
+        }
     }
+}
+
+
+int neuro::get_action_cooldown_charges_used(std::string action_name)
+{
+    auto action_status = actions_status.find(action_name);
+    if (action_status != actions_status.end())
+        return action_status->second.cooldown_charges_used;
+
+    return 0;
 }
 
 
@@ -1210,7 +1269,7 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
 
     for (auto& action_registered : actions_status)
     {
-        if (action_registered.second.dont_autoregister)
+        if (action_registered.second.dont_autoregister || action_registered.second.cooldown_charges_used > 0)
         {
             action_registered.second.autoregister_cooldown -= dtime;
 

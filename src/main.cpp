@@ -707,6 +707,15 @@ void clear_explore_cooldown()
     neuro::clear_action_cooldown(action_name);
 }
 
+int get_explore_cooldown_charges()
+{
+    std::string action_name = Capabilities::ExploreWorld::Name;
+
+    return neuro::get_action_cooldown_charges_used(action_name);
+}
+
+
+
 void put_map_on_cooldown(float cooldown)
 {
     std::string action_name = Capabilities::OpenMap::Name;

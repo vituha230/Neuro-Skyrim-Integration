@@ -736,10 +736,11 @@ namespace neuro {
 
     bool get_action_status(std::string action_name);
     bool is_something_registered();
+    
 
     void set_action_cooldown(std::string action_name, float cooldown);
     void clear_action_cooldown(std::string action_name);
-
+    int get_action_cooldown_charges_used(std::string action_name);
 }
 
 

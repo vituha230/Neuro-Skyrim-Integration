@@ -1644,7 +1644,7 @@ namespace WalkerProcessor {
                                 reset_explore_mode_start_range();
                                 if (!explore_mode_notified)
                                 {
-                                    send_random_context("[You found a direction to explore, and started walking", false);
+                                    send_random_context("[You found a direction to explore, and started walking", true);
                                     explore_mode_notified = true;
                                 }
 
@@ -6604,8 +6604,10 @@ namespace WalkerProcessor {
         }
 
 
-        put_explore_on_cooldown(30.0f);
-        unregister_explore_action();
+        put_explore_on_cooldown(60.0f);
+
+        if (get_explore_cooldown_charges() >= 3)
+            unregister_explore_action();
 
         right_attack_cancel();
         left_attack_cancel();
@@ -13341,7 +13343,7 @@ namespace WalkerProcessor {
                 {
                 case 1:
                 {
-                    if (target_ref->IsInventoryObject())
+                    if (target_ref && target_ref->IsInventoryObject())
                         result = "Picked up " + MiscThings::insert_object_into_list_and_get_info(target_ref);
                     else
                         result += " and interacted";// with this object";

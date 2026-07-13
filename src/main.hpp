@@ -18,6 +18,8 @@
 float get_stealthmeter();
 
 
+int get_explore_cooldown_charges();
+
 long long get_last_load_timestamp();
 
 void put_explore_on_cooldown(float cooldown);
