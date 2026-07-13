@@ -4044,7 +4044,7 @@ namespace WalkerProcessor {
                             {
                                 auto torso_pos = target_actor->currentProcess->middleHigh->torsoNode->world.translate;
 
-                                if (MiscThings::is_dragon(target))
+                                if (MiscThings::is_dragon(target) && MiscThings::is_flying(target))
                                 {
                                     torso_pos = target->GetPosition();
                                     torso_pos.z += 190.0f;
@@ -4052,9 +4052,6 @@ namespace WalkerProcessor {
 
 
                                 auto lookat_location = torso_pos;
-
-
-                                    
 
 
                                 auto player_temp_pos = player->GetPosition();
@@ -4149,12 +4146,17 @@ namespace WalkerProcessor {
                 */
 
                 auto delta_target_pos = path_point_pos - last_target_pos;
-                delta_target_pos.z = 0.0f;
+
+                if (!MiscThings::is_flying(target))
+                    delta_target_pos.z = 0.0f;
 
                 auto pos_dif_copy = pos_dif;
-                pos_dif_copy.z = 0.0f;
+
+                if (!MiscThings::is_flying(target))
+                    pos_dif_copy.z = 0.0f;
 
                 RE::NiPoint3 u;
+                RE::NiPoint3 a;
 
                 //RE::NiPoint3 v = pos_dif / pos_dif.Length() *arc_coef3;
                 if (last_u_valid)
@@ -4170,18 +4172,24 @@ namespace WalkerProcessor {
 
                     auto u_new = delta_target_pos / dtime_better; //speed in current frame
                    
+
+                    //a = (u_new - last_u) / dtime_better;
+
+
                     //u = 0.75f * (u_new + last_u);
 
-                    u = u_new;
+                    u = 0.33f * u_new + last_u;
 
                     //u *= 1.2f;
 
                     //u = u_new;
                     last_u = u_new;
 
+
                 }
                 else
                 {
+                    a = RE::NiPoint3::Zero();
                     u = (delta_target_pos / dtime_better);
                     last_u = u;
                     last_u_valid = true;
@@ -4196,8 +4204,16 @@ namespace WalkerProcessor {
                     projectile_speed = 3500.0f;
                 }
 
+                //pos_dif - vector from target point to camera
 
-                RE::NiPoint3 speed_shift = u * (pos_dif_copy.Length() / projectile_speed); //something is wrong. gives too little on low speeds and too much on high speeds (maybe illusion)
+                //estimate projectile fly time
+                float t = pos_dif_copy.Length() / projectile_speed;
+
+                                                                
+                RE::NiPoint3 speed_shift = u * t;// +a * t * t; //something is wrong. gives too little on low speeds and too much on high speeds (maybe illusion)
+
+                if (speed_shift.Length() > 2000.0f)
+                    speed_shift = speed_shift * (2000.0f / speed_shift.Length());
 
                 if (projectile_speed == 0.0f)
                     speed_shift = { 0.0f, 0.0f, 0.0f };
@@ -4205,14 +4221,18 @@ namespace WalkerProcessor {
                     //arc_coef3 * delta_target_pos * distance;
 
                 //Hooks::add_debug_line(std::to_string(speed_shift.x) + ", " + std::to_string(speed_shift.y) + ", " + std::to_string(speed_shift.z), true);
-               
+                //Hooks::add_debug_line(std::to_string(u.x) + ", " + std::to_string(u.y) + ", " + std::to_string(u.z), true);
+                //Hooks::add_debug_line(std::to_string(a.x) + ", " + std::to_string(a.y) + ", " + std::to_string(a.z), true);
 
+
+                if (speed_koef < 2.0f)
+                    speed_koef = 2.0f;
 
 
                 target_center += speed_shift;
             }
 
-            Hooks::add_debug_line(std::to_string(dtime_better), true);
+            //Hooks::add_debug_line(std::to_string(dtime_better), true);
 
 
             //auto distance = pos_dif.Length();
@@ -4230,6 +4250,12 @@ namespace WalkerProcessor {
 
 
             target_center.z += arc_shift;
+
+
+
+            //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+            //DebugAPI_IMPL::DrawDebug::draw_line(path_point_pos, target_center);
+            //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
 
 
             //target_center.z -= 7.77f;
@@ -10649,8 +10675,22 @@ namespace WalkerProcessor {
                     auto weapon = (RE::TESObjectWEAP*)hand_contents;
                     if (!weapon->IsMelee())
                     {
-                        //bow
-                        return 2759.74896969697;
+                        auto worn_ammo = player->GetCurrentAmmo();
+                        if (worn_ammo)
+                        {
+                            auto projectile = worn_ammo->data.projectile;
+
+                            if (projectile)
+                            {
+                                auto speed = projectile->data.speed;
+                                return speed;
+                            }
+
+                        }
+
+                        //bow default
+                        return 3500.0f;
+                        //return 2759.74896969697;
                     }
                 }
 
@@ -10921,7 +10961,7 @@ namespace WalkerProcessor {
         if (shout_mode || player->GetDistance(target_ref) < 400.0f)
         {
             //Hooks::add_debug_line("ATTACK_TARGET lock_camera", true);
-            lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
+            lock_camera_onto_target(target_ref, dtime, 1.5f, speed_correction);
         }
             
 
