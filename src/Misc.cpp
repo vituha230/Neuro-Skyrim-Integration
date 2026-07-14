@@ -8026,7 +8026,7 @@ namespace MiscThings {
 
                             if (base_type == RE::FormType::Container)
                             {
-                                if (!MiscThings::is_object_in_the_list(a_ref))
+                                //if (!MiscThings::is_object_in_the_list(a_ref))
                                 {
                                     //now need to filter out treasure chests...
 

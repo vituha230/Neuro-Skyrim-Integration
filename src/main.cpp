@@ -16,8 +16,8 @@
 
 
 //TODO dragonborn dlc
+// 1st book apocrypha polish (walk through passages along their bones)
 // 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1 
-// 1st book apocrypha
 // next quests (talk to skaal)
 
 
