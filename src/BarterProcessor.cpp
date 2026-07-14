@@ -13,6 +13,9 @@
 namespace BarterProcessor {
 
    
+    float preconfirm_timer = 0.0f;
+    float preconfirm_timer2 = 0.0f;
+
 
     bool vendor_not_enough_gold_request_sent = false;
     bool vendor_not_enough_gold_choice_valid = false;
@@ -205,6 +208,9 @@ namespace BarterProcessor {
 
     bool barter_reset_categories_selection()
     {
+        preconfirm_timer = 0.0f;
+        preconfirm_timer2 = 0.0f;
+
         last_cursor_move = 0;
         missing_category_detected = false;
         categories_list.clear();
@@ -235,6 +241,10 @@ namespace BarterProcessor {
 
     bool barter_reset_items_selection()
     {
+        preconfirm_timer = 0.0f;
+        preconfirm_timer2 = 0.0f;
+
+
         last_cursor_move = 0;
         missing_item_detected = false;
         items_list.clear();
@@ -280,6 +290,9 @@ namespace BarterProcessor {
     {
         barter_reset_categories_selection();
         barter_reset_items_selection();
+
+        preconfirm_timer = 0.0f;
+        preconfirm_timer2 = 0.0f;
 
         barter_type_defined = false;
         barter_type_request_sent = false;
@@ -2448,24 +2461,32 @@ namespace BarterProcessor {
 
                                                         if (!item_confirmed) //TODO: replace with actual check
                                                         {
-                                                            if (detect_item_barter_result(false, false))
+                                                            if (preconfirm_timer > 0.3f)
                                                             {
-                                                                item_confirming = false;
-                                                                item_confirmed = true;
-                                                                //RE::DebugMessageBox("SOLD");//this works but it gives message box with OK button. not what i need
+                                                                if (detect_item_barter_result(false, false))
+                                                                {
+                                                                    item_confirming = false;
+                                                                    item_confirmed = true;
+                                                                    //RE::DebugMessageBox("SOLD");//this works but it gives message box with OK button. not what i need
+                                                                }
+                                                                else
+                                                                {
+                                                                    //leftclick();
+                                                                    old_item_list_size = std::size(items_list);
+                                                                    confirm();
+                                                                    item_confirming = true;
+                                                                    //set_universal_block(0.3f);
+                                                                }
                                                             }
                                                             else
-                                                            {
-                                                                //leftclick();
-                                                                old_item_list_size = std::size(items_list);
-                                                                confirm();
-                                                                item_confirming = true;
-                                                                //set_universal_block(0.3f);
-                                                            }
+                                                                preconfirm_timer += dtime;
+
 
                                                         }
                                                         else
                                                         {
+                                                            preconfirm_timer = 0.0f;
+
                                                             if (quantity_slider_active())
                                                             {
                                                                 if (!slider_request_sent)
@@ -2495,20 +2516,26 @@ namespace BarterProcessor {
 
                                                                             if (!slider_confirmed)
                                                                             {
-                                                                                if (detect_item_barter_result(true, false))
+                                                                                if (preconfirm_timer2 > 0.3f)
                                                                                 {
-                                                                                    slider_confirming = false;
-                                                                                    slider_confirmed = true;
+                                                                                    if (detect_item_barter_result(true, false))
+                                                                                    {
+                                                                                        slider_confirming = false;
+                                                                                        slider_confirmed = true;
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        confirm();
+                                                                                        slider_confirming = true;
+                                                                                    }
                                                                                 }
                                                                                 else
-                                                                                {
-                                                                                    confirm();
-                                                                                    slider_confirming = true;
-                                                                                }
+                                                                                    preconfirm_timer2 += dtime;
+
                                                                             }
                                                                             else
                                                                             {
-
+                                                                                preconfirm_timer2 = 0.0f;
 
                                                                                 if (std::string test = vendor_not_enough_gold_message(); test != "")
                                                                                 {
@@ -2705,7 +2732,7 @@ namespace BarterProcessor {
 
 
 
-
+    /*
     void processor_old(float dtime)
     {
 
@@ -2910,24 +2937,31 @@ namespace BarterProcessor {
 
                                                         if (!item_confirmed) //TODO: replace with actual check
                                                         {
-                                                            if (detect_item_barter_result(false, false))
+                                                            if (preconfirm_timer > 0.5f)
                                                             {
-                                                                item_confirming = false;
-                                                                item_confirmed = true;
-                                                                //RE::DebugMessageBox("SOLD");//this works but it gives message box with OK button. not what i need
+                                                                if (detect_item_barter_result(false, false))
+                                                                {
+                                                                    item_confirming = false;
+                                                                    item_confirmed = true;
+                                                                    //RE::DebugMessageBox("SOLD");//this works but it gives message box with OK button. not what i need
+                                                                }
+                                                                else
+                                                                {
+                                                                    //leftclick();
+                                                                    old_item_list_size = std::size(items_list);
+                                                                    confirm();
+                                                                    item_confirming = true;
+                                                                    set_universal_block(0.3f);
+                                                                }
                                                             }
                                                             else
-                                                            {
-                                                                //leftclick();
-                                                                old_item_list_size = std::size(items_list);
-                                                                confirm();
-                                                                item_confirming = true;
-                                                                set_universal_block(0.3f);
-                                                            }
+                                                                preconfirm_timer += dtime;
 
                                                         }
                                                         else
                                                         {
+                                                            preconfirm_timer = 0.0f;
+
                                                             if (quantity_slider_active())
                                                             {
                                                                 if (!slider_request_sent)
@@ -3161,11 +3195,18 @@ namespace BarterProcessor {
 
 
     }
+    */
+
+
 }
 
 
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//debug zone
 
 
 
