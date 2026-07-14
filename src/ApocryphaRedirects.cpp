@@ -2539,7 +2539,7 @@ namespace Apocrypha {
                 return result;
 
 
-            if (inside_book1_zone1(target))
+            if (inside_book1_zone1(target))// && target->formID != 0x40339a9)
             {
                 result.action = 1; //initiate
                 result.dont_save_interaction = false;
@@ -2578,12 +2578,6 @@ namespace Apocrypha {
                     return result;
                 }
             }
-
-
-
-
-
-
         }
 
 
@@ -2607,22 +2601,98 @@ namespace Apocrypha {
 
         auto target_pos = target->GetPosition();
 
-        if (!inside_book1_zone1(target))
+
+
+        RE::TESObjectREFR* exit_book_back = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403137f);
+        RE::TESObjectREFR* book_pickup1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40313c8);
+        RE::TESObjectREFR* gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40313c5);
+        RE::TESObjectREFR* scrye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4031333);
+        RE::TESObjectREFR* passage = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40312ee);
+        RE::TESObjectREFR* gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403363f);
+        RE::TESObjectREFR* book_pickup2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4033641);
+        RE::TESObjectREFR* exit_book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403143c);
+
+
+        if (!exit_book_back || !book_pickup1 || !gate1 || !scrye || !passage || !gate2 || !book_pickup2 || !exit_book)
+            return result;
+
+
+        if (inside_book1_zone2(target) || inside_book1_zone1(target))// && target->formID != 0x4031363)
         {
-            RE::TESObjectREFR* exit_book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40339a9);
-
-            if (!exit_book)
-                return result;
-
             result.action = 1; //initiate
             result.dont_save_interaction = false;
             result.dont_save_target = false;
             result.custom_path = {};
-            result.target = exit_book;
+            result.target = exit_book_back;
             result.interaction = 1;
             //result.clear_path = true;
 
             return result;
+        }
+
+
+
+        if (inside_book1_zone3_start(player))
+        {
+            if (MiscThings::two_state_activator_state(passage) != 0)
+            {
+                if (!inside_book1_zone3_start(target))
+                {
+                    if (MiscThings::two_state_activator_state(gate1) != 0)
+                    {
+                        result.action = 1; //initiate
+                        result.dont_save_interaction = false;
+                        result.dont_save_target = false;
+                        result.custom_path = {};
+                        result.target = book_pickup1;
+                        result.interaction = 1;
+                        //result.clear_path = true;
+
+                        return result;
+                    }
+                    else
+                    {
+                        result.action = 1; //initiate
+                        result.dont_save_interaction = false;
+                        result.dont_save_target = false;
+                        result.custom_path = {};
+                        result.target = scrye;
+                        result.interaction = 1;
+                        //result.clear_path = true;
+
+                        return result;
+                    }
+                }
+
+                //else - fall through to normal zone3
+            }
+        }
+
+
+        if (!inside_book1_zone3(target))
+        {
+            if (MiscThings::two_state_activator_state(gate2) != 0)
+            {
+                result.action = 1; //initiate
+                result.dont_save_interaction = false;
+                result.dont_save_target = false;
+                result.custom_path = {};
+                result.target = book_pickup2;
+                result.interaction = 1;
+                //result.clear_path = true;
+                return result;
+            }
+            else
+            {
+                result.action = 1; //initiate
+                result.dont_save_interaction = false;
+                result.dont_save_target = false;
+                result.custom_path = {};
+                result.target = exit_book;
+                result.interaction = 1;
+                //result.clear_path = true;
+                return result;
+            }   
         }
 
 
@@ -2800,6 +2870,7 @@ namespace Apocrypha {
             return book1_zone3(target, current_action, current_apocrypha_id);
         }
 
+        /*
         if (inside_book1_zone4(player))
         {
             int zone = 4;
@@ -2814,7 +2885,7 @@ namespace Apocrypha {
 
             return book1_zone4(target, current_action, current_apocrypha_id);
         }
-
+        */
 
 
 
