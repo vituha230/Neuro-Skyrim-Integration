@@ -342,6 +342,7 @@ namespace Apocrypha {
                     result.dont_save_id = true;
                     result.action = 3;
 
+                    dummy->MoveTo(player);
                     MiscThings::SetPosition_moveto(dummy, bridge2_end);
 
                     result.target = dummy;
@@ -359,6 +360,7 @@ namespace Apocrypha {
                     result.dont_save_id = true;
                     result.action = 3;
 
+                    dummy->MoveTo(player);
                     MiscThings::SetPosition_moveto(dummy, bridge2_end);
 
                     result.target = dummy;
@@ -379,6 +381,7 @@ namespace Apocrypha {
                         ApocryphaCustomPaths::template_path.push_back(player_pos);
                         ApocryphaCustomPaths::template_path.push_back(bridge2_start);
 
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, bridge2_start);
 
                         check_custom_path_end = true;
@@ -411,6 +414,7 @@ namespace Apocrypha {
                     result.dont_save_id = true;
                     result.action = 3;
 
+                    dummy->MoveTo(player);
                     MiscThings::SetPosition_moveto(dummy, island2_edge);
 
                     result.target = dummy;
@@ -433,6 +437,7 @@ namespace Apocrypha {
                         ApocryphaCustomPaths::template_path.push_back(player_pos);
                         ApocryphaCustomPaths::template_path.push_back(island2_edge);
 
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, island2_edge);
 
                         result.custom_path = ApocryphaCustomPaths::template_path;
@@ -593,6 +598,7 @@ namespace Apocrypha {
                                 ApocryphaCustomPaths::template_path.push_back(player_pos);
                                 ApocryphaCustomPaths::template_path.push_back(pass2_tip_pos);
 
+                                dummy->MoveTo(player);
                                 MiscThings::SetPosition_moveto(dummy, island2_edge);
 
                                 result.custom_path = ApocryphaCustomPaths::template_path;
@@ -622,6 +628,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(player_pos);
                                     ApocryphaCustomPaths::template_path.push_back(pass2_tip_pos);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, island2_edge);
 
                                     check_custom_path_end = true;
@@ -648,6 +655,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(player_pos);
                                     ApocryphaCustomPaths::template_path.push_back(bridge2_start);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, bridge2_start);
 
                                     check_custom_path_end = true;
@@ -705,6 +713,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(player_pos);
                                     ApocryphaCustomPaths::template_path.push_back(island2_edge);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, bridge2_start);
 
                                     result.custom_path = ApocryphaCustomPaths::template_path;
@@ -732,6 +741,7 @@ namespace Apocrypha {
                                         ApocryphaCustomPaths::template_path.push_back(player_pos);
                                         ApocryphaCustomPaths::template_path.push_back(pass2_tip_pos);
 
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, pass2_tip_pos);
 
                                         result.custom_path = ApocryphaCustomPaths::template_path;
@@ -749,6 +759,7 @@ namespace Apocrypha {
                                     }
                                     else
                                     {
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, pass2_tip_pos);
                                         result.action = 3;
                                         result.dont_save_interaction = false;
@@ -809,6 +820,7 @@ namespace Apocrypha {
                                     }
                                     else
                                     {
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, pass2_tip_pos);
 
 
@@ -1212,6 +1224,7 @@ namespace Apocrypha {
                     result.dont_save_id = true;
                     result.action = 3;
 
+                    dummy->MoveTo(player);
                     MiscThings::SetPosition_moveto(dummy, bridge_lurker->GetPosition());
 
                     result.target = dummy;
@@ -1262,6 +1275,7 @@ namespace Apocrypha {
                     result.dont_save_id = true;
                     result.action = 3;
 
+                    dummy->MoveTo(player);
                     MiscThings::SetPosition_moveto(dummy, scrye_switch2->GetPosition());
 
                     result.target = dummy;
@@ -1294,6 +1308,7 @@ namespace Apocrypha {
                     ApocryphaCustomPaths::template_path.push_back(player_pos);
                     ApocryphaCustomPaths::template_path.push_back(passage_center);
 
+                    dummy->MoveTo(player);
                     MiscThings::SetPosition_moveto(dummy, passage_center);
 
                     check_custom_path_end = true;
@@ -1332,6 +1347,7 @@ namespace Apocrypha {
                         result.dont_save_id = true;
                         result.action = 3;
 
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, bus_station2);
 
                         result.target = dummy;
@@ -1350,6 +1366,7 @@ namespace Apocrypha {
                         ApocryphaCustomPaths::template_path.push_back(player_pos);
                         ApocryphaCustomPaths::template_path.push_back(bus_station2);
 
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, bus_station2);
 
                         check_custom_path_end = true;
@@ -1372,6 +1389,7 @@ namespace Apocrypha {
                         //result.dont_save_id = true;
                         result.action = 3;
                         result.id = 120;
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, bus_station2);
 
                         result.target = dummy;
@@ -1410,6 +1428,7 @@ namespace Apocrypha {
                         result.dont_save_id = true;
                         result.action = 3;
 
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, bus_station3);
 
                         result.target = dummy;
@@ -1427,6 +1446,8 @@ namespace Apocrypha {
                         ApocryphaCustomPaths::template_path.clear();
                         ApocryphaCustomPaths::template_path.push_back(player_pos);
                         ApocryphaCustomPaths::template_path.push_back(bus_station3);
+
+                        dummy->MoveTo(player);
 
                         MiscThings::SetPosition_moveto(dummy, bus_station3);
 
@@ -1450,6 +1471,8 @@ namespace Apocrypha {
                         //result.dont_save_id = true;
                         result.action = 3;
                         result.id = 130;
+                        dummy->MoveTo(player);
+
                         MiscThings::SetPosition_moveto(dummy, bus_station3);
 
                         result.target = dummy;
@@ -1489,6 +1512,7 @@ namespace Apocrypha {
                         result.dont_save_id = true;
                         result.action = 3;
 
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, bus_station1);
 
                         result.target = dummy;
@@ -1507,6 +1531,7 @@ namespace Apocrypha {
                         ApocryphaCustomPaths::template_path.push_back(player_pos);
                         ApocryphaCustomPaths::template_path.push_back(bus_station1);
 
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, bus_station1);
 
                         check_custom_path_end = true;
@@ -1529,6 +1554,7 @@ namespace Apocrypha {
                         //result.dont_save_id = true;
                         result.action = 3;
                         result.id = 110;
+                        dummy->MoveTo(player);
                         MiscThings::SetPosition_moveto(dummy, bus_station1);
 
                         result.target = dummy;
@@ -1607,6 +1633,7 @@ namespace Apocrypha {
                             ApocryphaCustomPaths::template_path.push_back(bus_station1);
                             ApocryphaCustomPaths::template_path.push_back(passage_tip);
 
+                            dummy->MoveTo(player);
                             MiscThings::SetPosition_moveto(dummy, bus_station1);
 
                             result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1637,6 +1664,7 @@ namespace Apocrypha {
                                 ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                 ApocryphaCustomPaths::template_path.push_back(passage_tip2);
 
+                                dummy->MoveTo(player);
                                 MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                 result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1656,6 +1684,7 @@ namespace Apocrypha {
                             }
                             else
                             {
+                                dummy->MoveTo(player);
                                 MiscThings::SetPosition_moveto(dummy, passage_tip);
                                 result.action = 3;
                                 result.dont_save_interaction = false;
@@ -1683,6 +1712,7 @@ namespace Apocrypha {
                                 ApocryphaCustomPaths::template_path.push_back(bus_station1);
                                 ApocryphaCustomPaths::template_path.push_back(passage_tip);
 
+                                dummy->MoveTo(player);
                                 MiscThings::SetPosition_moveto(dummy, bus_station1);
 
                                 result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1713,6 +1743,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip2);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                     result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1732,6 +1763,7 @@ namespace Apocrypha {
                                 }
                                 else
                                 {
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, passage_tip);
                                     result.action = 3;
                                     result.dont_save_interaction = false;
@@ -1758,6 +1790,7 @@ namespace Apocrypha {
                                 ApocryphaCustomPaths::template_path.push_back(bus_station1);
                                 ApocryphaCustomPaths::template_path.push_back(passage_tip);
 
+                                dummy->MoveTo(player);
                                 MiscThings::SetPosition_moveto(dummy, bus_station1);
 
                                 result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1788,6 +1821,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip2);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                     result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1807,6 +1841,7 @@ namespace Apocrypha {
                                 }
                                 else
                                 {
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, passage_tip);
                                     result.action = 3;
                                     result.dont_save_interaction = false;
@@ -1839,6 +1874,7 @@ namespace Apocrypha {
                                 ApocryphaCustomPaths::template_path.push_back(player_pos);
                                 ApocryphaCustomPaths::template_path.push_back(bus_station2);
 
+                                dummy->MoveTo(player);
                                 MiscThings::SetPosition_moveto(dummy, bus_station1);
 
                                 result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1869,6 +1905,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip2);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                     result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1888,6 +1925,7 @@ namespace Apocrypha {
                                 }
                                 else
                                 {
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, passage_tip);
                                     result.action = 3;
                                     result.dont_save_interaction = false;
@@ -1915,6 +1953,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(bus_station2);
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, bus_station2);
 
                                     result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1944,7 +1983,8 @@ namespace Apocrypha {
                                         ApocryphaCustomPaths::template_path.push_back(player_pos);
                                         ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                         ApocryphaCustomPaths::template_path.push_back(passage_tip2);
-
+                                        
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                         result.custom_path = ApocryphaCustomPaths::template_path;
@@ -1964,6 +2004,7 @@ namespace Apocrypha {
                                     }
                                     else
                                     {
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, passage_tip);
                                         result.action = 3;
                                         result.dont_save_interaction = false;
@@ -1990,6 +2031,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(bus_station2);
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, bus_station2);
 
                                     result.custom_path = ApocryphaCustomPaths::template_path;
@@ -2020,6 +2062,7 @@ namespace Apocrypha {
                                         ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                         ApocryphaCustomPaths::template_path.push_back(passage_tip2);
 
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                         result.custom_path = ApocryphaCustomPaths::template_path;
@@ -2039,6 +2082,7 @@ namespace Apocrypha {
                                     }
                                     else
                                     {
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, passage_tip);
                                         result.action = 3;
                                         result.dont_save_interaction = false;
@@ -2071,6 +2115,7 @@ namespace Apocrypha {
                                     ApocryphaCustomPaths::template_path.push_back(bus_station3);
                                     ApocryphaCustomPaths::template_path.push_back(passage_tip);
 
+                                    dummy->MoveTo(player);
                                     MiscThings::SetPosition_moveto(dummy, bus_station3);
 
                                     result.custom_path = ApocryphaCustomPaths::template_path;
@@ -2101,6 +2146,7 @@ namespace Apocrypha {
                                         ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                         ApocryphaCustomPaths::template_path.push_back(passage_tip2);
 
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                         result.custom_path = ApocryphaCustomPaths::template_path;
@@ -2120,6 +2166,7 @@ namespace Apocrypha {
                                     }
                                     else
                                     {
+                                        dummy->MoveTo(player);
                                         MiscThings::SetPosition_moveto(dummy, passage_tip);
                                         result.action = 3;
                                         result.dont_save_interaction = false;
@@ -2177,6 +2224,7 @@ namespace Apocrypha {
                                             ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                             ApocryphaCustomPaths::template_path.push_back(passage_tip2);
 
+                                            dummy->MoveTo(player);
                                             MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                             result.custom_path = ApocryphaCustomPaths::template_path;
@@ -2252,6 +2300,7 @@ namespace Apocrypha {
                                             ApocryphaCustomPaths::template_path.push_back(passage_tip);
                                             ApocryphaCustomPaths::template_path.push_back(passage_tip2);
 
+                                            dummy->MoveTo(player);
                                             MiscThings::SetPosition_moveto(dummy, passage_tip);
 
                                             result.custom_path = ApocryphaCustomPaths::template_path;
@@ -2271,6 +2320,7 @@ namespace Apocrypha {
                                         }
                                         else
                                         {
+                                            dummy->MoveTo(player);
                                             MiscThings::SetPosition_moveto(dummy, passage_tip);
                                             result.action = 3;
                                             result.dont_save_interaction = false;
@@ -2371,6 +2421,8 @@ namespace Apocrypha {
                                                         {
                                                             RE::NiPoint3 stand_here = { 8387.55176, 7848.67188, -399.649994 };
 
+
+                                                            dummy->MoveTo(player);
                                                             MiscThings::SetPosition_moveto(dummy, stand_here);
 
                                                             result.action = 1; //initiate
@@ -2716,22 +2768,167 @@ namespace Apocrypha {
 
         auto target_pos = target->GetPosition();
 
-        if (!inside_book1_zone1(target))
+        if (!inside_book1_zone4(target))
         {
-            RE::TESObjectREFR* exit_book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40339a9);
+            RE::TESObjectREFR* exit_book_back = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4033645);
+            RE::TESObjectREFR* bending_passage1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b1d4);
+            RE::TESObjectREFR* shrinking_passage1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b1c8);
+            RE::TESObjectREFR* shrinking_passage2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b1c9);
+            RE::TESObjectREFR* pickup_book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b0fc);
+            RE::TESObjectREFR* shrinking_passage3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b2e6);
+            RE::TESObjectREFR* bending_passage2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b2e2);
+            RE::TESObjectREFR* scrye1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b32a);
+            RE::TESObjectREFR* gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b290);
+            RE::TESObjectREFR* scrye2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403b330);
+            RE::TESObjectREFR* exit_book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40335fe);
 
-            if (!exit_book)
+            if (!exit_book_back || !bending_passage1 || !shrinking_passage1 || !shrinking_passage2 || !pickup_book || !shrinking_passage3 || !bending_passage2 || !scrye1 || !gate || !scrye2 || !exit_book)
                 return result;
 
-            result.action = 1; //initiate
-            result.dont_save_interaction = false;
-            result.dont_save_target = false;
-            result.custom_path = {};
-            result.target = exit_book;
-            result.interaction = 1;
-            //result.clear_path = true;
 
-            return result;
+            if (inside_book1_zone1(target) || inside_book1_zone2(target) || inside_book1_zone3(target))
+            {
+                result.action = 1; //initiate
+                result.dont_save_interaction = false;
+                result.dont_save_target = false;
+                result.custom_path = {};
+                result.target = exit_book_back;
+                result.interaction = 1;
+                //result.clear_path = true;
+
+                return result;
+            }
+
+            if (MiscThings::two_state_activator_state(bending_passage1) != 2)
+            {
+                if (MiscThings::two_state_activator_state(shrinking_passage1) != 1)
+                {
+                    RE::NiPoint3 stand_here = { -8595.18262, -12416.6553, -920.909912 };
+
+                    dummy->MoveTo(player);
+                    MiscThings::SetPosition_moveto(dummy, stand_here);
+
+                    result.action = 1; //initiate
+                    result.dont_save_interaction = false;
+                    result.dont_save_target = false;
+                    result.custom_path = {};
+                    result.target = dummy;
+                    result.interaction = 1;
+
+                    activator_to_check = shrinking_passage1;
+
+                    return result;
+                }
+                else
+                {
+                    if (MiscThings::two_state_activator_state(shrinking_passage2) != 1)
+                    {
+                        RE::NiPoint3 stand_here = { -9400.71484, -13247.0088, -920.282532 };
+
+                        dummy->MoveTo(player);
+                        MiscThings::SetPosition_moveto(dummy, stand_here);
+
+                        result.action = 1; //initiate
+                        result.dont_save_interaction = false;
+                        result.dont_save_target = false;
+                        result.custom_path = {};
+                        result.target = dummy;
+                        result.interaction = 1;
+
+                        activator_to_check = shrinking_passage2;
+
+                        return result;
+                    }
+                }
+            }
+            else
+            {
+                //auto pickup_book_pos = pickup_book->GetPosition();
+
+                //RE::NiPoint3 original_pos = { -11771.42, -14012.44, -444.88 };
+
+                if (MiscThings::is_object_valid(pickup_book))
+                {
+                    result.action = 1; //initiate
+                    result.dont_save_interaction = false;
+                    result.dont_save_target = false;
+                    result.custom_path = {};
+                    result.target = pickup_book;
+                    result.interaction = 1;
+                    //result.clear_path = true;
+
+                    return result;
+                }
+                else
+                {
+                    //assume book picked up
+
+                    if (MiscThings::two_state_activator_state(bending_passage2) != 2)
+                    {
+                        if (MiscThings::two_state_activator_state(shrinking_passage3) != 0)
+                        {
+                            RE::NiPoint3 stand_here = { -8551.28320, -16003.9121, -920.45935 };
+
+                            dummy->MoveTo(player);
+                            MiscThings::SetPosition_moveto(dummy, stand_here);
+
+                            result.action = 1; //initiate
+                            result.dont_save_interaction = false;
+                            result.dont_save_target = false;
+                            result.custom_path = {};
+                            result.target = dummy;
+                            result.interaction = 1;
+
+                            activator_to_check = shrinking_passage3;
+
+                            return result;
+                        }
+                        else
+                        {
+                            result.action = 1; //initiate
+                            result.dont_save_interaction = false;
+                            result.dont_save_target = false;
+                            result.custom_path = {};
+                            result.target = scrye1;
+                            result.interaction = 1;
+                            //result.clear_path = true;
+
+                            return result;
+                        }
+                    }
+                    else
+                    {
+                        if (MiscThings::two_state_activator_state(gate) != 0)
+                        {
+                            result.action = 1; //initiate
+                            result.dont_save_interaction = false;
+                            result.dont_save_target = false;
+                            result.custom_path = {};
+                            result.target = scrye2;
+                            result.interaction = 1;
+                            //result.clear_path = true;
+
+                            return result;
+                        }
+                        else
+                        {
+                            result.action = 1; //initiate
+                            result.dont_save_interaction = false;
+                            result.dont_save_target = false;
+                            result.custom_path = {};
+                            result.target = exit_book;
+                            result.interaction = 1;
+                            //result.clear_path = true;
+
+                            return result;
+                        }
+                    }
+                }
+                
+            }
+
+
+
         }
 
 
@@ -2870,7 +3067,7 @@ namespace Apocrypha {
             return book1_zone3(target, current_action, current_apocrypha_id);
         }
 
-        /*
+        
         if (inside_book1_zone4(player))
         {
             int zone = 4;
@@ -2885,7 +3082,7 @@ namespace Apocrypha {
 
             return book1_zone4(target, current_action, current_apocrypha_id);
         }
-        */
+        
 
 
 

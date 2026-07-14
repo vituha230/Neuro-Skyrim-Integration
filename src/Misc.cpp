@@ -10198,42 +10198,30 @@ namespace MiscThings {
         }
 
 
-        object_p = General::Script::GetObject(activator, "DLC2dunBookLevel4BendControl");
+        object_p = General::Script::GetObject(activator, "DLC2Book01BendyHallwayController");
 
         if (object_p)
         {
-            RE::BSFixedString prop_name = "Bending";
 
-            //judging by relative bone positions
+            RE::BSFixedString prop_name = "::currentPosition_var";
 
-            auto the_3d = activator->Get3D();
+            return General::Script::GetVariable<int>(object_p, prop_name);
 
-            if (the_3d)
-            {
-                auto asnode = the_3d->AsNode();
+           
+        }
 
-                //auto temp = niav_recurse(asnode);
-                //auto temp_names = niav_recurse_names(asnode);
 
-                auto branch_1 = asnode->GetObjectByName("bone08");
-                auto branch_2 = asnode->GetObjectByName("ApoendingHallway01");
+        object_p = General::Script::GetObject(activator, "DLC2ApoExtendingHallScript");
 
-                if (branch_1 && branch_2)
-                {
-                    auto branch_1_pos = branch_1->world.translate;
-                    auto branch_2_pos = branch_2->world.translate;
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "::isOpen_var";
 
-                    auto distance = branch_1_pos.GetDistance(branch_2_pos);// / activator->GetScale();
+            if (General::Script::GetVariable<bool>(object_p, prop_name))
+                result = 0;
+            else
+                result = 1;
 
-                    if (distance > 1535.0f)
-                        result = 1;
-                    else
-                        if (distance < 1455.0f)
-                            result = 0;
-                        else
-                            result = 2;
-                }
-            }
         }
 
 
