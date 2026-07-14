@@ -3517,7 +3517,6 @@ namespace Observer {
 												auto door = (RE::TESObjectDOOR*)base_object;
 												std::string model = door->GetModel();
 
-
 												if (model.find("DLC2DwemerWaterGate") != std::string::npos)
 												{
 													std::string name = MiscThings::insert_object_into_list_custom_name("Dwemer Door Seal", a_ref);
@@ -3618,6 +3617,13 @@ namespace Observer {
 
 											if (old_state.action_flags != new_state.action_flags)
 											{
+
+
+												if (a_ref->formID == 0x403a358)
+												{
+													if (activation == 0)
+														result.push_back("The puzzle is solved! New book appeared on the central pedestal");
+												}
 
 
 

@@ -443,6 +443,8 @@ namespace WalkerProcessor {
 
 
     bool was_already_dead = false;
+    bool was_enemy_from_start = false;
+
 
     bool explore_mode = false;
     float min_dist = 3000.0f;
@@ -5325,6 +5327,7 @@ namespace WalkerProcessor {
         runaway_mode = false;
 
         was_already_dead = false;
+        was_enemy_from_start = false;
 
         looking_mode = false;
 
@@ -6282,8 +6285,15 @@ namespace WalkerProcessor {
                         if (MiscThings::raycastable(target_ref, 10000.0f, false))
                             return true;
 
-
-
+                    
+                    if (MiscThings::is_dragon(target_ref) && get_targeted_ref() == target_ref)
+                    {
+                        if (stable_target > 5)
+                            return true;
+                        else
+                            stable_target++;
+                    }
+                        
 
 
                     auto distance = target_pos + MiscThings::get_looking_point_shift(target_ref, false) - player_pos; //experimenting
@@ -7309,6 +7319,9 @@ namespace WalkerProcessor {
 
                     if (interaction_after_walk == 3 && target_ref->IsActor() && target_ref->IsDead())
                         was_already_dead = true;
+
+                    if (interaction_after_walk == 3 && target_ref->IsActor() && MiscThings::is_enemy_to_actor(target_ref))
+                        was_enemy_from_start = true;
                 }
                 else
                     interaction_after_walk = -1;
@@ -8146,7 +8159,7 @@ namespace WalkerProcessor {
                         if (!(MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target)) && !MiscThings::quest_target_is_hidden(quest_entry.quest, quest_entry.objective, quest_entry.target))
                         {
                             best_id = quest_entry.id;
-                            min_distance = quest_entry.estimate_distance;
+                            min_distance = corrected_distance;
                         }
 
                     }
@@ -8162,7 +8175,7 @@ namespace WalkerProcessor {
                         if (corrected_distance < min_distance)
                         {
                             best_id = quest_entry.id;
-                            min_distance = quest_entry.estimate_distance;
+                            min_distance = corrected_distance;
                         }
                     }
                 }
@@ -8619,6 +8632,16 @@ namespace WalkerProcessor {
                                                     reset_walker();
                                                     result.first = false;
                                                     result.second = "[This quest is in Skyrim, but you are in Solstheim. You need to travel to Skyrim first to follow it]";
+                                                    do_delayed_poke();
+                                                    return result;
+                                                }
+
+
+                                                if (Apocrypha::in_apocrypha() && !Apocrypha::in_apocrypha(quests_target_ref))
+                                                {
+                                                    reset_walker();
+                                                    result.first = false;
+                                                    result.second = "[You are in Apocrypha, but the quest target is not here. You need to read a Black Book to exit Apocrypha first]";
                                                     do_delayed_poke();
                                                     return result;
                                                 }
@@ -9408,6 +9431,14 @@ namespace WalkerProcessor {
                                                 }
 
 
+                                                if (Apocrypha::in_apocrypha() && !Apocrypha::in_apocrypha(quests_target_ref))
+                                                {
+                                                    reset_walker();
+                                                    send_random_context("[You are in Apocrypha, but the quest target is not here. You need to read a Black Book to exit Apocrypha first]", false);
+                                                    do_delayed_poke();
+                                                    return true;
+                                                }
+
 
 
                                                 right_attack_cancel();
@@ -9819,6 +9850,9 @@ namespace WalkerProcessor {
 
             if (interaction_after_walk == 3 && target_ref->IsActor() && target_ref->IsDead())
                 was_already_dead = true;
+
+            if (interaction_after_walk == 3 && target_ref->IsActor() && MiscThings::is_enemy_to_actor(target_ref))
+                was_enemy_from_start = true;
 
             auto player = RE::PlayerCharacter::GetSingleton();
             reminder_target_name = MiscThings::insert_object_into_list_and_get_info(target);
@@ -12152,6 +12186,13 @@ namespace WalkerProcessor {
 
 
 
+                bool became_neutral_condition = was_enemy_from_start && !MiscThings::is_enemy_to_actor(target_ref);
+
+                if (became_neutral_condition)
+                {
+                    send_random_context("Enemy stopped fighting", true);
+                    return true;
+                }
 
 
                 if (target_ref->IsActor() && !was_already_dead && !target_ref->IsDisabled())
@@ -13074,6 +13115,7 @@ namespace WalkerProcessor {
                     ignore_alive = MiscThings::is_immortal(target_actor) && cur_health < 2;
                     ignore_alive |= MiscThings::is_wabbajack(!last_attack_action);
 
+                    ignore_alive = !MiscThings::is_enemy_to_actor(target_ref);
                 }
 
                 if (still_alive && !ignore_alive)
@@ -13133,6 +13175,27 @@ namespace WalkerProcessor {
 
 
 
+
+                if (target_ref && target_ref->formID == 0x40313ce) //dlc2 book1 zone5 exit book, which has puzzle
+                {
+                    auto pedestal1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403a358);
+                    auto pedestal2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403a355);
+                    auto pedestal3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403a356);
+                    auto pedestal4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403a357);
+
+                    std::string pedestal1_info = MiscThings::insert_object_into_list_and_get_info(pedestal1);
+                    std::string pedestal2_info = MiscThings::insert_object_into_list_and_get_info(pedestal2);
+                    std::string pedestal3_info = MiscThings::insert_object_into_list_and_get_info(pedestal3);
+                    std::string pedestal4_info = MiscThings::insert_object_into_list_and_get_info(pedestal4);
+
+                    if (target_ref->IsDisabled())
+                    {
+                        send_random_context("You walked up to some pedestal... but it is empty. You see other pedestals around it: \n" + pedestal1_info + "\n" + pedestal2_info + "\n" + pedestal3_info + "\n" + pedestal4_info + "\nYou have collected several strange books on your way here... Looks like its a puzzle", false);
+                        reset_walker();
+                        return "";
+                    }
+
+                }
 
                 
 
@@ -18044,6 +18107,7 @@ namespace WalkerProcessor {
                                                                                             RE::TESObjectREFR* malborne = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x33f46);
                                                                                             RE::TESObjectREFR* tulius = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ba);
 
+
                                                                                             if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun && target_actor != delphine && target_actor != malborne && target_actor != tulius)
                                                                                                 dont_autointerract = true;
                                                                                             
@@ -18108,7 +18172,8 @@ namespace WalkerProcessor {
                                                                                         
 
                                                                                         
-
+                                                                                        if (MiscThings::is_dragon(target_ref))
+                                                                                            dont_autointerract = false;
 
                                                                                         //attempts to not autointerract with npc's that want us to follow them. interaction will stop walking and start (probably useless) dialogue
                                                                                         if (!dont_autointerract)

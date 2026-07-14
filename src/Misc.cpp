@@ -3963,12 +3963,22 @@ namespace MiscThings {
     {
         float result = 0.0f;
 
+
+        
+
+
+
         if (phantom_target)
         {
             auto player = RE::PlayerCharacter::GetSingleton();
 
             if (player)
             {
+                if (Apocrypha::in_apocrypha() && !Apocrypha::in_apocrypha(phantom_target))
+                {
+                    return 0.0f;
+                }
+
                 result = player->GetDistance(phantom_target, false, true);
             }
         }
@@ -4011,6 +4021,12 @@ namespace MiscThings {
                         quest_target_ref_worldspace = quest_target_ref->GetWorldspace();
 
                     bool shortcut_used = false;
+
+
+                    if (Apocrypha::in_apocrypha() && !Apocrypha::in_apocrypha(quest_target_ref))
+                    {
+                        return 0.0f;
+                    }
 
 
                     bool same_worldspace = player_worldspace == quest_target_ref_worldspace;
@@ -10116,6 +10132,21 @@ namespace MiscThings {
 
 
 
+        object_p = General::Script::GetObject(activator, "DLC2Book01PuzzleActivator"); //dlc2 book1 for "puzzle solved!" message
+
+        if (object_p)
+        {
+            std::string current_state = "";
+            current_state = object_p->currentState;
+
+            if (current_state == "complete")
+                return 0;
+            else
+                return 1;
+        }
+
+
+
         object_p = General::Script::GetObject(activator, "DLC2DweRetractableStairScript");
 
         if (object_p)
@@ -11057,6 +11088,100 @@ namespace MiscThings {
         }
 
 
+        object_p = General::Script::GetObject(object, "DLC2Book01PuzzleActivator");
+
+        if (object_p)
+        {
+            std::string prop_name = "::DLC2MQ06PuzzleBook01_var";
+            auto book1 = General::Script::GetVariable<RE::TESObjectREFR*>(object_p, prop_name);
+
+            /*
+            prop_name = "::DLC2MQ06PuzzleBook02_var";
+            auto book2 = General::Script::GetVariable<RE::TESObjectREFR*>(object_p, prop_name);
+
+            prop_name = "::DLC2MQ06PuzzleBook03_var";
+            auto book3 = General::Script::GetVariable<RE::TESObjectREFR*>(object_p, prop_name);
+
+            prop_name = "::DLC2MQ06PuzzleBook04_var";
+            auto book4 = General::Script::GetVariable<RE::TESObjectREFR*>(object_p, prop_name);
+            */
+
+            prop_name = "::BookNumberPlaced_var";
+            auto book_placed = General::Script::GetVariable<int>(object_p, prop_name);
+
+
+            switch (object->formID)
+            {
+            case (0x403a358):
+            {
+                result = "[Jaws]";
+                break;
+            }
+            case (0x403a355):
+            {
+                result = "[Eye]";
+                break;
+            }
+            case (0x403a356):
+            {
+                result = "[Tentacles]";
+                break;
+            }
+            case (0x403a357):
+            {
+                result = "[Crab pincers]";
+                break;
+            }
+            }
+
+
+
+            //if (book1 && book2 && book3 && book4)
+            {
+                switch (book_placed)
+                {
+                case (1):
+                {
+                    result += "[Has book: Boneless Limbs]";
+                    break;
+                }
+
+                case (2):
+                {
+                    result += "[Has book: Delving Pincers]";
+                    break;
+                }
+
+                case (3):
+                {
+                    result += "[Has book: Gnashing Blades]";
+                    break;
+                }
+
+                case (4):
+                {
+                    result += "[Has book: Prying Orbs]";
+                    break;
+                }
+
+                default:
+                {
+                    result += "[Empty]";
+                    break;
+                }
+                }
+            }
+
+
+
+
+
+        }
+
+
+
+
+
         auto saartal_pole_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xde086);
 
 
@@ -11077,6 +11202,7 @@ namespace MiscThings {
         case (0x9f850):
             return "[Big]";
         }
+
 
 
         return result;
@@ -14293,7 +14419,10 @@ namespace MiscThings {
                 this_quest.description = "";
                 this_quest.category = 0;
 
-                this_quest.estimate_distance = player->GetDistance(farkas, false, true);
+                if (Apocrypha::in_apocrypha())
+                    this_quest.estimate_distance = 0.0f;
+                else
+                    this_quest.estimate_distance = player->GetDistance(farkas, false, true);
 
                 this_quest.phantom_objective = true;
 
@@ -14337,7 +14466,10 @@ namespace MiscThings {
                 this_quest.description = "";
                 this_quest.category = 0;
 
-                this_quest.estimate_distance = player->GetDistance(skjor, false, true);
+                if (Apocrypha::in_apocrypha())
+                    this_quest.estimate_distance = 0.0f;
+                else
+                    this_quest.estimate_distance = player->GetDistance(skjor, false, true);
 
                 this_quest.phantom_objective = true;
 
@@ -14397,7 +14529,10 @@ namespace MiscThings {
                         this_quest.description = "";
                         this_quest.category = 0;
 
-                        this_quest.estimate_distance = player->GetDistance(aela, false, true);
+                        if (Apocrypha::in_apocrypha())
+                            this_quest.estimate_distance = 0.0f;
+                        else
+                            this_quest.estimate_distance = player->GetDistance(aela, false, true);
 
                         this_quest.phantom_objective = true;
 

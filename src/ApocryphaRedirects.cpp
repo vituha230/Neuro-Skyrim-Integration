@@ -1125,6 +1125,61 @@ namespace Apocrypha {
     }
 
 
+    bool inside_book1_zone5(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto cell = object->GetParentCell();
+            auto object_pos = object->GetPosition();
+
+            if (cell && cell->formID == 0x403109d)
+            {
+                RE::NiPoint2 a = { -4312.19629, 5625.57861 };
+                RE::NiPoint2 b = { -4312.19629, -1711.14514 };
+                RE::NiPoint2 c = { -11357.4834, -1711.14514 };
+                RE::NiPoint2 d = { -11357.4834, 5625.57861 };
+
+                RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                    if (object_pos.z >= 1700.0f)
+                        return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+    bool inside_book1_zone6(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto worldspace = object->GetWorldspace();
+            auto object_pos = object->GetPosition();
+
+            if (worldspace && worldspace->formID == 0x401c0b2)
+            {
+                RE::NiPoint2 a = { 39724.0664, 22324.3691 };
+                RE::NiPoint2 b = { 39724.0664, 13735.4766 };
+                RE::NiPoint2 c = { 50232.9688, 13735.4766 };
+                RE::NiPoint2 d = { 50232.9688, 22324.3691 };
+
+                RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                    if (object_pos.z < 2100.0f)
+                        return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+
+
+
 
     apocrypha_result book2_zone3(RE::TESObjectREFR* target, int current_action, int current_apocrypha_id)
     {
@@ -2940,6 +2995,152 @@ namespace Apocrypha {
 
 
 
+    apocrypha_result book1_zone5(RE::TESObjectREFR* target, int current_action, int current_apocrypha_id)
+    {
+        apocrypha_result result{};
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+
+        auto dummy = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70c1a25);
+
+        if (!target)
+            return result;
+
+        auto target_pos = target->GetPosition();
+
+        if (!inside_book1_zone5(target))
+        {
+            RE::TESObjectREFR* exit_book_back = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40334b4);
+            RE::TESObjectREFR* exit_book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40313ce);
+
+            RE::TESObjectREFR* pedestal_jaws = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403a358);
+            RE::TESObjectREFR* pedestal_eye = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403a355);
+            RE::TESObjectREFR* pedestal_tentacles = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403a356);
+            RE::TESObjectREFR* pedestal_pincers = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x403a357);
+
+            if (!exit_book_back || !exit_book || !pedestal_jaws || !pedestal_eye || !pedestal_tentacles || !pedestal_pincers)
+                return result;
+
+
+            if (inside_book1_zone1(target) || inside_book1_zone2(target) || inside_book1_zone3(target) || inside_book1_zone4(target))
+            {
+                result.action = 1; //initiate
+                result.dont_save_interaction = false;
+                result.dont_save_target = false;
+                result.custom_path = {};
+                result.target = exit_book_back;
+                result.interaction = 1;
+                //result.clear_path = true;
+
+                return result;
+            }
+            else
+            {
+                //this is for other quests
+
+                result.action = 1; //initiate
+                result.dont_save_interaction = false;
+                result.dont_save_target = false;
+                result.custom_path = {};
+                result.target = exit_book;
+                result.interaction = 1;
+                //result.clear_path = true;
+
+                return result;
+            }
+        }
+
+
+        return result;
+
+    }
+
+
+
+
+    apocrypha_result book1_zone6(RE::TESObjectREFR* target, int current_action, int current_apocrypha_id)
+    {
+        apocrypha_result result{};
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+
+        auto dummy = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70c1a25);
+
+        if (!target)
+            return result;
+
+        auto target_pos = target->GetPosition();
+
+        if (!inside_book1_zone6(target))
+        {
+            RE::TESObjectREFR* exit_book_back = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x402c3e1);
+            RE::TESObjectREFR* exit_book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40334b4);
+
+            RE::TESObjectREFR* word_of_power_zone = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40339c2);
+            RE::TESObjectREFR* word_of_power = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40339ba);
+
+            RE::TESObjectREFR* dragon = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4019acc);
+
+            if (!exit_book_back || !exit_book || !word_of_power_zone || !dragon)
+                return result;
+
+
+            if (inside_book1_zone1(target) || inside_book1_zone2(target) || inside_book1_zone3(target) || inside_book1_zone4(target) || inside_book1_zone5(target))
+            {
+                result.action = 1; //initiate
+                result.dont_save_interaction = false;
+                result.dont_save_target = false;
+                result.custom_path = {};
+                result.target = exit_book_back;
+                result.interaction = 1;
+                //result.clear_path = true;
+
+                return result;
+            }
+            else
+            {
+                //there is nothing else to do here
+                //if ((int)MiscThings::get_word_of_power(word_of_power_zone) > 0)
+                {
+                    result.action = 1; //initiate
+                    result.dont_save_interaction = false;
+                    result.dont_save_target = false;
+                    result.custom_path = {};
+                    result.target = word_of_power;
+                    result.interaction = 1;
+                    //result.clear_path = true;
+
+                    return result;
+                }
+
+
+                /*
+                else
+                {
+                    result.action = 1; //initiate
+                    result.dont_save_interaction = false;
+                    result.dont_save_target = false;
+                    result.custom_path = {};
+                    result.target = dragon;
+                    result.interaction = 1;
+                    //result.clear_path = true;
+
+                    return result;
+                }
+                */
+            }
+        }
+
+
+        return result;
+
+    }
+
+
+
+
 
 
     int last_zone = 0;
@@ -3083,6 +3284,38 @@ namespace Apocrypha {
             return book1_zone4(target, current_action, current_apocrypha_id);
         }
         
+
+        if (inside_book1_zone5(player))
+        {
+            int zone = 5;
+            if (last_zone != zone && last_zone != 0)
+            {
+                last_zone = zone;
+                result.action = -888;
+                return result;
+            }
+            else
+                last_zone = zone;
+
+            return book1_zone5(target, current_action, current_apocrypha_id);
+        }
+
+
+        if (inside_book1_zone6(player))
+        {
+            int zone = 6;
+            if (last_zone != zone && last_zone != 0)
+            {
+                last_zone = zone;
+                result.action = -888;
+                return result;
+            }
+            else
+                last_zone = zone;
+
+            return book1_zone6(target, current_action, current_apocrypha_id);
+        }
+
 
 
 
