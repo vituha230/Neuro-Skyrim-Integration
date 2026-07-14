@@ -1799,6 +1799,9 @@ namespace MiscThings {
             case (0x7526c): //solitude lighthouse ship robbery fire
                 return 300.0f;
 
+            case (0x4033641): //apocrypha book1 zone3 pickup_book2 
+                return 300.0f;
+
             case (0x1b132): //wulfhart in prison for windhelm investigation
             {
                 if (target->parentCell && target->parentCell->formID == 0x1677a)

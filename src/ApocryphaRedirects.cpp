@@ -869,6 +869,20 @@ namespace Apocrypha {
 
 
 
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
     bool inside_book2_zone3_segment2_top(RE::NiPoint3 point)
     {
         if (point.z < -439.0f || point.z > 600.0f)
@@ -970,6 +984,34 @@ namespace Apocrypha {
         else
             return false;
     }
+
+
+
+
+    bool inside_book1_zone1(RE::TESObjectREFR* object)
+    {
+        if (object)
+        {
+            auto worldspace = object->GetWorldspace();
+            auto object_pos = object->GetPosition();
+
+            if (worldspace && worldspace->formID == 0x401c0b2)
+            {
+                RE::NiPoint2 a = { 5793.20264, 5111.23926 };
+                RE::NiPoint2 b = { 5793.20264, -1604.54480 };
+                RE::NiPoint2 c = { -1448.03699, -1604.54480 };
+                RE::NiPoint2 d = { -1448.03699, 5111.23926 };
+
+                RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                    if (object_pos.z < 2100.0f)
+                        return true;
+            }
+        }
+
+        return false;
+    }
+
 
 
 
@@ -2322,22 +2364,6 @@ namespace Apocrypha {
                 }
 
 
-
-
-
-
-                
-
-
-
-
-                
-
-
-
-
-
-
             }
         }
 
@@ -2347,6 +2373,47 @@ namespace Apocrypha {
 
     }
 
+
+
+
+
+
+    apocrypha_result book1_zone1(RE::TESObjectREFR* target, int current_action, int current_apocrypha_id)
+    {
+        apocrypha_result result{};
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        auto player_pos = player->GetPosition();
+
+        auto dummy = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70c1a25);
+
+        if (!target)
+            return result;
+
+        auto target_pos = target->GetPosition();
+
+        if (!inside_book1_zone1(target))
+        {
+            RE::TESObjectREFR* exit_book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x40339a9);
+
+            if (!exit_book)
+                return result;
+
+            result.action = 1; //initiate
+            result.dont_save_interaction = false;
+            result.dont_save_target = false;
+            result.custom_path = {};
+            result.target = exit_book;
+            result.interaction = 1;
+            //result.clear_path = true;
+
+            return result;
+        }
+
+
+        return result;
+
+    }
 
 
 
@@ -2382,6 +2449,8 @@ namespace Apocrypha {
         //detect where we are and give redirections accordingly
         auto player_pos = player->GetPosition();
 
+
+        //book2
         if (parent_cell && parent_cell->formID == 0x401ede2)
         {
             int zone = 0;
@@ -2394,6 +2463,9 @@ namespace Apocrypha {
                     result.action = -888;
                     return result;
                 }
+                else
+                    last_zone = zone;
+
                 return book2_zone1(target, current_action, current_apocrypha_id);
             }
 
@@ -2406,6 +2478,8 @@ namespace Apocrypha {
                     result.action = -888;
                     return result;
                 }
+                else
+                    last_zone = zone;
 
                 return book2_zone2(target, current_action, current_apocrypha_id);
             }
@@ -2420,13 +2494,33 @@ namespace Apocrypha {
                     result.action = -888;
                     return result;
                 }
+                else
+                    last_zone = zone;
 
                 return book2_zone3(target, current_action, current_apocrypha_id);
-            }
-
-                
+            }  
         }
             
+        //book1
+
+        if (inside_book1_zone1(player))
+        {
+            int zone = 1;
+            if (last_zone != zone && last_zone != 0)
+            {
+                last_zone = zone;
+                result.action = -888;
+                return result;
+            }
+            else
+                last_zone = zone;
+
+            return book1_zone1(target, current_action, current_apocrypha_id);
+        }
+
+
+
+
 
         return result;
     }
