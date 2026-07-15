@@ -9337,6 +9337,13 @@ namespace MiscThings {
             }
 
 
+            if (model.find("CasSmHallFirePlaceEx01") != std::string::npos)
+            {
+                std::string name = MiscThings::insert_object_into_list_custom_name("Secret Castle Wall Door", a_ref);
+
+                result = name;
+            }
+
             if (model.find("NorRotatingDoor01") != std::string::npos)
             {
                 std::string name = MiscThings::insert_object_into_list_custom_name("Rotating Stone Door", a_ref);
