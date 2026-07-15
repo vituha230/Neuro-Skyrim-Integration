@@ -773,6 +773,39 @@ namespace MiscThings {
 
 
 
+    bool inside_soulcairn_floating_tower(RE::TESObjectREFR* object)
+    {
+        if (!object)
+            object = RE::PlayerCharacter::GetSingleton();
+
+        if (object)
+        {
+            auto player_worldspace = object->GetWorldspace();
+
+            if (player_worldspace && player_worldspace->formID == 0x2001408)
+            {
+                auto player_pos = object->GetPosition();
+
+                RE::NiPoint2 a = { 25819.6504, 17585.2910 };//, -1103.65869
+                RE::NiPoint2 b = { 25819.6504, 13476.1592 };// , -1095.44202
+                RE::NiPoint2 c = { 30067.0840, 13476.1592 };// , -1113.10095
+                RE::NiPoint2 d = { 30067.0840, 17585.2910 };// , -1104.09680
+
+                if (player_pos.z > 3000.0f)
+                {
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    if (is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+
     bool inside_solstheim_superwaterfall()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -1818,6 +1851,12 @@ namespace MiscThings {
 
             case (0x2003b8e): //dlc1 valerica
                 return 140.0f;
+
+            case (0x20123aa): //dlc1 soul cairn teleport up to keeper floating tower
+                return 10.0f;
+
+            case (0x2005daf): //dlc1 soul cairn elder scroll in a box
+                return 100.0f;
             }
         }
         
@@ -4755,6 +4794,16 @@ namespace MiscThings {
                 }
             }
 
+
+            auto teleport_down = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2011e25);
+
+            if (inside_soulcairn_floating_tower() && (target == teleport_down || !inside_soulcairn_floating_tower(target) || WalkerProcessor::is_door(target))) //is_door is justified because there are no doors on this island except those fuckass fake doors (i found 2 im not sure they did not bury another one somehwere in those bricks so just send all doors)
+            {
+                if (teleport_down) return teleport_down;
+            }
+
+
+
         }
 
         return nullptr;
@@ -5051,6 +5100,17 @@ namespace MiscThings {
         if (!quest)
             return nullptr;
 
+
+        if (quest->formID == 0x2002850) //dlc1 soul cairn
+        {
+            if (inside_soulcairn_floating_tower())
+            {
+                auto keeper_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20071eb);
+
+                if (keeper_tower && keeper_tower->IsActor() && MiscThings::is_object_valid(keeper_tower) && !keeper_tower->IsDead())
+                    return keeper_tower;
+            }
+        }
 
 
         if (quest->formID == 0x200284f) 

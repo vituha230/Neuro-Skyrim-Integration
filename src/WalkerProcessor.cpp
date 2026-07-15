@@ -2106,6 +2106,10 @@ namespace WalkerProcessor {
             if (MiscThings::inside_solstheim_superwaterfall())
                 return true;
 
+            if (target_ref && target_ref->formID == 0x2011e25 && player->GetDistance(target_ref) < 180.0f && player->GetDistance(target_ref) > 80.0f)
+                return true;
+
+
             if (path_valid && !use_last_point_of_last_path && current_path_point < (int)std::size(path) - 3)
             {
                 float max_diff = 0.0f;

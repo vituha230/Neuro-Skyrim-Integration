@@ -2065,15 +2065,16 @@ namespace Observer {
 
 								if (distance <= scan_distance)
 								{
-									RE::BSString result_string = "";
-									RE::TESNPC* player_npc = RE::TESForm::LookupByID(0x7)->As<RE::TESNPC>();
-									player_npc->GetActivateText(a_ref, result_string);
-									std::string result_string_actual_string = result_string.c_str();
-									if (result_string_actual_string.find("Carriage") != std::string::npos)
-									{
-										bool stop_here = false;
-									}
-
+									
+									//RE::BSString result_string = "";
+									//RE::TESNPC* player_npc = RE::TESForm::LookupByID(0x7)->As<RE::TESNPC>();
+									//player_npc->GetActivateText(a_ref, result_string);
+									//std::string result_string_actual_string = result_string.c_str();
+									//if (result_string_actual_string.find("Carriage") != std::string::npos)
+									//{
+									//	bool stop_here = false;
+									//}
+									
 
 
 
@@ -2090,10 +2091,10 @@ namespace Observer {
 									std::string player_name = RE::PlayerCharacter::GetSingleton()->GetName();
 
 
-									if (name.find("Crumbling") != std::string::npos)
-									{
-										bool stop_here = false;
-									}
+									//if (name.find("Crumbling") != std::string::npos)
+									//{
+									//	bool stop_here = false;
+									//}
 
 
 

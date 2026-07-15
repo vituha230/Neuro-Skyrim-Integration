@@ -239,6 +239,10 @@ namespace MiscThings {
     std::pair<bool, std::string> drop_array_of_inventory_objects(std::vector<int> ids);
 
 
+    bool inside_soulcairn_floating_tower(RE::TESObjectREFR* object = nullptr);
+
+
+
     std::pair<bool, std::string> get_current_quests();
 
     bool is_quest_list_valid();
