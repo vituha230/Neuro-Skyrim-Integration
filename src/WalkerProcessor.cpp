@@ -2660,7 +2660,7 @@ namespace WalkerProcessor {
 
                 bool brought_no_weapons_to_a_fight = !shout_mode && !spell_mode && MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false) && !MiscThings::is_offensive_spell(true) && !MiscThings::is_offensive_spell(false);
 
-                if (last_walk_reminded_time > 40.0f || ((explore_mode || runaway_mode) && last_walk_reminded_time > 15.0f) || (interaction_after_walk == 3 && brought_no_weapons_to_a_fight && last_walk_reminded_time > 15.0f))
+                if (last_walk_reminded_time > 40.0f || ((explore_mode || (runaway_mode && !MiscThings::parthurnax_friendly_fire_check())) && last_walk_reminded_time > 20.0f) || (interaction_after_walk == 3 && brought_no_weapons_to_a_fight && last_walk_reminded_time > 20.0f))
                 {
                     last_walk_reminded_time = 0.0f;
 

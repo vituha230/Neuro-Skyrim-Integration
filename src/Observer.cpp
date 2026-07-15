@@ -1252,6 +1252,11 @@ namespace Observer {
 
 								std::string force_message_start = "There are enemies around you. Choose what to do. ";
 
+								if (first_detected_threat && first_detected_threat->formID == 0x3c57d && MiscThings::parthurnax_friendly_fire_check())
+								{
+									force_message_start = "Looks like Paarthurnax is mad at you... but you need to talk to him to continue main story. It is probably better to run away from him until he calms down. What will you do?";
+								}
+
 								if (!any_attacker_sees_player && WalkerProcessor::is_sneak_on())
 									force_message_start += " They dont see you yet. ";
 

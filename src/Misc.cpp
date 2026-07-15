@@ -197,7 +197,7 @@ namespace MiscThings {
 
     bool parthurnax_friendly_fire_check()
     {
-        if (WalkerProcessor::is_fighting())
+        if (WalkerProcessor::is_fighting() && !WalkerProcessor::is_running_away())
             return false;
 
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -208,16 +208,17 @@ namespace MiscThings {
             if (player_worldspace && player_worldspace->formID == 0x3c) //tamriel
             {
                 RE::TESObjectREFR* timewound = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x430a3);
-                if (timewound && player->GetDistance(timewound) < 2000.0f)
+                RE::TESObjectREFR* parthurnax = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3c57d);
+                if (parthurnax && timewound && (player->GetDistance(timewound) < 3000.0f || MiscThings::is_enemy_to_actor(parthurnax)))
                 {
                     //danger zone. now check if we really dont want to hit parthurnax
                     RE::TESObjectREFR* alduin = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4424b);
                     if (alduin && MiscThings::is_object_valid(alduin))
                         return false; //allow doing whatever if alduin is present
 
-                    RE::TESObjectREFR* parthurnax = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x3c57d);
-                    if (parthurnax && MiscThings::is_object_valid(parthurnax) && !parthurnax->IsDead())
-                        if (player->GetDistance(parthurnax) < 2000.0f)
+                    
+                    if (MiscThings::is_object_valid(parthurnax) && !parthurnax->IsDead())
+                        if ((player->GetDistance(parthurnax) < 3000.0f || MiscThings::is_enemy_to_actor(parthurnax)))
                         {
                             auto kill_parthurnax_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQPaarthurnax");
                             if (kill_parthurnax_quest && kill_parthurnax_quest->currentStage < 10)
