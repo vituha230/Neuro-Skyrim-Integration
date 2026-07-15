@@ -11296,6 +11296,7 @@ namespace WalkerProcessor {
                         //redirect to the corpse
                         spell_mode = true; //but no spell to use so it doesnt mess up above
                         target_ref = resurrectable_corpse;
+                        walk_again();
                         return false;
                     }
                     
@@ -11756,6 +11757,7 @@ namespace WalkerProcessor {
                             //redirect to the corpse
                             spell_mode = true; //but no spell to use so it doesnt mess up above
                             target_ref = resurrectable_corpse;
+                            walk_again();
                             return false; //in next cycle its supposed to properly return here but this time we are aiming at the corpse
                         }
 
@@ -15641,6 +15643,18 @@ namespace WalkerProcessor {
                     if (test_targeted_ref->formID == 0x200a58b)
                         confirm();
 
+                    if (test_targeted_ref->formID == 0xf5b00) //hermaeus in dwemer cube quest
+                    {
+                        if (!DialogueProcessor::is_in_dialogue())
+                        {
+                            set_universal_block(0.1f);
+                            confirm();
+                        }
+                        else
+                            return;
+                    }
+                        
+
                 }
 
 
@@ -18459,7 +18473,10 @@ namespace WalkerProcessor {
 
                                                                             wiggle_body_start_pos = player->GetPosition();
 
-                                                                            unstuck_direction = 1;
+                                                                            if (get_targeted_ref() && get_targeted_ref()->formID == 0x2e107)
+                                                                                unstuck_direction = 0;
+                                                                            else
+                                                                                unstuck_direction = 1;
                                                                             return;
                                                                         }
 
@@ -18742,7 +18759,10 @@ namespace WalkerProcessor {
 
                                                                         wiggle_body_start_pos = player->GetPosition();
 
-                                                                        unstuck_direction = 1;
+                                                                        if (get_targeted_ref() && get_targeted_ref()->formID == 0x2e107)
+                                                                            unstuck_direction = 0;
+                                                                        else
+                                                                            unstuck_direction = 1;
                                                                         return;
                                                                     }
 
@@ -19138,7 +19158,10 @@ namespace WalkerProcessor {
 
                                                         wiggle_body_start_pos = player->GetPosition();
 
-                                                        unstuck_direction = 1;
+                                                        if (get_targeted_ref() && get_targeted_ref()->formID == 0x2e107)
+                                                            unstuck_direction = 0;
+                                                        else
+                                                            unstuck_direction = 1;
                                                         return;
                                                     }
 

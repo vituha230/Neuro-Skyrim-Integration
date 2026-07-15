@@ -1692,11 +1692,15 @@ namespace MiscThings {
             if (door == dawnstar_sanct_door)
                 return true;
 
-            if (door->formID == 0xa9530)
-                return true; //silverhand skinner base exit door
 
-            if (door->formID == 0x17080)
-                return true; //bloodlet throne bar door
+            switch (door->formID)
+            {
+            case (0xa9530)://silverhand skinner base exit door
+            case (0x17080)://bloodlet throne bar door
+            case (0x2e107)://alftand pre-blackreach door (needs to go back-left
+                return true;
+            }
+
         }
 
         return false;
