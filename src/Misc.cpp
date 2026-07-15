@@ -1816,7 +1816,8 @@ namespace MiscThings {
             case (0x2015a25): //dlc1 bone bowl for cairn portal
                 return 100.0f;
 
-
+            case (0x2003b8e): //dlc1 valerica
+                return 140.0f;
             }
         }
         
@@ -14580,6 +14581,7 @@ namespace MiscThings {
 
                                         this_quest.phantom_objective = false;
 
+
                                         sortable_quests.push_back(this_quest);
 
                                         id++;
@@ -14594,6 +14596,72 @@ namespace MiscThings {
                 }
             }
         }
+
+
+
+        //dlc1 soul cairn quest
+        RE::TESQuest* dlc1vq05_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ05");
+
+        if (dlc1vq05_quest)
+        {
+            //if quest is displayed and not completed but its not in the list - its the portal objective not being shown
+
+            if ((dlc1vq05_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || dlc1vq05_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !dlc1vq05_quest->data.flags.all(RE::QuestFlag::kCompleted))
+            {
+                auto objective1 = MiscThings::get_quest_objective_by_index(dlc1vq05_quest, 10);
+                auto objective2 = MiscThings::get_quest_objective_by_index(dlc1vq05_quest, 20);
+
+                bool objective1_completed = objective1->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed);
+                bool objective2_shown = objective2->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed);
+
+
+
+                if (objective1_completed && !objective2_shown)
+                {
+                    quest this_quest{};
+
+                    this_quest.id = id;
+                    this_quest.quest = dlc1vq05_quest;
+                    this_quest.name = dlc1vq05_quest->GetFullName();
+                    this_quest.target = nullptr;
+
+                    std::string displaytext = "";
+
+                    auto objective = MiscThings::get_quest_objective_by_index(this_quest.quest, 10);
+                    if (objective)
+                        displaytext = objective->displayText;
+
+                    std::string target_name = "";
+
+                    this_quest.displaytext += replace_aliases(this_quest.quest, displaytext);
+
+                    this_quest.target_name = target_name;
+
+                    this_quest.objective = objective;
+                    this_quest.description = "";
+                    this_quest.category = 0;
+
+                    this_quest.estimate_distance = 0.0f;
+
+                    this_quest.phantom_objective = true;
+
+                    this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2003b8e); //valerica
+
+                    if (Apocrypha::in_apocrypha())
+                        this_quest.estimate_distance = 0.0f;
+                    else
+                        this_quest.estimate_distance = get_quest_target_distance(nullptr, this_quest.quest, nullptr, this_quest.phantom_target);
+
+                    sortable_quests.push_back(this_quest);
+
+
+
+                    id++;
+                    got_any_quests = true;
+                }
+            }
+        }
+
 
 
 
@@ -14649,6 +14717,11 @@ namespace MiscThings {
 
                     this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200b9f7); //erandur
 
+                    if (Apocrypha::in_apocrypha())
+                        this_quest.estimate_distance = 0.0f;
+                    else
+                        this_quest.estimate_distance = get_quest_target_distance(nullptr, this_quest.quest, nullptr, this_quest.phantom_target);
+
 
                     sortable_quests.push_back(this_quest);
 
@@ -14660,9 +14733,7 @@ namespace MiscThings {
             }
         }
 
-
-
-
+        
         //da16 erandur skull quest
         RE::TESQuest* vermina_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA16");
 
@@ -14698,6 +14769,11 @@ namespace MiscThings {
             this_quest.phantom_objective = true;
 
             this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x24280); //erandur
+
+            if (Apocrypha::in_apocrypha())
+                this_quest.estimate_distance = 0.0f;
+            else
+                this_quest.estimate_distance = get_quest_target_distance(nullptr, this_quest.quest, nullptr, this_quest.phantom_target);
 
 
             sortable_quests.push_back(this_quest);

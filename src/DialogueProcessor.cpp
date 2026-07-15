@@ -726,7 +726,7 @@ namespace DialogueProcessor {
 
                                 if (old_dialogue.topicText != topic_manager->dialogueList->front()->topicText)
                                 {
-                                    if (pause_time > 0.5f)
+                                    if (pause_time > 0.75f)
                                     {
                                         no_subtitles_timeout = 0.0f;
 
