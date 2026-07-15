@@ -1813,6 +1813,9 @@ namespace MiscThings {
             case (0x20138c2): //dlc1 volkihar moondial
                 return 400.0f;
 
+            case (0x2015a25): //dlc1 bone bowl for cairn portal
+                return 100.0f;
+
 
             }
         }
@@ -5048,8 +5051,10 @@ namespace MiscThings {
             return nullptr;
 
 
-        if (quest->formID == 0x200284f) //dlc1 volkihar basement1
+
+        if (quest->formID == 0x200284f) 
         {
+            //dlc1 volkihar basement1
             if (target && target->formID == 0x2002892) //exit door
             {
                 auto bridge1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200d9db);
@@ -5078,6 +5083,29 @@ namespace MiscThings {
                 }
 
             }
+            else
+                if (target && target->formID == 0x200ccec) //cairn entrance
+                {
+                    auto gate1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2018e70);
+                    auto gate2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2018f61);
+                    auto fireplace = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2018ad4);
+
+                    auto redirect_marker1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x710373d);
+                    auto redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x710883e);
+                    auto redirect_marker3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x710883f);
+
+                    if (gate1 && gate2 && fireplace && redirect_marker1 && redirect_marker2 && redirect_marker3)
+                    {
+                        if (MiscThings::two_state_activator_state(gate1) != 0)
+                            return redirect_marker1;
+                        else
+                            if (MiscThings::two_state_activator_state(gate2) != 0)
+                                return redirect_marker2;
+                            else
+                                if (MiscThings::two_state_activator_state(fireplace) != 0)
+                                    return redirect_marker3;
+                    }
+                }
         }
 
 
@@ -9547,138 +9575,171 @@ namespace MiscThings {
     {
         if (object)
         {
-            if (object->formID == 0x200618d)
+
+            switch (object->formID)
             {
-                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2006199); //redwater den first gate
-
-                if (handle)
+                case (0x200618d):
                 {
-                    if (!MiscThings::is_object_in_the_list(handle))
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2006199); //redwater den first gate
+
+                    if (handle)
                     {
-                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
 
-                        if (temp_result != "")
-                            send_random_context("You see: " + temp_result, false);
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
                     }
+                    break;
                 }
-            }
 
-            if (object->formID == 0x5d833) 
-            {
-                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18318); //bard's note dungeon2 (rotating door cluster)
-
-                if (handle)
+                case (0x5d833):
                 {
-                    if (!MiscThings::is_object_in_the_list(handle))
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x18318); //bard's note dungeon2 (rotating door cluster)
+
+                    if (handle)
                     {
-                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
 
-                        if (temp_result != "")
-                            send_random_context("You see: " + temp_result, false);
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
                     }
+                    break;
                 }
-            }
 
-            if (object->formID == 0x5d412)
-            {
-                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5d40a); //bard's note dungeon1 (claw)
-
-                if (handle)
+                case (0x5d412):
                 {
-                    if (!MiscThings::is_object_in_the_list(handle))
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x5d40a); //bard's note dungeon1 (claw)
+
+                    if (handle)
                     {
-                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
 
-                        if (temp_result != "")
-                            send_random_context("You see: " + temp_result, false);
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
                     }
+                    break;
                 }
-            }
 
 
-            if (object->formID == 0x4017b3a)
-            {
-                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017b2f); //miraak temple 1 handle for gate
-
-                if (handle)
+                case (0x4017b3a):
                 {
-                    if (!MiscThings::is_object_in_the_list(handle))
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4017b2f); //miraak temple 1 handle for gate
+
+                    if (handle)
                     {
-                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
 
-                        if (temp_result != "")
-                            send_random_context("You see: " + temp_result, false);
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
                     }
+                    break;
                 }
-            }
 
-            if (object->formID == 0x401b7c3)
-            {
-                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401b7c5); //miraak temple 2 handle for stone door
-
-                if (handle)
+                case (0x401b7c3):
                 {
-                    if (!MiscThings::is_object_in_the_list(handle))
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401b7c5); //miraak temple 2 handle for stone door
+
+                    if (handle)
                     {
-                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
 
-                        if (temp_result != "")
-                            send_random_context("You see: " + temp_result, false);
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
                     }
+                    break;
                 }
-            }
 
 
-            //dawnguard dimhollow cave first gate (chain is far away)
-            if (object->formID == 0x2000f7d)
-            {
-                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2000f86); //miraak temple 2 handle for stone door
-                
-                if (handle)
+                //dawnguard dimhollow cave first gate (chain is far away)
+                case (0x2000f7d):
                 {
-                    if (!MiscThings::is_object_in_the_list(handle))
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2000f86); //miraak temple 2 handle for stone door
+
+                    if (handle)
                     {
-                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
 
-                        if (temp_result != "")
-                            send_random_context("You see: " + temp_result, false);
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
                     }
+                    break;
                 }
-            }
 
-            //dimhollow cave 2 first gate to exit lever
-            if (object->formID == 0x2009742)
-            {
-                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201475a); //miraak temple 2 handle for stone door
-
-                if (handle)
+                //dimhollow cave 2 first gate to exit lever
+                case (0x2009742):
                 {
-                    if (!MiscThings::is_object_in_the_list(handle))
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201475a); //miraak temple 2 handle for stone door
+
+                    if (handle)
                     {
-                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
 
-                        if (temp_result != "")
-                            send_random_context("You see: " + temp_result, false);
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
                     }
+                    break;
                 }
-            }
 
-            //volkihar underground bridge1
-            if (object->formID == 0x200d9db)
-            {
-                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200d9ed); //lever
-
-                if (handle)
+                //volkihar underground bridge1
+                case (0x200d9db):
                 {
-                    if (!MiscThings::is_object_in_the_list(handle))
-                    {
-                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200d9ed); //lever
 
-                        if (temp_result != "")
-                            send_random_context("You see: " + temp_result, false);
+                    if (handle)
+                    {
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
                     }
+                    break;
                 }
+
+                //dlc1 volkihar castle 2 gate1
+                case (0x2018e70):
+                {
+                    auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2018e7a); //lever
+
+                    if (handle)
+                    {
+                        if (!MiscThings::is_object_in_the_list(handle))
+                        {
+                            auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                            if (temp_result != "")
+                                send_random_context("You see: " + temp_result, false);
+                        }
+                    }
+                    break;
+                }
+
+
             }
+            
 
 
         }
@@ -10188,7 +10249,17 @@ namespace MiscThings {
             else
                 result = 1;
 
+            if (activator->formID == 0x20176c8 || activator->formID == 0x2018ad4) //dlc1 volkihar dungeon2 fireplaces that remain busy
+            {
+                std::string current_state = "";
+                current_state = object_p->currentState;
+
+                if (current_state == "busy" && result == 1)
+                    result = 0;
+            }
+
         }
+
 
 
 
@@ -10901,6 +10972,20 @@ namespace MiscThings {
                 result = 16; //battering ram log
             }
         }
+
+
+        object_p = General::Script::GetObject(trap, "DLC1VCEmberToggleScript"); //dlc2 fireplaces that light up by themselves
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "currentLitState";
+
+            if (General::Script::GetVariable<bool>(object_p, prop_name))
+                result = 21;
+            else
+                result = 20;
+        }
+
 
 
 
@@ -12507,6 +12592,12 @@ namespace MiscThings {
         {
             if (object->formID == 0x2003c99) //moth priest cave
                 return { -85273.2734, 68085.6797, -11697.6885 };
+
+            if (object->formID == 0x200289b) //soul cairn entrance
+                return { 2779.51367, 1996.85315, 7600.33643 };
+
+            if (object->formID == 0x2002922) //soul cairn exit
+                return { -19920.5410, -15933.1230, 2075.22290 };
         }
 
         return RE::NiPoint3::Zero();
@@ -14500,6 +14591,71 @@ namespace MiscThings {
                             }
                         }
                     }
+                }
+            }
+        }
+
+
+
+        //dlc1 enter soul cairn quest
+        RE::TESQuest* dlc1vq04_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ04");
+
+        if (dlc1vq04_quest)
+        {
+            //if quest is displayed and not completed but its not in the list - its the portal objective not being shown
+
+            if ((dlc1vq04_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || dlc1vq04_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !dlc1vq04_quest->data.flags.all(RE::QuestFlag::kCompleted))
+            {
+
+                bool objective_is_shown = false;
+
+                for (auto dlc1vq04_objective : dlc1vq04_quest->objectives)
+                {
+                    if (dlc1vq04_objective->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed) && !dlc1vq04_objective->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed) && !dlc1vq04_objective->state.all(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
+                    {
+                        objective_is_shown = true;
+                        break;
+                    }
+                }
+
+                if (!objective_is_shown)
+                {
+                    quest this_quest{};
+
+                    this_quest.id = id;
+                    this_quest.quest = dlc1vq04_quest;
+                    this_quest.name = dlc1vq04_quest->GetFullName();
+                    this_quest.target = nullptr;
+
+                    std::string displaytext = "";
+
+                    auto objective = MiscThings::get_quest_objective_by_index(this_quest.quest, 80);
+                    if (objective)
+                        displaytext = objective->displayText;
+
+                    std::string target_name = "";
+
+                    this_quest.displaytext += replace_aliases(this_quest.quest, displaytext);
+
+                    this_quest.target_name = target_name;
+
+                    this_quest.objective = objective;
+                    this_quest.description = "";
+                    this_quest.category = 0;
+
+                    this_quest.estimate_distance = 0.0f;
+
+                    this_quest.phantom_objective = true;
+
+                    this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200b9f7); //erandur
+
+
+                    sortable_quests.push_back(this_quest);
+
+
+
+                    id++;
+                    got_any_quests = true;
                 }
             }
         }

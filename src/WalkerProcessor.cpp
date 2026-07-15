@@ -13243,6 +13243,21 @@ namespace WalkerProcessor {
 
                 }
 
+                if (target_ref && target_ref->formID == 0x200ccec)
+                {
+                    auto actual_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200b9f7);
+                    if (actual_portal)
+                    {
+                        //dlc1 volkihar top tower soul cairn lab
+                        send_random_context("You reached the top of the tower... You see some structure of stone rings in the middle of the room", false);
+                        reset_walker();
+                        look_at_object_by_refr(actual_portal);
+                        return "";
+                    }
+
+                }
+
+
                 auto redirect_marker_alikr_prisoner = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7058726);
 
 
@@ -17939,7 +17954,12 @@ namespace WalkerProcessor {
                                                     dont_quicksave_after_custom_path = true;
                                                     dont_use_bounds_for_close_enough = true;
                                                     walk_again_when_finished = true;
-                                                    custom_path = { player_pos, target_ref->GetPosition()};
+
+                                                    if (target_ref->formID == 0x2002922) //soul cairn exit
+                                                        custom_path = CustomWalkerPaths::soul_cairn_exit;
+                                                    else
+                                                        custom_path = { player_pos, target_ref->GetPosition()};
+
                                                     path = custom_path;
                                                     path_valid = true;
 

@@ -3713,6 +3713,7 @@ namespace Observer {
 																	result.push_back("[ " + name + " opened]");
 															}
 
+
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "PortImpGate01")
 															{
 																if (!no_spam)
@@ -3734,6 +3735,20 @@ namespace Observer {
 
 																}
 															}
+
+
+															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "CasSmHallFirePlaceEx01")
+															{
+																std::string name = MiscThings::insert_object_into_list_custom_name("Secret Castle Wall Door", a_ref);
+
+																if (activation == 0)
+																	result.push_back("[ " + name + " opened]");
+
+																if (activation == 1)
+																	result.push_back("[ " + name + " closed]");
+															}
+
+
 
 															if (extra_anim_graph->animGraphMgr->variableCache.animationGraph->projectName == "NorRotatingDoor01")
 															{
@@ -4404,6 +4419,19 @@ namespace Observer {
 											}
 
 
+											if (new_state.trap_firing == 20)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Fireplace", a_ref);
+												silent = true;
+												result.push_back("[ " + name + " went out]");
+											}
+
+											if (new_state.trap_firing == 21)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Fireplace", a_ref);
+												silent = true;
+												result.push_back("[ " + name + " is lit by itself]");
+											}
 
 										}
 
