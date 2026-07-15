@@ -53,6 +53,90 @@ namespace MiscThings {
     }
 
 
+    bool inside_volkihar_balcony(RE::TESObjectREFR* object)
+    {
+        if (!object)
+            object = RE::PlayerCharacter::GetSingleton();
+
+        if (object)
+        {
+            auto object_pos = object->GetPosition();
+            auto object_worldspace = object->GetWorldspace();
+            //auto riften_worldspace = RE::TESForm::LookupByID(0x16bb4);
+
+            if (object_worldspace && object_worldspace->formID == 0x3c) //tamriel
+            {
+                if (object_pos.z > -10551.6553)
+                {
+                    RE::NiPoint2 a = { -168458.938, 150620.031 }; //-5733.7241
+                    RE::NiPoint2 b = { -168458.938, 148272.359 }; //-5633.2554
+                    RE::NiPoint2 c = { -171103.953, 148272.359 }; //-5640.6494
+                    RE::NiPoint2 d = { -171103.953, 150620.031 }; //-5724.9077
+
+                    RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+    bool quest_leads_through_shit_volkihar_path(RE::TESQuestTarget* target, RE::TESQuest* quest)
+    {
+        if (quest && target)
+        {
+
+            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+            long long volkihar_balcony_fasttravel_ban_advice = WalkerProcessor::get_volkihar_balcony_fasttravel_ban_advice();
+
+            float delta_ban = (double)(now - volkihar_balcony_fasttravel_ban_advice) / 1000000000.0;
+
+            if (delta_ban < 1200.0f)
+            {
+                return false;
+            }
+
+
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player)
+            {
+                auto player_worldspace = player->GetWorldspace();
+
+                if (player_worldspace && player_worldspace->formID == 0x3c)
+                {
+                    int i = 0;
+                    for (auto teleport : target->teleportPath.teleportRefs)
+                    {
+                        if (teleport.ref)
+                        {
+                            if (i == 0 && teleport.ref->formID != 0x200d15b)
+                                return false;
+
+                            if (i == 1 && teleport.ref->formID != 0x200289a)
+                                return false;
+
+                            if (i > 1)
+                                return true;
+                        }
+
+                        i++;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+
 
     bool is_workbench(RE::TESObjectREFR* object)
     {
@@ -5087,7 +5171,7 @@ namespace MiscThings {
 
 
 
-    RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target)
+    RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target, RE::TESQuestTarget* tes_quest_target)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_pos = player->GetPosition();
@@ -5099,6 +5183,47 @@ namespace MiscThings {
 
         if (!quest)
             return nullptr;
+
+
+
+
+        if (tes_quest_target)
+            if (MiscThings::inside_volkihar_balcony())
+            {
+                if (MiscThings::quest_leads_through_shit_volkihar_path(tes_quest_target, quest))
+                {
+                    auto fasttravel_anchor_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x710d940);
+                    if (fasttravel_anchor_marker)
+                        return fasttravel_anchor_marker;
+                }
+            }
+
+
+
+
+
+
+        if (target && target->formID == 0x200289a)
+        {
+            auto bowl_object_in_portal_room = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20152cd);
+
+            if (bowl_object_in_portal_room && player->GetDistance(bowl_object_in_portal_room) < 3000.0f)
+            {
+                auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+                long long volkihar_balcony_fasttravel_ban_advice = WalkerProcessor::get_volkihar_balcony_fasttravel_ban_advice();
+
+                float delta_ban = (double)(now - volkihar_balcony_fasttravel_ban_advice) / 1000000000.0;
+
+                if (delta_ban > 1200.0f)
+                {
+                    auto cool_door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200ac28);
+                    if (cool_door) return cool_door;
+                }
+            }
+        }
+
+
 
 
         if (quest->formID == 0x2002850) //dlc1 soul cairn
@@ -7642,7 +7767,7 @@ namespace MiscThings {
 
                         if (test)
                         {
-                            test = MiscThings::redirect_quest_target(quest, test);
+                            test = MiscThings::redirect_quest_target(quest, test, nullptr);
 
                             if (test)
                             {

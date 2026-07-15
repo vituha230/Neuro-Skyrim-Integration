@@ -14,6 +14,9 @@
 namespace WalkerProcessor {
 
 
+    long long volkihar_balcony_fasttravel_ban_advice = 0; //never reset
+
+
     bool lock_camera_used_this_cycle = false;
 
 
@@ -520,6 +523,12 @@ namespace WalkerProcessor {
     bool last_dragon_was_flying = false;
 
 
+
+
+    long long get_volkihar_balcony_fasttravel_ban_advice()
+    {
+        return volkihar_balcony_fasttravel_ban_advice;
+    }
 
 
     bool interacting_with_workbench()
@@ -8720,7 +8729,20 @@ namespace WalkerProcessor {
 
 
                                                 quest_mode = true;
-                                                target_ref = MiscThings::redirect_quest_target(quest_entry.quest, quests_target_ref);
+                                                target_ref = MiscThings::redirect_quest_target(quest_entry.quest, quests_target_ref, quest_entry.target);
+
+
+                                                if (MiscThings::inside_volkihar_balcony())
+                                                {
+                                                    if (MiscThings::quest_leads_through_shit_volkihar_path(target, quest_entry.quest))
+                                                    {
+                                                        auto fasttravel_anchor_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x710d940);
+                                                        if (fasttravel_anchor_marker)
+                                                            target_ref = fasttravel_anchor_marker;
+                                                    }
+                                                }
+
+
 
 
                                                 kilkreath_parkour_check(target_ref);
@@ -8769,6 +8791,9 @@ namespace WalkerProcessor {
 
                                                 right_attack_cancel();
                                                 left_attack_cancel();
+
+
+
 
 
                                                 std::string big_distance = "";
@@ -8980,7 +9005,7 @@ namespace WalkerProcessor {
 
 
                             quest_mode = true;
-                            target_ref = MiscThings::redirect_quest_target(quest_entry.quest, quests_target_ref);
+                            target_ref = MiscThings::redirect_quest_target(quest_entry.quest, quests_target_ref, quest_entry.target);
 
 
                             kilkreath_parkour_check(target_ref);
@@ -9354,7 +9379,7 @@ namespace WalkerProcessor {
                                         {
                                             auto quests_target_ref = quest_ref_handle.get().get();
 
-                                            quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref);
+                                            quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref, target);
 
                                             new_target_found = true;
 
@@ -9449,7 +9474,7 @@ namespace WalkerProcessor {
                                                 left_attack_cancel();
 
                                                 
-                                                target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref); //i think something is excessive here
+                                                target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref, target); //i think something is excessive here
 
                                                 solitude_post_emperor_check(target_ref);
                                                 katariah_post_emperor_check(target_ref);
@@ -9609,7 +9634,7 @@ namespace WalkerProcessor {
                                                 else
                                                 {
                                                     quests_target_ref = quest_ref_handle.get().get();
-                                                    quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref);
+                                                    quests_target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref, target);
                                                 }
                                                     
 
@@ -9654,7 +9679,7 @@ namespace WalkerProcessor {
                                                     left_attack_cancel();
 
 
-                                                    target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref); //i think something is excessive here
+                                                    target_ref = MiscThings::redirect_quest_target(quest, quests_target_ref, target); //i think something is excessive here
 
                                                     solitude_post_emperor_check(target_ref);
                                                     katariah_post_emperor_check(target_ref);
@@ -13176,6 +13201,23 @@ namespace WalkerProcessor {
                 target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                 if (quest_mode && (target_name == "")) //not guaranteed that insert_object will give us a name
                     target_name = "quest target point";
+
+
+
+                    if (target_ref && target_ref->formID == 0x710d940)
+                    {
+                        if (MiscThings::can_fast_travel())
+                        {
+                            //volkihar balcony fasttravel
+                            send_random_context("You stand on the balcony of Castle Volkihar... You can fast-travel from here", false);
+                            reset_walker();
+                            return "";
+                        }
+                        else
+                        {
+                            volkihar_balcony_fasttravel_ban_advice = std::chrono::steady_clock::now().time_since_epoch().count();
+                        }
+                    }
 
 
 
@@ -17787,8 +17829,8 @@ namespace WalkerProcessor {
                                         }
                                     }
 
-
-                                    if (quest_mode && last_quest && last_quest_objective && detect_quest_target_changed_and_walk())
+                                                                                                                                                //volkihar redirect
+                                    if (quest_mode && last_quest && last_quest_objective && detect_quest_target_changed_and_walk()) 
                                     {
                                         had_successful_walk = false;
                                         return;

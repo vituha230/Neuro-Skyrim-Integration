@@ -67,6 +67,8 @@ namespace WalkerProcessor {
 	std::pair<bool, std::string> explore_world(bool internal_call);
 
 
+	long long get_volkihar_balcony_fasttravel_ban_advice();
+
 	bool interacting_with_workbench();
 
 

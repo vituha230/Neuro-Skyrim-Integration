@@ -240,8 +240,9 @@ namespace MiscThings {
 
 
     bool inside_soulcairn_floating_tower(RE::TESObjectREFR* object = nullptr);
+    bool inside_volkihar_balcony(RE::TESObjectREFR* object = nullptr);
 
-
+    bool quest_leads_through_shit_volkihar_path(RE::TESQuestTarget* target, RE::TESQuest* quest);
 
     std::pair<bool, std::string> get_current_quests();
 
@@ -528,7 +529,7 @@ namespace MiscThings {
 
     bool is_inventory_object(RE::TESObjectREFR* target);
 
-    RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target);
+    RE::TESObjectREFR* redirect_quest_target(RE::TESQuest* quest, RE::TESObjectREFR* target, RE::TESQuestTarget* tes_quest_target);
 
     bool is_offensive_spell(bool right);
     bool is_offensive_spell(RE::SpellItem* spell);
