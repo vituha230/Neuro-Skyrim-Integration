@@ -791,7 +791,7 @@ bool neuro::NeuroSocket::register_allowed_actions(bool reconnect)
 
                             if (MiscThings::is_vampirelord())
                             {
-                                if (player->IsSneaking())
+                                if (MiscThings::vampirelord_melee_mode())
                                 {
                                     actions_to_register[action_pos] = Capabilities::VampirelordSwitchUp::Action; action_pos++;
                                 }

@@ -7344,6 +7344,7 @@ namespace MiscThings {
 
         bool check_elder_scroll_zone_dwemer_mechanism = false;
 
+
         auto elder_scroll_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("MQ205");
         auto elder_lexicon_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA04");
 
@@ -7388,6 +7389,51 @@ namespace MiscThings {
             {
                 check_elder_scroll_zone_dwemer_mechanism = true;
             }
+        }
+
+
+        
+
+
+        auto dawnguard_elder_scroll_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQElderHandler");
+
+        if (dawnguard_elder_scroll_quest && (quest == dawnguard_elder_scroll_quest))
+        {
+            auto dawnguard_elder_scroll_quest_stage = dawnguard_elder_scroll_quest->GetCurrentStageID();
+            auto faralda = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1a5);
+            auto gates = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x37a7d);
+            auto urag = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1c1b4);
+            auto door_to_urag = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x177f9);
+            auto book = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x32787);
+            auto book2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x32786); //wrong book
+
+            if ((dawnguard_elder_scroll_quest_stage == 20 || dawnguard_elder_scroll_quest_stage == 30) && (target == urag || target == door_to_urag))
+            {
+
+                auto septimus_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA04");
+                if (septimus_quest)
+                {
+                    auto septimus_stage = septimus_quest->GetCurrentStageID();
+
+                    if (septimus_stage == 5)
+                        return urag;
+                }
+
+
+                bool gates_are_locked = false;
+
+                if (gates && gates->IsLocked())
+                    return faralda;
+
+
+                if (book && !book->IsDisabled())
+                    return book;
+            }
+
+            //if (elder_scroll_quest_stage == 80 && player_in_tower_of_mzark)
+            //{
+            //    check_elder_scroll_zone_dwemer_mechanism = true;
+            //}
         }
 
 
