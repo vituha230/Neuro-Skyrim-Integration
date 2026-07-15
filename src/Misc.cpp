@@ -1810,6 +1810,10 @@ namespace MiscThings {
                 break;
             }
 
+            case (0x20138c2): //dlc1 volkihar moondial
+                return 400.0f;
+
+
             }
         }
         
@@ -4747,11 +4751,6 @@ namespace MiscThings {
                 }
             }
 
-
-
-
-
-
         }
 
         return nullptr;
@@ -5047,6 +5046,40 @@ namespace MiscThings {
 
         if (!quest)
             return nullptr;
+
+
+        if (quest->formID == 0x200284f) //dlc1 volkihar basement1
+        {
+            if (target && target->formID == 0x2002892) //exit door
+            {
+                auto bridge1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200d9db);
+
+                if (bridge1 && MiscThings::two_state_activator_state(bridge1) == 1) //bridge1 is down
+                {
+                    auto bridge2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200da25);
+                    if (bridge2 && MiscThings::two_state_activator_state(bridge2) == 0) //but bridge2 is up
+                    {
+                        auto lever = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200da69);
+
+                        auto cobweb1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200dbcb);
+                        auto cobweb2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200dbca);
+                        auto redirect_marker1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70fe63c);
+                        auto redirect_marker2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70fe63b);
+
+                        if (cobweb1 && cobweb2 && redirect_marker1 && redirect_marker2 && lever)
+                            if (MiscThings::get_destructible_state(cobweb1) == -1)
+                                return redirect_marker1;
+                            else
+                                if (MiscThings::get_destructible_state(cobweb2) == -1)
+                                    return redirect_marker2;
+                                else
+                                    return lever;
+                    }
+                }
+
+            }
+        }
+
 
         if (quest->formID == 0x1da3c) //riften steal horse
         {
@@ -9622,6 +9655,25 @@ namespace MiscThings {
                     }
                 }
             }
+
+            //volkihar underground bridge1
+            if (object->formID == 0x200d9db)
+            {
+                auto handle = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200d9ed); //lever
+
+                if (handle)
+                {
+                    if (!MiscThings::is_object_in_the_list(handle))
+                    {
+                        auto temp_result = MiscThings::insert_object_into_list_and_get_info(handle);
+
+                        if (temp_result != "")
+                            send_random_context("You see: " + temp_result, false);
+                    }
+                }
+            }
+
+
         }
         
     }
@@ -11181,8 +11233,6 @@ namespace MiscThings {
 
 
 
-
-
         auto saartal_pole_gate = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xde086);
 
 
@@ -11202,6 +11252,70 @@ namespace MiscThings {
         case (0x9f854):
         case (0x9f850):
             return "[Big]";
+
+
+        //dlc1 moondial crest slots
+        case (0x20116cb):
+        {
+            object_p = General::Script::GetObject(object, "DLC1VCMoondialTileScript");
+
+            std::string filled = "";
+
+            if (object_p)
+            {
+                std::string current_state = "";
+                current_state = object_p->currentState;
+
+                if (current_state == "Done")
+                    filled = "[Has crest]";
+                else
+                    filled = "[Empty]";
+            }
+
+            return "[Crescent]" + filled;
+        }
+            
+        case (0x20116c9):
+        {
+            object_p = General::Script::GetObject(object, "DLC1VCMoondialTileScript");
+
+            std::string filled = "";
+
+            if (object_p)
+            {
+                std::string current_state = "";
+                current_state = object_p->currentState;
+
+                if (current_state == "Done")
+                    filled = "[Has crest]";
+                else
+                    filled = "[Empty]";
+            }
+
+            return "[Full-moon]" + filled;
+        }
+
+        case (0x20116ca):
+        {
+            object_p = General::Script::GetObject(object, "DLC1VCMoondialTileScript");
+
+            std::string filled = "";
+
+            if (object_p)
+            {
+                std::string current_state = "";
+                current_state = object_p->currentState;
+
+                if (current_state == "Done")
+                    filled = "[Has crest]";
+                else
+                    filled = "[Empty]";
+            }
+
+            return "[Half-moon]" + filled;
+        }
+            
+
         }
 
 
@@ -11861,6 +11975,12 @@ namespace MiscThings {
                                             }
                                                 
                                         }
+
+                                        if (var_string == "Subquest Completed: Investigate the moondial")
+                                        {
+                                            send_random_context("The moondial mechanism started rotating, revealing the spiral staircase leading under it", false);
+                                        }
+
 
                                         if (false && var_string == "Subquest Completed: Open the Drawbridge")
                                         {
@@ -12579,15 +12699,21 @@ namespace MiscThings {
 
                 }
 
-                if (object->formID == 0x7526c) //ship robbery lighthouse fire
+
+                switch (object->formID)
+                {
+                case (0x7526c): //ship robbery lighthouse fire
                 {
                     RE::NiPoint3 object_angles = object->data.angle;
                     RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
                     base_shift_vector *= object->GetScale();
                     RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    //??? where return? need to check
+
+                    break;
                 }
 
-                if (object->formID == 0xe7c4d) //clavicus vile
+                case (0xe7c4d): //clavicus vile
                 {
                     RE::NiPoint3 object_angles = object->data.angle;
                     RE::NiPoint3 base_shift_vector = { 0.0f, -60.0f, -70.0f };
@@ -12596,9 +12722,9 @@ namespace MiscThings {
 
                     return rotated_shift_vector;
                 }
-                
+
                 //if (object->formID == 0x2003e39) //serana tomb
-                if (object->formID == 0x200f7f4) //serana tomb activator
+                case (0x200f7f4): //serana tomb activator
                 {
                     RE::NiPoint3 object_angles = { 0.0f, 0.0f, 0.0f };
                     RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
@@ -12608,7 +12734,7 @@ namespace MiscThings {
                 }
 
 
-                if (object->formID == 0x10076a) //dibella altar
+                case (0x10076a): //dibella altar
                 {
                     RE::NiPoint3 object_angles = { 0.0f, 0.0f, 0.0f };
                     RE::NiPoint3 base_shift_vector = { 80.0f, 30.0f, -50.0f };
@@ -12616,6 +12742,37 @@ namespace MiscThings {
 
                     return rotated_shift_vector;
                 }
+
+
+                //dlc1 volkihar moondial
+                case (0x20116cb):
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 0.0f, -270.0f, 0.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    return rotated_shift_vector;
+                }
+
+                case (0x20116c9):
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 0.0f, -270.0f, 0.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    return rotated_shift_vector;
+                }
+
+                case (0x20116ca):
+                {
+                    RE::NiPoint3 object_angles = object->data.angle;
+                    RE::NiPoint3 base_shift_vector = { 0.0f, -270.0f, 0.0f };
+                    RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                    return rotated_shift_vector;
+                }
+
+
+                }
+
+                
 
 
                 if (object->IsActor() && is_dragon(object) && !is_enemy_to_actor(object))
@@ -16661,6 +16818,17 @@ namespace MiscThings {
 
             if (name == "")
                 return "";
+
+
+            //dlc1 moondial crest slots
+            switch (refr->formID)
+            {
+            case (0x20116cb):
+            case (0x20116c9):
+            case (0x20116ca):
+                name = "Crest slot";
+            }
+
 
 
             auto base_obj = refr->GetBaseObject();

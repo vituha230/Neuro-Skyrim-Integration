@@ -3396,7 +3396,7 @@ namespace WalkerProcessor {
                 
                 if (last_blocking_targeted_ref == targeted_ref)
                 {
-                    if (have_blocking_targeted_time > 0.5f && walker_active_time > 2.0f)//0.15f)
+                    if (have_blocking_targeted_time > 0.4f && walker_active_time > 2.0f)//0.15f)
                     {
                         //have_door_targeted_time = 0.0f;
                         //last_targeted_ref = nullptr;
@@ -13197,7 +13197,37 @@ namespace WalkerProcessor {
 
                 }
 
-                
+                if (target_ref && target_ref->formID == 0x20138c2) //dlc1 volkihar moondial puzzle
+                {
+                    auto slot1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20116cb);
+                    auto slot2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20116c9);
+                    auto slot3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20116ca);
+
+                    std::string slot1_info = MiscThings::insert_object_into_list_and_get_info(slot1);
+                    std::string slot2_info = MiscThings::insert_object_into_list_and_get_info(slot2);
+                    std::string slot3_info = MiscThings::insert_object_into_list_and_get_info(slot3);
+
+                    std::string slot_info_total = "";
+
+                    slot_info_total += slot1_info + "\n";
+                    slot_info_total += slot2_info + "\n";
+                    slot_info_total += slot3_info;
+
+
+
+                    auto piece1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2011720);
+                    auto piece2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2011721);
+                    auto piece3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2011722);
+
+                    //just throw them in but dont reveal explicitly
+                    auto temp = MiscThings::insert_object_into_list_and_get_info(piece1);
+                    temp = MiscThings::insert_object_into_list_and_get_info(piece2);
+                    temp = MiscThings::insert_object_into_list_and_get_info(piece3);
+
+                    send_random_context("You look at the moon dial mechanism... Serana suggests there is something wrong with it... something about missing pieces. You see crest slots: \n" + slot_info_total, false);
+                    reset_walker();
+                    return "";
+                }
 
                 if (target_ref && target_ref->formID == 0xeb7) //this is a very strange formid for a xmarker reference.
                 {
