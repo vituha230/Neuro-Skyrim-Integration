@@ -1012,6 +1012,9 @@ namespace WalkerProcessor {
 
     bool pause_attacking(float dtime)
     {
+        if (!have_target_to_walk)
+            return true;
+
         auto player = RE::PlayerCharacter::GetSingleton();
 
         if (!attack_paused)
@@ -1063,7 +1066,7 @@ namespace WalkerProcessor {
 
                 
 
-                if (!weapon_state_ban || attack_pause_time > 2.0f)
+                if (!weapon_state_ban || attack_pause_time > 1.0f)
                     return true;
 
                 attack_pause_time += dtime;
@@ -17129,7 +17132,7 @@ namespace WalkerProcessor {
 
                 if (attack_paused)
                 {
-                    if (start_attacking || ((shout_mode || spell_mode) && target_ref && target_ref->IsActor()))
+                    if (start_attacking || ((shout_mode || spell_mode)))// && target_ref && target_ref->IsActor()))
                     {
                         bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
                         lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
