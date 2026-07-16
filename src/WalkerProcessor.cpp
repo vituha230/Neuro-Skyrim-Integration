@@ -12294,7 +12294,7 @@ namespace WalkerProcessor {
 
 
 
-                bool became_neutral_condition = was_enemy_from_start && !MiscThings::is_enemy_to_actor(target_ref);
+                bool became_neutral_condition = was_enemy_from_start && !MiscThings::is_enemy_to_actor(target_ref) && !(target_ref->IsActor() && target_ref->IsDead());
 
                 if (became_neutral_condition)
                 {
@@ -13285,6 +13285,14 @@ namespace WalkerProcessor {
                 target_name = MiscThings::insert_object_into_list_and_get_info(target_ref);
                 if (quest_mode && (target_name == "")) //not guaranteed that insert_object will give us a name
                     target_name = "quest target point";
+
+                if (target_ref && target_ref->formID == 0x7112a46)
+                {
+                    reset_walker();
+                    MiscThings::set_darkfall_bridge_after_reached();
+                    send_random_context("You walked across a wooden bridge over a pit, but this part of the cave looks like dead end...", false);
+                    return "";
+                }
 
 
                 if (target_ref && target_ref->formID == 0x710d940)

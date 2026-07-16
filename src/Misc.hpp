@@ -538,6 +538,8 @@ namespace MiscThings {
 
     void reveal_moths();
 
+    void set_darkfall_bridge_after_reached();
+
 
     void reveal_chests();
 

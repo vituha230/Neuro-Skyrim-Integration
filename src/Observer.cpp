@@ -4434,6 +4434,14 @@ namespace Observer {
 												result.push_back("[ " + name + " is lit by itself]");
 											}
 
+
+											if (new_state.trap_firing == 22)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Stone Wayshrine Structure", a_ref);
+												silent = false;
+												result.push_back("[ " + name + " emerges from the ground]");
+											}
+
 										}
 
 										if (old_state.destructible_state != new_state.destructible_state)
@@ -4464,6 +4472,14 @@ namespace Observer {
 												std::string name = MiscThings::insert_object_into_list_custom_name("[Flammable] Big beehive", a_ref);
 
 												result.push_back(name + " is on fire");
+											}
+
+											if (new_state.destructible_state == 200)
+											{
+												std::string name = MiscThings::insert_object_into_list_custom_name("Wooden Bridge", a_ref);
+
+												result.push_back(name + " breaks and you fall down the pit, into the water stream! It carries you somewhere through the cave very fast...");
+												WalkerProcessor::reset_walker();
 											}
 										}
 

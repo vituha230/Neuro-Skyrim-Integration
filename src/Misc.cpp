@@ -12,6 +12,10 @@
 namespace MiscThings {
 
 
+
+    bool bridge_after_reached = false;
+    bool darkfall_bridge_go_back_info_given = false;
+
     bool parthurnax_friendly_fire_confirmed = false;
     bool parthurnax_friendly_fire_confirm = false;
     int parthurnax_friendly_fire_spell_id = false;
@@ -456,12 +460,20 @@ namespace MiscThings {
 
     void reset_shout_cooldown_monitor()
     {
+        darkfall_bridge_go_back_info_given = false;
+        bridge_after_reached = false;
         last_shout_cooldown = -1.0f;
         shout_cooldown_doesnt_change_timer = 0.0f;
         MiscThings::set_shout_cooldown_broken(false);
     }
 
 
+
+
+    void set_darkfall_bridge_after_reached()
+    {
+        bridge_after_reached = true;
+    }
 
 
     float get_shout_cooldown()
@@ -5288,6 +5300,98 @@ namespace MiscThings {
 
 
 
+        if (target && target->formID == 0x2004349 && parent_cell && parent_cell->formID == 0x2004346)
+        {
+            //dlc1 darkfall cave exit. messy
+
+            auto cobweb = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200437e);
+            auto door_top = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200437d);
+            auto door_bottom = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200488e);
+            auto redirect_bottom = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a49);
+            auto redirect_top = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a4a);
+
+            if (cobweb && door_top && door_bottom && redirect_bottom && redirect_top)
+            {
+                bool in_elf_room1 = false;
+                bool in_elf_room2 = false;
+                bool in_start_room1 = false;
+                bool in_start_room2 = false;
+                bool in_start_room_exclude = false;
+
+                if (player_pos.z < -2000.0f)
+                {
+                    RE::NiPoint2 a = { 5300.94287, -713.491455 };
+                    RE::NiPoint2 b = { 1522.10901, 149.482025 }; 
+                    RE::NiPoint2 c = { 2487.80371, 4317.04248 };
+                    RE::NiPoint2 d = { 6267.84912, 3481.75684 };
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    in_elf_room1 = MiscThings::is_inside_of_rectangle(p, a, b, c, d);
+                }
+
+                if (player_pos.z < -1700.0f)
+                {
+                    RE::NiPoint2 a = { 3406.05444, -1361.78308 };
+                    RE::NiPoint2 b = { 3406.05444, 853.530090 };
+                    RE::NiPoint2 c = { 4074.09912, 853.530090 };
+                    RE::NiPoint2 d = { 4074.09912, -1361.78308 };
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    in_elf_room2 = MiscThings::is_inside_of_rectangle(p, a, b, c, d);
+                }
+
+                if (player_pos.z > -1700.0f)
+                {
+                    RE::NiPoint2 a = { -70.6899109, -2559.04224 };
+                    RE::NiPoint2 b = { -70.6899109, -832.072632 };
+                    RE::NiPoint2 c = { -4224.11182, -832.072632 };
+                    RE::NiPoint2 d = { -4224.11182, -2559.04224 };
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    in_start_room1 = MiscThings::is_inside_of_rectangle(p, a, b, c, d);
+                }
+
+                if (player_pos.z > -554.0f)
+                {
+                    RE::NiPoint2 a = { 2063.34058, -879.191589 };
+                    RE::NiPoint2 b = { 2063.34058, 4185.87695 };
+                    RE::NiPoint2 c = { -5741.04199, 4185.87695 };
+                    RE::NiPoint2 d = { -5741.04199, -879.191589 };
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    in_start_room2 = MiscThings::is_inside_of_rectangle(p, a, b, c, d);
+                }
+
+                if (player_pos.z > -1700.0f)
+                {
+                    RE::NiPoint2 a = { -868.715088, -2342.38989 };
+                    RE::NiPoint2 b = { -868.715088, -2811.93408 };
+                    RE::NiPoint2 c = { -353.203094, -2811.93408 };
+                    RE::NiPoint2 d = { -353.203094, -2342.38989 };
+                    RE::NiPoint2 p = { player_pos.x, player_pos.y };
+                    in_start_room_exclude = MiscThings::is_inside_of_rectangle(p, a, b, c, d);
+                }
+
+
+                if (in_elf_room1 || in_elf_room2)
+                {
+                    if (MiscThings::two_state_activator_state(door_bottom) != 0)
+                        return redirect_bottom;
+                }
+
+                if (in_start_room_exclude || !(in_start_room1 || in_start_room2))
+                {
+                    if (MiscThings::two_state_activator_state(door_top) != 0)
+                        return redirect_top;
+
+                    if (MiscThings::get_destructible_state(cobweb) == -1)
+                        return redirect_top;
+                }
+
+
+
+            }
+
+
+        }
+
+
 
         if (tes_quest_target)
             if (MiscThings::inside_volkihar_balcony())
@@ -5299,10 +5403,6 @@ namespace MiscThings {
                         return fasttravel_anchor_marker;
                 }
             }
-
-
-
-
 
 
         if (target && target->formID == 0x200289a)
@@ -5325,6 +5425,40 @@ namespace MiscThings {
             }
         }
 
+
+        if (quest->formID == 0x2002853) //dlc1 darkfall cave fall
+        {
+            if (target && target->formID == 0x200a878)
+            {
+                if (player_pos.z > -1700.0f)
+                {
+                    auto bridge = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20048bc);
+
+                    if (bridge && MiscThings::get_destructible_state(bridge) == -1)
+                    {
+                        auto redirect_bridge_after = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a46);
+                        auto redirect_bridge_before = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a47);
+
+                        if (redirect_bridge_after && redirect_bridge_before)
+                        {
+                            if (!bridge_after_reached)
+                                return redirect_bridge_after;
+                            else
+                            {
+                                if (!darkfall_bridge_go_back_info_given)
+                                {
+                                    darkfall_bridge_go_back_info_given = true;
+                                    send_random_context("You go back across the wooden bridge...", true);
+                                }
+
+                                return redirect_bridge_before;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
 
 
 
@@ -10538,6 +10672,23 @@ namespace MiscThings {
                         result = -1;
                 }
 
+
+                if (model.find("VQ07ScaffoldBridge01-S0") != std::string::npos) //dlc1 crumbling bridge in darkfall cave
+                {
+                    auto extralist = &web->extraList;
+                    auto extra_swap = extralist->GetByType(RE::ExtraDataType::kObjectHealth);
+                    if (extra_swap)
+                    {
+                        auto extra_health = (RE::ExtraObjectHealth*)extra_swap;
+
+                        if (extra_health->health <= 60.0f)
+                            result = 200;
+                    }
+                    else
+                        result = -1;
+                }
+
+
             }
         }
 
@@ -11339,21 +11490,6 @@ namespace MiscThings {
         }
 
 
-        object_p = General::Script::GetObject(trap, "DLC1VCEmberToggleScript"); //dlc2 fireplaces that light up by themselves
-
-        if (object_p)
-        {
-            RE::BSFixedString prop_name = "currentLitState";
-
-            if (General::Script::GetVariable<bool>(object_p, prop_name))
-                result = 21;
-            else
-                result = 20;
-        }
-
-
-
-
         auto saartal_fx = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x106bba);
 
         if (trap == saartal_fx)
@@ -11443,6 +11579,28 @@ namespace MiscThings {
         }
 
 
+        object_p = General::Script::GetObject(trap, "DLC1VCEmberToggleScript"); //dlc1 fireplaces that light up by themselves
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "currentLitState";
+
+            if (General::Script::GetVariable<bool>(object_p, prop_name))
+                result = 21;
+            else
+                result = 20;
+        }
+
+
+        object_p = General::Script::GetObject(trap, "DLC1dunWaygateScript"); //dlc1 snow elf waypoints
+
+        if (object_p)
+        {
+            RE::BSFixedString prop_name = "::bIsReady_var";
+
+            if (General::Script::GetVariable<bool>(object_p, prop_name))
+                result = 22;
+        }
 
 
 
@@ -12433,11 +12591,22 @@ namespace MiscThings {
                                                 
                                         }
 
+                                        //remove navcut for this dlc1 darkfall cave
+                                        if (var_string == "Subquest Completed: Locate Auriel's Bow")
+                                        {
+                                            RE::TESObjectREFR* blocker_1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a48);
+
+                                            if (blocker_1)
+                                            {
+                                                auto old_pos = blocker_1->GetPosition();
+                                                old_pos.z += 2000.0f;
+                                                MiscThings::SetPosition_moveto(blocker_1, old_pos);
+                                            }
+
+                                        }
 
                                         if (var_string == "Subquest Completed: Enter the column of light and read the Elder Scroll (Blood)")
                                             send_random_context("The Elder Scrolls you read gave you a vision of the world map... with something marked on it", false);
-
-
 
                                         if (var_string == "Subquest Completed: Gather bark from a Canticle Tree")
                                             MiscThings::reveal_moths();
@@ -17091,20 +17260,26 @@ namespace MiscThings {
                 auto actor_object = (RE::Actor*)object;
                 if (actor_object->race)
                 {
-                    race = actor_object->race->GetName();
-                    if (race == "Old People Race")
-                        race = "Old";
-
-                    if (race == "HMDaedra")
-                        race = "Daedra";
-
-                    std::string temp_name = "";
-                    temp_name = object->GetDisplayFullName();
-
-                    if (race == "Rabbit" || race == temp_name)
-                        race = "";
+                    if (actor_object->race->formID == 0x0200377d)
+                        race = ", Snow Elf";
                     else
-                        race = ", " + race;
+                    {
+                        race = actor_object->race->GetName();
+                        if (race == "Old People Race")
+                            race = "Old";
+
+                        if (race == "HMDaedra")
+                            race = "Daedra";
+
+                        std::string temp_name = "";
+                        temp_name = object->GetDisplayFullName();
+
+                        if (race == "Rabbit" || race == temp_name)
+                            race = "";
+                        else
+                            race = ", " + race;
+                    }
+
 
                 }
 
@@ -22969,8 +23144,8 @@ namespace MiscThings {
                     }
                 }
             }
-            else
-            {
+            //else
+            //{
                 if (!only_fighting && (WalkerProcessor::is_sneak_on() || weapon_independent || WalkerProcessor::has_bow_equipped(WalkerProcessor::get_current_active_hand()) || WalkerProcessor::has_crossbow_equipped(WalkerProcessor::get_current_active_hand())))
                 {
                     bool aggressive = false;
@@ -23055,7 +23230,7 @@ namespace MiscThings {
 
                 }
 
-            }
+            //}
         }
 
         return false;
