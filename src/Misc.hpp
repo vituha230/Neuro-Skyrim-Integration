@@ -539,6 +539,10 @@ namespace MiscThings {
     void reveal_chests();
 
 
+    bool is_weapon_drawn();
+
+
+
     bool is_loading();
     bool dont_interact_with(RE::TESObjectREFR* target);
 

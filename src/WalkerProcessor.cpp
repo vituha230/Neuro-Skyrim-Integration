@@ -4928,13 +4928,14 @@ namespace WalkerProcessor {
         if (right)
         {
             auto state = right_caster->state;
-            if (state != RE::MagicCaster::State::kNone)
+            if (state != RE::MagicCaster::State::kNone && state != RE::MagicCaster::State::kUnk01 && !MiscThings::is_intro2())
                 result = true;
+
         }
         else
         {
             auto state = left_caster->state;
-            if (state != RE::MagicCaster::State::kNone && !MiscThings::is_intro2() )
+            if (state != RE::MagicCaster::State::kNone && state != RE::MagicCaster::State::kUnk01 && !MiscThings::is_intro2())
                 result = true;
         }
 
@@ -11098,7 +11099,7 @@ namespace WalkerProcessor {
 
 
 
-        if (!(player_actor->IsWeaponDrawn()) && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+        if (!MiscThings::is_weapon_drawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
         {
             right_attack(); //this is "readyWeapon"
             //set_universal_block(0.5f);
@@ -17132,8 +17133,8 @@ namespace WalkerProcessor {
                     {
                         bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
                         lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
+                        return;
                     }
-                    return;
                 }
 
 
@@ -17411,7 +17412,8 @@ namespace WalkerProcessor {
                     auto player = RE::PlayerCharacter::GetSingleton();
                     auto player_actor = (RE::Actor*)player->AsReference();
 
-                    if (player_actor && (!shout_mode && player_actor->IsWeaponDrawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3 && !input_wants_to_cast())
+                    //hide weapon
+                    if (!shout_mode && player_actor && (MiscThings::is_weapon_drawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3 && !input_wants_to_cast())
                     {
                         if (!tried_to_draw_weapon1 || draw_weapon_check_time1 > 2.0f)
                         {
@@ -17428,7 +17430,8 @@ namespace WalkerProcessor {
                         draw_weapon_check_time1 = 0.0f;
                     }
 
-                    if (!shout_mode && player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk == 3)
+                    //show weapon
+                    if (!shout_mode && player_actor && !MiscThings::is_weapon_drawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk == 3)
                     {
                         if (!tried_to_draw_weapon2 || draw_weapon_check_time2 > 2.0f)
                         {

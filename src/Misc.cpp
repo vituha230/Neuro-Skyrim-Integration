@@ -31,6 +31,21 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
     long long settlement_advice_timestamp = 0;
     
+
+    bool is_weapon_drawn()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            return player->actorState2.weaponState == RE::WEAPON_STATE::kDrawn;
+        }
+
+        return false;
+    }
+
+
+
     bool inside_of_hag_rock_pit(RE::TESObjectREFR* object)
     {
         if (object)
@@ -19513,7 +19528,7 @@ namespace MiscThings {
                             result.second = "[Unequipped [id " + std::to_string(item_id) + "] " + object_name + "]";
 
                             if (object->IsWeapon())
-                                if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                if (player_actor && !MiscThings::is_weapon_drawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
                                     ready_weapon(); //show off unequipped hands
                         }
                         else
@@ -19589,7 +19604,7 @@ namespace MiscThings {
 
 
 
-                                if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                if (player_actor && !MiscThings::is_weapon_drawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
                                 {
                                     ready_weapon(); //show off new weapon
                                 }
@@ -21919,7 +21934,7 @@ namespace MiscThings {
                             {
                                 if (player_actor)
                                 {
-                                    if (!player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                    if (!MiscThings::is_weapon_drawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
                                     {
                                         //set_universal_block(1.0f);
                                         ready_weapon();
@@ -22431,7 +22446,7 @@ namespace MiscThings {
                             result.first = true;
                             if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
                             {
-                                if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+                                if (player_actor && !MiscThings::is_weapon_drawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
                                 {
                                     ready_weapon(); //show off new weapon
 

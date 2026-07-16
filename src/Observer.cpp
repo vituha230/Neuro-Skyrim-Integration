@@ -4950,6 +4950,11 @@ namespace Observer {
 	int deaths_after_load = 0;
 
 
+
+
+	//REX::TEnumSet<RE::MagicCaster::State, uint32_t> old_caster_state = RE::MagicCaster::State::kNone;
+
+
 	void player_state_monitor(float dtime)
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();
@@ -4959,6 +4964,58 @@ namespace Observer {
 		if (test_stone && !test_stone->IsDisabled())
 			bool stop_here = false;
 		//
+
+
+		/*
+		auto left_caster = player->GetMagicCaster(RE::MagicSystem::CastingSource::kLeftHand);
+		auto state = left_caster->state;
+
+		if (state != old_caster_state)
+		{
+			switch (state.underlying())
+			{
+			case (0):
+				Hooks::add_debug_line("kNone", true);
+				break;
+			case (1):
+				Hooks::add_debug_line("kUnk01", true);
+				break;
+			case (2):
+				Hooks::add_debug_line("kUnk02", true);
+				break;
+			case (3):
+				Hooks::add_debug_line("kReady", true);
+				break;
+			case (4):
+				Hooks::add_debug_line("kUnk04", true);
+				break;
+			case (5):
+				Hooks::add_debug_line("kCharging", true);
+				break;
+			case (6):
+				Hooks::add_debug_line("kCasting", true);
+				break;
+			case (7):
+				Hooks::add_debug_line("kUnk07", true);
+				break;
+			case (8):
+				Hooks::add_debug_line("kUnk08", true);
+				break;
+			case (9):
+				Hooks::add_debug_line("kUnk09", true);
+				break;
+			}
+
+
+			old_caster_state = state;
+		}
+		*/
+
+		//if (state != RE::MagicCaster::State::kNone && state != RE::MagicCaster::State::kUnk01 && !MiscThings::is_intro2())
+			
+
+
+
 
 
 		if (wait_and_send_game_start_context)

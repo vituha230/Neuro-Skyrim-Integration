@@ -33,6 +33,7 @@ bool do_cast = false;
 bool right_hand_cast = false;
 bool notified_cast = false;
 float spell_cast_time = 0.0f;
+float spell_actual_cast_time = 0.0f;
 bool was_actually_casting = false;
 float pause_post_cast = 0.0f;
 bool low_mana_notified = false;
@@ -61,6 +62,7 @@ void reset_input_processor()
     right_hand_cast = false;
     notified_cast = false;
     spell_cast_time = 0.0f;
+    spell_actual_cast_time = 0.0f;
     was_actually_casting = false;
     pause_post_cast = 0.0f;
     low_mana_notified = false;
@@ -1010,6 +1012,7 @@ void try_casting_hand(bool right)
         do_cast = true;
         right_hand_cast = right;
         spell_cast_time = 0.0f;
+        spell_actual_cast_time = 0.0f;
         spell_cast_time_timeout = 0.0f;
         need_look_down = false;
         pause_post_cast = 0.0f;
@@ -1073,16 +1076,20 @@ void look_down_for_summon(bool internal)
 bool make_long_cast_spell_hand(bool right, float dtime)
 {
     auto player = RE::PlayerCharacter::GetSingleton();
+
+    if (!player)
+        return false;
+
     auto player_actor = (RE::Actor*)player->AsReference();
 
-    if (player_actor && !player_actor->IsWeaponDrawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
+    if (player_actor && !MiscThings::is_weapon_drawn() && !(player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing))
     {
         ready_weapon();
         //set_universal_block(1.3f);
         return false;
     }
 
-    if (player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing)
+    if (!MiscThings::is_weapon_drawn()) //now more strict
     {
         return false; //just wait for it to draw completely
     }
@@ -1112,7 +1119,7 @@ bool make_long_cast_spell_hand(bool right, float dtime)
     //    low_mana_check = true;
 
 
-    if (low_mana_check || (check_time && (spell_cast_time > WalkerProcessor::get_attack_time(right))) || (MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
+    if (low_mana_check || (check_time && (spell_actual_cast_time > WalkerProcessor::get_attack_time(right))) || (MiscThings::is_self_healing_spell(right) && MiscThings::player_hp_more_than(100.0f)))
     {
 
         if (low_mana_check && !low_mana_notified)
@@ -1299,7 +1306,11 @@ bool make_long_cast_spell_hand(bool right, float dtime)
                 spell_cast_time_timeout += dtime;
         }
         else
+        {
+            spell_actual_cast_time += dtime;
             spell_cast_time_timeout = 0.0f;
+        }
+            
 
 
 
