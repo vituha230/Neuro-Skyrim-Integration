@@ -3990,8 +3990,19 @@ namespace WalkerProcessor {
 
         lock_camera_used_this_cycle = true;
 
+        //dtime = 0.016;
 
-        
+        //float dtime, float speed_koef, bool force_speed_correction, bool force_high_precision)
+        //Hooks::add_debug_line("LOCK CAMERA: " + std::to_string(dtime) + ", " + std::to_string(speed_koef) + ", " + std::to_string(force_speed_correction) + ", " + std::to_string(force_high_precision) , true);
+
+        //if (!dont_send_inputs)
+        //    Hooks::add_debug_line("LOCK CAMERA +++++++++", true);
+        //else
+        //    Hooks::add_debug_line("LOCK CAMERA ---------", true);
+
+        //dont_send_inputs = false;
+
+
         //auto height = target->GetHeight();
 
         auto bounds_max = target->GetBoundMax(); //looks like this is better than height
@@ -10961,6 +10972,17 @@ namespace WalkerProcessor {
 
    
 
+    bool attack_lock_camera_condition()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player && target_ref)
+            return shout_mode || player->GetDistance(target_ref) < 400.0f;
+        else
+            return false;
+    }
+
+
 
 
     bool attack_target(float dtime)
@@ -11066,11 +11088,13 @@ namespace WalkerProcessor {
         bool speed_correction = is_casting_ult() && target_ref && MiscThings::is_dragon(target_ref);
 
 
-        if (shout_mode || player->GetDistance(target_ref) < 400.0f)
+        if (attack_lock_camera_condition())
         {
             //Hooks::add_debug_line("ATTACK_TARGET lock_camera", true);
             lock_camera_onto_target(target_ref, dtime, 1.0f, speed_correction);
         }
+        else
+            bool stop_here = false;
             
 
 
@@ -11311,7 +11335,9 @@ namespace WalkerProcessor {
                         //redirect to the corpse
                         spell_mode = true; //but no spell to use so it doesnt mess up above
                         target_ref = resurrectable_corpse;
-                        walk_again();
+                        was_already_dead = true;
+                        start_attacking = false;
+                        invalidate_path();
                         return false;
                     }
                     
@@ -11787,7 +11813,9 @@ namespace WalkerProcessor {
                             //redirect to the corpse
                             spell_mode = true; //but no spell to use so it doesnt mess up above
                             target_ref = resurrectable_corpse;
-                            walk_again();
+                            was_already_dead = true;
+                            start_attacking = false;
+                            invalidate_path();
                             return false; //in next cycle its supposed to properly return here but this time we are aiming at the corpse
                         }
 
@@ -14899,6 +14927,10 @@ namespace WalkerProcessor {
 	void processor(float dtime)
 	{
         lock_camera_used_this_cycle = false;
+
+        //Hooks::add_debug_line("walker_processor called", true);
+
+
 
 
         if (emergency_swim_up)
@@ -18118,8 +18150,8 @@ namespace WalkerProcessor {
                                                     else
                                                         stable_target = 0;
 
-
-                                                    if (looking_mode || MiscThings::is_intro() || locking_failed || ((get_targeted_ref() == target_ref) && stable_target > 2) || lock_camera_onto_target(target_ref, dtime) || location_mode)
+                                                                                                                                                                                             //attack_target() will do locking in this case
+                                                    if (looking_mode || MiscThings::is_intro() || locking_failed || ((get_targeted_ref() == target_ref) && stable_target > 2) || ((start_attacking && attack_lock_camera_condition()) || lock_camera_onto_target(target_ref, dtime)) || location_mode)
                                                     {
                                                         auto result_target = get_targeted_ref();
 

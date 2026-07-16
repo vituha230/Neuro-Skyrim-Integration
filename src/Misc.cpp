@@ -631,14 +631,14 @@ namespace MiscThings {
             auto player_ref = player->AsReference();
             auto player_actor = (RE::Actor*)player_ref;
 
-            float scan_distance = 3000.0f;
+            float scan_distance = 800.0f;
             auto player_cell = player->GetParentCell();
 
 
             std::vector<RE::TESObjectREFR*> corpses{};
 
 
-            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 3000.0f,
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player_ref, 800.0f,
                 //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
                 [&](RE::TESObjectREFR* a_ref) {
 

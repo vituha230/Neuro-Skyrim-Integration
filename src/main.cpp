@@ -15,20 +15,17 @@
 //TODO polish companions (maybe add jorwaskr as an interesting place to whiterun.. or make some kind of bridge-quest when player didnt take new quest right away. maybe test more locations for silverhands)
 
 
-//TODO dragonborn dlc
+//TODO polish dragonborn dlc
 // 1st book apocrypha polish (walk through passages along their bones)
 // 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1 
-// next quests (talk to skaal)
 
 
 //TODO dawnguard dlc
-// test variant of grabbing elder scroll by dawnguard questline + afterwards
+// post elder scroll
 
 
 
 ///////////////////////
-
-// spellcasting still afks sometimes? check other functions that can meddle with it (DO THIS AFTER SOME QUESTS)
 
 
 //TODO hearthfire dlc
@@ -64,7 +61,6 @@
 //TODO self-cast spells ignore target (excluding wards if they are self cast)
 //TODO make settlement command work in good interior cells of settlements (at least taverns and shops and jarl house)
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
-//TODO strange dragon aim sometimes when using magic
 //TODO "ult at target" function, necessary for ults that launch projectile (like vampire's reanimate powerful corpse ult)
 //TODO runaway action in combat? 
 
