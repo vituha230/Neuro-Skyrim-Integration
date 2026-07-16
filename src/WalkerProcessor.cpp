@@ -4238,7 +4238,7 @@ namespace WalkerProcessor {
 
                 auto projectile_speed = get_weapon_projectile_speed(get_current_active_hand());
 
-                projectile_speed *= 0.85f;
+                //projectile_speed *= 0.85f;
 
                 if (force_speed_correction || (shout_mode && shout_to_use))
                 {
@@ -11351,9 +11351,9 @@ namespace WalkerProcessor {
 
 
 
-                            if (is_concentration_spell(true))
-                                right_attack_spell();
-                            else
+                            //if (is_concentration_spell(true))
+                            //    right_attack_spell();
+                            //else
                             {
                                 if (attack_action_time0 < 0.000001f)
                                     right_attack();
@@ -11475,9 +11475,9 @@ namespace WalkerProcessor {
 
                                 if (!skip_cast)
                                 {
-                                    if (is_concentration_spell(true))
-                                        right_attack_spell();
-                                    else
+                                    //if (is_concentration_spell(true))
+                                    //    right_attack_spell();
+                                    //else
                                     {
                                         if (attack_action_time0 < 0.000001f)
                                             right_attack();
@@ -11828,9 +11828,9 @@ namespace WalkerProcessor {
                                 }
 
 
-                                if (is_concentration_spell(false))
-                                    left_attack_spell();
-                                else
+                                //if (is_concentration_spell(false))
+                                //    left_attack_spell();
+                                //else
                                 {
                                     if (attack_action_time1 < 0.000001f)
                                         left_attack();
@@ -11958,9 +11958,9 @@ namespace WalkerProcessor {
 
                                     if (!skip_cast)
                                     {
-                                        if (is_concentration_spell(false))
-                                            left_attack_spell();
-                                        else
+                                        //if (is_concentration_spell(false))
+                                        //    left_attack_spell();
+                                        //else
                                         {
                                             if (attack_action_time1 < 0.000001f)
                                                 left_attack();
