@@ -361,7 +361,8 @@ namespace WalkerProcessor {
     bool was_sprinting = false;
 
 
-    bool low_mana_detected = false;
+    bool low_mana_detected_right = false;
+    bool low_mana_detected_left = false;
 
     bool tried_to_draw_weapon1 = false;
     float draw_weapon_check_time1 = 0.0f;
@@ -992,6 +993,16 @@ namespace WalkerProcessor {
 
 
 
+    bool is_charging_bow()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            return player->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached;
+        }
+        return false;
+    }
+
     void cancel_charge_weapon()
     {
         was_charging_ranged = false;
@@ -1003,7 +1014,7 @@ namespace WalkerProcessor {
         auto player_actor = (RE::Actor*)player->AsReference();
 
         //GetAttackState()
-        if (player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDrawn || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowDraw || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowAttached)// || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
+        if (is_charging_bow())// || //player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleasing || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowFollowThrough || player_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBowReleased || 
             //is_casting_walker(true) || is_casting_walker(false))
             ready_weapon();
     }
@@ -5493,8 +5504,8 @@ namespace WalkerProcessor {
 
         was_sprinting = false;
 
-        low_mana_detected = false;
-
+        low_mana_detected_right = false;
+        low_mana_detected_left = false;
 
         tried_to_draw_weapon1 = false;
         draw_weapon_check_time1 = 0.0f;
@@ -11351,9 +11362,9 @@ namespace WalkerProcessor {
 
 
 
-                            //if (is_concentration_spell(true))
-                            //    right_attack_spell();
-                            //else
+                            if (is_concentration_spell(true) && !dualcasting)
+                                right_attack_spell();
+                            else
                             {
                                 if (attack_action_time0 < 0.000001f)
                                     right_attack();
@@ -11376,8 +11387,8 @@ namespace WalkerProcessor {
 
                                 attack_action_uses_cast_time = true;
 
-                                if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
-                                    low_mana_detected = false;
+                                if (low_mana_detected_right && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
+                                    low_mana_detected_right = false;
 
 
                                 bool dont_check_mana = false;
@@ -11387,12 +11398,12 @@ namespace WalkerProcessor {
                                 //dont_check_mana = true;
 
 
-                                bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(true) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(true))));
+                                bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(true) && (low_mana_detected_right || (MiscThings::get_player_mana() < get_spell_cost(true))));
 
                                 if (low_mana_check)
                                 {
                                     mana_info_for_reminder = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(true)) + ", current magicka:" + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
-                                    low_mana_detected = true;
+                                    low_mana_detected_right = true;
                                 }
                                     
 
@@ -11410,7 +11421,7 @@ namespace WalkerProcessor {
 
                                     if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                     {
-                                        if (low_mana_detected)
+                                        if (low_mana_detected_right)
                                         {
                                             auto max_mana = MiscThings::get_player_max_mana();
 
@@ -11475,9 +11486,9 @@ namespace WalkerProcessor {
 
                                 if (!skip_cast)
                                 {
-                                    //if (is_concentration_spell(true))
-                                    //    right_attack_spell();
-                                    //else
+                                    if (is_concentration_spell(true) && !dualcasting)
+                                        right_attack_spell();
+                                    else
                                     {
                                         if (attack_action_time0 < 0.000001f)
                                             right_attack();
@@ -11511,16 +11522,19 @@ namespace WalkerProcessor {
 
                                 if (has_bow_equipped(true))
                                 {
-                                    if (attack_action_time0 > 0.9f);
+                                    //if (attack_action_time0 > 0.9f); /// had semicolon here just noticed
+                                    if (is_charging_bow())
                                         was_charging_ranged = true;
+
                                     right_attack_bow();
                                 }
                                 else
                                 {
                                     if (has_crossbow_equipped(true))
                                     {
-                                        if (attack_action_time0 > 0.1f);
-                                        was_charging_ranged = true;
+                                        //if (attack_action_time0 > 0.1f); //same - semicolon
+                                        if (is_charging_bow())
+                                            was_charging_ranged = true;
                                         right_attack_bow();
                                     }
                                     else
@@ -11828,9 +11842,9 @@ namespace WalkerProcessor {
                                 }
 
 
-                                //if (is_concentration_spell(false))
-                                //    left_attack_spell();
-                                //else
+                                if (is_concentration_spell(false) && !dualcasting)
+                                    left_attack_spell();
+                                else
                                 {
                                     if (attack_action_time1 < 0.000001f)
                                         left_attack();
@@ -11854,8 +11868,8 @@ namespace WalkerProcessor {
                                     attack_action_uses_cast_time = true;
 
 
-                                    if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
-                                        low_mana_detected = false;
+                                    if (low_mana_detected_left && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
+                                        low_mana_detected_left = false;
 
                                     bool dont_check_mana = false;
 
@@ -11863,12 +11877,12 @@ namespace WalkerProcessor {
 
                                     //dont_check_mana = true;
 
-                                    bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(false) && (low_mana_detected || (MiscThings::get_player_mana() < get_spell_cost(false))));
+                                    bool low_mana_check = (!dont_check_mana && MiscThings::has_spell_equipped(false) && (low_mana_detected_left || (MiscThings::get_player_mana() < get_spell_cost(false))));
 
                                     if (low_mana_check)
                                     {
                                         mana_info_for_reminder = "(Spell cost: " + std::to_string((int)WalkerProcessor::get_spell_cost(false)) + ", current magicka:" + std::to_string((int)MiscThings::get_player_mana()) + "/" + std::to_string((int)MiscThings::get_player_max_mana()) + ")";
-                                        low_mana_detected = true;
+                                        low_mana_detected_left = true;
                                     }
 
                                     if (low_mana_check || (MiscThings::is_self_healing_spell(false) && MiscThings::player_hp_more_than(100.0f)))// && MiscThings::player_is_full_hp()))
@@ -11886,7 +11900,7 @@ namespace WalkerProcessor {
 
                                         if (spell_mode && target_ref && !MiscThings::is_enemy_to_actor(target_ref))
                                         {
-                                            if (low_mana_detected)
+                                            if (low_mana_detected_left)
                                             {
                                                 auto max_mana = MiscThings::get_player_max_mana();
 
@@ -11958,9 +11972,9 @@ namespace WalkerProcessor {
 
                                     if (!skip_cast)
                                     {
-                                        //if (is_concentration_spell(false))
-                                        //    left_attack_spell();
-                                        //else
+                                        if (is_concentration_spell(false) && !dualcasting)
+                                            left_attack_spell();
+                                        else
                                         {
                                             if (attack_action_time1 < 0.000001f)
                                                 left_attack();
@@ -13164,7 +13178,8 @@ namespace WalkerProcessor {
             }
             else
             {
-                low_mana_detected = false;
+                low_mana_detected_right = false;
+                low_mana_detected_left = false;
 
                 bool ignore_alive = false;
 
@@ -15096,7 +15111,7 @@ namespace WalkerProcessor {
         }
 
 
-        if (low_mana_detected)
+        if (low_mana_detected_right || low_mana_detected_left)
         {
             if (!low_mana_notified)
             {
@@ -15109,7 +15124,8 @@ namespace WalkerProcessor {
                 {
                     low_mana_notified = false;
                     low_mana_notify_time = 0.0f;
-                    low_mana_detected = false;
+                    low_mana_detected_right = false;
+                    low_mana_detected_left = false;
                 }
                 else
                     low_mana_notify_time += dtime;
