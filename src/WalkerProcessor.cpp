@@ -13021,6 +13021,10 @@ namespace WalkerProcessor {
                                         if (!target_is_interactive())
                                             no_result = " Nothing happens...";
 
+                                        if (target_ref->GetBaseObject() && target_ref->GetBaseObject()->formID == 0x201a952)
+                                            no_result = ""; //just dont say anything
+
+
                                         if (MiscThings::get_pillar_face_name(target_ref, 1) == "") // for pillars there is separate message outside of interaction
                                         {
                                             std::string lever_advice = MiscThings::lever_interaction_advice(target_ref);
@@ -13283,23 +13287,33 @@ namespace WalkerProcessor {
                     target_name = "quest target point";
 
 
-
-                    if (target_ref && target_ref->formID == 0x710d940)
+                if (target_ref && target_ref->formID == 0x710d940)
+                {
+                    if (MiscThings::can_fast_travel())
                     {
-                        if (MiscThings::can_fast_travel())
-                        {
-                            //volkihar balcony fasttravel
-                            send_random_context("You stand on the balcony of Castle Volkihar... You can fast-travel from here", false);
-                            reset_walker();
-                            return "";
-                        }
-                        else
-                        {
-                            volkihar_balcony_fasttravel_ban_advice = std::chrono::steady_clock::now().time_since_epoch().count();
-                        }
+                        //volkihar balcony fasttravel
+                        send_random_context("You stand on the balcony of Castle Volkihar... You can fast-travel from here", false);
+                        reset_walker();
+                        return "";
                     }
+                    else
+                    {
+                        volkihar_balcony_fasttravel_ban_advice = std::chrono::steady_clock::now().time_since_epoch().count();
+                    }
+                }
 
 
+                if (target_ref && target_ref->formID == 0x201aa4a) //dlc1 moth knife marker. reveal moth swarms and give advice when reached, if current quest is collect moths
+                {
+                    auto dlc1vq06_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ06");
+                    if (dlc1vq06_quest && dlc1vq06_quest->currentStage >= 30)
+                    {
+                        MiscThings::reveal_moths();
+                        send_random_context("You look around and see little swarms of moths... They might get attracted when you walk closer to them", false);
+                        reset_walker();
+                        return "";
+                    }
+                }
 
 
                 if (target_ref && target_ref->formID == 0x40313ce) //dlc2 book1 zone5 exit book, which has puzzle
@@ -13437,7 +13451,7 @@ namespace WalkerProcessor {
                 auto root3_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1ef);
                 auto root4_redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x703e1f0);
 
-                
+
                 if (root1_redirect && root2_redirect && root3_redirect && root4_redirect)
                 {
                     if (target_ref == root1_redirect)
@@ -13522,7 +13536,7 @@ namespace WalkerProcessor {
                         return "";
                     }
                 }
-                
+
 
                 auto post_mzulft_redirect_marker = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7029a56);
 
@@ -13565,7 +13579,7 @@ namespace WalkerProcessor {
                     if (player->IsSneaking())
                         crouch(); //uncrouch
 
-                       
+
                     //stop_sneaking = true; //doesnt work in this situation its only checked in some other place
 
                     return "";
@@ -18124,7 +18138,16 @@ namespace WalkerProcessor {
 
                                                     if (look_target123)
                                                     {
-                                                        send_random_context("You arrived to the quest target point", true);
+                                                        switch (target_ref->formID)
+                                                        {
+                                                        case (0x2009051):
+                                                            send_random_context("You stand in the column of light. Time to read the Elder Scroll (Blood)", false);
+                                                            break;
+
+                                                        default:
+                                                            send_random_context("You arrived to the quest target point", true);
+                                                        }
+
                                                         reset_walker();
                                                         look_at_object_by_refr(look_target123);
                                                         return;

@@ -536,6 +536,9 @@ namespace MiscThings {
     bool has_spell_equipped(bool right);
 
 
+    void reveal_moths();
+
+
     void reveal_chests();
 
     bool inside_volkihar_tower(RE::TESObjectREFR* object = nullptr);

@@ -385,6 +385,9 @@ namespace MiscThings {
 
             case (0x2c361): //namira priest death
                 return (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x1bb8f); //priest
+
+            case (0x2009051): //dlc1 shining light reading scrolls tree
+                return (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2019329); //tree
             }
         }
 
@@ -1999,8 +2002,20 @@ namespace MiscThings {
 
             case (0x2005daf): //dlc1 soul cairn elder scroll in a box
                 return 100.0f;
+
+            case (0x2019329): //dlc1 elder scroll reading moth trees
+            case (0x201932c):
+            case (0x201932d):
+            case (0x201932e):
+            case (0x201932f):
+                return 300.0f;
             }
         }
+
+        if (target && target->GetBaseObject() && target->GetBaseObject()->formID == 0x201a952) //dlc1 moth swarms
+            return 50.0f;
+
+
         
 
         /*
@@ -8317,6 +8332,33 @@ namespace MiscThings {
 
 
 
+    void reveal_moths()
+    {
+        //0x201a952 - base object. activator.
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player, 12000.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref && !a_ref->IsDisabled())
+                    {
+                        auto base_obj = a_ref->GetBaseObject();
+
+                        if (base_obj && base_obj->formID == 0x201a952)
+                            auto temp = MiscThings::insert_object_into_list_custom_name(" Moth Swarm", a_ref);
+                        
+                    }
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+        }
+        
+
+    }
+
+
 
     void reveal_chests()
     {
@@ -8800,6 +8842,10 @@ namespace MiscThings {
 
         auto base_obj = object->GetBaseObject();
         auto base_type = base_obj->GetFormType();
+
+        if (base_obj && base_obj->formID == 0x201a952)
+            return true; //dlc1 swarms of moths. this is so bounds dont trigger for close enough
+
 
         if (base_type == RE::FormType::Activator)
         {
@@ -12387,6 +12433,15 @@ namespace MiscThings {
                                                 
                                         }
 
+
+                                        if (var_string == "Subquest Completed: Enter the column of light and read the Elder Scroll (Blood)")
+                                            send_random_context("The Elder Scrolls you read gave you a vision of the world map... with something marked on it", false);
+
+
+
+                                        if (var_string == "Subquest Completed: Gather bark from a Canticle Tree")
+                                            MiscThings::reveal_moths();
+
                                         if (var_string == "Subquest Completed: Investigate the moondial")
                                         {
                                             send_random_context("The moondial mechanism started rotating, revealing the spiral staircase leading under it", false);
@@ -12929,18 +12984,19 @@ namespace MiscThings {
     {
         if (object)
         {
-            auto base_obj = object->GetBaseObject();
 
             auto player = RE::PlayerCharacter::GetSingleton();
-            
+            auto base_obj = object->GetBaseObject();
+
             if (player)
             {
+                auto player_pos = player->GetPosition();
+
                 auto player_ref = player->AsReference();
 
                 if (player_ref)
                 {
-                    auto player_pos = player_ref->GetPosition();
-
+                    
                     if (base_obj->GetFormType() == RE::FormType::Activator)
                     {
 
@@ -19866,15 +19922,55 @@ namespace MiscThings {
                                                     sitstate_zero = player_actor->GetSitSleepState() == RE::SIT_SLEEP_STATE::kNormal;
                                                 }
 
-                                                if (trigger_active && stage_not_done && sitstate_zero)
+                                                bool maingame_trigger = trigger_active && stage_not_done && sitstate_zero;
+
+
+
+
+
+                                                bool dawnguard_quest_condition = false;
+                                                bool dawnguard_zone_condition = false;
+                                                bool dawnguard_correct_scroll_condition = false;
+
+                                                auto dlc1vq06_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ06");
+                                                if (dlc1vq06_quest && dlc1vq06_quest->currentStage > 50 && dlc1vq06_quest->currentStage < 70)
+                                                    dawnguard_quest_condition = true;
+
+
+                                                auto dawnguard_read_trigger = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2009100);
+                                                if (dawnguard_read_trigger)
+                                                {
+                                                    auto object_p = General::Script::GetObject(dawnguard_read_trigger, "DLC1VQ06ReadingTriggerScript");
+                                                    if (object_p)
+                                                    {
+                                                        RE::BSFixedString prop_name = "PlayerIn";
+                                                        if (General::Script::GetVariable<bool>(object_p, prop_name))
+                                                            dawnguard_zone_condition = true;
+                                                    }
+                                                }
+
+                                                dawnguard_correct_scroll_condition = object && object->formID == 0x20118f9; //dlc1 (blood) elder scroll
+
+                                                bool dawnguard_trigger = dawnguard_quest_condition && dawnguard_zone_condition && dawnguard_correct_scroll_condition;
+
+
+                                                if (maingame_trigger)
                                                 {
                                                     result.first = true;
                                                     result.second = "[You unfurl The Elder Scroll and look into it... you see a vision...]";
                                                 }
                                                 else
                                                 {
-                                                    result.first = true;
-                                                    result.second = "[You unfurl The Elder Scroll and look into it... it blinds you for several seconds!]";
+                                                    if (dawnguard_trigger)
+                                                    {
+                                                        result.first = true;
+                                                        result.second = "[You unfurl all your Elder Scrolls in order... and see a vision...]";
+                                                    }
+                                                    else
+                                                    {
+                                                        result.first = true;
+                                                        result.second = "[You unfurl The Elder Scroll and look into it... it blinds you for several seconds!]";
+                                                    }
                                                 }
 
 
