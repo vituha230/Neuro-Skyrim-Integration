@@ -211,7 +211,15 @@ namespace RandomMessageBoxProcessor {
 							}
 							else
 							{
-								if (text.find("to serve your time in jail") != std::string::npos)
+								auto player = RE::PlayerCharacter::GetSingleton();
+
+								RE::TESObjectCELL* player_cell = nullptr;
+								auto markarth_prison_cell = RE::TESForm::LookupByID(0x16203);
+
+								if (player)
+									player_cell = player->GetParentCell();
+
+								if (text.find("to serve your time in jail") != std::string::npos && (MiscThings::get_picks_amount_int() < 1 || (markarth_prison_cell && player_cell == markarth_prison_cell)))
 								{
 									//text = "Do you want to \"serve your time in jail\" (instantly skip jail)?";
 									send_random_context("You serve your time in jail... and get released...", false);
