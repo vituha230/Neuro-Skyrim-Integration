@@ -1547,7 +1547,14 @@ namespace MiscThings {
             if (player->parentCell && player->parentCell->formID == 0x3ea9d) //dibella temple
                 trespassing = true;
 
-            return MiscThings::is_interior_cell() && (MiscThings::have_any_enemies_nearby(9000.0f) || trespassing);
+            bool interior_condition = MiscThings::is_interior_cell() && (MiscThings::have_any_enemies_nearby(7000.0f) || trespassing);
+            bool exterior_condition = false;
+            if (!interior_condition)
+                exterior_condition = (WalkerProcessor::has_bow_equipped(true) || WalkerProcessor::has_crossbow_equipped(true)) && (MiscThings::have_any_enemies_nearby(8000.0f) || trespassing);
+
+            return interior_condition || exterior_condition;
+
+            //return MiscThings::have_any_enemies_nearby(9000.0f) || trespassing;
         }
 
         return false;

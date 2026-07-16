@@ -2247,11 +2247,13 @@ namespace WalkerProcessor {
     {
         bool stealth_walking = false;
 
+        /*
         if ((is_fighting() || Observer::threat_response_choice_pending()) && !no_ammo() && (has_bow_equipped(true) || has_crossbow_equipped(true))) //this is automatic
         {
             if (target_ref && target_ref->IsActor() && (!MiscThings::is_dragon(target_ref)))// || !MiscThings::is_flying(target_ref)))
                 stealth_walking = !MiscThings::sees_player(target_ref, sneak_probe_sneak_checked);
         }
+        */
 
         if (sneak_mode_on && MiscThings::sneak_is_allowed())
             stealth_walking = !MiscThings::sees_player(target_ref, sneak_probe_sneak_checked) || !is_fighting(); //true//true; //this is manual
@@ -2283,7 +2285,7 @@ namespace WalkerProcessor {
                 sneak_failed = true;
         }
 
-        if (fuck_it_lets_go_timer < 15.0f)
+        if (fuck_it_lets_go_timer < 10.0f)
         {
             fuck_it_lets_go_timer += dtime_maybe_bad;
 
@@ -4371,10 +4373,10 @@ namespace WalkerProcessor {
 
             bool stealth_arching = false;
 
-            if ((is_fighting() || Observer::threat_response_choice_pending()) && (has_bow_equipped(true) || has_crossbow_equipped(true)) && !no_ammo() && target && target->IsActor() && (!MiscThings::is_dragon(target)))// || !MiscThings::is_flying(target_ref)))
-            {
-                stealth_arching = !MiscThings::sees_player(target, sneak_probe_sneak_checked);
-            }
+            //if ((is_fighting() || Observer::threat_response_choice_pending()) && (has_bow_equipped(true) || has_crossbow_equipped(true)) && !no_ammo() && target && target->IsActor() && (!MiscThings::is_dragon(target)))// || !MiscThings::is_flying(target_ref)))
+            //{
+            //    stealth_arching = !MiscThings::sees_player(target, sneak_probe_sneak_checked);
+            //}
 
             if (sneak_mode_on && MiscThings::sneak_is_allowed())
                 stealth_arching = !MiscThings::sees_player(target, sneak_probe_sneak_checked) || !is_fighting(); //true
@@ -4412,6 +4414,10 @@ namespace WalkerProcessor {
             }
             else
                 lock_camera_wants_to_crouch = false;
+
+
+
+
 
             //if (MiscThings::sees_player(target) && player->IsSneaking() && is_fighting())
              //   crouch(); //test
