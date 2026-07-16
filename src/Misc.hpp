@@ -541,7 +541,7 @@ namespace MiscThings {
 
     bool is_weapon_drawn();
 
-
+    int get_object_by_refr(RE::TESObjectREFR* refr);
 
     bool is_loading();
     bool dont_interact_with(RE::TESObjectREFR* target);

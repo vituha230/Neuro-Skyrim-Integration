@@ -16294,6 +16294,26 @@ namespace MiscThings {
         return result;
     }
 
+    int get_object_by_refr(RE::TESObjectREFR* refr)
+    {
+        if (refr)
+        {
+            if (objects_around_valid)
+            {
+                for (auto list_entry : objects_around)
+                {
+                    if (list_entry.second.object == refr)
+                    {
+                        return list_entry.first;
+                    }
+                }
+            }
+        }
+
+        return -1;
+    }
+
+
 
 
 

@@ -11327,7 +11327,7 @@ namespace WalkerProcessor {
                         bool no_weapon = false;
                         bool silent = true;
 
-
+                        bool attack_action_uses_cast_time = false;
 
                         if (has_staff_equipped(true))
                         {
@@ -11335,7 +11335,6 @@ namespace WalkerProcessor {
                                // was_charging_ranged = true;
 
                             //right_attack_spell();
-
 
                             bool no_charge_check = no_charge(true);
 
@@ -11373,7 +11372,9 @@ namespace WalkerProcessor {
                         else
                             if (MiscThings::has_spell_equipped(true))
                             {
+                                //spell mode
 
+                                attack_action_uses_cast_time = true;
 
                                 if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
                                     low_mana_detected = false;
@@ -11502,6 +11503,8 @@ namespace WalkerProcessor {
                             }
                             else
                             {
+                                //not spell
+
                                 attack_spell_cast_timeout = 0.0f;
 
                                 bool can_power_attack = !MiscThings::has_spell_equipped(true) && !has_ranged_weapon_equipped(true) && stamina_state > 0.1f;//&& last_attack_action != 1;
@@ -11636,7 +11639,16 @@ namespace WalkerProcessor {
 
                         //end of attack0
 
-                        attack_action_time0 += dtime;
+                        if (attack_action_uses_cast_time)
+                        {
+                            bool is_actually_casting = WalkerProcessor::is_casting_walker(true);
+                            is_actually_casting |= dualcasting && WalkerProcessor::is_casting_walker(!true);
+
+                            if (is_actually_casting)
+                                attack_action_time0 += dtime;
+                        }
+                        else
+                            attack_action_time0 += dtime;
 
 
 
@@ -11784,6 +11796,8 @@ namespace WalkerProcessor {
                             bool no_weapon = false;
                             bool silent = true;
 
+                            bool attack_action_uses_cast_time = false;
+
                             if (has_staff_equipped(false))
                             {
                                 //if (attack_action_time0 > 0.9f);
@@ -11835,7 +11849,9 @@ namespace WalkerProcessor {
                             else
                                 if (MiscThings::has_spell_equipped(false))
                                 {
+                                    //spell
 
+                                    attack_action_uses_cast_time = true;
 
 
                                     if (low_mana_detected && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f))
@@ -12089,7 +12105,16 @@ namespace WalkerProcessor {
 
                             //end of attack_1
 
-                            attack_action_time1 += dtime;
+                            if (attack_action_uses_cast_time)
+                            {
+                                bool is_actually_casting = WalkerProcessor::is_casting_walker(false);
+                                is_actually_casting |= dualcasting && WalkerProcessor::is_casting_walker(!false);
+
+                                if (is_actually_casting)
+                                    attack_action_time1 += dtime;
+                            }
+                            else
+                                attack_action_time1 += dtime;
 
                             bool dualcasting_no_mana = MiscThings::has_spell_equipped(true) && MiscThings::get_player_mana() < get_spell_cost(true) * 2.8f;
 
@@ -14370,7 +14395,12 @@ namespace WalkerProcessor {
 
             spell_mode = true;
             spell_to_use = spell;
-            return walk_to_object_by_refr(target, 3);
+            if (MiscThings::is_offensive_spell(spell))
+                return walk_to_object_by_index(MiscThings::get_object_by_refr(target), 3);
+            else
+                return walk_to_object_by_refr(target, 3);
+
+                //walk_to_object_by_refr(target, 3);
         }
         else
         {
