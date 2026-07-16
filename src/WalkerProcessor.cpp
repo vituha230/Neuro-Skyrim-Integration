@@ -16406,6 +16406,50 @@ namespace WalkerProcessor {
                     }
 
 
+
+
+                    auto redirect_top_volkihar_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a41);
+                    auto redirect_bottom_volkihar_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a42);
+
+                    if (redirect_top_volkihar_tower && redirect_bottom_volkihar_tower)
+                    {
+                        if (target_ref == redirect_bottom_volkihar_tower)
+                        {
+                            if (player->GetDistance(redirect_bottom_volkihar_tower) < 120.0f)
+                            {
+                                walk_again(); //"soft reset"
+                                target_ref = target_before_generic_redirect;
+                                have_target_to_walk = true;
+                                using_custom_path = true;
+                                dont_use_bounds_for_close_enough = true;
+                                walk_again_when_finished = true;
+                                dont_shift = true;
+                                custom_path = CustomWalkerPaths::volkihar_tower_up;
+                                return;
+                            }
+                        }
+
+                        if (target_ref == redirect_top_volkihar_tower)
+                        {
+                            if (player->GetDistance(redirect_top_volkihar_tower) < 120.0f)
+                            {
+                                walk_again(); //"soft reset"
+                                target_ref = target_before_generic_redirect;
+                                have_target_to_walk = true;
+                                using_custom_path = true;
+                                dont_use_bounds_for_close_enough = true;
+                                walk_again_when_finished = true;
+                                dont_shift = true;
+                                custom_path = CustomWalkerPaths::volkihar_tower_down;
+                                return;
+                            }
+                        }
+                    }
+
+
+
+
+
                     auto sovngarde_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xe2d48);
                     auto redirect_marker_portal = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x700bf58);
 
@@ -16636,6 +16680,9 @@ namespace WalkerProcessor {
 
                             auto redirect_in_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585d);
                             auto redirect_out_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585c);
+
+                            auto redirect_top_volkihar_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a41);
+                            auto redirect_bottom_volkihar_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a42);
 
                             auto redirect_ysgramor_chain = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xd82b5);
                             auto redirect_ysgramor_statue = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xab105);
@@ -16979,8 +17026,7 @@ namespace WalkerProcessor {
                 }
 
 
-
-
+     
                 auto redirect_in_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585d);
                 auto redirect_out_riften_watchtower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x705585c);
 

@@ -538,6 +538,7 @@ namespace MiscThings {
 
     void reveal_chests();
 
+    bool inside_volkihar_tower(RE::TESObjectREFR* object = nullptr);
 
     bool is_weapon_drawn();
 

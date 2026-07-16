@@ -100,6 +100,38 @@ namespace MiscThings {
 
 
 
+    bool inside_volkihar_tower(RE::TESObjectREFR* object)
+    {
+        if (!object)
+            object = RE::PlayerCharacter::GetSingleton();
+
+        if (object)
+        {
+            auto object_pos = object->GetPosition();
+            auto object_worldspace = object->GetWorldspace();
+            //auto riften_worldspace = RE::TESForm::LookupByID(0x16bb4);
+
+            if (object_worldspace && object_worldspace->formID == 0x3c) //tamriel
+            {
+                if (object_pos.z > -12932.8145)
+                {
+                    RE::NiPoint2 a = { -178731.078, 145396.203 }; //-5733.7241
+                    RE::NiPoint2 b = { -178731.078, 143380.891 }; //-5633.2554
+                    RE::NiPoint2 c = { -180946.641, 143380.891 }; //-5640.6494
+                    RE::NiPoint2 d = { -180946.641, 145396.203 }; //-5724.9077
+
+                    RE::NiPoint2 p = { object_pos.x, object_pos.y };
+                    if (MiscThings::is_inside_of_rectangle(p, a, b, c, d))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
     bool quest_leads_through_shit_volkihar_path(RE::TESQuestTarget* target, RE::TESQuest* quest)
     {
         if (quest && target)
@@ -4669,6 +4701,35 @@ namespace MiscThings {
                         return redirect_out_rift_watchtower;
                     }
                 }
+
+
+                //volkihar tower
+                auto redirect_top_volkihar_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a41);
+                auto redirect_bottom_volkihar_tower = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x7112a42);
+
+                if (redirect_top_volkihar_tower && redirect_bottom_volkihar_tower)
+                {
+                    if (target == redirect_top_volkihar_tower)
+                        return redirect_top_volkihar_tower; //continue
+
+                    if (target == redirect_bottom_volkihar_tower)
+                        return redirect_bottom_volkihar_tower; //continue
+
+
+                    //player up the tower, target outside
+                    if (MiscThings::inside_volkihar_tower(player) && !MiscThings::inside_volkihar_tower(target))
+                    {
+                        return redirect_top_volkihar_tower;
+                    }
+
+                    //player outside, target up the tower
+                    if (!MiscThings::inside_volkihar_tower(player) && MiscThings::inside_volkihar_tower(target))
+                    {
+                        return redirect_bottom_volkihar_tower;
+                    }
+                }
+
+
 
 
 
