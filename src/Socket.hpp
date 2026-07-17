@@ -367,7 +367,7 @@ namespace Capabilities
     {
         constexpr char Name[] = "cast_spell";
         constexpr char Desc[] =
-            R"(Cast spell. Requires spell ID. )";
+            R"(Cast spell. Requires spell ID. If spell takes hand slot - equip it instead of your current weapon before casting)";
         constexpr char JsonSchema[] =
            //R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the spell. Use get_available_spells to get list of spell IDs. ", "type": "integer" } }, "required": ["id"] })";//
             R"({ "additionalProperties": false, "type": "object", "properties": { "id_spell": { "description": "The ID of the spell. Use get_available_spells to get list of spell IDs.", "type": "integer" }, "id_target": { "description": "(OPTIONAL) The ID of the target", "type": "integer" } }, "required": ["id_spell"] })";
