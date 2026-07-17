@@ -12440,7 +12440,7 @@ namespace MiscThings {
 
                 unregister_all_actions();
 
-                if (force_choice(options, "You are trying to cast a dangerous spell, but there is Paarthurnax nearby... if you accidentely hit him, he might get mad at you. Are you sure you want to cast it?", force_type::confirm_cast_parthurnax))
+                if (force_choice(options, "You are trying to cast a dangerous spell, but there is Paarthurnax nearby... if you accidentely hit him, he might get mad at you. Are you sure you want to cast it? (If he asks you to use fire shout - make sure you are using the shout and not common fire spell!)", force_type::confirm_cast_parthurnax))
                 {
                     parthurnax_friendly_fire_request_sent = true;
                 }
