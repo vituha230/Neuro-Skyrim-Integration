@@ -1320,6 +1320,9 @@ namespace WalkerProcessor {
                     auto marker = RE::TESObjectREFR::LookupByID(0x7001834);
                     auto player = RE::PlayerCharacter::GetSingleton();
 
+                    bool autoloader_door_had_correct_shift = false;
+
+
                     if (target_ref && marker)
                     {
                         if (correct_word_of_power)
@@ -1343,6 +1346,9 @@ namespace WalkerProcessor {
 
                         //auto pos_target = target_ref->GetPosition();
                         //marker->AsReference()->SetPosition(pos_target);
+
+                        
+
 
                         auto marker_ref = marker->AsReference();
                         if (marker_ref)
@@ -1388,7 +1394,11 @@ namespace WalkerProcessor {
                                 }
                                 else
                                     if (autoload_door_pathfinding_failed && shift != RE::NiPoint3::Zero())
+                                    {
+                                        autoloader_door_had_correct_shift = true;
                                         autoload_door_pathfinding_failed = false;
+                                    }
+                                        
 
 
                                 if (dragon_pathfinding_failed && player->GetDistance(target_ref) > 10000.0f)
@@ -1727,7 +1737,7 @@ namespace WalkerProcessor {
                                     }
                                     else
                                     {
-                                        if (!autoload_door_pathfinding_failed && MiscThings::is_cave_autoloader_door(target_ref))
+                                        if (!autoloader_door_had_correct_shift && !autoload_door_pathfinding_failed && MiscThings::is_cave_autoloader_door(target_ref))
                                         {
                                             autoload_door_pathfinding_failed = true;
                                             return;
@@ -3315,6 +3325,27 @@ namespace WalkerProcessor {
             case (0x2002b54): //dlc1 wayshrine bowl0
             {
                 if (temp_result->formID == 0x2002b53)
+                    return target_ref;
+                break;
+            }
+
+            case (0x2015fbe): //dlc1 wayshrine bowl1
+            {
+                if (temp_result->formID == 0x2019c6a)
+                    return target_ref;
+                break;
+            }
+
+            case (0x2015fbd): //dlc1 wayshrine bowl2
+            {
+                if (temp_result->formID == 0x2019c6b)
+                    return target_ref;
+                break;
+            }
+
+            case (0x2015fbf): //dlc1 wayshrine bowl3
+            {
+                if (temp_result->formID == 0x2019c69)
                     return target_ref;
                 break;
             }
@@ -7982,8 +8013,81 @@ namespace WalkerProcessor {
             //refresh quests in case the list changed 
             auto quest_list = MiscThings::get_p_quest_list();
 
-            for (auto quest_entry : *quest_list)
+            //now quest list consists of only valid quests
+
+            if (quest)
             {
+                std::vector<MiscThings::quest> target_list{};
+
+                for (auto quest_entry : *quest_list)
+                {
+                    if (!MiscThings::is_bad_jailquest(quest_entry.quest, quest_entry.target) && !MiscThings::quest_target_is_hidden(quest_entry.quest, quest_entry.objective, quest_entry.target))
+                    {
+                        if (quest_entry.quest == quest)
+                        {
+                            if (WalkerProcessor::is_objective_phantom(quest_entry.quest, quest_entry.objective)) //there will be problems if phantom objectives have multiple targets
+                                return quest_entry.id;
+
+
+                            if (specific_objective)
+                            {
+                                if (quest_entry.objective == specific_objective)
+                                {
+                                    if (specific_target)
+                                    {
+                                        //everything is specified
+                                        if (quest_entry.target == specific_target)
+                                            return quest_entry.id;
+                                    }
+                                    else
+                                    {
+                                        //target not specified. go through all entries that have this quest, find nearest target
+                                        target_list.push_back(quest_entry);
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                //objective not specified. go through all entries that have this quest, find nearest target
+                                target_list.push_back(quest_entry);
+                            }
+                        }
+                    }
+                }
+
+                //either we have a list of candidates from which we want the nearest, or nothing is found
+
+                float min_distance = FLT_MAX;
+                int best_id = -1;
+
+                for (auto candidate : target_list)
+                {
+                    float corrected_distance = candidate.estimate_distance;
+                    if (corrected_distance == 0.0f)
+                        corrected_distance = 9999999.0f;
+
+                    if (corrected_distance < min_distance)
+                    {
+                        best_id = candidate.id;
+                        min_distance = corrected_distance;
+                    }
+                }
+
+                return best_id;
+
+            }
+            else
+                return -1; //no quest given
+
+
+            
+
+            
+
+
+
+                /*
                 if (!MiscThings::quest_is_hidden(quest_entry.quest, quest_entry.objective))
                 {
                     if (quest_entry.quest == quest)
@@ -8009,7 +8113,6 @@ namespace WalkerProcessor {
                                                 {
                                                     result = quest_entry.id;
                                                     return result;
-                                                    //break;
                                                 }
                                             }
                                         }
@@ -8019,7 +8122,8 @@ namespace WalkerProcessor {
                         }
                     }
                 }
-            }
+                */
+            //}
         }
 
 

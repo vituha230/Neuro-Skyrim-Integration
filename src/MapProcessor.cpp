@@ -668,7 +668,7 @@ namespace MapProcessor {
 			return false;
 
 
-		if (player->GetWorldspace() && player->GetWorldspace()->formID == 0x2000bb5) //forgotten valley 
+		if (player->GetWorldspace() && player->GetWorldspace()->formID == 0x2000bb5) //dlc1 forgotten valley 
 		{
 			auto valley_map_marker = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x20088e0);
 
