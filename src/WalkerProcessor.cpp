@@ -973,7 +973,7 @@ namespace WalkerProcessor {
 
     bool is_fighting()
     {
-        return ((interaction_after_walk == 3) && target_ref) || runaway_mode;
+        return ((interaction_after_walk == 3) && target_ref) || runaway_mode || (MiscThings::is_werewolf() && target_ref->IsActor() && target_ref->IsDead() && interaction_after_walk == 1);
     }
 
 
