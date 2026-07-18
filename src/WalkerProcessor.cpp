@@ -3298,12 +3298,28 @@ namespace WalkerProcessor {
     {
         auto temp_result = get_targeted_ref_raw();
 
-        if (target_ref && target_ref->formID == 0x401ee14 && temp_result && temp_result->formID == 0x40275f5) //black book2 inside apocrypha final
+        if (target_ref && temp_result)
         {
-            auto fake_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x401ee14);
 
-            if (fake_target)
-                return fake_target;
+            switch (target_ref->formID)
+            {
+
+            case (0x401ee14): //black book2 inside apocrypha final
+            {
+                if (temp_result->formID == 0x40275f5)
+                    return target_ref;
+                break;
+            }
+
+
+            case (0x2002b54): //dlc1 wayshrine bowl0
+            {
+                if (temp_result->formID == 0x2002b53)
+                    return target_ref;
+                break;
+            }
+
+            }
         }
 
         return temp_result;

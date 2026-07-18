@@ -639,6 +639,10 @@ namespace MapProcessor {
 
 		auto player = RE::PlayerCharacter::GetSingleton();
 
+		if (!player)
+			return false;
+
+
 		if (MiscThings::is_intro() || MiscThings::is_intro2())
 			return false;
 
@@ -662,6 +666,26 @@ namespace MapProcessor {
 
 		if (!can_fight)
 			return false;
+
+
+		if (player->GetWorldspace() && player->GetWorldspace()->formID == 0x2000bb5) //forgotten valley 
+		{
+			auto valley_map_marker = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x20088e0);
+
+			if (valley_map_marker)
+			{
+				auto data = (RE::ExtraMapMarker*)valley_map_marker->extraList.GetByType(RE::ExtraDataType::kMapMarker);
+				if (data && data->mapData)
+				{
+					if (data->mapData->flags)
+						return data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo); //dont allow fast travel until we discover fast-travel location into the valley because otherwise its a mega long walk again for no reason
+					else
+						return false;
+				}
+			}
+		}
+
+
 
 		return true;
 	}

@@ -28,6 +28,25 @@
 ///////////////////////
 
 
+//mainquest elder scroll reading - proper check for correct spell being read + advice says (Dragon)
+//enemy health info should have some threshold for regenerating enemies, bow-not-hitting should only account for decrease in hp
+
+//"combat mode" system
+// mage (spells only), spellsword (spell in left + onehanded in right), bow/crossbow, twohanded melee, melee both hands, shield + onehanded, (unarmed?)
+// switching from bow/crossbow has no restrictions when no arrows
+// switching from spells has no restrictions when low mana (<20%?)
+// spells that dont take hand have no restrictions in any mode
+// some interactive commands for non-spell combat (power attack for melee, aim carefully for bows, block for twohanded/shield)
+
+//try persisting the mode after respawn post-death? (just remember hands before death and reequip on respawn if possible. if not possible - try to find something else)
+
+
+
+
+
+
+
+
 //TODO hearthfire dlc
 
 

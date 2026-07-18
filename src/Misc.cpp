@@ -13446,6 +13446,15 @@ namespace MiscThings {
                         std::string model = furniture->GetModel();
 
 
+                        if (model.find("WayShrineScoopMarker") != std::string::npos) //dlc1 wayshrine center bowl
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 65.0f, 50.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
+
+
                         if (model.find("CasCoffinPuzzleSpike01") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 30.0f, 65.0f };
@@ -13884,6 +13893,15 @@ namespace MiscThings {
                         RE::NiPoint3 object_angles = object->data.angle;
 
                         std::string model = door->GetModel();
+
+
+                        if (model.find("SEWayShrinePortal01") != std::string::npos) //dlc1 wayshrine portals
+                        {
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 220.0f, 100.0f };
+                            RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
+                            result = rotated_shift_vector;
+                        }
+
 
                         if (model.find("FarmBTrapdoor02") != std::string::npos) //exclude markers. for some reason their model state is not 0 even though the model doesnt exist
                         {
