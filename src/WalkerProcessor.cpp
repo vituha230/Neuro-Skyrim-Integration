@@ -526,6 +526,152 @@ namespace WalkerProcessor {
 
 
 
+
+    bool dlc1_forgotten_valley_cave_check()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!player)
+            return false;
+
+        auto parent_cell = player->GetParentCell();
+
+        if (!using_custom_path)
+        {
+            if (parent_cell && parent_cell->formID == 0x2001c09) //dlc1 forgotten valley big cave with unpathfindable water. water escapes
+            {
+                if (MiscThings::is_player_swimming())
+                {
+                    RE::NiPoint3 small_island_pos = { 4601.41455, 13265.2432, 6963.70801 };
+                    if (target_ref && target_ref->GetPosition().GetDistance(small_island_pos) < 800.0f)
+                    {
+                        wiggle_body_then_walk_again = false;
+                        try_unstuck = false;
+                        invalidate_path();
+                        walk_again(); //soft reset
+                        dont_quicksave_after_custom_path = true;
+                        using_custom_path = true;
+                        walk_again_when_finished = true;
+                        current_path_point = 0;
+                        custom_path = CustomWalkerPaths::dlc1_volley_cave_water_escape_small_island;
+                        //custom_path_use_z_for_path_point_reached = true;
+                        path = custom_path;
+                        path_valid = true;
+                        dont_shift = true;
+                        return true;
+                    }
+                    else
+                    {
+                        //its not on this small island. we need to escape water. decide which escape route is closer, use it
+                        RE::NiPoint3 water_escape_near_entrance = { 3960.09570, 9580.68750, 6847.89697 };
+                        RE::NiPoint3 water_escape_near_exit = { 15039.0342, 11383.3789, 6904.10352 };
+                        RE::NiPoint3 water_escape_small_cave_pool = { 11430.0479, 7170.80078, 8094.86475 };
+
+
+                        auto player_pos = player->GetPosition();
+
+                        float distance_entrance = player_pos.GetDistance(water_escape_near_entrance);
+                        float distance_exit = player_pos.GetDistance(water_escape_near_exit);
+                        float distance_small_pool = player_pos.GetDistance(water_escape_small_cave_pool);
+
+                        float best_distance = std::min({ distance_entrance, distance_exit, distance_small_pool });
+
+                        if (best_distance == distance_exit) //they should be exactly bitwise equal after min() operation
+                        {
+                            //use exit
+                            try_unstuck = false;
+                            wiggle_body_then_walk_again = false;
+                            invalidate_path();
+                            walk_again(); //soft reset
+                            dont_quicksave_after_custom_path = true;
+                            using_custom_path = true;
+                            walk_again_when_finished = true;
+                            current_path_point = 0;
+                            custom_path = CustomWalkerPaths::dlc1_volley_cave_water_escape_near_end;
+                            //custom_path_use_z_for_path_point_reached = true;
+                            path = custom_path;
+                            path_valid = true;
+                            dont_shift = true;
+                            return true;
+                        }
+                        else
+                        {
+                            if (best_distance == distance_small_pool)
+                            {
+                                //small pool in cave
+                                try_unstuck = false;
+                                wiggle_body_then_walk_again = false;
+                                invalidate_path();
+                                walk_again(); //soft reset
+                                dont_quicksave_after_custom_path = true;
+                                using_custom_path = true;
+                                walk_again_when_finished = true;
+                                current_path_point = 0;
+                                custom_path = CustomWalkerPaths::dlc1_volley_cave_water_escape_little_cave_pool;
+                                //custom_path_use_z_for_path_point_reached = true;
+                                path = custom_path;
+                                path_valid = true;
+                                dont_shift = true;
+                                return true;
+                            }
+                            else
+                            {
+                                //use entrance
+                                                            //its a bit tricky because they put some random glacier in the water and it can ruin it all so must start from nearest point to custom path
+
+                                int i_best_point = 0;
+                                float min_distance_to_point = FLT_MAX;
+
+                                int i = 0;
+                                for (auto dlc1_custom_path_point : CustomWalkerPaths::dlc1_volley_cave_water_escape_near_start)
+                                {
+                                    float this_distance = player_pos.GetDistance(dlc1_custom_path_point);
+
+                                    if (this_distance < min_distance_to_point)
+                                    {
+                                        min_distance_to_point = this_distance;
+                                        i_best_point = i;
+                                    }
+                                    i++;
+                                }
+
+                                CustomWalkerPaths::template_path.clear();
+
+                                for (int i = i_best_point; i < std::size(CustomWalkerPaths::dlc1_volley_cave_water_escape_near_start); i++)
+                                {
+                                    CustomWalkerPaths::template_path.push_back(CustomWalkerPaths::dlc1_volley_cave_water_escape_near_start.at(i));
+                                }
+
+                                if (std::size(CustomWalkerPaths::template_path) <= 0)
+                                    return false;
+
+                                try_unstuck = false;
+                                wiggle_body_then_walk_again = false;
+                                invalidate_path();
+                                walk_again(); //soft reset
+                                dont_quicksave_after_custom_path = true;
+                                using_custom_path = true;
+                                walk_again_when_finished = true;
+                                current_path_point = 0;
+                                custom_path = CustomWalkerPaths::template_path;
+                                //custom_path_use_z_for_path_point_reached = true;
+                                path = custom_path;
+                                path_valid = true;
+                                dont_shift = true;
+                                return true;
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+
+
     long long get_volkihar_balcony_fasttravel_ban_advice()
     {
         return volkihar_balcony_fasttravel_ban_advice;
@@ -17828,6 +17974,10 @@ namespace WalkerProcessor {
 
                     if (try_unstuck)
                     {
+                        if (dlc1_forgotten_valley_cave_check())
+                            return;
+
+
                         if (walk_unstuck(dtime))
                         {
                             walk_unstuck_time = 0.0f;
@@ -17860,7 +18010,6 @@ namespace WalkerProcessor {
 
                         if (shit_door_locked)
                         {
-
                             auto targeted_ref = get_targeted_ref();
 
                             if (targeted_ref && is_door(targeted_ref) && !is_targeted_door_closed())
@@ -17898,6 +18047,11 @@ namespace WalkerProcessor {
                         else
                         {
                             //if (walk_fixed_time(true, 0.2f, dtime))
+
+
+                            if (dlc1_forgotten_valley_cave_check())
+                                return;
+
                             if (walk_unstuck(dtime))
                             {
                                 if (player->GetPosition().GetDistance(wiggle_body_start_pos) < 60.0f)
