@@ -17885,7 +17885,7 @@ namespace WalkerProcessor {
                     auto player_actor = (RE::Actor*)player->AsReference();
 
                     //hide weapon
-                    if (!shout_mode && player_actor && (MiscThings::is_weapon_drawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3 && !input_wants_to_cast())
+                    if (!shout_mode && player_actor && (MiscThings::is_weapon_drawn() || player_actor->actorState2.weaponState == RE::WEAPON_STATE::kDrawing) && interaction_after_walk != 3 && !input_wants_to_cast() && !(MiscThings::has_bound_weapon_equipped(true) || MiscThings::has_bound_weapon_equipped(false)))
                     {
                         if (!tried_to_draw_weapon1 || draw_weapon_check_time1 > 2.0f)
                         {

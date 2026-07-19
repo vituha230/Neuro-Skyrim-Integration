@@ -438,6 +438,7 @@ namespace MiscThings {
 
     bool equip_ammo(bool crossbow);
 
+    bool has_bound_weapon_equipped(bool right);
 
     bool can_fast_travel();
 

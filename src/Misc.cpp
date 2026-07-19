@@ -50,6 +50,27 @@ namespace MiscThings {
 
 
 
+
+    bool has_bound_weapon_equipped(bool right)
+    {
+        auto hand_content = MiscThings::get_hand_contents(right);
+
+        if (hand_content)
+        {
+            switch (hand_content->formID)
+            {
+            case (0x58f5f): //sword
+            case (0x58f5e): //axe
+            case (0x58f60): //bow
+            case (0x401ce02): //dagger
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
     bool inside_meridia_flybox()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
