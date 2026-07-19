@@ -4,6 +4,7 @@
 #include "InputActions.hpp"
 #include "ApocryphaRedirects.hpp"
 #include <ctime>
+//#include <cmath>
 
 //TODO: at least put it in groups. maybe tell what can be done with each group
 
@@ -36,6 +37,67 @@ namespace MiscThings {
     long long settlement_advice_timestamp = 0;
     
 
+
+
+    bool projectile_flying_into_player_face()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        bool result = false;
+
+        if (player)
+        {
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player, 3000.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref && !a_ref->IsDisabled())
+                    {
+                        auto base_obj = a_ref->GetBaseObject();
+
+                        if (base_obj && base_obj->formType == RE::FormType::Projectile)
+                        {
+                            if (a_ref->Get3D())
+                            {
+                                auto projectile_fly_vector = a_ref->Get3D()->world.rotate.GetVectorY();
+                                auto projectile_pos = a_ref->GetPosition();
+
+                                auto projectile = (RE::BGSProjectile*)base_obj;
+
+                                if (projectile->data.types != RE::BGSProjectileData::Type::kFlamethrower)
+                                {
+                                    auto col_layer = projectile->data.collisionLayer;
+
+
+                                    auto raycast_ref = MiscThings::GetRaycastRef(projectile_pos, projectile_fly_vector, 3000.0f, nullptr, 0b00001000000000000000000000000110);
+
+                                    //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                                    //DebugAPI_IMPL::DrawDebug::draw_line(projectile_pos, projectile_pos + projectile_fly_vector * 500.0f);
+                                    //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+
+
+                                    if (raycast_ref == player)
+                                    {
+                                        result = true;
+                                        return RE::BSContainer::ForEachResult::kStop;
+                                    }
+                                }
+
+                                
+                            }
+                            
+                                
+                        }
+
+                    }
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+        }
+
+        return result;
+    }
+
+
+
     bool is_weapon_drawn()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -47,6 +109,39 @@ namespace MiscThings {
 
         return false;
     }
+
+
+
+
+    //stolen from stackoverflow
+
+    float sign(RE::NiPoint2 p1, RE::NiPoint2 p2, RE::NiPoint2 p3)
+    {
+        return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+    }
+
+    bool PointInTriangle(RE::NiPoint2 pt, RE::NiPoint2 v1, RE::NiPoint2 v2, RE::NiPoint2 v3)
+    {
+        float d1, d2, d3;
+        bool has_neg, has_pos;
+
+        d1 = sign(pt, v1, v2);
+        d2 = sign(pt, v2, v3);
+        d3 = sign(pt, v3, v1);
+
+        has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+        return !(has_neg && has_pos);
+    }
+
+
+
+
+
+
+
+
 
 
     /* //probably is_offensive_spell is enough
@@ -2332,7 +2427,6 @@ namespace MiscThings {
         return result;
     }
 
-
     RE::NiPoint3 get_nearest_navmesh_node_in_cell(RE::TESObjectREFR* object, RE::TESObjectCELL* cell)
     {
         RE::NiPoint3 result = RE::NiPoint3::Zero();
@@ -2347,6 +2441,90 @@ namespace MiscThings {
 
         return result;
     }
+
+
+
+
+
+    bool object_is_on_navmesh_in_cell(RE::NiPoint3 object_pos, RE::TESObjectCELL* cell)
+    {
+        if (object_pos != RE::NiPoint3::Zero())
+        {
+            auto pos = object_pos;
+
+            if (cell)
+            {
+                //must check adjacent cells if in overworld
+
+                auto navmeshes_array = cell->navMeshes;
+
+                if (navmeshes_array)
+                {
+                    float min_distance = FLT_MAX;
+
+                    RE::BSTArray<RE::BSTSmartPointer<RE::NavMesh>>* navmeshes_bs_array = &navmeshes_array->navMeshes;
+
+                    for (auto& navmesh : *navmeshes_bs_array)
+                    {
+                        if (navmesh)
+                        {
+                            auto vertices = navmesh->vertices;
+
+
+                            auto triangles = navmesh->triangles;
+
+                            for (RE::BSNavmeshTriangle triangle : triangles)
+                            {
+                                auto vertex_id0 = triangle.vertices[0];
+                                auto vertex_id1 = triangle.vertices[1];
+                                auto vertex_id2 = triangle.vertices[2];
+
+                                auto size_vertices = std::size(vertices);
+
+                                if (vertex_id0 < size_vertices && vertex_id1 < size_vertices && vertex_id2 < size_vertices)
+                                {
+                                    RE::BSNavmeshVertex vertex0 = vertices[vertex_id0];
+                                    RE::BSNavmeshVertex vertex1 = vertices[vertex_id1];
+                                    RE::BSNavmeshVertex vertex2 = vertices[vertex_id2];
+
+                                    auto v0 = vertex0.location;
+                                    auto v1 = vertex1.location;
+                                    auto v2 = vertex2.location;
+
+                                    bool z_test = abs(v0.z - object_pos.z) < 300.0f && abs(v1.z - object_pos.z) < 300.0f && abs(v2.z - object_pos.z) < 300.0f;
+
+                                    if (z_test && PointInTriangle({ object_pos.x, object_pos.y }, { v0.x, v0.y }, { v1.x, v1.y }, { v2.x, v2.y }))
+                                        return true;
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+
+    bool object_is_on_navmesh_in_cell(RE::TESObjectREFR* object, RE::TESObjectCELL* cell)
+    {
+        if (object)
+        {
+            auto object_pos = object->GetPosition();
+
+            return object_is_on_navmesh_in_cell(object_pos, cell);
+
+        }
+
+        return false;
+    }
+
+
+
+
+
 
     RE::NiPoint3 get_farthest_navmesh_node_in_cell(RE::TESObjectREFR* object, RE::TESObjectCELL* cell)
     {
@@ -2435,6 +2613,119 @@ namespace MiscThings {
         }
 
         return result;
+    }
+
+
+    bool safe_to_dodge_projectile()
+    {
+        float pi = RE::NI_PI;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto player_pos = player->GetPosition();
+
+            auto parent_cell = player->GetParentCell();
+
+            float min_distance = FLT_MAX;
+
+            if (parent_cell)
+            {
+                bool interiorCell = parent_cell->IsInteriorCell();
+
+
+
+                std::vector<RE::NiPoint3> test_points{};
+
+                RE::NiPoint3 point = player_pos;
+
+                test_points.push_back(player_pos);
+
+                float r = 150.0f;
+
+                for (int i = 0; i < 6; i++)
+                {
+                    point = { r * std::cos(pi / 3 * i), r * std::sin(pi / 3 * i), 0.0f};
+                    test_points.push_back(player_pos + point);
+                }
+
+
+
+                if (interiorCell)
+                {
+                    
+                    //take player pos and 6 points on circle around him, test all for being on navmesh. range... 300?
+
+                    for (auto test_point : test_points)
+                    {
+                        if (!object_is_on_navmesh_in_cell(test_point, parent_cell))
+                            return false;
+                    }
+                    
+                    return true;
+
+                }
+                else
+                {
+                    auto gridCells = RE::TES::GetSingleton()->gridCells;
+
+                    if (gridCells)
+                    {
+                        //check all cells within 1 cell radius
+                        auto parent_cell_coords_raw = parent_cell->GetCoordinates();
+
+                        RE::NiPoint2 parent_cell_coords = { parent_cell_coords_raw->worldX, parent_cell_coords_raw->worldY };
+
+
+                        for (auto test_point : test_points)
+                        {
+
+                            bool point_is_good = false;
+
+                            for (int x = 0; x < gridCells->length; x++)
+                                for (int y = 0; y < gridCells->length; y++)
+                                {
+                                    auto adjacent_cell = gridCells->GetCell(x, y);
+
+                                    if (adjacent_cell && adjacent_cell->IsAttached())
+                                    {
+                                        auto adjacent_cell_coords_raw = adjacent_cell->GetCoordinates();
+
+                                        RE::NiPoint2 adjacent_cell_coords = { adjacent_cell_coords_raw->worldX, adjacent_cell_coords_raw->worldY };
+
+                                        auto cell_distance = adjacent_cell_coords - parent_cell_coords;
+
+                                        if (cell_distance.Length() < 4100.0f)
+                                        {
+                                            if (object_is_on_navmesh_in_cell(test_point, adjacent_cell))
+                                            {
+                                                point_is_good = true;
+                                                goto finish_point;
+                                            }
+                                        }
+                                    }
+                                }
+
+                        finish_point:
+                            if (!point_is_good)
+                                return false;
+                        }
+
+                        return true; //all points checked all points good
+
+                        
+                    }
+                }
+            }
+            else
+            {
+                ;
+            }
+        }
+
+        return false;
+
     }
 
 

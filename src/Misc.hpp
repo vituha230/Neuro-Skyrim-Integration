@@ -16,6 +16,9 @@ namespace MiscThings {
     bool quest_target_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective, RE::TESQuestTarget* target);
 
 
+    bool safe_to_dodge_projectile();
+
+
     bool is_workbench(RE::TESObjectREFR* object);
 
     RE::ObjectRefHandle get_occupied_furniture_all_process(RE::TESObjectREFR* object);
@@ -441,6 +444,10 @@ namespace MiscThings {
     bool has_bound_weapon_equipped(bool right);
 
     bool can_fast_travel();
+
+
+    bool projectile_flying_into_player_face();
+
 
     bool is_self_cast_spell(bool right);
 

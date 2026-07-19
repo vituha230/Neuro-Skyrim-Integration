@@ -327,6 +327,9 @@ namespace WalkerProcessor {
     float walk_unstuck_time = 0.0f;
     int unstuck_attempts = 0;
 
+    float dodge_projectile_time = 0.0f;
+    bool do_dodge_projectile = false;
+
     float attack_spell_cast_timeout = 0.0f;
 
     bool paused_before_interaction = false;
@@ -523,7 +526,6 @@ namespace WalkerProcessor {
     RE::NiPoint3 last_point_of_last_path{};
 
     bool last_dragon_was_flying = false;
-
 
 
 
@@ -4363,7 +4365,10 @@ namespace WalkerProcessor {
         auto path_point_pos = target_center;
         auto pos_dif = path_point_pos - camera_pos;
 
-        if (force_speed_correction || (interaction_after_walk == 3 && start_attacking && (has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)))
+
+        bool low_range_concentration_spell = is_concentration_spell(get_current_active_hand()) && get_weapon_range(get_current_active_hand()) < 2000.0f;
+
+        if (force_speed_correction || (interaction_after_walk == 3 && start_attacking && ((has_ranged_weapon_equipped(get_current_active_hand()) && !low_range_concentration_spell) || shout_mode)))
         {
             //assuming its always pulled to the max
 
@@ -4890,7 +4895,7 @@ namespace WalkerProcessor {
     float vampirelord_coef_attack = 1.8f;
     float vampirelord_coef_normal = 0.0f;
 
-
+    float dodge_coef_pathpoint = 2.0f;
 
 
 
@@ -4932,9 +4937,9 @@ namespace WalkerProcessor {
                 auto distance = pos_dif.Length();
 
                 if ((int)std::size(path) < 3)
-                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming() * (1 + (float)do_dodge_projectile*dodge_coef_pathpoint); //100
                 else
-                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming(); //100
+                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming() * (1 + (float)do_dodge_projectile * dodge_coef_pathpoint); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
@@ -5017,7 +5022,7 @@ namespace WalkerProcessor {
                             result = distance < base_threshold + 70.0f * MiscThings::is_player_swimming(); //100
                         }
                         else
-                            result = distance < ((blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming()); //100
+                            result = distance < ((blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming()) * (1 + (float)do_dodge_projectile * dodge_coef_pathpoint); //100
                     }
                     else
                         result = true;
@@ -5937,6 +5942,8 @@ namespace WalkerProcessor {
         //}
     }
 
+
+
     
     int unstuck_direction = 0;
 
@@ -6016,6 +6023,51 @@ namespace WalkerProcessor {
 
         return result;
     }
+
+
+
+    int dodge_direction = 0;
+
+    bool dodge_projectile(float dtime)
+    {
+        bool result = false;
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (dodge_projectile_time < 0.3f && player)
+        {
+            dodge_projectile_time += dtime;
+
+            if (dodge_direction < 0 || dodge_direction > 1)
+                dodge_direction = 0;
+
+            if (dodge_direction == 0)
+            {
+                left();
+            }
+
+            if (dodge_direction == 1)
+            {
+                right();
+            }
+        }
+        else
+        {
+            dodge_projectile_time = 0.0f;
+            
+            float dodge_direction_chance = (float)std::rand() / RAND_MAX;
+
+            if (dodge_direction_chance < 0.5)
+                dodge_direction = 1;
+            else
+                dodge_direction = 0;
+
+            result = true;
+        }
+
+        return result;
+    }
+
+
 
 
     bool walk_fixed_time(bool forward, float how_long, float dtime)
@@ -7568,7 +7620,7 @@ namespace WalkerProcessor {
 
                 float silly_walk_chance = (float)std::rand() / RAND_MAX;
 
-                if (silly_walk_chance < 0.1)
+                if (silly_walk_chance < 0.05)
                     silly_walk_mode = true;
 
 
@@ -11198,7 +11250,7 @@ namespace WalkerProcessor {
                                 auto range2 = effectSetting->data.projectileBase->data.range;
 
                                 if (range2 > 0.0f)
-                                    return range2*0.9f;
+                                    return range2*0.8f;
                             }
 
                         }
@@ -15773,6 +15825,22 @@ namespace WalkerProcessor {
             }
 
             
+            if (MiscThings::projectile_flying_into_player_face())
+            {
+                if (MiscThings::safe_to_dodge_projectile())
+                    do_dodge_projectile = true;
+            }
+
+            if (do_dodge_projectile)
+            {
+                if (dodge_projectile(dtime))
+                {
+                    do_dodge_projectile = false;
+                }
+            }
+
+
+
             if (!RE::UI::GetSingleton()->IsMenuOpen(RE::TweenMenu::MENU_NAME) && !RE::UI::GetSingleton()->IsMenuOpen(RE::LevelUpMenu::MENU_NAME) && !RE::UI::GetSingleton()->IsMenuOpen(RE::StatsMenu::MENU_NAME) && (init_delay || true))
             {
                 //path_valid = true;
