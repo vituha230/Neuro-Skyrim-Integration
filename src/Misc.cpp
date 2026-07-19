@@ -22135,6 +22135,7 @@ namespace MiscThings {
                 case (0x13018): //lesser ward
                 case (0x211F1): //steadfast ward
                 case (0x211F0): //greater ward
+                case (0x1A4CC): //telekinesis
                     return false;
                 }
 
