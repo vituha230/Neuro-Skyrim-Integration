@@ -39,7 +39,8 @@ float pause_post_cast = 0.0f;
 bool low_mana_notified = false;
 bool input_dualcasting = false;
 float spell_cast_time_timeout = 0.0f;
-
+float spell_cast_not_spell_timeout = 0.0f;
+float pause_pre_cast = 0.0f;
 
 float fishing_timer = 0.0f;
 
@@ -68,6 +69,8 @@ void reset_input_processor()
     low_mana_notified = false;
     input_dualcasting = false;
     spell_cast_time_timeout = 0.0f;
+    spell_cast_not_spell_timeout = 0.0f;
+    pause_pre_cast = 0.0f;
 
     need_look_down = false;
 
@@ -1014,8 +1017,10 @@ void try_casting_hand(bool right)
         spell_cast_time = 0.0f;
         spell_actual_cast_time = 0.0f;
         spell_cast_time_timeout = 0.0f;
+        spell_cast_not_spell_timeout = 0.0f;
         need_look_down = false;
         pause_post_cast = 0.0f;
+        pause_pre_cast = 0.0f;
         input_dualcasting = false;
         //low_mana_notified = false;
     }
@@ -1089,9 +1094,27 @@ bool make_long_cast_spell_hand(bool right, float dtime)
         return false;
     }
 
+    /*
+    if (!MiscThings::has_spell_equipped(right))
+    {
+        if (spell_cast_not_spell_timeout < 1.0f)
+        {
+            spell_cast_not_spell_timeout += dtime;
+            return false; //wait for spell to be equipped. this is necessary for situation where we switch from melee weapon which was drawn to spell and it takes time to reequip but this function thinks we have spell equipped (which isnt a spell yet)
+        }
+        //else do nothing fall down 
+    }
+     */   
+
     if (!MiscThings::is_weapon_drawn()) //now more strict
     {
         return false; //just wait for it to draw completely
+    }
+
+    if (pause_pre_cast < 0.1f)
+    {
+        pause_pre_cast += dtime;
+        return false; 
     }
 
 
@@ -1444,7 +1467,10 @@ void input_processor(float dtime)
                 pause_post_cast = 0.0f;
                 low_mana_notified = false;
                 input_dualcasting = false;
+                spell_cast_not_spell_timeout = 0.0f;
+                pause_pre_cast = 0.0f;
                 WalkerProcessor::unpause_attacking();
+                
             }
         }
 

@@ -23511,11 +23511,21 @@ namespace MiscThings {
     
     bool is_offensive_spell(RE::SpellItem* spell)
     {
+
         bool result = false;
 
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player && spell)
         {
+            switch (spell->formID)
+            {
+            case (0x211EB)://bound sword
+            case (0x211EC)://bound battleaxe
+            case (0x211ED)://bound bow
+            case (0x401ce06)://bound dagger
+                return true;
+            }
+
             if (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll)
             {
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
