@@ -10952,10 +10952,15 @@ namespace WalkerProcessor {
                     }
                     else
                     {
-                        if (weapon->IsBow() || weapon->IsCrossbow())
+                        if (!worn_ammo)
                         {
-                            have_bow = true;
+                            if (weapon->IsBow() || weapon->IsCrossbow())
+                            {
+                                if (!MiscThings::equip_ammo(weapon->IsCrossbow()))
+                                    have_bow = true;
+                            }
                         }
+
                     }
                 }
             }

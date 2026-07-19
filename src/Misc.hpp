@@ -435,6 +435,10 @@ namespace MiscThings {
 
     bool have_any_quests();
 
+
+    bool equip_ammo(bool crossbow);
+
+
     bool can_fast_travel();
 
     std::string get_quest_type_text(RE::TESQuest* quest);

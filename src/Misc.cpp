@@ -5096,6 +5096,66 @@ namespace MiscThings {
 
 
 
+    bool equip_ammo(bool crossbow)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
+
+            for (auto& entry : inventory)
+            {
+                if (entry.first && entry.second.first > 0 && entry.second.second.get())
+                {
+                    auto item_form = (RE::TESForm*)entry.first;
+
+                    if (item_form->IsAmmo())
+                    {
+                        auto ammo = (RE::TESAmmo*)item_form;
+
+                        if (crossbow)
+                        {
+                            if (!ammo->IsBolt())
+                                continue;
+                        }
+                        else
+                        {
+                            if (ammo->IsBolt())
+                                continue;
+                        }
+
+
+                        RE::InventoryEntryData* entry_entry = entry.second.second.get();
+
+                        RE::ExtraDataList* extra = nullptr;
+
+                        auto actor_equip = RE::ActorEquipManager::GetSingleton();
+
+                        if (actor_equip)
+                        {
+                            if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
+                            {
+                                extra = *entry_entry->extraLists->begin();
+
+                                actor_equip->EquipObject((RE::Actor*)player, entry.first, extra); //equip with extra for scripts to trigger
+                            }
+                            else
+                                actor_equip->EquipObject((RE::Actor*)player, entry.first); //normal equip
+
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+
     bool is_door_closed(RE::TESObjectREFR* door)
     {
         bool result = false;
@@ -12760,6 +12820,19 @@ namespace MiscThings {
                                                 if (subvar2.IsString())
                                                 {
                                                     std::string result_string = subvar2.GetString();
+
+                                                    if (result_string == "No arrows equipped.")
+                                                    {
+                                                        if (MiscThings::equip_ammo(false))
+                                                            return;
+                                                    }
+
+
+                                                    if (result_string == "No bolts equipped.")
+                                                    {
+                                                        if (MiscThings::equip_ammo(true))
+                                                            return;
+                                                    }
 
                                                     if (result_string.find("No direct path seen") != std::string::npos)
                                                     {
