@@ -30,8 +30,6 @@
 
 
 //confirm replacing 2handed weapon with a spell 
-//make a function to pick random good weapon to replace spell (2handed with 20% chance, 1handed with 80% chance)
-//autoreplace spell with good random weapon if not enough mana to do anything
 //and retain summoned weapon (or no? if it is not replaced with onehanded weapons it will be there almost forever because its not autoremoved, and cannot be reequipped. maybe only for spells?)
 //for non spells start equipping with hand that is not summoned weapon (unless both hands are summoned weapons)
 
@@ -57,8 +55,6 @@
 //after sword pickup objective doesnt exist too. need 2 phantom objectives
 
 //try to maintain hand with conjured weapon and not autoequip spells into it.
-//autoequip other weapon when no mana left and both hands are spells
-
 
 //riften tomb thieves guild entrance should be silent. everithing involving that place should be silent
 

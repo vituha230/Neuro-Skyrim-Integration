@@ -18808,6 +18808,13 @@ namespace MiscThings {
                             }
                         }
                     }
+                    else
+                    {
+                        if (new_armor->formEnchanting != nullptr)
+                        {
+                            new_armor_val += 40.0f; 
+                        }
+                    }
 
 
                     if (slot == RE::BGSBipedObjectForm::BipedObjectSlot::kShield && (!current_armor || has_spell_equipped(false)))
@@ -19249,8 +19256,12 @@ namespace MiscThings {
 
 
     bool last_free_was_left = false;
+    bool last_free_spell_was_left = true; //so it starts with left
 
-    RE::BGSEquipSlot* get_free_slot(bool offensive = true)
+    long long last_get_slot_timestamp = 0;
+    long long last_get_slot_spell_timestamp = 0;
+
+    RE::BGSEquipSlot* get_free_slot(bool offensive = true, bool spell = false)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto actor_equip = RE::ActorEquipManager::GetSingleton();
@@ -19273,17 +19284,49 @@ namespace MiscThings {
 
             //both are busy
 
-            last_free_was_left = !last_free_was_left;
+            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
 
-            //it cant be used like this - then if non offensive spell is in left hand - cant equip anything else in that slot
-            //if (offensive && has_spell_equipped(false) && !is_offensive_spell(false)) //if this one is offensive and we have non offensive spell in left hand - 
-            //    return (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
+            if (spell)
+            {
+                
+                float delta_getslot = (double)(now - last_get_slot_spell_timestamp) / 1000000000.0;
 
+                if (delta_getslot > 60.0f)
+                {
+                    last_get_slot_spell_timestamp = now;
+                    last_free_spell_was_left = true; //reset so it starts with left again
+                }
 
-            if (last_free_was_left)
-                return right_slot;
+                last_free_spell_was_left = !last_free_spell_was_left;
+
+                if (last_free_spell_was_left)
+                    return right_slot;
+                else
+                    return left_slot;
+            }
             else
-                return left_slot;
+            {
+
+                float delta_getslot = (double)(now - last_get_slot_timestamp) / 1000000000.0;
+
+                if (delta_getslot > 60.0f)
+                {
+                    last_get_slot_timestamp = now;
+                    last_free_was_left = false; //reset so it starts with right again
+                }
+
+
+                last_free_was_left = !last_free_was_left;
+
+                if (last_free_was_left)
+                    return right_slot;
+                else
+                    return left_slot;
+            }
+
+
+
+            
                 
 
             
@@ -20515,7 +20558,7 @@ namespace MiscThings {
 
                             if (object->IsWeapon())
                             {
-                                auto slot = get_free_slot();
+                                auto slot = get_free_slot(true, false);
                                 
                                 bool staff_of_magnus = false;
 
@@ -22951,7 +22994,7 @@ namespace MiscThings {
                     {
                         if (slot_id == 0x00013F44 || slot_id == 0x00013F42 || slot_id == 0x00013F43) //either hand
                         {
-                            auto slot = get_free_slot();
+                            auto slot = get_free_slot(is_offensive_spell(spell), true);
 
                             bool right_hand = false;
   
@@ -23490,7 +23533,7 @@ namespace MiscThings {
                         if (slot_id == 0x00013F44 || slot_id == 0x00013F42 || slot_id == 0x00013F43) //either hand
                         {
 
-                            auto slot = get_free_slot();
+                            auto slot = get_free_slot(is_offensive_spell(spell), true);
 
                             bool right_hand = false;
 
