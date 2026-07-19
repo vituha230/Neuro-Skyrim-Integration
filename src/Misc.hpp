@@ -16,7 +16,7 @@ namespace MiscThings {
     bool quest_target_is_hidden(RE::TESQuest* quest, RE::BGSQuestObjective* objective, RE::TESQuestTarget* target);
 
 
-    bool safe_to_dodge_projectile();
+    int safe_to_dodge_projectile();
 
 
     bool is_workbench(RE::TESObjectREFR* object);

@@ -2616,11 +2616,15 @@ namespace MiscThings {
     }
 
 
-    bool safe_to_dodge_projectile()
+    int safe_to_dodge_projectile()
     {
         float pi = RE::NI_PI;
 
         auto player = RE::PlayerCharacter::GetSingleton();
+
+        bool left_safe = true;
+        bool right_safe = true;
+
 
         if (player)
         {
@@ -2640,30 +2644,35 @@ namespace MiscThings {
 
                 RE::NiPoint3 point = player_pos;
 
-                test_points.push_back(player_pos);
+                //test_points.push_back(player_pos);
 
-                float r = 150.0f;
+                float r = 120.0f;
 
                 for (int i = 0; i < 6; i++)
                 {
-                    point = { r * std::cos(pi / 3 * i), r * std::sin(pi / 3 * i), 0.0f};
+                    point = { r * std::cos(pi / 3 * i + pi/6), r * std::sin(pi / 3 * i + pi / 6), 0.0f};
                     test_points.push_back(player_pos + point);
                 }
 
+                //3 points - left, 3 points - right
 
 
                 if (interiorCell)
                 {
                     
                     //take player pos and 6 points on circle around him, test all for being on navmesh. range... 300?
-
+                    int i = 0;
                     for (auto test_point : test_points)
                     {
                         if (!object_is_on_navmesh_in_cell(test_point, parent_cell))
-                            return false;
+                            if (i < 3)
+                                left_safe = false;
+                            else
+                                right_safe = false;
+
                     }
                     
-                    return true;
+                    return left_safe + ((int)right_safe) << 1;
 
                 }
                 else
@@ -2677,7 +2686,7 @@ namespace MiscThings {
 
                         RE::NiPoint2 parent_cell_coords = { parent_cell_coords_raw->worldX, parent_cell_coords_raw->worldY };
 
-
+                        int i = 0;
                         for (auto test_point : test_points)
                         {
 
@@ -2709,10 +2718,16 @@ namespace MiscThings {
 
                         finish_point:
                             if (!point_is_good)
-                                return false;
+                                if (i < 3)
+                                    left_safe = false;
+                                else
+                                    right_safe = false;
+
+
+                            i++;
                         }
 
-                        return true; //all points checked all points good
+                        return left_safe + ((int)right_safe) << 1;
 
                         
                     }
@@ -2724,7 +2739,7 @@ namespace MiscThings {
             }
         }
 
-        return false;
+        return 0;
 
     }
 

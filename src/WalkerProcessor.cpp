@@ -15861,8 +15861,19 @@ namespace WalkerProcessor {
             
             if (MiscThings::projectile_flying_into_player_face())
             {
-                if (MiscThings::safe_to_dodge_projectile())
+                int allowed_dirs = MiscThings::safe_to_dodge_projectile();
+
+                if (allowed_dirs)
+                {
                     do_dodge_projectile = true;
+
+                    if (allowed_dirs == 1)
+                        dodge_direction = 0;
+
+                    if (allowed_dirs == 2)
+                        dodge_direction = 1;
+                }
+                    
             }
 
             if (do_dodge_projectile)

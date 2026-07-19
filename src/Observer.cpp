@@ -6100,7 +6100,7 @@ namespace Observer {
 							if (aurora_model != "" && (hour < 3 || hour > 19.6))
 							{
 								weather_vector.push_back("[Aurora Borealis]");
-								silent = false;
+								//silent = false;
 							}
 								
 
