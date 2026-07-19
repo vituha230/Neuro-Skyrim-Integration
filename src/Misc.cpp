@@ -113,6 +113,14 @@ namespace MiscThings {
 
 
 
+
+
+
+    
+
+
+
+
     //stolen from stackoverflow
 
     float sign(RE::NiPoint2 p1, RE::NiPoint2 p2, RE::NiPoint2 p3)
@@ -5434,6 +5442,47 @@ namespace MiscThings {
 
         return nullptr;
     }
+
+
+
+    bool has_ammo_in_inventory(bool crossbow)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
+
+            for (auto& entry : inventory)
+            {
+                if (entry.first && entry.second.first > 0 && entry.second.second.get())
+                {
+                    auto item_form = (RE::TESForm*)entry.first;
+
+                    if (item_form->IsAmmo())
+                    {
+                        auto ammo = (RE::TESAmmo*)item_form;
+
+                        if (crossbow)
+                        {
+                            if (!ammo->IsBolt())
+                                continue;
+                        }
+                        else
+                        {
+                            if (ammo->IsBolt())
+                                continue;
+                        }
+
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
 
 
 
@@ -18603,7 +18652,130 @@ namespace MiscThings {
 
 
 
-    float armor_damage_difference(RE::TESBoundObject* item)
+
+    int find_good_weapon_in_inventory()
+    {
+        //returns index to equip with use_inventory item
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!player)
+            return -1;
+
+        if (MiscThings::is_werewolf() || MiscThings::is_vampirelord())
+            return -1;
+
+
+        if (!inventory_valid)
+            auto temp = GetInventory();
+
+        if (!inventory_valid)
+            return -1;
+
+        auto p_inventory = get_p_inventory_items_list();
+
+
+
+        int best_bow = -1;
+        int best_twohanded = -1;
+        int best_onehanded = -1;
+
+        float best_bow_damage = 0.0f;
+        float best_twohanded_damage = 0.0f;
+        float best_onehanded_damage = 0.0f;
+
+
+        std::map<RE::BGSEquipSlot*, std::pair<std::string, float>> best_weapon{};
+
+        for (auto inventory_entry : *p_inventory)
+        {
+            if (inventory_entry.second.amount > 0 && inventory_entry.second.object)
+            {
+                if (inventory_entry.second.object->IsWeapon())
+                {
+                    auto weapon = (RE::TESObjectWEAP*)inventory_entry.second.object;
+
+                    float damage = armor_damage_difference(inventory_entry.second.object, true);
+
+                    if (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword())
+                    {
+                        if (damage > best_twohanded_damage)
+                        {
+                            best_twohanded_damage = damage;
+                            best_twohanded = inventory_entry.first;
+                        }
+                    }
+                    else
+                    {
+                        if (weapon->IsBow() || weapon->IsCrossbow())
+                        {
+                            if (weapon->IsBow() && MiscThings::has_ammo_in_inventory(false))
+                            {
+                                if (damage > best_bow_damage)
+                                {
+                                    best_bow_damage = damage;
+                                    best_bow = inventory_entry.first;
+                                }
+                            }
+                            else
+                            {
+                                if (MiscThings::has_ammo_in_inventory(true))
+                                {
+                                    if (damage > best_bow_damage)
+                                    {
+                                        best_bow_damage = damage;
+                                        best_bow = inventory_entry.first;
+                                    }
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            //onehanded
+                            if (damage > best_onehanded_damage)
+                            {
+                                best_onehanded_damage = damage;
+                                best_onehanded = inventory_entry.first;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        float player_onehanded_skill = player->GetBaseActorValue(RE::ActorValue::kOneHanded);
+        float player_twohanded_skill = player->GetBaseActorValue(RE::ActorValue::kTwoHanded);
+        float player_bow_skill = player->GetBaseActorValue(RE::ActorValue::kArchery);
+
+        float sum = player_onehanded_skill + player_twohanded_skill + player_bow_skill;
+
+        float chance_onehanded = player_onehanded_skill / sum;
+        float chance_twohanded = player_twohanded_skill / sum + chance_onehanded;
+        //float chance_bow = player_bow_skill / sum + ;
+
+        float chance = (float)std::rand() / RAND_MAX;
+
+        if (chance < chance_onehanded && best_onehanded > -1)
+            return best_onehanded;
+        else
+            if (chance < chance_twohanded && best_twohanded > -1)
+                return best_twohanded;
+            else
+                if (best_bow > -1)
+                    return -1;
+
+        return -1;
+    }
+
+
+
+
+
+
+    float armor_damage_difference(RE::TESBoundObject* item, bool ignore_current)
     {
         if (item)
         {
@@ -18615,11 +18787,14 @@ namespace MiscThings {
                 {
                     auto new_armor = (RE::TESObjectARMO*)item;
 
-                    auto new_armor_val = new_armor->GetArmorRating();
+                    float new_armor_val = new_armor->GetArmorRating();
 
                     float current_armor_val = 0.0f;
 
                     auto current_armor = (RE::TESObjectARMO*)get_armor_slot_contents(slot);
+
+                    if (ignore_current)
+                        current_armor = nullptr;
 
                     if (current_armor)
                     {
@@ -18653,7 +18828,7 @@ namespace MiscThings {
                     {
                         auto new_weapon = (RE::TESObjectWEAP*)item;
 
-                        auto new_weapon_damage = new_weapon->GetAttackDamage();
+                        float new_weapon_damage = new_weapon->GetAttackDamage();
 
                         if (new_weapon->IsTwoHandedAxe() || new_weapon->IsTwoHandedSword() || new_weapon->IsBow() || new_weapon->IsCrossbow())
                             new_weapon_damage /= 2.0f;
@@ -18662,6 +18837,9 @@ namespace MiscThings {
                         float current_weapon_damage = 0.0f;
 
                         auto current_weapon = (RE::TESObjectWEAP*)get_weapon_slot_contents(slot);
+
+                        if (ignore_current)
+                            current_weapon = nullptr;
 
                         if (current_weapon)
                         {
@@ -23357,7 +23535,7 @@ namespace MiscThings {
 
 
                                 bool right_hand_is_good_to_replace = MiscThings::has_spell_equipped(true) && (!MiscThings::is_offensive_spell(MiscThings::get_hand_contents(true)) || (MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(MiscThings::get_hand_contents(true))));
-                                bool low_mana_check_2 = !right_hand_is_good_to_replace && ((MiscThings::get_player_mana() / MiscThings::get_player_max_mana()) < 0.5f);
+                                bool low_mana_check_2 = !right_hand_is_good_to_replace && ((MiscThings::get_player_mana() / MiscThings::get_player_max_mana()) < 0.5f); //dont use <50% mana restriction if right hand is shit
                                 bool low_mana_check = MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(spell) || low_mana_check_2;
 
                                 if (low_mana_check)

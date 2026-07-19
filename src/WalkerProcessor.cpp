@@ -7540,7 +7540,7 @@ namespace WalkerProcessor {
 
                         if (interaction_after_walk == 3)
                         {
-                            if (!MiscThings::player_brawling() && MiscThings::get_shout_cooldown() <= 0.0f && !MiscThings::in_madman_head())
+                            if (!MiscThings::player_brawling() && MiscThings::get_shout_cooldown() <= 0.0f && !MiscThings::in_madman_head() && target_ref->IsActor() && !target_ref->IsDead())
                                 MiscThings::use_random_offensive_shout(target_ref);
 
                             result.first = true;
@@ -11557,6 +11557,25 @@ namespace WalkerProcessor {
         {
 
 
+            bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
+            bool target_is_dead = target_ref && target_ref->IsActor() && target_ref->IsDead();
+
+
+
+            if (!inanimate && !target_is_dead && low_mana_detected_left && low_mana_detected_right && MiscThings::has_spell_equipped(true) && MiscThings::has_spell_equipped(false))
+            {
+                int good_weapon_index = MiscThings::find_good_weapon_in_inventory();
+
+                if (good_weapon_index > -1)
+                {
+                    auto temp = MiscThings::activate_inventory_object_by_index(good_weapon_index, 1);
+
+                    if (temp.first)
+                        send_random_context(temp.second, true);
+                }
+            }
+
+
 
 
             bool dont_use_left = false;
@@ -11572,10 +11591,6 @@ namespace WalkerProcessor {
                     dont_use_left = (target_combat_controller->IsFleeing() || target_combat_controller->ignoringCombat || !target_combat_controller->startedCombat || target_combat_controller->stoppedCombat) && left_is_block();
             }
 
-
-            bool inanimate = !(target_ref && target_ref->IsActor() && !was_already_dead);
-
-            bool target_is_dead = target_ref && target_ref->IsActor() && target_ref->IsDead();
 
             dont_use_left |= inanimate && left_is_block();
 

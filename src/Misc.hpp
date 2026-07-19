@@ -470,11 +470,15 @@ namespace MiscThings {
     std::map<int, item_data>* get_p_inventory_items_list();
     int remove_item_from_inventory_list(RE::TESBoundObject* item);
 
-    float armor_damage_difference(RE::TESBoundObject* item);
+    float armor_damage_difference(RE::TESBoundObject* item, bool ignore_current = false);
 
     bool player_has_fishing_rod();
     std::pair<bool, std::string> equip_spell_by_refr(RE::SpellItem* spell);
     int random_int_from_range(int min, int max);
+
+
+    int find_good_weapon_in_inventory();
+
 
     RE::TESForm* get_hand_contents(bool right);
     bool is_self_healing_spell(bool right);
@@ -485,6 +489,7 @@ namespace MiscThings {
     float get_shout_cooldown();
     void shout_cooldown_fix(float dtime);
 
+    bool has_ammo_in_inventory(bool crossbow);
 
     bool is_digits(std::string& str, bool include_minus = false);
 
