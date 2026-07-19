@@ -22130,6 +22130,14 @@ namespace MiscThings {
 
             if (spell)
             {
+                switch (spell->formID)
+                {
+                case (0x13018): //lesser ward
+                case (0x211F1): //steadfast ward
+                case (0x211F0): //greater ward
+                    return false;
+                }
+
                 if ((spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
                 {
                     if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
