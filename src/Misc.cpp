@@ -49,6 +49,20 @@ namespace MiscThings {
     }
 
 
+    /* //probably is_offensive_spell is enough
+    bool non_combat_spell(bool right)
+    {
+        auto hand_content = MiscThings::get_hand_contents(right);
+
+        if (hand_content && hand_content->GetFormType() == RE::FormType::Spell) //scrolls dont count on purpose - they are one-use so they will naturally never be cast endlessly
+        {
+            adasd
+        }
+
+
+        return false;
+    }
+    */
 
 
     bool has_bound_weapon_equipped(bool right)
@@ -22104,6 +22118,57 @@ namespace MiscThings {
 
 
 
+
+    bool is_self_cast_spell(bool right)
+    {
+        bool result = false;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        if (player)
+        {
+            RE::MagicItem* spell = (RE::MagicItem*)get_hand_contents(right);
+
+            if (spell)
+            {
+                if ((spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
+                {
+                    if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+                    {
+                        if (spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (spell->GetFormType() == RE::FormType::Weapon)
+                    {
+                        auto staff = (RE::TESObjectWEAP*)spell;
+
+                        if (staff->IsStaff())
+                        {
+                            auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                            if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                            {
+                                if (ench->formEnchanting->GetDelivery() == RE::MagicSystem::Delivery::kSelf)
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+
+
+
     bool is_self_healing_spell(bool right)
     {
         bool result = false;
@@ -22463,6 +22528,10 @@ namespace MiscThings {
                                     //check target. if cant find it - fallback to old-way cast no target
 
                                     auto spell_target = MiscThings::get_object_by_index(target_index);
+
+                                    if (MiscThings::is_self_cast_spell(right_hand))
+                                        spell_target = nullptr; //just cast without any targets
+
 
                                     if (spell_target)
                                     {
@@ -23430,7 +23499,7 @@ namespace MiscThings {
         return result;
     }
 
-
+    
     bool is_offensive_spell(RE::SpellItem* spell)
     {
         bool result = false;
@@ -23438,7 +23507,8 @@ namespace MiscThings {
         auto player = RE::PlayerCharacter::GetSingleton();
         if (player && spell)
         {
-            if (spell && (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll))
+            if (spell->GetFormType() == RE::FormType::Spell || spell->GetFormType() == RE::FormType::Scroll)
+            {
                 if (spell->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
                 {
                     auto slot_both_hands = RE::TESForm::LookupByID(0x00013F45);
@@ -23446,17 +23516,42 @@ namespace MiscThings {
                     if (spell->GetEquipSlot() == slot_both_hands)
                         return true; //otherwise this will not let us cast 2handed spells/scrolls
 
-
                     for (auto effect : spell->effects)
                     {
                         if (effect->IsHostile())
                         {
-                            result = true;
-                            break;
+                            return true;
                         }
                     }
                 }
 
+            }
+            else
+            {
+                if (spell->GetFormType() == RE::FormType::Weapon)
+                {
+                    auto staff = (RE::TESObjectWEAP*)spell;
+
+                    if (staff->IsStaff())
+                    {
+                        auto ench = staff ? staff->As<RE::TESEnchantableForm>() : nullptr;
+
+                        if (ench && ench->formEnchanting && ench->amountofEnchantment != 0)
+                        {
+                            if (ench->formEnchanting->GetDelivery() == RE::MagicSystem::Delivery::kSelf)
+                            {
+                                for (auto effect : ench->formEnchanting->effects)
+                                {
+                                    if (effect->IsHostile())
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         return result;
     }

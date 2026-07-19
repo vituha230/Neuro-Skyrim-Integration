@@ -442,6 +442,8 @@ namespace MiscThings {
 
     bool can_fast_travel();
 
+    bool is_self_cast_spell(bool right);
+
     std::string get_quest_type_text(RE::TESQuest* quest);
 
     bool is_quest_active(RE::TESQuest* quest);

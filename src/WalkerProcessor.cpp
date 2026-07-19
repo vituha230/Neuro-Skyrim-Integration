@@ -11541,6 +11541,11 @@ namespace WalkerProcessor {
                 }
             }
 
+            //summons are handled above, resurrects are handeled above, self-healing is handled above. everything else should not autocast in combat versus actors
+            left_is_useless |= MiscThings::has_spell_equipped(false) && !inanimate && !left_is_resurrect && !MiscThings::is_summon_spell(false) && !MiscThings::is_self_healing_spell(false) && !MiscThings::is_offensive_spell(false);
+            right_is_useless |= MiscThings::has_spell_equipped(true) && !inanimate && !right_is_resurrect && !MiscThings::is_summon_spell(true) && !MiscThings::is_self_healing_spell(true) && !MiscThings::is_offensive_spell(true);
+
+
 
             dont_use_left |= left_is_useless;
 
