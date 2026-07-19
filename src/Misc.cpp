@@ -50,6 +50,33 @@ namespace MiscThings {
 
 
 
+    bool inside_meridia_flybox()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (player)
+        {
+            auto player_worldspace = player->GetWorldspace();
+
+            if (player_worldspace && player_worldspace->formID == 0x3c)
+            {
+                auto player_pos = player->GetPosition();
+                if (player_pos.z > 11000.0f)
+                {
+                    RE::NiPoint3 fly_center_point = { -93702.1953, 101348.109,14265.6934 };
+
+                    if (player_pos.GetDistance(fly_center_point) < 20000.0f)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
     bool inside_of_hag_rock_pit(RE::TESObjectREFR* object)
     {
         if (object)
@@ -5659,47 +5686,61 @@ namespace MiscThings {
 
         if (quest->formID == 0x4e4e1)
         {
-            if (parent_cell)
+            if (target && target->formID == 0x108575 && player_worldspace && player_worldspace->formID == 0x3c)
             {
-                if (parent_cell->formID == 0x15255)
+                if (quest->currentStage >= 200)
                 {
-                    auto crystal1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc4de6);
-                    auto crystal2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5813);
-                    auto crystal3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5820);
-
-                    if (MiscThings::trap_firing(crystal1) != 19)
-                        if (crystal1) return crystal1;
-
-                    if (MiscThings::trap_firing(crystal2) != 19)
-                        if (crystal2) return crystal2;
-
-                    if (MiscThings::trap_firing(crystal3) != 19)
-                        if (crystal3) return crystal3;
+                    if (MiscThings::inside_meridia_flybox())
+                    {
+                        auto meridia = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e4e0);
+                        if (meridia) return meridia;
+                    }
                 }
-
-
-                if (parent_cell->formID == 0x4624f)
+            }
+            else
+            {
+                if (parent_cell)
                 {
-                    auto crystal4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5831);
-                    auto crystal5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5834);
-                    auto crystal6 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc583b);
+                    if (parent_cell->formID == 0x15255)
+                    {
+                        auto crystal1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc4de6);
+                        auto crystal2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5813);
+                        auto crystal3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5820);
 
-                    if (MiscThings::trap_firing(crystal4) != 19)
-                        if (crystal4) return crystal4;
+                        if (MiscThings::trap_firing(crystal1) != 19)
+                            if (crystal1) return crystal1;
 
-                    if (MiscThings::trap_firing(crystal5) != 19)
-                        if (crystal5) return crystal5;
+                        if (MiscThings::trap_firing(crystal2) != 19)
+                            if (crystal2) return crystal2;
 
-                    if (MiscThings::trap_firing(crystal6) != 19)
-                        if (crystal6) return crystal6;
-                }
+                        if (MiscThings::trap_firing(crystal3) != 19)
+                            if (crystal3) return crystal3;
+                    }
 
-                if (parent_cell->formID == 0x27d1c)
-                {
-                    auto crystal7 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc583d);
 
-                    if (MiscThings::trap_firing(crystal7) != 19)
-                        if (crystal7) return crystal7;
+                    if (parent_cell->formID == 0x4624f)
+                    {
+                        auto crystal4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5831);
+                        auto crystal5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc5834);
+                        auto crystal6 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc583b);
+
+                        if (MiscThings::trap_firing(crystal4) != 19)
+                            if (crystal4) return crystal4;
+
+                        if (MiscThings::trap_firing(crystal5) != 19)
+                            if (crystal5) return crystal5;
+
+                        if (MiscThings::trap_firing(crystal6) != 19)
+                            if (crystal6) return crystal6;
+                    }
+
+                    if (parent_cell->formID == 0x27d1c)
+                    {
+                        auto crystal7 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0xc583d);
+
+                        if (MiscThings::trap_firing(crystal7) != 19)
+                            if (crystal7) return crystal7;
+                    }
                 }
             }
         }
@@ -8095,6 +8136,14 @@ namespace MiscThings {
                 return true; 
         }
 
+
+
+        if (MiscThings::inside_meridia_flybox())
+        {
+            //0x4e4e1 meridia quest
+            if (quest && quest->formID != 0x4e4e1)
+                return true;
+        }
 
 
 

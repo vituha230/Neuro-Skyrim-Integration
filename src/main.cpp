@@ -42,6 +42,12 @@
 
 
 
+//fix conjure weapons spells. dont put weapon down while walking with conjured weapon. try to maintain hand with conjured weapon and not autoequip spells into it.
+//fix non-combat spells (candle light)
+//autoequip other weapon when no mana left and both hands are spells
+
+
+
 //forgotten valley the part where i ended - pathfinding barely works for these falmer bridges. think about changing walker a little so it accepts paths that consist of 1 point (maybe at least for this location)
 
 

@@ -7071,6 +7071,40 @@ namespace WalkerProcessor {
     }
 
 
+
+    void meridia_flybox_check(RE::TESObjectREFR* target)
+    {
+        if (target && (target->formID == 0x4e4e0 || target_ref->formID == 0x108575)) //meridia in flybox
+        {
+            if (MiscThings::inside_meridia_flybox())
+            {
+                auto player = RE::PlayerCharacter::GetSingleton();
+                auto meridia = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e4e0);
+
+                if (meridia && player->GetDistance(meridia) > 100.0f)
+                {
+                    try_unstuck = false;
+                    wiggle_body_then_walk_again = false;
+                    invalidate_path();
+                    walk_again(); //soft_reset
+                    have_target_to_walk = true;
+                    using_custom_path = true;
+                    dont_quicksave_after_custom_path = true;
+                    //dont_use_bounds_for_close_enough = true;
+                    walk_again_when_finished = true;
+                    custom_path = { player->GetPosition(), meridia->GetPosition() };
+                    path = custom_path;
+                    path_valid = true;
+                    current_path_point = 0;
+                    dont_invalidate_path_on_walk_again = true;
+                    lock_camera_while_walking = true;
+                    return;
+                }
+            }
+        }
+    }
+
+
     void katariah_post_emperor_check(RE::TESObjectREFR* target)
     {
         if (target)
@@ -7545,6 +7579,8 @@ namespace WalkerProcessor {
                 solitude_post_emperor_check(target_ref);
                 katariah_post_emperor_check(target_ref);
                 hag_rock_pit_check(target_ref);
+                meridia_flybox_check(target_ref);
+
 
                 reminder_start_pos = player->GetPosition();
                 reminder_start_pos = player->GetPosition();
@@ -7931,6 +7967,7 @@ namespace WalkerProcessor {
                     solitude_post_emperor_check(target_ref);
                     katariah_post_emperor_check(target_ref);
                     hag_rock_pit_check(target_ref);
+                    meridia_flybox_check(target_ref);
 
                     right_attack_cancel();
                     left_attack_cancel();
@@ -8015,6 +8052,7 @@ namespace WalkerProcessor {
                 solitude_post_emperor_check(target_ref);
                 katariah_post_emperor_check(target_ref);
                 hag_rock_pit_check(target_ref);
+                meridia_flybox_check(target_ref);
 
                 right_attack_cancel();
                 left_attack_cancel();
@@ -8105,6 +8143,7 @@ namespace WalkerProcessor {
                 solitude_post_emperor_check(target_ref);
                 katariah_post_emperor_check(target_ref);
                 hag_rock_pit_check(target_ref);
+                meridia_flybox_check(target_ref);
 
                 //clear_input_queue();
 
@@ -9086,6 +9125,7 @@ namespace WalkerProcessor {
                                                 solitude_post_emperor_check(target_ref);
                                                 katariah_post_emperor_check(target_ref);
                                                 hag_rock_pit_check(target_ref);
+                                                meridia_flybox_check(target_ref);
 
                                                 right_attack_cancel();
                                                 left_attack_cancel();
@@ -9339,6 +9379,7 @@ namespace WalkerProcessor {
                             solitude_post_emperor_check(target_ref);
                             katariah_post_emperor_check(target_ref);
                             hag_rock_pit_check(target_ref);
+                            meridia_flybox_check(target_ref);
 
                             right_attack_cancel();
                             left_attack_cancel();
@@ -9777,6 +9818,7 @@ namespace WalkerProcessor {
                                                 solitude_post_emperor_check(target_ref);
                                                 katariah_post_emperor_check(target_ref);
                                                 hag_rock_pit_check(target_ref);
+                                                meridia_flybox_check(target_ref);
 
 
                                                 long long now = std::chrono::steady_clock::now().time_since_epoch().count();
@@ -9982,7 +10024,8 @@ namespace WalkerProcessor {
                                                     solitude_post_emperor_check(target_ref);
                                                     katariah_post_emperor_check(target_ref);
                                                     hag_rock_pit_check(target_ref);
-
+                                                    meridia_flybox_check(target_ref);
+                                                    
                                                     long long now = std::chrono::steady_clock::now().time_since_epoch().count();
 
 
@@ -10188,6 +10231,7 @@ namespace WalkerProcessor {
             solitude_post_emperor_check(target_ref);
             katariah_post_emperor_check(target_ref);
             hag_rock_pit_check(target_ref);
+            meridia_flybox_check(target_ref);
 
             result.first = true;
             result.second = "[Started walking to " + reminder_target_name + "]";
@@ -10304,6 +10348,7 @@ namespace WalkerProcessor {
             solitude_post_emperor_check(target_ref);
             katariah_post_emperor_check(target_ref);
             hag_rock_pit_check(target_ref);
+            meridia_flybox_check(target_ref);
         }
         else
         {
@@ -16048,6 +16093,7 @@ namespace WalkerProcessor {
 
                 if (target_ref && !using_custom_path)
                 {
+                    
                     if (target_ref == alftand_door)
                     {
                         //doing some redirections 
@@ -18659,7 +18705,7 @@ namespace WalkerProcessor {
                                                                                             RE::TESObjectREFR* tulius = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x198ba);
 
 
-                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun && target_actor != delphine && target_actor != malborne && target_actor != tulius)
+                                                                                            if (target_actor->boolFlags.all(RE::Actor::BOOL_FLAGS::kScenePackage) && target_actor != odahviing && target_actor != tsun && target_actor != delphine && target_actor != malborne && target_actor != tulius && target_actor && target_actor->formID != 0x4e4e0)
                                                                                                 dont_autointerract = true;
                                                                                             
                                                                                         }
