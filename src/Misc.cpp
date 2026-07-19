@@ -22828,9 +22828,9 @@ namespace MiscThings {
                                 if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
                                     ;// equip_hand = " in left hand";
 
-
-
-                                bool low_mana_check = MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(spell) || (MiscThings::get_player_mana() / MiscThings::get_player_max_mana()) < 0.5f;
+                                bool right_hand_is_good_to_replace = MiscThings::has_spell_equipped(true) && (!MiscThings::is_offensive_spell(MiscThings::get_hand_contents(true)) || (MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(MiscThings::get_hand_contents(true))));
+                                bool low_mana_check_2 = !right_hand_is_good_to_replace && ((MiscThings::get_player_mana() / MiscThings::get_player_max_mana()) < 0.5f);
+                                bool low_mana_check = MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(spell) || low_mana_check_2;
 
                                 if (low_mana_check)
                                     right_hand = false; //if not enough mana to cast spell - put it in left hand always. can be overwritten below if spell is already equipped in right hand
@@ -23356,7 +23356,9 @@ namespace MiscThings {
 
 
 
-                                bool low_mana_check = MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(spell) || (MiscThings::get_player_mana() / MiscThings::get_player_max_mana()) < 0.5f;
+                                bool right_hand_is_good_to_replace = MiscThings::has_spell_equipped(true) && (!MiscThings::is_offensive_spell(MiscThings::get_hand_contents(true)) || (MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(MiscThings::get_hand_contents(true))));
+                                bool low_mana_check_2 = !right_hand_is_good_to_replace && ((MiscThings::get_player_mana() / MiscThings::get_player_max_mana()) < 0.5f);
+                                bool low_mana_check = MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(spell) || low_mana_check_2;
 
                                 if (low_mana_check)
                                     right_hand = false; //if not enough mana to cast spell - put it in left hand always. can be overwritten below if spell is already equipped in right hand
