@@ -11638,7 +11638,8 @@ namespace WalkerProcessor {
                     dont_use_right = true;
 
 
-            bool dualhanding_two_weapons = is_melee_weapon(false) && is_melee_weapon(true) && !is_twohanded_weapon(true);
+            bool dualhanding_two_weapons = is_melee_weapon(false) && is_melee_weapon(true) && !is_twohanded_weapon(true) && !MiscThings::player_brawling();
+
 
 
             //this forces switch to hand that has the spell we need
@@ -11982,7 +11983,7 @@ namespace WalkerProcessor {
                                         else
                                         {
                                             right_attack();
-                                            if (try_dual_attack)
+                                            if (try_dual_attack && dualhanding_two_weapons)
                                                 left_attack();
                                         }
                                             
@@ -12139,11 +12140,27 @@ namespace WalkerProcessor {
                             {
                                 if (pause_post_attack < 1.0f)
                                 {
+                                    if (dualcasting)
+                                        left_attack_cancel();
+
                                     right_attack_cancel();
                                     pause_post_attack += dtime;
                                     goto finalize_attack;
                                 } 
                             }
+                            else
+                            {
+                                if (player->GetAttackState() != RE::ATTACK_STATE_ENUM::kNone && pause_post_attack < 0.3f)
+                                {
+                                    right_attack_cancel();
+                                    if (dualhanding_two_weapons && try_dual_attack)
+                                        left_attack_cancel();
+                                    pause_post_attack += dtime;
+                                    goto finalize_attack;
+                                }
+                            }
+
+
                             pause_post_attack = 0.0f;
 
                             attack_action_done = true;
@@ -12473,7 +12490,7 @@ namespace WalkerProcessor {
                                     else
                                     {
                                         left_attack();
-                                        if (try_dual_attack)
+                                        if (try_dual_attack && dualhanding_two_weapons)
                                             right_attack();
                                     }
 
@@ -12625,7 +12642,7 @@ namespace WalkerProcessor {
 
                             
 
-                            is_casting_walker2(false);
+                            //is_casting_walker2(false);
 
 
                             if (has_staff_equipped(false) || is_fire_and_forget_spell(false))
@@ -12633,10 +12650,27 @@ namespace WalkerProcessor {
                                 if (pause_post_attack < 1.0f)
                                 {
                                     left_attack_cancel();
+                                    
+                                    if (dualcasting)
+                                        right_attack_cancel();
+
                                     pause_post_attack += dtime;
                                     goto finalize_attack;
                                 }
                             }
+                            else
+                            {
+                                if (player->GetAttackState() != RE::ATTACK_STATE_ENUM::kNone && pause_post_attack < 0.3f)
+                                {
+                                    left_attack_cancel();
+                                    if (dualhanding_two_weapons && try_dual_attack)
+                                        right_attack_cancel();
+                                    pause_post_attack += dtime;
+                                    goto finalize_attack;
+                                }
+                            }
+
+
                             pause_post_attack = 0.0f;
 
                             attack_action_done = true;

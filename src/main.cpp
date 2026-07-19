@@ -42,6 +42,10 @@
 
 
 
+
+//fix meridia ending, she teleports you on top into skybox AGAIN after you pick up the sword. this time there is no quest. also no active objective between death and retrieve-sword objective.
+//after sword pickup objective doesnt exist too. need 2 phantom objectives
+
 //try to maintain hand with conjured weapon and not autoequip spells into it.
 //autoequip other weapon when no mana left and both hands are spells
 

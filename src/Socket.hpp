@@ -393,7 +393,7 @@ namespace Capabilities
     {
         constexpr char Name[] = "unlock_shout_level";
         constexpr char Desc[] =
-            R"(Unlock new level of a shout. The shout must have known but not unlocked words and you must have at least one dragon soul. Requires shoud ID)";
+            R"(Unlock new level of a shout. Requires shoud ID)";
         constexpr char JsonSchema[] =
             R"({ "additionalProperties": false, "type": "object", "properties": { "id": { "description": "The ID of the shout to unlock. Use get_available_spells to get list of shout IDs. ", "type": "integer" } }, "required": ["id"] })";//
 
