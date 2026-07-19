@@ -12858,7 +12858,7 @@ namespace WalkerProcessor {
                             }
 
 
-                            if (MiscThings::is_immortal(target_actor))
+                            if (MiscThings::is_immortal(target_actor) && !MiscThings::player_brawling())
                             {
 
                                 auto odahviing = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x45921);

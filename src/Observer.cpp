@@ -4739,8 +4739,8 @@ namespace Observer {
 
 
 
-							player_equip->UnequipObject(player, (RE::TESBoundObject*)MiscThings::get_hand_contents(false));
-							player_equip->UnequipObject(player, (RE::TESBoundObject*)MiscThings::get_hand_contents(false));
+							//player_equip->UnequipObject(player, (RE::TESBoundObject*)MiscThings::get_hand_contents(false));
+							//player_equip->UnequipObject(player, (RE::TESBoundObject*)MiscThings::get_hand_contents(false));
 
 							if (left_hand_pre_brawl)
 								if (left_hand_pre_brawl->GetFormType() == RE::FormType::Weapon && left_hand_pre_brawl->GetFormID() != 0x1f4)
