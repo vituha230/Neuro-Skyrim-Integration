@@ -19294,7 +19294,10 @@ namespace MiscThings {
                 if (delta_getslot > 60.0f)
                 {
                     last_get_slot_spell_timestamp = now;
-                    last_free_spell_was_left = true; //reset so it starts with left again
+
+                    auto left_is_bound = MiscThings::has_bound_weapon_equipped(false);
+
+                    last_free_spell_was_left = !left_is_bound; //before was just true (flips below and send to left hand). now if left is bound weapon - try to keep it, sending spell into right slot. if twohanded bound - will be warned separately in equip/cast function
                 }
 
                 last_free_spell_was_left = !last_free_spell_was_left;
@@ -19312,7 +19315,10 @@ namespace MiscThings {
                 if (delta_getslot > 60.0f)
                 {
                     last_get_slot_timestamp = now;
-                    last_free_was_left = false; //reset so it starts with right again
+
+                    auto right_is_bound = MiscThings::has_bound_weapon_equipped(true);
+
+                    last_free_was_left = right_is_bound; //before was just false (flips below and send to right hand). now if right is bound weapon - try to keep it, sending new weapon into right left.
                 }
 
 
@@ -19323,12 +19329,6 @@ namespace MiscThings {
                 else
                     return left_slot;
             }
-
-
-
-            
-                
-
             
         }
 

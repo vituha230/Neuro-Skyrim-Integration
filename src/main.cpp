@@ -30,9 +30,6 @@
 
 
 //confirm replacing 2handed weapon with a spell 
-//and retain summoned weapon (or no? if it is not replaced with onehanded weapons it will be there almost forever because its not autoremoved, and cannot be reequipped. maybe only for spells?)
-//for non spells start equipping with hand that is not summoned weapon (unless both hands are summoned weapons)
-
 
 
 
