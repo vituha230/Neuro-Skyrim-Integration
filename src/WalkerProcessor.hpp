@@ -157,6 +157,8 @@ namespace WalkerProcessor {
 
 	bool is_concentration_spell(bool right);
 	float get_spell_cost(bool right);
+	float get_spell_cost(RE::MagicItem* spell);
+
 	std::string get_equipped_spell_name(bool right);
 
 	RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target, bool sit_correction = true);

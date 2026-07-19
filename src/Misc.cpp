@@ -22775,10 +22775,8 @@ namespace MiscThings {
                         {
                             auto slot = get_free_slot();
 
-                            if (!is_offensive_spell(spell) || MiscThings::is_vampirelord())
-                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
-
-
+                            bool right_hand = false;
+  
                             if (player_issued && is_offensive_spell(spell) && MiscThings::parthurnax_friendly_fire_check())
                             {
                                 if (!parthurnax_friendly_fire_confirmed)
@@ -22793,28 +22791,55 @@ namespace MiscThings {
                             }
 
 
-
-
                             if (slot_id == 0x00013F42)
-                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand forced
-
-                            if (slot_id == 0x00013F43)
-                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand forced
-
-
-                            std::string equip_hand = "";
-
-                            bool right_hand = false;
-
-                            if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
                             {
+                                //right hand only
+                                //slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand forced
                                 right_hand = true;
-                                equip_hand = " in right hand";
                             }
                                 
 
-                            if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
-                                equip_hand = " in left hand";
+                            if (slot_id == 0x00013F43)
+                            {
+                                //left hand only
+                                ;// slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand forced
+                            }
+                                
+
+
+                            if (slot_id == 0x00013F44) 
+                            {
+                                //either hand. make a choice
+
+                                if (!is_offensive_spell(spell) || MiscThings::is_vampirelord())
+                                {
+                                    slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
+                                    right_hand = false;
+                                }
+
+
+                                if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
+                                {
+                                    right_hand = true;
+                                    //equip_hand = " in right hand";
+                                }
+
+
+                                if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
+                                    ;// equip_hand = " in left hand";
+
+
+
+                                bool low_mana_check = MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(spell) || (MiscThings::get_player_mana() / MiscThings::get_player_max_mana()) < 0.5f;
+
+                                if (low_mana_check)
+                                    right_hand = false; //if not enough mana to cast spell - put it in left hand always. can be overwritten below if spell is already equipped in right hand
+
+                            }
+
+
+                            //std::string equip_hand = "";
+
 
 
                             bool already_equipped = false;
@@ -22825,11 +22850,24 @@ namespace MiscThings {
                                 right_hand = !(get_hand_contents(false) == spell);
                             }
 
+
+                            if (right_hand)
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand
+                            else
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand
+
+
+
                             if (!already_equipped)
+                            {
                                 equip_manager->EquipSpell(player_actor, spell, slot);
+                                WalkerProcessor::reset_attacking_inanimate_object_time();
+                            }
+                                
 
 
                             result.first = true;
+
                             if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell)
                             {
                                 if (player_actor)
@@ -23276,33 +23314,86 @@ namespace MiscThings {
 
                             auto slot = get_free_slot();
 
-                            if (!is_offensive_spell(spell) || MiscThings::is_vampirelord())
-                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
+                            bool right_hand = false;
 
 
                             if (slot_id == 0x00013F42)
-                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand forced
+                            {
+                                //right hand only
+                                //slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand forced
+                                right_hand = true;
+                            }
+
 
                             if (slot_id == 0x00013F43)
-                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand forced
+                            {
+                                //left hand only
+                                ;// slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand forced
+                            }
 
+
+
+                            if (slot_id == 0x00013F44)
+                            {
+                                //either hand. make a choice
+
+                                if (!is_offensive_spell(spell) || MiscThings::is_vampirelord())
+                                {
+                                    slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //non offensive spells go in left hand
+                                    right_hand = false;
+                                }
+
+
+                                if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
+                                {
+                                    right_hand = true;
+                                    //equip_hand = " in right hand";
+                                }
+
+
+                                if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
+                                    ;// equip_hand = " in left hand";
+
+
+
+                                bool low_mana_check = MiscThings::get_player_mana() < WalkerProcessor::get_spell_cost(spell) || (MiscThings::get_player_mana() / MiscThings::get_player_max_mana()) < 0.5f;
+
+                                if (low_mana_check)
+                                    right_hand = false; //if not enough mana to cast spell - put it in left hand always. can be overwritten below if spell is already equipped in right hand
+
+                            }
+
+
+                            //std::string equip_hand = "";
+
+
+                            /*
+                            bool already_equipped = false;
+
+                            if (get_hand_contents(true) == spell || get_hand_contents(false) == spell) //now it will not additionally equip spell on cast command if player already has it in any hand. if want to dualcast - must equip explicitly
+                            {
+                                already_equipped = true;
+                                right_hand = !(get_hand_contents(false) == spell);
+                            }
+                            */
 
 
                             std::string equip_hand = "";
 
-                            bool right_hand = false;
-
-                            if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42)) //right hand
+                            if (right_hand)
                             {
-                                right_hand = true;
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand
                                 equip_hand = " in right hand";
                             }
-
-
-                            if (slot == (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43)) //left hand
+                            else
                             {
+                                slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand
                                 equip_hand = " in left hand";
                             }
+                                
+
+
+                            //slot we need to use was decided above.
 
                             if (get_hand_contents(right_hand) == spell)
                             {
@@ -23318,19 +23409,9 @@ namespace MiscThings {
                                     }
                                     else
                                     {
-                                        //equip in other hand
-                                        if (right_hand)
-                                        {
-                                            slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
-                                            right_hand = false;
-                                            equip_hand = " in left hand";
-                                        }
-                                        else
-                                        {
-                                            slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
-                                            right_hand = true;
-                                            equip_hand = " in right hand";
-                                        }
+                                        result.first = true;
+                                        result.second = "You already have [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                                        return result;
                                     }
 
                                 }
@@ -23363,7 +23444,10 @@ namespace MiscThings {
                                 result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                             }
                             else
-                                result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+                                result.second = "[Equipped [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
+
+                            //else
+                            //    result.second = "[Casting [id " + std::to_string(id) + "] " + spell->GetFullName() + equip_hand + "]";
                         }
                         else
                         {

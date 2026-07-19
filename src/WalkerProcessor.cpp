@@ -10508,22 +10508,21 @@ namespace WalkerProcessor {
 
 
 
-    float get_spell_cost(bool right)
+    float get_spell_cost(RE::MagicItem* spell)
     {
         float result = 10000.0f;
 
         auto player = RE::PlayerCharacter::GetSingleton();
-        auto player_actor = (RE::Actor*)player->AsReference();
-        if (player && player_actor)
+
+        if (player && spell && spell->formType == RE::FormType::Spell)
         {
-            RE::MagicItem* spell = (RE::MagicItem*)MiscThings::get_hand_contents(right);
 
             if (spell && spell->GetFormType() == RE::FormType::Scroll)
                 return 0.0f;
 
             if (spell && spell->GetFormType() == RE::FormType::Spell)
             {
-                result = spell->CalculateMagickaCost(player_actor);
+                result = spell->CalculateMagickaCost(player);
 
                 if (spell->avEffectSetting)
                 {
@@ -10541,6 +10540,14 @@ namespace WalkerProcessor {
 
         return result;
     }
+
+
+    float get_spell_cost(bool right)
+    {
+        return get_spell_cost((RE::SpellItem*)MiscThings::get_hand_contents(right));
+    }
+
+
 
 
     std::string get_equipped_spell_name(bool right)

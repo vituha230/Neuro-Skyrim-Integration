@@ -50,7 +50,7 @@
 //autoequip other weapon when no mana left and both hands are spells
 
 
-
+//riften tomb thieves guild entrance should be silent. everithing involving that place should be silent
 
 
 
