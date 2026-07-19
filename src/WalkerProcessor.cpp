@@ -116,6 +116,7 @@ namespace WalkerProcessor {
     float special_look_speed_koef = 1.0f;
 
     bool try_power_attack = false;
+    bool try_dual_attack = false;
 
 
     bool ignore_raycast = false;
@@ -5427,6 +5428,7 @@ namespace WalkerProcessor {
         last_dragon_was_flying = false;
 
         try_power_attack = false;
+        try_dual_attack = false;
 
         pause_post_attack = 0.0f;
 
@@ -10575,6 +10577,21 @@ namespace WalkerProcessor {
     }
 
 
+    bool is_twohanded_weapon(bool right)
+    {
+        auto hand = MiscThings::get_hand_contents(right);
+
+        if (hand && hand->IsWeapon())
+        {
+            auto weapon = (RE::TESObjectWEAP*)hand;
+            if (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword())
+                return true;
+        }
+
+        return false;
+    }
+
+
 
     bool left_is_block()
     {
@@ -11569,6 +11586,9 @@ namespace WalkerProcessor {
                     dont_use_right = true;
 
 
+            bool dualhanding_two_weapons = is_melee_weapon(false) && is_melee_weapon(true) && !is_twohanded_weapon(true);
+
+
             //this forces switch to hand that has the spell we need
             if (spell_mode && spell_to_use && !spell_mode_init_done)
             {
@@ -11895,12 +11915,25 @@ namespace WalkerProcessor {
                                         if (can_power_attack && try_power_attack && !goto_attack_used)
                                         {
                                             if (attack_action_time0 < get_attack_time(true) * 0.1f || attack_action_time0 > get_attack_time(true) * 0.9f)
+                                            {
                                                 right_attack();
+                                                if (try_dual_attack && dualhanding_two_weapons)
+                                                    left_attack();
+                                            }
                                             else
+                                            {
                                                 right_power_attack();
+                                                if (try_dual_attack && dualhanding_two_weapons)
+                                                    left_power_attack();
+                                            }
                                         }
                                         else
+                                        {
                                             right_attack();
+                                            if (try_dual_attack)
+                                                left_attack();
+                                        }
+                                            
                                     }
                                     
                                 }
@@ -12065,13 +12098,18 @@ namespace WalkerProcessor {
 
                             dualcasting = false;
 
+                            if (dualhanding_two_weapons && try_dual_attack)
+                                left_attack_cancel();
 
                             attack_spell_cast_timeout = 0.0f;
                             try_power_attack = false;
+                            try_dual_attack = false;
 
                             gave_attacking_info = false;
                             was_charging_ranged = false;
                             right_attack_cancel();
+
+
 
                             attack_action_time0 = 0.0f;
 
@@ -12082,8 +12120,15 @@ namespace WalkerProcessor {
                             if (power_attack_chance > 0.5)
                                 try_power_attack = true;
 
+                            float dual_attack_chance = (float)std::rand() / RAND_MAX;
+                            if (dualhanding_two_weapons && dual_attack_chance > 0.4)
+                                try_dual_attack = true;
+
 
                             float chance = 0.2f;
+
+                            if (dualhanding_two_weapons)
+                                chance = 0.49f;
 
                             if (staff_of_magnus_in_left)
                                 chance = 0.03;
@@ -12361,12 +12406,24 @@ namespace WalkerProcessor {
                                     if (can_power_attack && try_power_attack && !goto_attack_used)
                                     {
                                         if (attack_action_time1 < get_attack_time(false) * 0.1f || attack_action_time1 > get_attack_time(false) * 0.9f)
+                                        {
                                             left_attack();
+                                            if (try_dual_attack && dualhanding_two_weapons)
+                                                right_attack();
+                                        }
                                         else
+                                        {
                                             left_power_attack();
+                                            if (try_dual_attack && dualhanding_two_weapons)
+                                                right_power_attack();
+                                        }
                                     }
                                     else
+                                    {
                                         left_attack();
+                                        if (try_dual_attack)
+                                            right_attack();
+                                    }
 
 
 
@@ -12532,10 +12589,14 @@ namespace WalkerProcessor {
 
                             attack_action_done = true;
 
+                            if (dualhanding_two_weapons && try_dual_attack)
+                                right_attack_cancel();
+
                             try_power_attack = false;
                             gave_attacking_info = false;
                             attack_spell_cast_timeout = 0.0f;
                             was_charging_ranged = false;
+                            try_dual_attack = false;
 
                             left_attack_cancel();
                             attack_action_time1 = 0.0f;
@@ -12545,7 +12606,14 @@ namespace WalkerProcessor {
                             if (power_attack_chance > 0.5)
                                 try_power_attack = true;
 
+                            float dual_attack_chance = (float)std::rand() / RAND_MAX;
+                            if (dualhanding_two_weapons && dual_attack_chance > 0.4)
+                                try_dual_attack = true;
+
                             float chance = 0.2f;
+
+                            if (dualhanding_two_weapons)
+                                chance = 0.49f;
 
                             if (staff_of_magnus_in_left)
                                 chance = 0.03;
