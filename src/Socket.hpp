@@ -501,7 +501,7 @@ namespace Capabilities
     {
         constexpr char Name[] = "call_wait_menu_to_skip_ingame_time";
         constexpr char Desc[] =
-            R"(Call wait menu)";
+            R"(Call wait menu (this is not a sleep, for sleep you need a bed))";
         //constexpr char JsonSchema[] = null;
 
         constexpr neurosdk_action Action = { .name = Name, .description = Desc };//, .json_schema = JsonSchema };
