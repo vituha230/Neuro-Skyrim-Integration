@@ -29,7 +29,6 @@
 
 
 
-//allow selling copies of equipped gear
 //random advice post death (post 2 concequetive deaths)
 
 //mainquest elder scroll reading - proper check for correct spell being read + advice says (Dragon)

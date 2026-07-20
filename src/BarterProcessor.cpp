@@ -73,6 +73,8 @@ namespace BarterProcessor {
         std::string weight;
         std::string damage;
         std::string armor;
+        bool equipped;
+        int amount;
 
     };
 
@@ -621,6 +623,12 @@ namespace BarterProcessor {
                     {
                         if (items_list.find(pos_to_id(item_choice)) != items_list.end())
                         {
+
+                            if (items_list.find(pos_to_id(item_choice))->second.amount <= 0)
+                                return process_next_item(); //this is for equipped items, .amount is modified so it goes -1 of actual amount
+
+
+
                             int item_price = items_list.find(pos_to_id(item_choice))->second.price;
                             int player_gold = MiscThings::get_player_gold();
 
@@ -797,7 +805,16 @@ namespace BarterProcessor {
             //filter items that cannot be sold/bought
             if ((type == barter_type::buy && (item.second.price <= MiscThings::get_player_gold())) || (type == barter_type::sell && (item.second.price <= get_vendor_gold())))
             {
-                MenuOption option = { id_to_pos(item.first), item.second.name + stats + " - " + std::to_string(item.second.price) + " gold" };
+
+                std::string equipped_text = "";
+
+                if (type == barter_type::sell && item.second.equipped)
+                    if (item.second.amount <= 0)
+                        continue;
+                    else
+                        equipped_text = "[Equipped] ";
+
+                MenuOption option = { id_to_pos(item.first), equipped_text + item.second.name + stats + " - " + std::to_string(item.second.price) + " gold" };
                 result.push_back(option);
             }
             else
@@ -1157,6 +1174,37 @@ namespace BarterProcessor {
 
 
 
+
+    int get_item_amount_from_name(std::string name)
+    {
+        if (name.find("(") != std::string::npos)
+        {
+            //<Alias=RiverwoodFriend>
+            auto alias_start = name.find("(");
+            auto alias_end = name.find(")");
+            if (alias_start < alias_end && (alias_end - alias_start - 1) >= 0)
+            {
+                std::string amount_candidate = name.substr(alias_start + 1, alias_end - alias_start - 1);
+
+                if (MiscThings::is_digits(amount_candidate))
+                    return std::stoi(amount_candidate);
+                else
+                {
+                    name = name.substr(0, alias_start) + name.substr(alias_end + 1, name.length() - alias_end);
+
+                    return get_item_amount_from_name(name);
+                }
+            }
+        }
+
+        return 1;
+    }
+
+
+
+
+
+
     bool update_barter_item_by_id(int id)
     {
         bool update_result = false;
@@ -1198,7 +1246,7 @@ namespace BarterProcessor {
                                                 std::string damage = "";
                                                 std::string armor = "";
                                                 int price = -1;
-
+                                                int old_amount = -1;
 
                                                 if (items_list.find(id) != items_list.end())
                                                 {
@@ -1208,7 +1256,7 @@ namespace BarterProcessor {
                                                     damage = old_item_data.damage;
                                                     armor = old_item_data.armor;
                                                     price = old_item_data.price;
-
+                                                    old_amount = old_item_data.amount;
                                                 }
 
 
@@ -1235,8 +1283,39 @@ namespace BarterProcessor {
                                                 data.damage = damage;
                                                 data.armor = armor;
 
+                                                int amount = get_item_amount_from_name(name);
+                                                data.amount = amount;
+                                                
+
+                                                bool equipped = menu->itemList->GetSelectedItem()->data.GetEquipState();
+                                                data.equipped = equipped;
+
+
+                                                /* //dont need this here
+                                                if (!equipped || data.amount > 1)
+                                                {
+                                                    items_list.insert_or_assign(result.id, data);
+                                                    update_result = true;
+                                                }
+                                                else
+                                                {
+                                                    if (items_list.find(result.id) != items_list.end())
+                                                        items_list.erase(result.id);
+
+                                                    update_result = false;
+                                                }
+                                                */
+
+                                                //if (old_amount != amount)
+                                                //    update_result = false;
+                                                
+
+
                                                 items_list.insert_or_assign(result.id, data);
                                                 update_result = true;
+
+
+
 
                                                 /*
                                                 auto item_pos = items_list.find(id);
@@ -1357,6 +1436,7 @@ namespace BarterProcessor {
 
 
 
+
     void update_barter_items()
     {
         RE::GFxValue var1;
@@ -1417,12 +1497,19 @@ namespace BarterProcessor {
                                                 data.weight = weight;
                                                 data.damage = damage;
                                                 data.armor = armor;
+                                                data.amount = get_item_amount_from_name(name);
 
+                                                int amount = get_item_amount_from_name(name);
 
                                                 bool equipped = menu->itemList->GetSelectedItem()->data.GetEquipState();
+                                                data.equipped = equipped;
 
-                                                if (!equipped)
-                                                    items_list.insert({ result.id, data });
+                                                //if (!equipped || data.amount > 1)
+                                                
+                                                if (equipped)
+                                                    data.amount -= 1;
+                                                
+                                                items_list.insert({ result.id, data });
                                                 
                                             }
 
@@ -1489,9 +1576,6 @@ namespace BarterProcessor {
                         result = max_can_buy;
                 }
             }
-            
-
-
         }
 
 
@@ -1502,6 +1586,9 @@ namespace BarterProcessor {
 
             if (items_list.find(pos_to_id(item_choice)) != items_list.end())
             {
+                if (items_list.find(pos_to_id(item_choice))->second.equipped)
+                    result -= -1; //reduce max amount by 1 so it leaves 1 item
+
                 int item_price = items_list.find(pos_to_id(item_choice))->second.price;
                 if (item_price > 0)
                 {
