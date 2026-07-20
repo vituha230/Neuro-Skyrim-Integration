@@ -18206,7 +18206,8 @@ namespace MiscThings {
             if (base_type == RE::FormType::Ammo)
                 result = "[Ammo]";
 
-
+            if (base_type == RE::FormType::Scroll)
+                result = "[Scroll]";
 
         }
 
@@ -21583,7 +21584,7 @@ namespace MiscThings {
                     if (is_equipped(item))
                         actions += "[Equipped" + hand_text + "]";// [Can unequip] ";
                     else
-                        actions += "[Not equipped" + hand_text + "]";// [Can unequip] ";
+                        ;// actions += "[Not equipped" + hand_text + "]";// [Can unequip] ";
 
                     actions += stats;
                 }
@@ -21767,6 +21768,18 @@ namespace MiscThings {
 
         for (auto& [item, data] : inventory)
         {
+            if (item)
+            {
+                switch (item->formID)
+                {
+                case (0x58f5f): //sword
+                case (0x58f5e): //axe
+                case (0x58f60): //bow
+                case (0x401ce02): //dagger
+                    continue; //skip bound weapons
+                }
+            }
+
             std::string info = insert_item_into_inventory_list_and_get_info(item);
 
             if (info == "")
@@ -22230,7 +22243,7 @@ namespace MiscThings {
 
 
                             if (!right_equipped && !left_equipped)
-                                equip_info = "[Unequipped]";
+                                ;// equip_info = "[Unequipped]";
                             else
                                 if (right_equipped && !left_equipped)
                                 {

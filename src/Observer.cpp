@@ -4873,6 +4873,19 @@ namespace Observer {
 				bool had_something_better = false;
 				for (auto& [item, data] : inventory)
 				{
+					if (item)
+					{
+						switch (item->formID)
+						{
+						case (0x58f5f): //sword
+						case (0x58f5e): //axe
+						case (0x58f60): //bow
+						case (0x401ce02): //dagger
+							continue; //skip bound weapons
+						}
+					}
+
+
 					if (!MiscThings::is_inventory_item_in_the_list(item))
 					{
 						std::string info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
