@@ -27,10 +27,6 @@
 
 ///////////////////////
 
-
-
-//random advice post death (post 2 concequetive deaths)
-
 //mainquest elder scroll reading - proper check for correct spell being read + advice says (Dragon)
 //enemy health info should have some threshold for regenerating enemies, bow-not-hitting should only account for decrease in hp
 
@@ -1437,6 +1433,7 @@ namespace Hooks {
                     //probably death. reset walker and threats so we are asked what to do in potential fight
                     WalkerProcessor::reset_walker();
                     Observer::reset_threats();
+
                 }
 
                 

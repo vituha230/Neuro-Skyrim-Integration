@@ -11,6 +11,19 @@
 
 namespace Observer {
 
+
+	bool first_inventory_scan_post_death = false; //flag that is read in inventory monitor which restores weapons before death 
+
+	RE::NiPoint3 last_death_pos{};
+	RE::TESWorldSpace* last_death_worldspace{};
+	RE::TESObjectCELL* last_death_cell{};
+	long long last_actual_death_timestamp = 0;
+	int same_place_death_count = 0;
+
+
+
+
+
 	RE::BGSLocation* old_player_loc = nullptr;
 
 
@@ -4722,6 +4735,12 @@ namespace Observer {
 				auto right_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42);
 				auto left_slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43);
 
+				if (!player)
+					return;
+
+				if (player->IsDead())
+					return;
+
 
 				//brawl fists monitor. want automatically reequip old weapons after brawl is over
 				if (MiscThings::player_brawling() && get_active_force() == -1) //this only checks if we have brawl fists equipped. so it works even after brawl
@@ -4823,43 +4842,49 @@ namespace Observer {
 				auto left_hand = MiscThings::get_hand_contents(false);
 
 
-				if (!right_hand && old_right_hand && old_right_hand->GetFormType() == RE::FormType::Scroll)
+				if (first_inventory_scan_post_death && !player->IsDead())
 				{
-					if (old_right_hand)
-						if (old_right_hand->GetFormType() == RE::FormType::Weapon)
-						{
-							if (player->GetItemCount((RE::TESBoundObject*)old_right_hand) > 0)
-								player_equip->EquipObject(player, (RE::TESBoundObject*)old_right_hand, nullptr, 1, left_slot);
-						}
-						else
-							if (old_right_hand->GetFormType() == RE::FormType::Spell)
-								if (MiscThings::player_has_spell((RE::SpellItem*)old_right_hand))
-									player_equip->EquipSpell(player, (RE::SpellItem*)old_right_hand, left_slot);
+					if (right_hand != old_right_hand && old_right_hand && old_right_hand->GetFormType() != RE::FormType::Scroll)
+					{
+						if (old_right_hand)
+							if (old_right_hand->GetFormType() == RE::FormType::Weapon)
+							{
+								if (player->GetItemCount((RE::TESBoundObject*)old_right_hand) > 0)
+									player_equip->EquipObject(player, (RE::TESBoundObject*)old_right_hand, nullptr, 1, left_slot, true, false, false);
+							}
+							else
+								if (old_right_hand->GetFormType() == RE::FormType::Spell)
+									if (MiscThings::player_has_spell((RE::SpellItem*)old_right_hand))
+										player_equip->EquipSpell(player, (RE::SpellItem*)old_right_hand, left_slot);
+					}
+
+
+
+					if (left_hand != old_left_hand && old_left_hand && old_left_hand->GetFormType() != RE::FormType::Scroll)
+					{
+						if (old_left_hand)
+							if (old_left_hand->GetFormType() == RE::FormType::Weapon)
+							{
+								if (player->GetItemCount((RE::TESBoundObject*)old_left_hand) > 0)
+									player_equip->EquipObject(player, (RE::TESBoundObject*)old_left_hand, nullptr, 1, left_slot, true, false, false);
+							}
+							else
+								if (old_left_hand->GetFormType() == RE::FormType::Spell)
+									if (MiscThings::player_has_spell((RE::SpellItem*)old_left_hand))
+										player_equip->EquipSpell(player, (RE::SpellItem*)old_left_hand, left_slot);
+					}
+
+					first_inventory_scan_post_death = false;
 				}
-
-
-
-				if (!left_hand && old_left_hand && old_left_hand->GetFormType() == RE::FormType::Scroll)
-				{
-					if (old_left_hand)
-						if (old_left_hand->GetFormType() == RE::FormType::Weapon)
-						{
-							if (player->GetItemCount((RE::TESBoundObject*)old_left_hand) > 0)
-								player_equip->EquipObject(player, (RE::TESBoundObject*)old_left_hand, nullptr, 1, left_slot);
-						}
-						else
-							if (old_left_hand->GetFormType() == RE::FormType::Spell)
-								if (MiscThings::player_has_spell((RE::SpellItem*)old_left_hand))
-									player_equip->EquipSpell(player, (RE::SpellItem*)old_left_hand, left_slot);
-				}
+				
 
 
 				if (!player->IsDead())
 				{
-					if (!right_hand || right_hand->GetFormType() != RE::FormType::Scroll) //i want to remember everything but scrolls, including empty hand. so either 0x0 or non scroll
+					if (right_hand && right_hand->GetFormType() != RE::FormType::Scroll) //i want to remember everything but scrolls, including empty hand. so either 0x0 or non scroll
 						old_right_hand = right_hand;
 
-					if (!left_hand || left_hand->GetFormType() != RE::FormType::Scroll)
+					if (left_hand && left_hand->GetFormType() != RE::FormType::Scroll)
 						old_left_hand = left_hand;
 				}
 
@@ -5906,6 +5931,9 @@ namespace Observer {
 				{
 					if (!player_dead_sent)
 					{
+
+						first_inventory_scan_post_death = true;
+
 						unregister_all_actions();
 						set_active_force(-1);
 
@@ -5919,7 +5947,7 @@ namespace Observer {
 
 						if (last_load_timestamp != 0)
 						{
-							long long death_timestamp = MiscThings::get_time_of_death();
+							long long death_timestamp = MiscThings::get_time_of_death(); //this one is not exactly death moment, because i want more narrow window for this
 
 							float load_delta = (double)(death_timestamp - last_load_timestamp) / 1000000000.0;
 
@@ -5935,6 +5963,50 @@ namespace Observer {
 							}
 
 						}
+
+
+						//post-death advice
+						RE::NiPoint3 death_pos = player->GetPosition();
+						RE::TESWorldSpace* death_worldspace = player->GetWorldspace();
+						RE::TESObjectCELL* death_cell = player->GetParentCell();
+						long long actual_death_timestamp = std::chrono::steady_clock::now().time_since_epoch().count();;
+						float death_delta = (double)(actual_death_timestamp - last_actual_death_timestamp) / 1000000000.0;
+
+						if (((death_worldspace && death_worldspace == last_death_worldspace) || (death_cell && death_cell == last_death_cell)) && (last_death_pos.GetDistance(death_pos) < 5000.0f) && death_delta < 600.0f)
+						{
+							same_place_death_count++;
+							if (same_place_death_count > 0)
+							{
+								std::vector<std::string> advices = {
+									"Sometimes it is better to run away from enemies if they are too strong",
+									"Sometimes it is better to ignore enemies and try to just walk past them if they are too strong",
+									"Dont hesitate to switch to melee weapons if you are out of Magicka",
+									"If you have problems completing a quest, you can just switch to another one if you have any. Sometimes a quest may be too difficult for your current level or equipment",
+									"If you think that your equipment might be too weak, you can try upgrading it (blacksmiths in big cities usually have workbenches near them, blacksmiths sell materials for upgrades)",
+									"Health and Magicka potions are very useful in fights. You can try crafting them yourself at the Alchemy table or just buy them from Alchemist if you have enough gold"
+								};
+
+								auto test = MiscThings::get_hand_contents(true);
+								//"Novice level destruction magic is very weak", - ONLY IF HAVE NOVICE DESTRUCTION EQUIPPED
+								//"Fighting alone might be difficult, if you struggle with fights, it is wise to try finding a companion", - ONLY IF DONT HAVE COMPANION
+
+								int pick_advice = (float)std::rand() / RAND_MAX * std::size(advices);
+
+								if (pick_advice < std::size(advices) && pick_advice >= 0)
+								{
+									send_random_context(advices.at(pick_advice), false); //non silent advice
+								}
+							}
+						}
+						else
+							same_place_death_count = 0;
+						
+
+						last_death_pos = death_pos;
+						last_death_cell = death_cell;
+						last_death_worldspace = death_worldspace;
+						last_actual_death_timestamp = actual_death_timestamp;
+
 						
 
 					}

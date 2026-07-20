@@ -13,7 +13,6 @@
 namespace MiscThings {
 
 
-
     bool bridge_after_reached = false;
     bool darkfall_bridge_go_back_info_given = false;
 
