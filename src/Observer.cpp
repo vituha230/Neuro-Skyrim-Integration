@@ -4084,6 +4084,8 @@ namespace Observer {
 															{
 																std::string name = MiscThings::insert_object_into_list_custom_name("Secret Sliding Altar Door", a_ref);
 
+																silent = true;
+
 																if (activation == 0)
 																	result.push_back("[ " + name + " opened]");
 

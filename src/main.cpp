@@ -27,7 +27,6 @@
 
 ///////////////////////
 
-//mainquest elder scroll reading - proper check for correct spell being read + advice says (Dragon)
 //enemy health info should have some threshold for regenerating enemies, bow-not-hitting should only account for decrease in hp
 
 //"combat mode" system
@@ -36,10 +35,6 @@
 // switching from spells has no restrictions when low mana (<20%?)
 // spells that dont take hand have no restrictions in any mode
 // some interactive commands for non-spell combat (power attack for melee, aim carefully for bows, block for twohanded/shield)
-
-
-
-//riften tomb thieves guild entrance should be silent. everithing involving that place should be silent
 
 
 //TODO hearthfire dlc

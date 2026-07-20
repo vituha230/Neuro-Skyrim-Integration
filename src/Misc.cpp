@@ -21136,7 +21136,9 @@ namespace MiscThings {
                                                     sitstate_zero = player_actor->GetSitSleepState() == RE::SIT_SLEEP_STATE::kNormal;
                                                 }
 
-                                                bool maingame_trigger = trigger_active && stage_not_done && sitstate_zero;
+                                                bool maingame_correct_scroll_condition = object && object->formID == 0x2d513; //elder scroll (dragon)
+
+                                                bool maingame_trigger = trigger_active && stage_not_done && sitstate_zero && maingame_correct_scroll_condition;
 
 
 
