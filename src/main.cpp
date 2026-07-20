@@ -29,9 +29,9 @@
 
 
 
-//merge identical inventory items into one (weapons and armor) - can take mechanism from objects_around, but actually no reason to separate their ids because they are literally the same
-//allow selling items that are equipped if amount is more than one
-
+//shrink inventory list
+//categorize inventory + merge identical items into 1. allow selling copies.
+//random advice post death (post 2 concequetive deaths)
 
 
 //mainquest elder scroll reading - proper check for correct spell being read + advice says (Dragon)
@@ -47,12 +47,6 @@
 //try persisting the mode after respawn post-death? (just remember hands before death and reequip on respawn if possible. if not possible - try to find something else)
 
 
-
-
-//fix meridia ending, she teleports you on top into skybox AGAIN after you pick up the sword. this time there is no quest. also no active objective between death and retrieve-sword objective.
-//after sword pickup objective doesnt exist too. need 2 phantom objectives
-
-//try to maintain hand with conjured weapon and not autoequip spells into it.
 
 //riften tomb thieves guild entrance should be silent. everithing involving that place should be silent
 

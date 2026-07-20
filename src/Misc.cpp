@@ -8601,7 +8601,7 @@ namespace MiscThings {
 
 
 
-        if (MiscThings::inside_meridia_flybox())
+        if (MiscThings::inside_meridia_flybox()) //meridia quest
         {
             //0x4e4e1 meridia quest
             if (quest && quest->formID != 0x4e4e1)
@@ -15755,6 +15755,83 @@ namespace MiscThings {
                 }
             }
         }
+
+
+
+        //meridia quest
+        RE::TESQuest* meridia_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DA09");
+
+        if (meridia_quest)
+        {
+            //if quest is displayed and not completed but its not in the list - its the portal objective not being shown
+
+            if ((meridia_quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || meridia_quest->data.flags.all(RE::QuestFlag::kEnabled)) && !meridia_quest->data.flags.all(RE::QuestFlag::kCompleted))
+            {
+                //this is for pickup sword
+                auto objective1 = MiscThings::get_quest_objective_by_index(meridia_quest, 30);
+                auto objective2 = MiscThings::get_quest_objective_by_index(meridia_quest, 40);
+
+                bool objective1_completed = objective1->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed);
+                bool objective2_shown = objective2->state.all(RE::QUEST_OBJECTIVE_STATE::kDisplayed);
+                bool objective2_completed = objective2->state.all(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed); //picked up the sword. now we are teleported into the sky to have last conversation
+
+
+                if (objective2_completed || (objective1_completed && !objective2_shown))
+                {
+                    quest this_quest{};
+
+                    this_quest.id = id;
+                    this_quest.quest = meridia_quest;
+                    this_quest.name = meridia_quest->GetFullName();
+                    this_quest.target = nullptr;
+
+                    std::string displaytext = "";
+
+                    auto objective = MiscThings::get_quest_objective_by_index(this_quest.quest, 30);
+
+                    if (objective2_completed)
+                        objective = MiscThings::get_quest_objective_by_index(this_quest.quest, 40);
+
+
+                    if (objective)
+                        displaytext = objective->displayText;
+
+                    std::string target_name = "";
+
+                    this_quest.displaytext += replace_aliases(this_quest.quest, displaytext);
+
+                    this_quest.target_name = target_name;
+
+                    this_quest.objective = objective;
+
+                    this_quest.description = "";
+                    this_quest.category = 0;
+
+                    this_quest.estimate_distance = 0.0f;
+
+                    this_quest.phantom_objective = true;
+
+                    this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x29d87); //necromancer
+
+                    if (objective2_completed)
+                        this_quest.phantom_target = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x4e4e0); //meridia
+
+                    if (Apocrypha::in_apocrypha())
+                        this_quest.estimate_distance = 0.0f;
+                    else
+                        this_quest.estimate_distance = get_quest_target_distance(nullptr, this_quest.quest, nullptr, this_quest.phantom_target);
+
+                    sortable_quests.push_back(this_quest);
+
+
+
+                    id++;
+                    got_any_quests = true;
+                }
+            }
+        }
+
+
 
 
 
