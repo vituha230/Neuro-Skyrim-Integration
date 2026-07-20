@@ -29,7 +29,8 @@
 
 
 
-//confirm replacing 2handed weapon with a spell 
+//merge identical inventory items into one (weapons and armor) - can take mechanism from objects_around, but actually no reason to separate their ids because they are literally the same
+//allow selling items that are equipped if amount is more than one
 
 
 

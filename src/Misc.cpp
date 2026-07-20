@@ -26,6 +26,16 @@ namespace MiscThings {
     bool parthurnax_friendly_fire_choice = false;
 
 
+    bool replace_twohanded_weapon_confirmed = false;
+    bool replace_twohanded_weapon_confirm = false;
+    int replace_twohanded_weapon_spell_id = false;
+    int replace_twohanded_weapon_target_id = false;
+    bool replace_twohanded_weapon_request_sent = false;
+    bool replace_twohanded_weapon_choice_valid = false;
+    bool replace_twohanded_weapon_choice = false;
+    std::string replace_twohanded_weapon_weapon_name = "";
+    std::string replace_twohanded_weapon_spell_name = "";
+
     float last_shout_cooldown = -1.0f;
     float shout_cooldown_doesnt_change_timer = 0.0f;
 
@@ -56,36 +66,39 @@ namespace MiscThings {
 
                         if (base_obj && base_obj->formType == RE::FormType::Projectile)
                         {
-                            if (a_ref->Get3D())
+                            auto projectile_ref = (RE::Projectile*)a_ref;
+
+                            if (std::size(projectile_ref->impacts) <= 0)
                             {
-                                auto projectile_fly_vector = a_ref->Get3D()->world.rotate.GetVectorY();
-                                auto projectile_pos = a_ref->GetPosition();
-
-                                auto projectile = (RE::BGSProjectile*)base_obj;
-
-                                if (projectile->data.types != RE::BGSProjectileData::Type::kFlamethrower)
+                                if (a_ref->Get3D())
                                 {
-                                    auto col_layer = projectile->data.collisionLayer;
+                                    auto projectile_fly_vector = a_ref->Get3D()->world.rotate.GetVectorY();
+                                    auto projectile_pos = a_ref->GetPosition();
 
+                                    auto projectile = (RE::BGSProjectile*)base_obj;
 
-                                    auto raycast_ref = MiscThings::GetRaycastRef(projectile_pos, projectile_fly_vector, 3000.0f, nullptr, 0b00001000000000000000000000000110);
-
-                                    //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
-                                    //DebugAPI_IMPL::DrawDebug::draw_line(projectile_pos, projectile_pos + projectile_fly_vector * 500.0f);
-                                    //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
-
-
-                                    if (raycast_ref == player)
+                                    if (projectile->data.types != RE::BGSProjectileData::Type::kFlamethrower)
                                     {
-                                        result = true;
-                                        return RE::BSContainer::ForEachResult::kStop;
-                                    }
-                                }
+                                        auto col_layer = projectile->data.collisionLayer;
 
-                                
+
+                                        auto raycast_ref = MiscThings::GetRaycastRef(projectile_pos, projectile_fly_vector, 3000.0f, nullptr, 0b00001000000000000000000000000110);
+
+                                        //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                                        //DebugAPI_IMPL::DrawDebug::draw_line(projectile_pos, projectile_pos + projectile_fly_vector * 500.0f);
+                                        //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+
+
+                                        if (raycast_ref == player)
+                                        {
+                                            result = true;
+                                            return RE::BSContainer::ForEachResult::kStop;
+                                        }
+                                    }
+
+
+                                }
                             }
-                            
-                                
                         }
 
                     }
@@ -12880,11 +12893,22 @@ namespace MiscThings {
     }
 
 
+    void reset_replace_twohanded_weapon()
+    {
+        replace_twohanded_weapon_confirmed = false;
+        replace_twohanded_weapon_confirm = false;
+        replace_twohanded_weapon_spell_id = false;
+        replace_twohanded_weapon_target_id = false;
+        replace_twohanded_weapon_request_sent = false;
+        replace_twohanded_weapon_choice_valid = false;
+        replace_twohanded_weapon_choice = false;
+    }
 
 
     void reset_parthurnax_friendly_fire()
     {
         reset_double_confirm(); //since its called only on saveloads
+        reset_replace_twohanded_weapon();
 
         parthurnax_friendly_fire_confirmed = false;
         parthurnax_friendly_fire_confirm = false;
@@ -12895,6 +12919,37 @@ namespace MiscThings {
         parthurnax_friendly_fire_choice = false;
     }
 
+
+
+
+
+
+    std::pair<bool, std::string> set_replace_twohanded_weapon_choice(int id)
+    {
+        std::pair<bool, std::string> result{};
+
+        if (!replace_twohanded_weapon_confirm)
+        {
+            result.first = true;
+            result.second = "[Error]";
+        }
+        else
+        {
+            if (id == 0 || id == 1)
+            {
+                replace_twohanded_weapon_choice_valid = true;
+                replace_twohanded_weapon_choice = id;
+                result.first = true;
+                result.second = "[Processing...]";
+            }
+            else
+            {
+                result.first = false;
+                result.second = "[Invalid choice ID]";
+            }
+        }
+        return result;
+    }
 
 
 
@@ -12960,7 +13015,38 @@ namespace MiscThings {
             }
         }
 
+        if (replace_twohanded_weapon_confirm)
+        {
+            if (!replace_twohanded_weapon_request_sent)
+            {
+                std::vector<MenuOption> options{};
+                options.push_back({ 0, "No" });
+                options.push_back({ 1, "Yes" });
 
+                unregister_all_actions();
+
+                //replace_twohanded_weapon_weapon_name
+
+                if (force_choice(options, "You currently have " + replace_twohanded_weapon_weapon_name + " equipped in both hands, casting " + replace_twohanded_weapon_spell_name + " will unequip current weapon. Do you confirm?", force_type::confirm_replace_twohanded))
+                {
+                    replace_twohanded_weapon_request_sent = true;
+                }
+            }
+            else
+            {
+                if (replace_twohanded_weapon_choice_valid)
+                {
+                    register_allowed_actions();
+                    if (replace_twohanded_weapon_choice)
+                    {
+                        replace_twohanded_weapon_confirmed = true;
+                        cast_spell_by_index(replace_twohanded_weapon_spell_id, false, true, replace_twohanded_weapon_target_id);
+                    }
+
+                    reset_replace_twohanded_weapon();
+                }
+            }
+        }
 
 
 
@@ -23081,10 +23167,33 @@ namespace MiscThings {
 
                             if (!already_equipped)
                             {
+                                auto current_hand = MiscThings::get_hand_contents(right_hand);
+
+                                bool twohanded = current_hand && current_hand->IsWeapon() && (((RE::TESObjectWEAP*)current_hand)->IsTwoHandedAxe() || ((RE::TESObjectWEAP*)current_hand)->IsTwoHandedSword());
+                                bool bow = current_hand && current_hand->IsWeapon() && (((RE::TESObjectWEAP*)current_hand)->IsBow() || ((RE::TESObjectWEAP*)current_hand)->IsCrossbow());
+
+                                if (player_issued && (twohanded || bow))
+                                {
+                                    if (!replace_twohanded_weapon_confirmed)
+                                    {
+                                        replace_twohanded_weapon_confirm = true;
+                                        replace_twohanded_weapon_spell_id = id;
+                                        replace_twohanded_weapon_target_id = target_index;
+
+                                        replace_twohanded_weapon_weapon_name = ((RE::TESObjectWEAP*)current_hand)->GetFullName();
+                                        replace_twohanded_weapon_spell_name = spell->GetFullName();
+
+
+                                        result.first = true;
+                                        result.second = "Processing...";
+                                        return result;
+                                    }
+                                }
+
+
                                 equip_manager->EquipSpell(player_actor, spell, slot);
                                 WalkerProcessor::reset_attacking_inanimate_object_time();
                             }
-                                
 
 
                             result.first = true;

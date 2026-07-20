@@ -61,7 +61,8 @@
         visit_places,
         change_character,
         confirm_cast_parthurnax,
-        double_confirm
+        double_confirm,
+        confirm_replace_twohanded
     };
 
     int get_active_force();

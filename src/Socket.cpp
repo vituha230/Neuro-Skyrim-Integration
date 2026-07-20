@@ -1460,6 +1460,9 @@ bool neuro::NeuroSocket::Tick(float dtime) //const neurosdk_message_action_t& aC
                         case force_type::double_confirm:
                             command_result = MiscThings::set_double_confirm_choice(json.id); break;
 
+                        case force_type::confirm_replace_twohanded:
+                            command_result = MiscThings::set_replace_twohanded_weapon_choice(json.id); break;
+
 
                         default:
                         {

@@ -241,6 +241,8 @@ namespace MiscThings {
     std::pair<bool, std::string> activate_inventory_object_by_index(int item_id, int action_id);
     std::pair<bool, std::string> drop_array_of_inventory_objects(std::vector<int> ids);
 
+    std::pair<bool, std::string> set_replace_twohanded_weapon_choice(int id);
+
 
     bool inside_soulcairn_floating_tower(RE::TESObjectREFR* object = nullptr);
     bool inside_volkihar_balcony(RE::TESObjectREFR* object = nullptr);
