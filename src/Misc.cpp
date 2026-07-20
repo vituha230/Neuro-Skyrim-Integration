@@ -23170,7 +23170,7 @@ namespace MiscThings {
                                 auto current_hand = MiscThings::get_hand_contents(right_hand);
 
                                 bool twohanded = current_hand && current_hand->IsWeapon() && (((RE::TESObjectWEAP*)current_hand)->IsTwoHandedAxe() || ((RE::TESObjectWEAP*)current_hand)->IsTwoHandedSword());
-                                bool bow = current_hand && current_hand->IsWeapon() && (((RE::TESObjectWEAP*)current_hand)->IsBow() || ((RE::TESObjectWEAP*)current_hand)->IsCrossbow());
+                                bool bow = current_hand && current_hand->IsWeapon() && (((RE::TESObjectWEAP*)current_hand)->IsBow() || ((RE::TESObjectWEAP*)current_hand)->IsCrossbow()) && MiscThings::has_ammo_in_inventory(((RE::TESObjectWEAP*)current_hand)->IsCrossbow());
 
                                 if (player_issued && (twohanded || bow))
                                 {
