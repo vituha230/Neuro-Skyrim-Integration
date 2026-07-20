@@ -20786,7 +20786,7 @@ namespace MiscThings {
                     if (is_equippable(object))
                     {
                         
-                        if (is_equipped(object))
+                        if (is_equipped(object) && !(object->IsWeapon() && !(MiscThings::get_hand_contents(true) == object && MiscThings::get_hand_contents(false) == object) && inventory_items_list.find(item_id)->second.amount > 1))
                         {
 
                             bool staff_of_magnus = false;
@@ -20818,7 +20818,26 @@ namespace MiscThings {
                             if (object->IsWeapon())
                             {
                                 auto slot = get_free_slot(true, false);
-                                
+
+                                bool making_dualwield = false;
+
+                                if (!(MiscThings::get_hand_contents(true) == object && MiscThings::get_hand_contents(false) == object) && inventory_items_list.find(item_id)->second.amount > 1)
+                                {
+                                    if (MiscThings::get_hand_contents(true) == object)
+                                    {
+                                        slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //left hand
+                                        making_dualwield = true;
+                                    }
+                                        
+
+                                    if (MiscThings::get_hand_contents(false) == object)
+                                    {
+                                        slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F42); //right hand
+                                        making_dualwield = true;
+                                    }
+                                }
+
+
                                 bool staff_of_magnus = false;
 
                                 if (object->GetFormID() == 0x35369) //staff of magnus
@@ -20826,8 +20845,6 @@ namespace MiscThings {
                                     slot = (RE::BGSEquipSlot*)RE::TESForm::LookupByID(0x00013F43); //always left hand
                                     staff_of_magnus = true;
                                 }
-                                    
-
 
 
 
@@ -20841,7 +20858,7 @@ namespace MiscThings {
                                     left_hand = true;
                                     equip_hand = " in left hand";
                                 }
-                                    
+
 
                                 auto weapon = (RE::TESObjectWEAP*)object;
 
@@ -20852,15 +20869,20 @@ namespace MiscThings {
 
                                 auto entry = inventory.find(object);
 
+
                                 if (entry != inventory.end() && entry->second.second.get())
                                 {
                                     RE::InventoryEntryData* entry_entry = entry->second.second.get();
 
                                     RE::ExtraDataList* extra = nullptr;
 
+
                                     if (entry_entry->extraLists && entry_entry->extraLists->size() > 0)
                                     {
                                         extra = *entry_entry->extraLists->begin();
+                                        
+                                        if (making_dualwield)
+                                            extra = nullptr; //it doesnt let it equip it in the other hand in this case.
 
                                         actor_equip->EquipObject((RE::Actor*)player_ref, object, extra, 1, slot); //equip with extra for scripts to trigger
                                     }
@@ -20868,7 +20890,13 @@ namespace MiscThings {
                                         actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot); //normal equip
                                 }
                                 else
-                                    actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot); //normal equip
+                                {
+                                    result.first = false;
+                                    result.second = "Failed to equip";
+                                    return result;
+                                }
+
+                                    //actor_equip->EquipObject((RE::Actor*)player_ref, object, nullptr, 1, slot); //normal equip
 
 
 

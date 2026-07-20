@@ -29,10 +29,8 @@
 
 
 
-//shrink inventory list
-//categorize inventory + merge identical items into 1. allow selling copies.
+//allow selling copies of equipped gear
 //random advice post death (post 2 concequetive deaths)
-
 
 //mainquest elder scroll reading - proper check for correct spell being read + advice says (Dragon)
 //enemy health info should have some threshold for regenerating enemies, bow-not-hitting should only account for decrease in hp
