@@ -17344,64 +17344,159 @@ namespace MiscThings {
     }
 
 
-    std::string get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object)
+    std::pair<int, std::string> get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object, bool without_text_category)
     {
-        std::string result = "";
+        std::pair<int, std::string> result{};
 
         auto base_type = base_obj->GetFormType();
 
-        if (base_obj->IsInventoryObject())
-            result = "[Item]"; //will be specified below if necessary
 
-        if (base_type == RE::FormType::Book)
-            result = "[Book]";
+        if (base_obj->IsInventoryObject())
+        {
+            result.second = "[Item]"; //will be specified below if necessary
+            result.first = 10;
+        }
+
 
         if (base_type == RE::FormType::Weapon)
-            result = "[Weapon]";
+        {
+            result.second = "[Weapon]";
+            result.first = 1;
+        }
+
 
         if (base_type == RE::FormType::Armor)
-            result = "[Armor]";
+        {
+            result.second = "[Armor]";
+            result.first = 2;
+        }
+
 
         if (base_type == RE::FormType::Outfit)
-            result = "[Outfit]";
+        {
+            result.second = "[Outfit]";
+            result.first = 3;
+        }
 
-        if (base_type == RE::FormType::Ingredient)
-            result = "[Ingredient]";
 
         if (base_type == RE::FormType::AlchemyItem)
-            result = "[Consumable]";
-
-        if (base_type == RE::FormType::SoulGem)
         {
-            result = "[Soulgem";
+            result.second = "[Consumable]";
+            result.first = 4;
+        }
 
-            if (object)
+
+        if (base_type == RE::FormType::Note)
+        {
+            result.second = "[Note]";
+            result.first = 5;
+        }
+
+        if (base_type == RE::FormType::Book)
+        {
+            if (object->IsNote())
             {
-                auto soulgem = (RE::TESSoulGem*)object;
-                auto soul = soulgem->currentSoul;
-
-                std::string charge_text = get_soul_charge_text(soul);
-
-                if (charge_text != "")
-                {
-                    result += ", " + charge_text + " soul";
-                }
-                else
-                {
-                    result += ", empty";
-                }
+                result.second = "[Note]";
+                result.first = 5;
             }
+            else
+            {
+                result.second = "[Book]";
+                result.first = 6;
 
-            result += "]";
+            }
+            
+        }
+        
 
+        if (base_type == RE::FormType::Ingredient)
+        {
+            result.second = "[Ingredient]";
+            result.first = 7;
         }
             
 
-        if (base_type == RE::FormType::Note)
-            result = "[Note]";
-
         if (base_type == RE::FormType::Ammo)
-            result = "[Ammo]";
+        {
+            result.second = "[Ammo]";
+            result.first = 9;
+        }
+
+
+
+        if (without_text_category)
+            result.second = "";
+
+
+
+        if (base_type == RE::FormType::SoulGem)
+        {
+
+            if (!without_text_category)
+            {
+                result.second = "[Soulgem";
+
+                if (object)
+                {
+                    auto soulgem = (RE::TESSoulGem*)object;
+                    auto soul = soulgem->currentSoul;
+
+                    std::string charge_text = get_soul_charge_text(soul);
+
+                    if (charge_text != "")
+                    {
+                        result.second += ", " + charge_text + " soul";
+                    }
+                    else
+                    {
+                        result.second += ", empty";
+                    }
+                }
+
+                result.second += "]";
+
+            }
+            else
+            {
+                if (object)
+                {
+                    auto soulgem = (RE::TESSoulGem*)object;
+                    auto soul = soulgem->currentSoul;
+
+                    std::string charge_text = get_soul_charge_text(soul);
+
+                    if (charge_text != "")
+                    {
+                        result.second += "[" + charge_text + " soul]";
+                    }
+                    else
+                    {
+                        result.second = "[Empty]";
+                    }
+                }
+            }
+            
+
+
+
+
+
+
+
+
+            result.first = 8;
+
+        }
+
+
+
+
+
+
+        
+            
+
+
 
 
         return result;
@@ -18384,9 +18479,9 @@ namespace MiscThings {
                     name = "Dragon";
             }
 
-            std::string category = get_object_category(refr);
+            auto category = get_object_category(refr);
 
-            result = category + " " + name;
+            result = category.second + " " + name;
         }
 
         return result;
@@ -19098,17 +19193,17 @@ namespace MiscThings {
                             {
                                 auto current_best = best_weapon.find(this_slot);
 
-                                std::string item_info = insert_item_into_inventory_list_and_get_info(inventory_entry.second.object, true);
+                                auto item_info = insert_item_into_inventory_list_and_get_info(inventory_entry.second.object, true);
 
                                 if (current_best == best_weapon.end())
-                                    best_weapon.insert({ this_slot, {item_info, benefit} });
+                                    best_weapon.insert({ this_slot, {item_info.second, benefit} });
                                 else
                                 {
                                     float current_benefit = current_best->second.second;
 
                                     if (benefit > current_benefit)
                                     {
-                                        current_best->second.first = item_info;
+                                        current_best->second.first = item_info.second;
                                         current_best->second.second = benefit;
                                     }
                                 }
@@ -19158,17 +19253,17 @@ namespace MiscThings {
                         {
                             auto current_best = best_armor.find(this_slot);
 
-                            std::string item_info = insert_item_into_inventory_list_and_get_info(inventory_entry.second.object, true);
+                            auto item_info = insert_item_into_inventory_list_and_get_info(inventory_entry.second.object, true);
 
                             if (current_best == best_armor.end())
-                                best_armor.insert({ this_slot, {item_info, benefit} });
+                                best_armor.insert({ this_slot, {item_info.second, benefit} });
                             else
                             {
                                 float current_benefit = current_best->second.second;
 
                                 if (benefit > current_benefit)
                                 {
-                                    current_best->second.first = item_info;
+                                    current_best->second.first = item_info.second;
                                     current_best->second.second = benefit;
                                 }
                             }
@@ -19272,10 +19367,10 @@ namespace MiscThings {
 
             for (auto best_gear_piece : best_armor)
             {
-                std::string item_info = insert_item_into_inventory_list_and_get_info(best_gear_piece.second.first, true);
+                auto item_info = insert_item_into_inventory_list_and_get_info(best_gear_piece.second.first, true);
 
-                if (item_info != "")
-                    best_items.push_back(item_info);
+                if (item_info.second != "")
+                    best_items.push_back(item_info.second);
             }
 
             bool first = true;
@@ -21482,10 +21577,10 @@ namespace MiscThings {
 
 
 
-    std::string get_inventory_item_full_info(RE::TESBoundObject* item, bool compact = false, RE::InventoryEntryData* entry = nullptr)
+    std::pair<int, std::string> get_inventory_item_full_info(RE::TESBoundObject* item, bool compact = false, RE::InventoryEntryData* entry = nullptr, bool without_text_category = false)
     {
 
-        std::string result = "";
+        std::pair<int, std::string> result{};
 
         auto item_form = (RE::TESForm*)item;
 
@@ -21522,9 +21617,20 @@ namespace MiscThings {
                     auto weapon = (RE::TESObjectWEAP*)item_form;
 
                     if (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow())
-                        twohanded = "[Two-handed]";
+                    {
+                        if (without_text_category)
+                            twohanded = "[2H]";
+                        else
+                            twohanded = "[Two-handed]";
+                    }
                     else
-                        twohanded = "[One-handed]";
+                    {
+                        if (without_text_category)
+                            twohanded = "[1H]";
+                        else
+                            twohanded = "[One-handed]";
+                    }
+                        
 
                 }
 
@@ -21548,9 +21654,18 @@ namespace MiscThings {
 
 
                     std::string damage_text = "Damage: " + std::to_string(damage);
+                    if (without_text_category)
+                        damage_text = "Dmg: " + std::to_string(damage);
+
                     std::string weight_text = "Weight: " + weight_text_number;
 
-                    stats = "[" + damage_text + ", " + weight_text + "]";
+
+                    if (damage <= 0)
+                        damage_text = "";
+                    else
+                        damage_text += ", ";
+
+                    stats = "[" + damage_text + weight_text + "]";
                 }
 
 
@@ -21573,9 +21688,16 @@ namespace MiscThings {
                     std::string weight_text_number = ss.str();
 
                     std::string armor_val_text = "Armor: " + std::to_string(armor_val);
+
                     std::string weight_text = "Weight: " + weight_text_number;
 
-                    stats = "[" + heavy + armor_val_text + ", " + weight_text + "]";
+                    if (armor_val <= 0)
+                        armor_val_text = "";
+                    else
+                        armor_val_text += ", ";
+
+
+                    stats = "[" + heavy + armor_val_text + weight_text + "]";
                 }
 
 
@@ -21586,7 +21708,7 @@ namespace MiscThings {
                     else
                         ;// actions += "[Not equipped" + hand_text + "]";// [Can unequip] ";
 
-                    actions += stats;
+                    actions += stats + twohanded;
                 }
     
             }
@@ -21625,9 +21747,12 @@ namespace MiscThings {
 
                     item_name = MiscThings::replace_aliases_all_quests(item_name);
 
-                    result += get_object_category(item_form, item);
-                    result += actions + " ";
-                    result += item_name;
+                    auto category = get_object_category(item_form, item, without_text_category);
+
+                    result.second += category.second;
+                    result.second += actions + " ";
+                    result.second += item_name;
+                    result.first = category.first;
                     //result += "\n"; //TODO: replace with comma later
 
                     //item_data database_data{};
@@ -21658,9 +21783,9 @@ namespace MiscThings {
     }
 
 
-    std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item, bool compact)
+    std::pair<int, std::string> insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item, bool compact, bool without_text_category)
     {
-        std::string result = "";
+        std::pair<int, std::string> result{};
 
 
 
@@ -21672,13 +21797,14 @@ namespace MiscThings {
             if (inventory_entry.second.object == item)
             {
 
-                std::string info = get_inventory_item_full_info(item, compact);
+                auto info = get_inventory_item_full_info(item, compact, nullptr, without_text_category);
 
-                if (info == "")
+                if (info.second == "")
                     return result; //nothing
        
                 //std::string quantity_text = std::to_string(inventory_entry.second.amount);
-                result = "[id " + std::to_string(inventory_entry.first) + "]" + info;// +" x" + quantity_text;
+                result.second = "[id " + std::to_string(inventory_entry.first) + "]" + info.second;// +" x" + quantity_text;
+                result.first = info.first;
                 found = true;
                 break;
             }
@@ -21706,9 +21832,9 @@ namespace MiscThings {
             if (data)
                 inv_entry = data.get();
 
-            std::string info = get_inventory_item_full_info(item, compact);
+            auto info = get_inventory_item_full_info(item, compact, nullptr, without_text_category);
 
-            if (info == "" || quantity <= 0)
+            if (info.second == "" || quantity <= 0)
                 return result;
 
             int new_id = 0;
@@ -21716,11 +21842,13 @@ namespace MiscThings {
                 new_id = inventory_items_list.rbegin()->first + 1;
 
 
-            result = "[id " + std::to_string(new_id) + "]" + info;
+            result.second = "[id " + std::to_string(new_id) + "]" + info.second;
+            result.first = info.first;
 
             item_data database_data{};
             database_data.amount = quantity;
             database_data.object = data->GetObject();
+            database_data.category = info.first;
 
             inventory_items_list.insert({ new_id , database_data });
 
@@ -21758,6 +21886,13 @@ namespace MiscThings {
     {
         std::pair<bool, std::string> result{};
 
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!player)
+            return result;
+
+
+
         //inventory_valid = false;
         //inventory_items_list.clear();
 
@@ -21766,35 +21901,145 @@ namespace MiscThings {
         RE::TESObjectREFR::InventoryItemMap inventory = MiscThings::get_filtered_inventory();
 
 
+
+        std::vector<std::string> category_list{};
+
+
+        for (int i = 0; i < 11; i++)
+        {
+            category_list.push_back(""); //templates for all categories
+        }
+
+
         for (auto& [item, data] : inventory)
         {
-            if (item)
+            if (item) 
             {
-                switch (item->formID)
+                switch (item->formID) //skip bound weapons
                 {
                 case (0x58f5f): //sword
                 case (0x58f5e): //axe
                 case (0x58f60): //bow
                 case (0x401ce02): //dagger
-                    continue; //skip bound weapons
+                    continue; 
                 }
             }
 
-            std::string info = insert_item_into_inventory_list_and_get_info(item);
+            auto info = insert_item_into_inventory_list_and_get_info(item, false, true);
 
-            if (info == "")
+            if (info.second == "")
                 continue;
 
-            inventory_contents += info + " x" + std::to_string(data.first);
-            inventory_contents += "\n";
+
+            if (data.first > 1)
+                info.second += " x" + std::to_string(data.first);
 
 
-            auto test = get_restore_value(item, RE::ActorValue::kHealth);
+            if (info.first < std::size(category_list))
+            {
+                category_list.at(info.first) += info.second + "\n";
+            }
+            else
+                if (std::size(category_list) > 0) //just backup throw into "no-category"
+                {
+                    category_list.at(0) += info.second + "\n";
+                }
+
+
+            //inventory_contents += info.second + " x" + std::to_string(data.first);
+            //inventory_contents += "\n";
+            //auto test = get_restore_value(item, RE::ActorValue::kHealth);
         }
 
-        auto player = RE::PlayerCharacter::GetSingleton();
+        for (int i = 0; i < std::size(category_list); i++)
+        {
+            auto category_entry = category_list.at(i);
+
+            if (category_entry != "")
+            {
+                switch (i)
+                {
+                case (0): //this should never happen but just in case
+                {
+                    inventory_contents += category_entry + "\n";
+                    break;
+                }
+
+                case (1):
+                {
+                    inventory_contents += "Weapons (1H - One-handed, 2H - Two-handed):\n" + category_entry + "\n";
+                    break;
+                }
+                case (2):
+                {
+                    inventory_contents += "Armor:\n" + category_entry + "\n";
+                    break;
+                }
+                case (3):
+                {
+                    inventory_contents += "Outfits:\n" + category_entry + "\n";
+                    break;
+                }
+                case (4):
+                {
+                    inventory_contents += "Potions and food:\n" + category_entry + "\n";
+                    break;
+                }
+                case (5):
+                {
+                    if (category_list.at(6) == "")
+                        inventory_contents += "Notes:\n" + category_entry + "\n";
+                    else
+                        inventory_contents += "Notes and books:\n" + category_entry + "\n";
+
+                    break;
+                }
+                    
+                case (6):
+                {
+                    if (category_list.at(5) == "")
+                        inventory_contents += "Books:\n" + category_entry + "\n";
+                    else
+                        inventory_contents += category_entry + "\n";
+                    break;
+                }
 
 
+                case (7):
+                {
+                    inventory_contents += "Ingredients:\n" + category_entry + "\n";
+                    break;
+                }
+                case (8):
+                {
+                    inventory_contents += "Soulgems:\n" + category_entry + "\n";
+                    break;
+                }
+                case (9):
+                {
+                    inventory_contents += "Ammo:\n" + category_entry + "\n";
+                    break;
+                }
+
+                case (10):
+                {
+                    inventory_contents += "Other items:\n" + category_entry + "\n";
+                    break;
+                }
+
+
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+        //weight info
         std::string cur_weight = std::to_string((int)player->GetActorValue(RE::ActorValue::kInventoryWeight));
         std::string max_weight = std::to_string((int)player->GetActorValue(RE::ActorValue::kCarryWeight));
 
@@ -22247,18 +22492,18 @@ namespace MiscThings {
                             else
                                 if (right_equipped && !left_equipped)
                                 {
-                                    if (MiscThings::is_vampirelord())
-                                        equip_info = "[Equipped in right hand]";
-                                    else
-                                        equip_info = "[Equipped in right hand, can also be equipped in left hand]";
+                                    //if (MiscThings::is_vampirelord())
+                                    //    equip_info = "[Equipped in right hand]";
+                                    //else
+                                        equip_info = "[Equipped in right hand]";//, can also be equipped in left hand]";
                                 }
                                 else
                                     if (!right_equipped && left_equipped)
                                     {
-                                        if (MiscThings::is_vampirelord() || !MiscThings::is_offensive_spell(a_spell))
-                                            equip_info = "[Equipped in left hand]";
-                                        else
-                                            equip_info = "[Equipped in left hand, can also be equipped in right hand]";
+                                        //if (MiscThings::is_vampirelord() || !MiscThings::is_offensive_spell(a_spell))
+                                        //    equip_info = "[Equipped in left hand]";
+                                        //else
+                                        equip_info = "[Equipped in left hand]";// , can also be equipped in right hand]";
                                     }
                                     else
                                         equip_info = "[Equipped in both hands]";

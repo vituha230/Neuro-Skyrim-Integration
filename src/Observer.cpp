@@ -4888,21 +4888,21 @@ namespace Observer {
 
 					if (!MiscThings::is_inventory_item_in_the_list(item))
 					{
-						std::string info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
+						auto info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
 
-						if (info == "")
+						if (info.second == "")
 							continue;
 
 
 						if (!had_something_better) //so it doesnt put this caption on every armor piece if we were naked and returned all our inventory from some chest for example. will be re-advised later anyway
 							if (not_first_inventory_info && MiscThings::armor_damage_difference(item) > 2)
 							{
-								info += " - Better than your current gear";
+								info.second += " - Better than your current gear";
 								had_something_better = true;
 							}
 								
 
-						new_info += info + "\n";
+						new_info += info.second + "\n";
 					}
 				}
 
@@ -4933,11 +4933,11 @@ namespace Observer {
 
 					if (inventory.find(item) == inventory.end() || inventory.find(item)->second.first <= 0)
 					{
-						std::string info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
+						auto info = MiscThings::insert_item_into_inventory_list_and_get_info(item);
 
-						if (info != "")
+						if (info.second != "")
 						{
-							removed_info += info + "\n";
+							removed_info += info.second + "\n";
 						}
 
 						it = p_inventory->erase(it);    // or "it = m.erase(it)" since C++11

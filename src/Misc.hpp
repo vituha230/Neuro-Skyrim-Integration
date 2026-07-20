@@ -195,6 +195,7 @@ namespace MiscThings {
         RE::TESBoundObject* object;
        // RE::InventoryEntryData* entry;
         int amount;
+        int category;
         //int price; //TODO: replace with something useful (maybe type of item)
     };
 
@@ -461,14 +462,14 @@ namespace MiscThings {
 
     bool has_something_equipped(bool right);
 
-    std::string get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object = nullptr);
+    std::pair<int, std::string> get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object = nullptr, bool without_text_category = false);
 
     void SetPosition_moveto(RE::TESObjectREFR* a_target, RE::NiPoint3 new_pos);
 
     RE::TESObjectREFR* get_dragon_for_dragonrend();
 
     bool is_inventory_item_in_the_list(RE::TESBoundObject* item);
-    std::string insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item, bool compact = false);
+    std::pair<int, std::string> insert_item_into_inventory_list_and_get_info(RE::TESBoundObject* item, bool compact = false, bool without_text_category = false);
     std::map<int, item_data>* get_p_inventory_items_list();
     int remove_item_from_inventory_list(RE::TESBoundObject* item);
 

@@ -8875,8 +8875,8 @@ namespace WalkerProcessor {
                                                                 if (test_actual_target_name != "")
                                                                 {
                                                                     auto base_obj = test_quest_target_ref2->GetBaseObject();
-                                                                    std::string category = MiscThings::get_object_category((RE::TESForm*)base_obj);
-                                                                    actual_target_name = category + " " + test_actual_target_name;
+                                                                    auto category = MiscThings::get_object_category((RE::TESForm*)base_obj);
+                                                                    actual_target_name = category.second + " " + test_actual_target_name;
 
                                                                 }
                                                             }
