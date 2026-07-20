@@ -48,10 +48,10 @@ namespace MiscThings {
 
 
 
-    bool projectile_flying_into_player_face()
+    RE::NiPoint3 projectile_flying_into_player_face()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
-        bool result = false;
+        RE::NiPoint3 result{};
 
         if (player)
         {
@@ -69,34 +69,39 @@ namespace MiscThings {
 
                             if (std::size(projectile_ref->impacts) <= 0)
                             {
+                                RE::NiPoint3 projectile_fly_vector{};
+
                                 if (a_ref->Get3D())
+                                    projectile_fly_vector = a_ref->Get3D()->world.rotate.GetVectorY();
+                                else
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                    ;// projectile_fly_vector = a_ref->data.angle;
+
+                                auto projectile_pos = a_ref->GetPosition();
+
+                                auto projectile = (RE::BGSProjectile*)base_obj;
+
+                                if (projectile->data.types != RE::BGSProjectileData::Type::kFlamethrower)
                                 {
-                                    auto projectile_fly_vector = a_ref->Get3D()->world.rotate.GetVectorY();
-                                    auto projectile_pos = a_ref->GetPosition();
+                                    auto col_layer = projectile->data.collisionLayer;
 
-                                    auto projectile = (RE::BGSProjectile*)base_obj;
 
-                                    if (projectile->data.types != RE::BGSProjectileData::Type::kFlamethrower)
+                                    auto raycast_ref = MiscThings::GetRaycastRef(projectile_pos, projectile_fly_vector, 3000.0f, nullptr, 0b00001000000000000000000000000110);
+
+                                    //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                                    //DebugAPI_IMPL::DrawDebug::draw_line(projectile_pos, projectile_pos + projectile_fly_vector * 500.0f);
+                                    //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+
+
+                                    if (raycast_ref == player)
                                     {
-                                        auto col_layer = projectile->data.collisionLayer;
-
-
-                                        auto raycast_ref = MiscThings::GetRaycastRef(projectile_pos, projectile_fly_vector, 3000.0f, nullptr, 0b00001000000000000000000000000110);
-
-                                        //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
-                                        //DebugAPI_IMPL::DrawDebug::draw_line(projectile_pos, projectile_pos + projectile_fly_vector * 500.0f);
-                                        //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
-
-
-                                        if (raycast_ref == player)
-                                        {
-                                            result = true;
-                                            return RE::BSContainer::ForEachResult::kStop;
-                                        }
+                                        result = projectile_fly_vector;
+                                        return RE::BSContainer::ForEachResult::kStop;
                                     }
-
-
                                 }
+
+
+
                             }
                         }
 
@@ -2636,15 +2641,21 @@ namespace MiscThings {
     }
 
 
+    bool getbit(uint64_t in, int pos)
+    {
+        return ((in >> pos) & 1);
+    }
+
+
+
     int safe_to_dodge_projectile()
     {
         float pi = RE::NI_PI;
 
         auto player = RE::PlayerCharacter::GetSingleton();
 
-        bool left_safe = true;
-        bool right_safe = true;
-
+        //bool left_safe = true;
+        //bool right_safe = true;
 
         if (player)
         {
@@ -2659,8 +2670,7 @@ namespace MiscThings {
                 bool interiorCell = parent_cell->IsInteriorCell();
 
 
-
-                std::vector<RE::NiPoint3> test_points{};
+                std::vector<std::pair<RE::NiPoint3, bool>> test_points{};
 
                 RE::NiPoint3 point = player_pos;
 
@@ -2668,31 +2678,50 @@ namespace MiscThings {
 
                 float r = 120.0f;
 
-                for (int i = 0; i < 6; i++)
+                auto camera = RE::PlayerCamera::GetSingleton();
+
+                if (!camera || !camera->cameraRoot.get())
+                    return 0;
+                    
+                auto camera_dir = camera->cameraRoot.get()->world.rotate.GetVectorY();
+
+                camera_dir.z = 0.0f;
+                camera_dir.Unitize();
+
+
+
+                float shift = std::atan2(camera_dir.y, camera_dir.x);
+
+
+                for (int i = 0; i < 8; i++)
                 {
-                    point = { r * std::cos(pi / 3 * i + pi/6), r * std::sin(pi / 3 * i + pi / 6), 0.0f};
-                    test_points.push_back(player_pos + point);
+                    //this is for dir = {1.0f, 0.0f}
+                    point = { r * std::cos(pi / 4 * i + shift), r * std::sin(pi / 4 * i + shift), 0.0f};
+                    test_points.push_back({ player_pos + point, true });
                 }
 
-                //3 points - left, 3 points - right
-
+                
 
                 if (interiorCell)
                 {
                     
                     //take player pos and 6 points on circle around him, test all for being on navmesh. range... 300?
                     int i = 0;
-                    for (auto test_point : test_points)
+                    for (auto& test_point : test_points)
                     {
-                        if (!object_is_on_navmesh_in_cell(test_point, parent_cell))
-                            if (i < 3)
-                                left_safe = false;
-                            else
-                                right_safe = false;
+                        if (!object_is_on_navmesh_in_cell(test_point.first, parent_cell))
+                            test_point.second = false;
 
                     }
                     
-                    return left_safe + ((int)right_safe) << 1;
+                    int result = 0;
+
+                    for (int i = 0; i < 8; i++)
+                    {
+                        result += ((int)test_points.at(i).second) << i;
+                    }
+
+                    return result;
 
                 }
                 else
@@ -2707,7 +2736,7 @@ namespace MiscThings {
                         RE::NiPoint2 parent_cell_coords = { parent_cell_coords_raw->worldX, parent_cell_coords_raw->worldY };
 
                         int i = 0;
-                        for (auto test_point : test_points)
+                        for (auto& test_point : test_points)
                         {
 
                             bool point_is_good = false;
@@ -2727,7 +2756,7 @@ namespace MiscThings {
 
                                         if (cell_distance.Length() < 4100.0f)
                                         {
-                                            if (object_is_on_navmesh_in_cell(test_point, adjacent_cell))
+                                            if (object_is_on_navmesh_in_cell(test_point.first, adjacent_cell))
                                             {
                                                 point_is_good = true;
                                                 goto finish_point;
@@ -2738,16 +2767,38 @@ namespace MiscThings {
 
                         finish_point:
                             if (!point_is_good)
-                                if (i < 3)
-                                    left_safe = false;
-                                else
-                                    right_safe = false;
-
+                                test_point.second = false;
 
                             i++;
                         }
 
-                        return left_safe + ((int)right_safe) << 1;
+                        
+                        //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                        
+                        
+                        int result = 0;
+
+                        for (int i = 0; i < 8; i++)
+                        {
+                            result += ((int)test_points.at(i).second) << i;
+
+                            /*
+                            auto debug_point1 = test_points.at(i).first;
+                            auto debug_point2 = debug_point1;
+                            debug_point2.z += 50.0f;
+
+                            auto color = DebugAPI_IMPL::DrawDebug::Colors::RED;
+
+                            if (test_points.at(i).second)
+                                color = DebugAPI_IMPL::DrawDebug::Colors::GRN;
+
+                            DebugAPI_IMPL::DrawDebug::draw_line(debug_point1, debug_point2, 5.0f, color);
+                            */
+                        }
+
+                        //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+
+                        return result;
 
                         
                     }

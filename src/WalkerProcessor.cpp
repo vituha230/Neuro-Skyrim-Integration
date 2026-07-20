@@ -329,6 +329,9 @@ namespace WalkerProcessor {
 
     float dodge_projectile_time = 0.0f;
     bool do_dodge_projectile = false;
+    RE::NiPoint3 dodge_projectile_direction{};
+    int dodge_projectile_allowed_dirs = 0;
+
 
     float attack_spell_cast_timeout = 0.0f;
 
@@ -526,7 +529,6 @@ namespace WalkerProcessor {
     RE::NiPoint3 last_point_of_last_path{};
 
     bool last_dragon_was_flying = false;
-
 
 
 
@@ -6026,7 +6028,7 @@ namespace WalkerProcessor {
 
 
 
-    int dodge_direction = 0;
+    int dodge_direction = -1;
 
     bool dodge_projectile(float dtime)
     {
@@ -6037,29 +6039,141 @@ namespace WalkerProcessor {
         {
             dodge_projectile_time += dtime;
 
-            if (dodge_direction < 0 || dodge_direction > 1)
-                dodge_direction = 0;
-
-            if (dodge_direction == 0)
+            if (dodge_direction < 0 || dodge_direction > 7)
             {
+                //decide direction using player's dir and allowed dirs
+
+                auto camera = RE::PlayerCamera::GetSingleton();
+
+                if (!camera || !camera->cameraRoot.get())
+                    return true;
+
+                auto camera_dir = camera->cameraRoot.get()->world.rotate.GetVectorY();
+
+                camera_dir.z = 0.0f;
+                camera_dir.Unitize();
+
+                auto projectile_vector = dodge_projectile_direction;
+                projectile_vector.z = 0.0f;
+                projectile_vector.Unitize();
+              
+
+                float shift = std::atan2(camera_dir.y, camera_dir.x);
+
+                auto player_pos = player->GetPosition();
+
+
+                //find the most orthogonal direction to the projectile. then randomly pick between that direction and its opposite
+                float r = 1.0f;
+                float pi = RE::NI_PI;
+
+                float lowest_dotproduct = FLT_MAX;
+                int best_dir = -1;
+
+                for (int i = 0; i < 8; i++)
+                {
+                    if (MiscThings::getbit(dodge_projectile_allowed_dirs, i))
+                    {
+                        RE::NiPoint3 test_dir = { r * std::cos(pi / 4 * i + shift), r * std::sin(pi / 4 * i + shift), 0.0f };
+
+                        auto dotproduct = abs(test_dir.Dot(projectile_vector));
+
+                        if (dotproduct < lowest_dotproduct)
+                        {
+                            lowest_dotproduct = dotproduct;
+                            best_dir = i;
+                        }
+                    }
+
+                }
+
+                if (best_dir >= 0 && best_dir < 8)
+                {
+                    int best_dir_opposite = (best_dir + 4) % 8;
+
+                    if (MiscThings::getbit(dodge_projectile_allowed_dirs, best_dir_opposite))
+                    {
+                        float dodge_direction_chance = (float)std::rand() / RAND_MAX;
+
+                        if (dodge_direction_chance < 0.5)
+                            dodge_direction = best_dir;
+                        else
+                            dodge_direction = best_dir_opposite;
+                    }
+                    else
+                        dodge_direction = best_dir;
+
+                }
+            }
+
+            if (dodge_direction < 0 || dodge_direction > 7)
+            {
+                dodge_projectile_time = 0.0f;
+                dodge_direction = -1;
+                return true; //could not decide
+            }
+                
+
+
+            switch (dodge_direction)
+            {
+            case (0):
+                cursor_up();
+                break;
+
+            case (1):
+                cursor_up();
                 left();
+                break;
+
+            case (2):
+                left();
+                break;
+
+            case (3):
+                cursor_down();
+                left();
+                break;
+
+            case (4):
+                cursor_down();
+                break;
+
+            case (5):
+                cursor_down();
+                right();
+                break;
+
+            case (6):
+                right();
+                break;
+
+            case (7):
+                cursor_up();
+                right();
+                break;
             }
 
-            if (dodge_direction == 1)
-            {
-                right();
-            }
+            //if (dodge_direction == 0)
+            //{
+            //    left();
+            //}
+
+            //if (dodge_direction == 1)
+            //{
+            //    right();
+            //}
         }
         else
         {
             dodge_projectile_time = 0.0f;
-            
-            float dodge_direction_chance = (float)std::rand() / RAND_MAX;
-
-            if (dodge_direction_chance < 0.5)
-                dodge_direction = 1;
-            else
-                dodge_direction = 0;
+            dodge_direction = -1;
+            //float dodge_direction_chance = (float)std::rand() / RAND_MAX;
+            //
+            //if (dodge_direction_chance < 0.5)
+            //    dodge_direction = 1;
+            //else
+            //    dodge_direction = 0;
 
             result = true;
         }
@@ -15880,20 +15994,23 @@ namespace WalkerProcessor {
                 return;
             }
 
-            
-            if (MiscThings::projectile_flying_into_player_face())
+            auto projectile_dir = MiscThings::projectile_flying_into_player_face();
+
+            if (projectile_dir != RE::NiPoint3::Zero())
             {
                 int allowed_dirs = MiscThings::safe_to_dodge_projectile();
 
                 if (allowed_dirs)
                 {
                     do_dodge_projectile = true;
+                    dodge_projectile_direction = projectile_dir;
+                    dodge_projectile_allowed_dirs = allowed_dirs;
 
-                    if (allowed_dirs == 1)
-                        dodge_direction = 0;
+                    //if (allowed_dirs == 1)
+                    //    dodge_direction = 0;
 
-                    if (allowed_dirs == 2)
-                        dodge_direction = 1;
+                    //if (allowed_dirs == 2)
+                    //    dodge_direction = 1;
                 }
                     
             }

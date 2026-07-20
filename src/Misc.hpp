@@ -448,8 +448,9 @@ namespace MiscThings {
 
     bool can_fast_travel();
 
+    bool getbit(uint64_t in, int pos);
 
-    bool projectile_flying_into_player_face();
+    RE::NiPoint3 projectile_flying_into_player_face();
 
 
     bool is_self_cast_spell(bool right);

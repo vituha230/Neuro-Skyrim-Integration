@@ -37,15 +37,9 @@
 // spells that dont take hand have no restrictions in any mode
 // some interactive commands for non-spell combat (power attack for melee, aim carefully for bows, block for twohanded/shield)
 
-//try persisting the mode after respawn post-death? (just remember hands before death and reequip on respawn if possible. if not possible - try to find something else)
-
 
 
 //riften tomb thieves guild entrance should be silent. everithing involving that place should be silent
-
-
-
-
 
 
 //TODO hearthfire dlc
