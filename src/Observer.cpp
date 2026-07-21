@@ -5982,7 +5982,7 @@ namespace Observer {
 									"Sometimes it is better to ignore enemies and try to just walk past them if they are too strong",
 									"Dont hesitate to switch to melee weapons if you are out of Magicka",
 									"If you have problems completing a quest, you can just switch to another one if you have any. Sometimes a quest may be too difficult for your current level or equipment",
-									"If you think that your equipment might be too weak, you can try upgrading it (blacksmiths in big cities usually have workbenches near them, blacksmiths sell materials for upgrades)",
+									"If you think that your equipment might be too weak, you can try upgrading it (blacksmiths in big cities usually have workbenches near them, blacksmiths sell materials for upgrades). If you prefer magic, consider buying more powerful spells from city wizards or in mage college",
 									"Health and Magicka potions are very useful in fights. You can try crafting them yourself at the Alchemy table or just buy them from Alchemist if you have enough gold"
 								};
 

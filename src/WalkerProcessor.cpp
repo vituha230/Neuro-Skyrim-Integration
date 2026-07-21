@@ -13,6 +13,7 @@
 
 namespace WalkerProcessor {
 
+    long long last_enemy_health_info_timestamp = 0; //doesnt matter when its reset
 
     long long volkihar_balcony_fasttravel_ban_advice = 0; //never reset
 
@@ -12740,7 +12741,18 @@ namespace WalkerProcessor {
                                             }
                                             else
                                                 if (last_attacking_health != attacking_health)
-                                                    attacking_info = attacking_health;
+                                                {
+                                                    long long now = std::chrono::steady_clock::now().time_since_epoch().count();;
+                                                    float last_health_info_delta = (double)(now - last_enemy_health_info_timestamp) / 1000000000.0;
+
+                                                    if (last_health_info_delta > 5.0f)
+                                                    {
+                                                        last_enemy_health_info_timestamp = now;
+                                                        attacking_info = attacking_health;
+                                                    }
+                                                        
+                                                }
+                                                    
                                     }
                                 }
 
@@ -13035,9 +13047,9 @@ namespace WalkerProcessor {
 
                                 if (last_checked_enemy_health != -1.0f)
                                 {
-                                    if (last_checked_enemy_health == cur_health)
+                                    if (last_checked_enemy_health >= cur_health)
                                     {
-                                        //hp didnt change since last change, we are probably missing the shots. need to switch position, make close enough fail for 10 seconds
+                                        //hp did not decrease since last change, we are probably missing the shots. need to switch position, make close enough fail for 10 seconds
                                         close_enough_force_fail = true;
                                         close_enough_force_fail_time_start = std::chrono::steady_clock::now().time_since_epoch().count();
                                     }

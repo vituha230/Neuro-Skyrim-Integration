@@ -27,9 +27,6 @@
 
 ///////////////////////
 
-//enemy health info should have some threshold for regenerating enemies, bow-not-hitting should only account for decrease in hp
-
-
 //"combat mode" system
 // mage (spells only), spellsword (spell in left + onehanded in right), bow/crossbow, twohanded melee, melee both hands, shield + onehanded, (unarmed?)
 // switching from bow/crossbow has no restrictions when no arrows
