@@ -441,6 +441,7 @@ namespace MiscThings {
 
     bool have_any_quests();
 
+    bool player_has_follower();
 
     bool equip_ammo(bool crossbow);
 
@@ -449,6 +450,9 @@ namespace MiscThings {
     bool can_fast_travel();
 
     bool getbit(uint64_t in, int pos);
+
+
+    bool is_novice_destruction_spell(RE::SpellItem* spell);
 
     RE::NiPoint3 projectile_flying_into_player_face();
 

@@ -5927,8 +5927,6 @@ namespace Observer {
 
 				old_blackbook_warp = blackbook_warp;
 
-
-
 				if (player_dead)
 				{
 					if (!player_dead_sent)
@@ -5988,9 +5986,12 @@ namespace Observer {
 									"Health and Magicka potions are very useful in fights. You can try crafting them yourself at the Alchemy table or just buy them from Alchemist if you have enough gold"
 								};
 
-								auto test = MiscThings::get_hand_contents(true);
-								//"Novice level destruction magic is very weak", - ONLY IF HAVE NOVICE DESTRUCTION EQUIPPED
-								//"Fighting alone might be difficult, if you struggle with fights, it is wise to try finding a companion", - ONLY IF DONT HAVE COMPANION
+								if (MiscThings::is_novice_destruction_spell((RE::SpellItem*)old_right_hand) || MiscThings::is_novice_destruction_spell((RE::SpellItem*)old_left_hand))
+									advices.push_back("Novice level destruction magic is very weak");
+
+								if (!MiscThings::player_has_follower())
+									advices.push_back("Fighting alone might be difficult, if you struggle with fights, it is wise to try finding a companion");
+
 
 								int pick_advice = (float)std::rand() / RAND_MAX * std::size(advices);
 

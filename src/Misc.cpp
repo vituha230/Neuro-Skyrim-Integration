@@ -9027,6 +9027,25 @@ namespace MiscThings {
 
 
 
+    bool player_has_follower()
+    {
+
+        auto var_form = RE::TESForm::LookupByEditorID("PlayerFollowerCount");
+
+        if (var_form && var_form->formType == RE::FormType::Global)
+        {
+            auto var_global = (RE::TESGlobal*)var_form;
+            auto var_val = (int)var_global->value;
+
+            return var_val > 0;
+        }
+
+        return false;
+    }
+
+
+
+
 
     void reveal_moths()
     {
@@ -24687,7 +24706,22 @@ namespace MiscThings {
         return result;
     }
 
+
+
+    bool is_novice_destruction_spell(RE::SpellItem* spell)
+    {
+        if (spell && spell->formType == RE::FormType::Spell)
+        {
+            auto perk = spell->data.castingPerk;
+
+            return perk && perk->formID == 0xF2CA8;
+        }
+
+        return false;
+    }
     
+    
+
     bool is_offensive_spell(RE::SpellItem* spell)
     {
 

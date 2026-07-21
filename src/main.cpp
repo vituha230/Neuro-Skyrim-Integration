@@ -28,8 +28,6 @@
 ///////////////////////
 
 //enemy health info should have some threshold for regenerating enemies, bow-not-hitting should only account for decrease in hp
-// fix bug with long-block-walk with 2handed weapons (probably with shield/1handed too)
-
 
 
 //"combat mode" system
