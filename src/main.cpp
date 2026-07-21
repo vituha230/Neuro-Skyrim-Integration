@@ -17,7 +17,7 @@
 
 //TODO polish dragonborn dlc
 // 1st book apocrypha polish (walk through passages along their bones)
-// 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1 
+// 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1)
 
 
 //TODO dawnguard dlc
@@ -60,24 +60,17 @@
 //////////////////////////////////////////////////////
 // RANDOM STUFF
 
-
-//TODO enchanted jewelry should be advised with some fixed value
-//TODO self-cast spells ignore target (excluding wards if they are self cast)
-//TODO make settlement command work in good interior cells of settlements (at least taverns and shops and jarl house)
 //TODO prioritize non-spell if we are sneaking (spells have no sneak attack bonus)
 //TODO "ult at target" function, necessary for ults that launch projectile (like vampire's reanimate powerful corpse ult)
 //TODO runaway action in combat? 
 
-
 //TODO whirlwind sprint triggers walk_again if cast midwalk (CAREFUL TO NOT RUIN SCRIPTED USAGES, THEY STILL HAVE WALKER ACTIVE)
 //TODO fix pathfinding through portal doors (for runaway and interesting_places coming through locations. Maybe fix walker resetting after location switch when it shouldnt)
-//TODO add more traders to interesting places
 
 //////////////////////////////////////////////////////
 // for later random stuff
 
 
-//TODO attacking with both hands if 2 melee weapons
 //TODO optional argument to equip function so player can specify hand
 //TODO armor advice based on skills and currently equipped gear (dont advise heavy armor if we are focusing magic)
 //TODO that nonpathfindable castle near riften lake (faldars tooth?)

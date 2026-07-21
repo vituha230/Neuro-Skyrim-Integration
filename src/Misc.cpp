@@ -49,7 +49,7 @@ namespace MiscThings {
 
     bool coinflip()
     {
-        return ((float)std::rand() / RAND_MAX) > 0.5f;
+        return ((float)std::rand() / RAND_MAX) < 0.5f;
     }
 
 

@@ -14,6 +14,11 @@
 namespace WalkerProcessor {
 
 
+    //#define MIN_PATH_SIZE 2
+
+    bool tried_to_step_forward_a_little = false;
+
+
     long long last_dodge_info_timestamp = 0; //doesnt matter when its reset
     long long last_enemy_health_info_timestamp = 0; //doesnt matter when its reset
 
@@ -1831,6 +1836,7 @@ namespace WalkerProcessor {
 
                         if (std::size(path) > 2)
                         {
+                            tried_to_step_forward_a_little = false;
                             had_any_path_found_this_run = true;
                             if (explore_mode)
                             {
@@ -4945,6 +4951,13 @@ namespace WalkerProcessor {
 
         try {
 
+            float base_reach_distance = 60.0f;
+
+            //if (std::size(path) < 2)
+            //    base_reach_distance = 20.0f;
+
+
+
             if (use_last_point_of_last_path)
             {
                 auto pos_dif = last_point_of_last_path - player_pos;
@@ -4961,9 +4974,9 @@ namespace WalkerProcessor {
                 auto distance = pos_dif.Length();
 
                 if ((int)std::size(path) < 3)
-                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming() * (1 + (float)do_dodge_projectile*dodge_coef_pathpoint); //100
+                    result = distance < (blackreach_mode * 20.0f + base_reach_distance) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming() * (1 + (float)do_dodge_projectile*dodge_coef_pathpoint); //100
                 else
-                    result = distance < (blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming() * (1 + (float)do_dodge_projectile * dodge_coef_pathpoint); //100
+                    result = distance < (blackreach_mode * 20.0f + base_reach_distance) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming() * (1 + (float)do_dodge_projectile * dodge_coef_pathpoint); //100
 
                 if (last_point_of_last_path.z - player_pos.z > 200.0f)
                     result = true; //we either fell or pathfinding glitched
@@ -5046,7 +5059,7 @@ namespace WalkerProcessor {
                             result = distance < base_threshold + 70.0f * MiscThings::is_player_swimming(); //100
                         }
                         else
-                            result = distance < ((blackreach_mode * 20.0f + 60.0f) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming()) * (1 + (float)do_dodge_projectile * dodge_coef_pathpoint); //100
+                            result = distance < ((blackreach_mode * 20.0f + base_reach_distance) * (1 + MiscThings::is_on_horse() * 4.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_pathpoint) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_pathpoint) + 70.0f * MiscThings::is_player_swimming()) * (1 + (float)do_dodge_projectile * dodge_coef_pathpoint); //100
                     }
                     else
                         result = true;
@@ -5388,6 +5401,7 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        tried_to_step_forward_a_little = false;
 
         autoloader_door_evasion_mode = false;
 
@@ -5851,6 +5865,9 @@ namespace WalkerProcessor {
     {
         //if (!using_custom_path)
         {
+
+
+            tried_to_step_forward_a_little = false;
 
             //the idea is to quickload on next walk_again or on reset_walker, hoping that reset_walker can never happen too soon after quicksave (because commands are not registered for couple of seconds)
             if (reload_after_walk_quicksaved)
@@ -18554,6 +18571,17 @@ namespace WalkerProcessor {
                                                     return;
                                                 }
 
+                                                if (!tried_to_step_forward_a_little)
+                                                {
+                                                    if (walk_fixed_time(true, 0.3f, dtime))
+                                                    {
+                                                        walk_again();
+                                                        tried_to_step_forward_a_little = true;
+                                                    }
+                                                    return;
+                                                }
+
+
 
                                                 wiggle_body_then_walk_again = true;
 
@@ -18676,6 +18704,18 @@ namespace WalkerProcessor {
                                                     try_close_enough_z_decrease_without_raycast = true;
                                                     return;
                                                 }
+
+
+                                                if (!tried_to_step_forward_a_little)
+                                                {
+                                                    if (walk_fixed_time(true, 0.3f, dtime))
+                                                    {
+                                                        walk_again();
+                                                        tried_to_step_forward_a_little = true;
+                                                    }
+                                                    return;
+                                                }
+
 
 
                                                 wiggle_body_then_walk_again = true;
@@ -19790,9 +19830,6 @@ namespace WalkerProcessor {
                                                     }
 
 
-                                                    
-
-
                                                     if ((((int)std::size(path) > 2) || (interaction_after_walk == 2) || had_successful_walk) && (walk_retries < 7))
                                                     {
                                                         if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && MiscThings::is_fighting_dragons_allowed())
@@ -19833,6 +19870,21 @@ namespace WalkerProcessor {
                                                                 try_close_enough_z_decrease_without_raycast = true;
                                                                 return;
                                                             }
+
+                                                            //the path is too short but not 0. probably some bad spot where pathfinding struggles. try to step forward a little to push through "bad spot"
+
+                                                            if (!tried_to_step_forward_a_little)
+                                                            {
+                                                                if (walk_fixed_time(true, 0.3f, dtime))
+                                                                {
+                                                                    walk_again();
+                                                                    tried_to_step_forward_a_little = true;
+                                                                }
+                                                                return;
+                                                            }
+
+
+
 
                                                             wiggle_body_then_walk_again = true;
                                                             
