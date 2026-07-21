@@ -14,7 +14,9 @@
 namespace WalkerProcessor {
 
 
-    //#define MIN_PATH_SIZE 2
+    bool blind_walk_rotates_camera = false;
+    bool blind_walk_rotates_camera_direction_right = false;
+
 
     bool tried_to_step_forward_a_little = false;
 
@@ -5401,6 +5403,9 @@ namespace WalkerProcessor {
 
     void reset_walker()
     {
+        blind_walk_rotates_camera = false;
+        blind_walk_rotates_camera_direction_right = false;
+
         tried_to_step_forward_a_little = false;
 
         autoloader_door_evasion_mode = false;
@@ -14479,6 +14484,11 @@ namespace WalkerProcessor {
         {
             walk_retries = 0; //questionable
             walk_again();
+
+            //for next try
+            blind_walk_rotates_camera = true;
+            blind_walk_rotates_camera_direction_right = MiscThings::coinflip();
+
             return false;
         }
             
@@ -14502,7 +14512,7 @@ namespace WalkerProcessor {
 
                 if (time_stuck > 1.5f)
                 {
-                    result = true;
+                    ;// result = true;
                 }
             }
         }
@@ -19905,7 +19915,15 @@ namespace WalkerProcessor {
                                                         }
 
                                                         if (probe_failed() && !had_any_path_found_this_run && !detect_stuck_walk_again_if_good(dtime)) //only if there was no navmesh path
+                                                        {
+                                                            //if (blind_walk_rotates_camera)
+                                                            {
+                                                                float blind_walk_rotates_camera_dir_result = 1.0f - ((float)(!blind_walk_rotates_camera_direction_right)*2.0f);
+                                                                mouse_look(blind_walk_rotates_camera_dir_result * 5.0f, 0.0f);
+                                                            }
+                                                            
                                                             walk_forward();
+                                                        }
                                                         else
                                                         {
                                                             std::string fail_text = "[Cant walk there. Maybe this target is not accessible. Do something else or try again later]";
