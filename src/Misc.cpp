@@ -17427,7 +17427,7 @@ namespace MiscThings {
         if (base_obj->IsInventoryObject())
         {
             result.second = "[Item]"; //will be specified below if necessary
-            result.first = 10;
+            result.first = 11;
         }
 
 
@@ -17452,17 +17452,24 @@ namespace MiscThings {
         }
 
 
+        if (base_type == RE::FormType::Scroll)
+        {
+            result.second = "[Scroll]";
+            result.first = 4;
+        }
+
+
         if (base_type == RE::FormType::AlchemyItem)
         {
             result.second = "[Consumable]";
-            result.first = 4;
+            result.first = 5;
         }
 
 
         if (base_type == RE::FormType::Note)
         {
             result.second = "[Note]";
-            result.first = 5;
+            result.first = 6;
         }
 
         if (base_type == RE::FormType::Book)
@@ -17470,12 +17477,12 @@ namespace MiscThings {
             if (object->IsNote())
             {
                 result.second = "[Note]";
-                result.first = 5;
+                result.first = 6;
             }
             else
             {
                 result.second = "[Book]";
-                result.first = 6;
+                result.first = 7;
 
             }
             
@@ -17485,16 +17492,15 @@ namespace MiscThings {
         if (base_type == RE::FormType::Ingredient)
         {
             result.second = "[Ingredient]";
-            result.first = 7;
+            result.first = 8;
         }
             
 
         if (base_type == RE::FormType::Ammo)
         {
             result.second = "[Ammo]";
-            result.first = 9;
+            result.first = 10;
         }
-
 
 
         if (without_text_category)
@@ -17549,28 +17555,9 @@ namespace MiscThings {
                 }
             }
             
-
-
-
-
-
-
-
-
-            result.first = 8;
+            result.first = 9;
 
         }
-
-
-
-
-
-
-        
-            
-
-
-
 
         return result;
     }
@@ -21762,13 +21749,17 @@ namespace MiscThings {
 
                     std::string weight_text = "Weight: " + weight_text_number;
 
+                    if (MiscThings::player_overencumbered_by() <= 0)
+                        weight_text = "";
 
                     if (damage <= 0)
                         damage_text = "";
                     else
-                        damage_text += ", ";
+                        if (weight_text != "")
+                            damage_text += ", ";
 
-                    stats = "[" + damage_text + weight_text + "]";
+                    if (!(damage_text == "" && weight_text == ""))
+                        stats = "[" + damage_text + weight_text + "]";
                 }
 
 
@@ -21794,13 +21785,17 @@ namespace MiscThings {
 
                     std::string weight_text = "Weight: " + weight_text_number;
 
+                    if (MiscThings::player_overencumbered_by() <= 0)
+                        weight_text = "";
+
                     if (armor_val <= 0)
                         armor_val_text = "";
                     else
-                        armor_val_text += ", ";
+                        if (weight_text != "")
+                            armor_val_text += ", ";
 
-
-                    stats = "[" + heavy + armor_val_text + weight_text + "]";
+                    if (!(armor_val_text == "" && weight_text == ""))
+                        stats = "[" + heavy + armor_val_text + weight_text + "]";
                 }
 
 
@@ -22008,7 +22003,7 @@ namespace MiscThings {
         std::vector<std::string> category_list{};
 
 
-        for (int i = 0; i < 11; i++)
+        for (int i = 0; i < 12; i++)
         {
             category_list.push_back(""); //templates for all categories
         }
@@ -22083,12 +22078,20 @@ namespace MiscThings {
                     inventory_contents += "Outfits:\n" + category_entry + "\n";
                     break;
                 }
+
                 case (4):
+                {
+                    inventory_contents += "Scrolls (one-time free-use spells):\n" + category_entry + "\n";
+                    break;
+                }
+
+
+                case (5):
                 {
                     inventory_contents += "Potions and food:\n" + category_entry + "\n";
                     break;
                 }
-                case (5):
+                case (6):
                 {
                     if (category_list.at(6) == "")
                         inventory_contents += "Notes:\n" + category_entry + "\n";
@@ -22098,7 +22101,7 @@ namespace MiscThings {
                     break;
                 }
                     
-                case (6):
+                case (7):
                 {
                     if (category_list.at(5) == "")
                         inventory_contents += "Books:\n" + category_entry + "\n";
@@ -22108,23 +22111,23 @@ namespace MiscThings {
                 }
 
 
-                case (7):
+                case (8):
                 {
                     inventory_contents += "Ingredients:\n" + category_entry + "\n";
                     break;
                 }
-                case (8):
+                case (9):
                 {
                     inventory_contents += "Soulgems:\n" + category_entry + "\n";
                     break;
                 }
-                case (9):
+                case (10):
                 {
                     inventory_contents += "Ammo:\n" + category_entry + "\n";
                     break;
                 }
 
-                case (10):
+                case (11):
                 {
                     inventory_contents += "Other items:\n" + category_entry + "\n";
                     break;

@@ -25,6 +25,16 @@
 
 
 
+
+
+//blind walk starts rotating camera if first attempt gave no result
+//filter-merge very close locations if player is also close to them (example: riften 3point cluster) - probably manual selection
+//info about upgrade unavailable because weapon is enchanted
+//desease cure advice
+//raycast-driven jump-required-detection?
+//dragon-doesnt-land-go-find-some-landing-area?
+
+
 ///////////////////////
 
 //"combat mode" system
@@ -39,6 +49,7 @@
 
 
 //TODO that seducers AE quest
+
 
 
 //  RANDOM QUESTS TODO
