@@ -17452,13 +17452,6 @@ namespace MiscThings {
         }
 
 
-        if (base_type == RE::FormType::Scroll)
-        {
-            result.second = "[Scroll]";
-            result.first = 4;
-        }
-
-
         if (base_type == RE::FormType::AlchemyItem)
         {
             result.second = "[Consumable]";
@@ -17505,6 +17498,30 @@ namespace MiscThings {
 
         if (without_text_category)
             result.second = "";
+
+
+
+        if (base_type == RE::FormType::Scroll)
+        {
+            if (!without_text_category)
+                result.second = "[Scroll]";
+
+            auto hand_text = get_equipped_hand_text(object);
+            std::string equipped_text = "";
+
+            if (is_equipped(object))
+                equipped_text = "[Equipped" + hand_text + "]";
+
+            auto casting_perk = get_casting_perk_info((RE::SpellItem*)base_obj);
+
+            result.second += equipped_text;
+            result.second += casting_perk;
+
+
+            result.first = 4;
+        }
+
+
 
 
 
@@ -22435,14 +22452,17 @@ namespace MiscThings {
     {
         if (spell)
         {
-            auto perk = spell->data.castingPerk;
-
-            if (perk)
+            if (spell->formType == RE::FormType::Spell || spell->formType == RE::FormType::Scroll)
             {
-                std::string perk_name = perk->GetName();
+                auto perk = spell->data.castingPerk;
 
-                if (perk_name != "")
-                    return "[" + perk_name + "]";
+                if (perk)
+                {
+                    std::string perk_name = perk->GetName();
+
+                    if (perk_name != "")
+                        return "[" + perk_name + "]";
+                }
             }
         }
 

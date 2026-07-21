@@ -6,6 +6,9 @@
 namespace MiscThings {
 
 
+    std::string get_equipped_hand_text(RE::TESBoundObject* object);
+
+
     void notify_walker_to_stop_autolockpick_on_enemies();
 
     std::string replace_aliases(RE::TESQuest* quest, std::string displaytext, bool dont_remove = false);
@@ -267,6 +270,8 @@ namespace MiscThings {
     bool is_pillar_solved(RE::TESObjectREFR* pillar);
 
     bool coinflip();
+
+    std::string get_casting_perk_info(RE::SpellItem* spell);
 
     std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell, bool fast = false);
     bool player_has_spell(RE::SpellItem* spell);
