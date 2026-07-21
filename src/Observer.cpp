@@ -5992,6 +5992,8 @@ namespace Observer {
 								if (!MiscThings::player_has_follower())
 									advices.push_back("Fighting alone might be difficult, if you struggle with fights, it is wise to try finding a companion");
 
+								if (MiscThings::player_has_deseases())
+									advices.push_back("Deseases can significantly affect your combat skills, if you have any, you can cure them by drinking Cure Desease Potion or praying at any Shrine (Shrines can usually be found in big cities, usually in churches)");
 
 								int pick_advice = (float)std::rand() / RAND_MAX * std::size(advices);
 

@@ -8,6 +8,8 @@ namespace MiscThings {
 
     std::string get_equipped_hand_text(RE::TESBoundObject* object);
 
+    bool player_has_deseases();
+
 
     void notify_walker_to_stop_autolockpick_on_enemies();
 

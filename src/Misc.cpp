@@ -13,6 +13,8 @@
 namespace MiscThings {
 
 
+    bool player_has_deseases_flag = false;
+
     bool bridge_after_reached = false;
     bool darkfall_bridge_go_back_info_given = false;
 
@@ -45,6 +47,11 @@ namespace MiscThings {
     long long gave_interesting_notification_timestamp = 0;
     long long settlement_advice_timestamp = 0;
     
+
+    bool player_has_deseases()
+    {
+        return player_has_deseases_flag;
+    }
 
 
     bool coinflip()
@@ -22591,6 +22598,7 @@ namespace MiscThings {
             int i = 0;
             RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
+            bool player_has_deseases_local = false;
 
 
             RE::BSContainer::ForEachResult Visit(RE::SpellItem* a_spell) override {
@@ -22710,6 +22718,7 @@ namespace MiscThings {
                         if (a_spell->GetSpellType() == RE::MagicSystem::SpellType::kDisease)
                         {
                             *passive_effects += "[DESEASE] " + name + " - " + description + "\n";
+                            player_has_deseases_local = true;
                         }
 
                     }
@@ -22737,6 +22746,10 @@ namespace MiscThings {
 
         player->VisitSpells(visitor);
         auto player_actor = (RE::Actor*)player->AsReference();
+
+
+        player_has_deseases_flag = visitor.player_has_deseases_local;
+
 
         RE::TESNPC* player_npc = (RE::TESNPC*)RE::TESForm::LookupByID(0x7); //left hand
             //RE::TESNPC::LookupByID<RE::TESNPC>(RE::TESForm::GetFormID("000007", "Skyrim.esm")->formID);
