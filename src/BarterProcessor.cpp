@@ -113,6 +113,40 @@ namespace BarterProcessor {
 
 
 
+    std::string get_special_tag(std::string text)
+    {
+        if (text.find("Spell Tome") != std::string::npos)
+        {
+            int spell_name_start_pos = 12;
+
+            if (spell_name_start_pos < text.length())
+            {
+                int amount_bracket_pos = text.find("(");
+
+                if (amount_bracket_pos != std::string::npos && amount_bracket_pos > spell_name_start_pos && amount_bracket_pos < text.length())
+                {
+                    text = text.substr(0, amount_bracket_pos - 1);
+                }
+
+                std::string spell_name = text.substr(spell_name_start_pos, text.length() - spell_name_start_pos);
+
+                std::string casting_perk_name = "";// MiscThings::get_casting_perk_info_by_spell_name(spell_name); //doesnt work for spells we dont have anyway
+
+                if (MiscThings::player_has_spell_by_name(spell_name))
+                    return " [You already know this spell]" + casting_perk_name;
+                else
+                    return " [New spell]" + casting_perk_name;
+            } 
+        }
+
+        return "";
+    }
+
+
+
+
+
+
     int id_to_pos(int id)
     {
         int result = -1;
@@ -820,6 +854,8 @@ namespace BarterProcessor {
             else
                 items_we_cant_buy.push_back(item.second.name + stats + " - " + std::to_string(item.second.price) + " gold");
 
+
+
         }
 
         if (!(type == barter_type::buy && get_vendor_gold() == 0))
@@ -1492,6 +1528,11 @@ namespace BarterProcessor {
                                                         armor = subvar.GetString();
 
 
+                                                auto special_tag = get_special_tag(name);
+                                                name += special_tag;
+
+
+
                                                 data.name = name;
                                                 data.price = get_price_selected_item();
                                                 data.weight = weight;
@@ -2061,6 +2102,8 @@ namespace BarterProcessor {
                                                 if (!subvar.IsNull() && subvar.IsString())
                                                     armor = subvar.GetString();
 
+                                            auto special_tag = get_special_tag(name);
+                                            name += special_tag;
 
 
                                             data.name = name;

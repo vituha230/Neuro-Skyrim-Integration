@@ -268,6 +268,9 @@ namespace MiscThings {
 
     std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell, bool fast = false);
     bool player_has_spell(RE::SpellItem* spell);
+    bool player_has_spell_by_name(std::string name);
+
+    std::string get_casting_perk_info_by_spell_name(std::string name);
 
     //int insert_ref_into_obj_list(RE::TESObjectREFR* refr);
     std::string insert_object_into_list_and_get_info(RE::TESObjectREFR* refr, bool no_chains = false, bool no_linked_chains = false, bool ignore_modelstate = false, bool ignore_disabled = false);
@@ -517,6 +520,7 @@ namespace MiscThings {
 
     std::string get_blocking_object_name(RE::TESObjectREFR* a_ref);
     
+
 
     std::string is_stealing(RE::TESObjectREFR* object);
 

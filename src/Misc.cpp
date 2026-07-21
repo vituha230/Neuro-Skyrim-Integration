@@ -9029,7 +9029,6 @@ namespace MiscThings {
 
     bool player_has_follower()
     {
-
         auto var_form = RE::TESForm::LookupByEditorID("PlayerFollowerCount");
 
         if (var_form && var_form->formType == RE::FormType::Global)
@@ -9039,7 +9038,6 @@ namespace MiscThings {
 
             return var_val > 0;
         }
-
         return false;
     }
 
@@ -22443,6 +22441,33 @@ namespace MiscThings {
     }
 
 
+    std::string get_casting_perk_info_by_spell_name(std::string name)
+    {
+        auto get_spells_result = get_available_spells();
+
+        for (auto spell_from_list : spells)
+        {
+            if (spell_from_list.second.spell)
+            {
+                std::string spell_name = spell_from_list.second.spell->GetFullName();
+
+                if (spell_name == name)
+                {
+                    return get_casting_perk_info(spell_from_list.second.spell);
+                }
+
+            }
+        }
+
+        return "";
+    }
+
+
+
+
+
+
+
     float get_spell_range(RE::SpellItem* spell)
     {
         if (spell)
@@ -23889,7 +23914,37 @@ namespace MiscThings {
 
 
 
+    bool player_has_spell_by_name(std::string name)
+    {
+        //REFRESH SPELLS. MIGHT HAVE SOMETHING NEW AND IT WILL NOT SEE REQUIRED SPELL
+        auto get_spells_result = get_available_spells();
 
+        for (auto spell_from_list : spells)
+        {
+            if (spell_from_list.second.spell)
+            {
+                std::string spell_name = spell_from_list.second.spell->GetFullName();
+
+                if (spell_name == name)
+                {
+                    return true;
+                }
+
+            }
+
+            if (spell_from_list.second.shout)
+            {
+                std::string spell_name = spell_from_list.second.shout->GetFullName();
+
+                if (spell_name == name)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
 
 
