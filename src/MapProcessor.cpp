@@ -305,6 +305,8 @@ namespace MapProcessor {
 		auto player = RE::PlayerCharacter::GetSingleton();
 		auto player_pos = player->GetPosition();
 
+		auto player_worldspace = player->GetWorldspace();
+
 		RE::UI* ui = RE::UI::GetSingleton();
 		auto menu = ui->GetMenu<RE::MapMenu>();
 
@@ -338,28 +340,76 @@ namespace MapProcessor {
 						{
 							if (a_refrOut && a_refrOut.get())
 							{
-								auto data = (RE::ExtraMapMarker*)a_refrOut->extraList.GetByType(RE::ExtraDataType::kMapMarker);
-								if (data && data->mapData && data->mapData->flags)
+								bool skip_this_one = false;
+
+								if (player_worldspace)
 								{
-									can_travel.insert({ id, data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo) });
-
-									auto distance = player->GetDistance(a_refrOut.get());
-
-									if (distance < closest_distance)
+									switch (player_worldspace->formID) //hide locations that are within some worldspace where fast traveling makes no sense (for example riften 3 locations in 1 place)
 									{
-										closest_id = id;
-										closest_distance = distance;
+									case (0x16bb4):
+										//thieves guild							//mistveil keep (jarls house)
+										if (a_refrOut.get()->formID == 0x105f3a || a_refrOut.get()->formID == 0xc44b1)
+											skip_this_one = true;
+										break;
+
+									case (0x1691d): //windhelm
+										if (a_refrOut.get()->formID == 0xc44b3)
+											skip_this_one = true;
+										break;
+
+									case (0x16d71): //markarth
+										if (a_refrOut.get()->formID == 0xc44af)
+											skip_this_one = true;
+										break;
+
+									case (0x37edf): //solitude
+										if (a_refrOut.get()->formID == 0xc44ab)
+											skip_this_one = true;
+										break;
+
+									case (0x1a26f): //whiterun
+										if (a_refrOut.get()->formID == 0xc44ad)
+											skip_this_one = true;
+										break;
+
 									}
-										
-									//if (marker.)
-									option.id = id;
-									option.text = marker.fullName->fullName;
 
-									pre_result.insert({ id, option });
-
-									markers_to_remember.insert({ id, {a_refrOut.get(), {}} });
 
 								}
+
+								if (!skip_this_one)
+								{
+									auto data = (RE::ExtraMapMarker*)a_refrOut->extraList.GetByType(RE::ExtraDataType::kMapMarker);
+									if (data && data->mapData && data->mapData->flags)
+									{
+										can_travel.insert({ id, data->mapData->flags.any(RE::MapMarkerData::Flag::kCanTravelTo) });
+
+										auto distance = player->GetDistance(a_refrOut.get());
+
+										if (player->GetWorldspace() != a_refrOut.get()->GetWorldspace())
+											distance += 10000.0f; //bonus for worldspace jump so, for example, riften stables do not overcome riften itself when we are just near exit doors in riften
+
+										if (distance < closest_distance)
+										{
+											closest_id = id;
+											closest_distance = distance;
+										}
+
+										//if (marker.)
+										option.id = id;
+										option.text = marker.fullName->fullName;
+
+										if (a_refrOut.get()->formID == 0x1635e) //katla's farm which is also stables and has carriage but its name doesnt hint it natively
+											option.text += " (Solitude Stables)";
+
+										pre_result.insert({ id, option });
+
+										markers_to_remember.insert({ id, {a_refrOut.get(), {}} });
+
+									}
+								}
+
+								
 							}
 						}
 					}
