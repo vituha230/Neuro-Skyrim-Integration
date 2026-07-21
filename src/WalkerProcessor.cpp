@@ -497,6 +497,7 @@ namespace WalkerProcessor {
 
 
     float anti_slowwalk_timer = 0.0f;
+    float anti_blockwalk_timer = 0.0f;
 
     bool dont_tell_result = false;
 
@@ -2775,6 +2776,24 @@ namespace WalkerProcessor {
                             anti_slowwalk_timer = 0.0f;
                     }
                 }
+
+
+
+                if (player->IsBlocking())
+                {
+                    //test if we are blockwalking for some reason
+                    anti_blockwalk_timer += dtime_maybe_bad;
+
+                    if (anti_blockwalk_timer > 1.5f)
+                    {
+                        left_attack(); 
+                        anti_blockwalk_timer = 0.0f;
+                    }
+                }
+                else
+                    anti_blockwalk_timer = 0.0f;
+
+
 
                         
 
@@ -5795,6 +5814,7 @@ namespace WalkerProcessor {
 
 
         anti_slowwalk_timer = 0.0f;
+        anti_blockwalk_timer = 0.0f;
         dont_tell_result = false;
 
 
@@ -5887,6 +5907,7 @@ namespace WalkerProcessor {
             }
 
             anti_slowwalk_timer = 0.0f;
+            anti_blockwalk_timer = 0.0f;
 
             time_blind_walk = 0.0f;
 
@@ -11033,7 +11054,7 @@ namespace WalkerProcessor {
                                 auto speed = weap->GetSpeed();
 
                                 if (speed > 0.0f)
-                                    result = 1.0f / speed;
+                                    result = 1.0f / speed + 0.1f;
 
                             }
                         }
