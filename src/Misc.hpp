@@ -266,6 +266,8 @@ namespace MiscThings {
 
     bool is_pillar_solved(RE::TESObjectREFR* pillar);
 
+    bool coinflip();
+
     std::pair<bool, std::string> cast_spell_by_refr(RE::SpellItem* spell, bool fast = false);
     bool player_has_spell(RE::SpellItem* spell);
     bool player_has_spell_by_name(std::string name);

@@ -13,6 +13,8 @@
 
 namespace WalkerProcessor {
 
+
+    long long last_dodge_info_timestamp = 0; //doesnt matter when its reset
     long long last_enemy_health_info_timestamp = 0; //doesnt matter when its reset
 
     long long volkihar_balcony_fasttravel_ban_advice = 0; //never reset
@@ -16038,6 +16040,20 @@ namespace WalkerProcessor {
                     do_dodge_projectile = true;
                     dodge_projectile_direction = projectile_dir;
                     dodge_projectile_allowed_dirs = allowed_dirs;
+
+
+                    long long now = std::chrono::steady_clock::now().time_since_epoch().count();;
+                    float delta_dodge_info = (double)(now - last_dodge_info_timestamp) / 1000000000.0;
+
+                    if (delta_dodge_info > 5.0f)
+                    {
+                        if (MiscThings::coinflip())
+                            send_random_context("You are dodging...", true);
+
+                        last_dodge_info_timestamp = now;
+                    }
+
+
 
                     //if (allowed_dirs == 1)
                     //    dodge_direction = 0;

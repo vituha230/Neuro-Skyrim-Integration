@@ -47,6 +47,12 @@ namespace MiscThings {
     
 
 
+    bool coinflip()
+    {
+        return ((float)std::rand() / RAND_MAX) > 0.5f;
+    }
+
+
 
     RE::NiPoint3 projectile_flying_into_player_face()
     {
