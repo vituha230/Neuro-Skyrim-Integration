@@ -2254,6 +2254,20 @@ namespace MiscThings {
 
             case (0x20050ce): //dlc1 auriel bow pickup
                 return 250.0f;
+
+            case (0x2006c13): //dlc1 bad elf on throne
+            {
+                auto dlc1vq07_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ07");
+
+                if (dlc1vq07_quest)
+                {
+                    if (dlc1vq07_quest->currentStage == 120)
+                        return 700.0f;
+                    if (dlc1vq07_quest->currentStage == 132)
+                        return 200.0f;
+                }
+
+            }
             }
         }
 

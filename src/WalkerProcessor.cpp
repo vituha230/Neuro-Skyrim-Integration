@@ -13253,6 +13253,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         auto player_ref = player->AsReference();
 
+
         switch (interaction_after_walk) {
 
         case (1):
@@ -19510,6 +19511,43 @@ namespace WalkerProcessor {
                                                                             }
                                                                         else
                                                                         {
+
+
+                                                                            if (target_ref && target_ref->formID == 0x2006c13)
+                                                                            {
+                                                                                //bad elf on throne
+                                                                                auto dlc1vq07_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ07");
+
+                                                                                if (dlc1vq07_quest)
+                                                                                {
+                                                                                    if (dlc1vq07_quest->currentStage == 120)
+                                                                                    {
+                                                                                        if (lock_camera_onto_target(target_ref, dtime))
+                                                                                        {
+                                                                                            send_random_context("Vyrthur is sitting on a throne behind a wall of ice... you cannot get to him. There are frozen Falmers in the room...", false);
+                                                                                            reset_walker();
+                                                                                            return;
+                                                                                        }
+                                                                                        return;
+                                                                                    }
+
+                                                                                    if (dlc1vq07_quest->currentStage == 132)
+                                                                                    {
+                                                                                        if (lock_camera_onto_target(target_ref, dtime))
+                                                                                        {
+                                                                                            send_random_context("Vyrthur looks like explosion got himself too... But you are too weak to attack yet", false);
+                                                                                            reset_walker();
+                                                                                            return;
+                                                                                        }
+                                                                                        return;
+                                                                                    }
+
+                                                                                }
+
+                                                                            }
+
+
+
 
                                                                             if (!tried_to_come_closer)
                                                                             {

@@ -30,6 +30,7 @@ namespace Observer {
 	int old_dlc1vq01_stage = 0;
 	int old_dlc1vq02_stage = 0;
 	int old_dlc_redwater_quest_stage = 0;
+	int old_dlc1vq07_stage = 0;
 
 
 	bool old_vampire_melee = false;
@@ -5261,6 +5262,11 @@ namespace Observer {
 						old_dlc1vq02_stage = dlc1vq02_quest->currentStage;
 
 
+					auto dlc1vq07_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ07");
+					if (dlc1vq07_quest)
+						old_dlc1vq07_stage = dlc1vq07_quest->currentStage;
+
+
 					auto dlc_redwater_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1dunRedwaterDenQST");
 					if (dlc_redwater_quest)
 						old_dlc_redwater_quest_stage = dlc_redwater_quest->currentStage;
@@ -5364,6 +5370,21 @@ namespace Observer {
 
 
 
+				auto dlc1vq07_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ07");
+
+				if (dlc1vq07_quest)
+				{
+					int dlc1vq07_stage = dlc1vq07_quest->currentStage;
+
+					if (dlc1vq07_stage > 120 && old_dlc1vq07_stage == 120)
+					{
+						send_random_context("Vyrthur created magical explosion that destroyed the ceiling and half of the room! You fall on the ground...", false);
+					}
+
+					old_dlc1vq07_stage = dlc1vq07_stage;
+				}
+
+
 				auto dlc1vq01_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ01");
 
 				if (dlc1vq01_quest)
@@ -5377,6 +5398,7 @@ namespace Observer {
 
 					old_dlc1vq01_stage = dlc1vq01_stage;
 				}
+
 
 
 				auto dlc1vq02_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ02");
