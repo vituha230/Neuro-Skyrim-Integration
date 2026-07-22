@@ -218,6 +218,41 @@ namespace MiscThings {
     }
 
 
+
+    bool inside_forgotten_valley_castle_balcony_zone(RE::TESObjectREFR* object)
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!object)
+            object = player;
+
+        if (object)
+        {
+
+            auto loc = object->GetCurrentLocation();
+
+
+            auto object_worldspace = object->GetWorldspace();
+
+            if (object_worldspace && object_worldspace->formID == 0x2000bb5)
+            {
+                auto object_pos = object->GetPosition();
+
+                if (object_pos.z > 7500.6553)
+                {
+                    RE::NiPoint3 balcony_zone_center = { -12164.2930, -10458.0811, 8810.49902 };
+
+                    return object_pos.GetDistance(balcony_zone_center) < 8000.0f;
+
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
     bool inside_meridia_flybox()
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -2216,6 +2251,9 @@ namespace MiscThings {
             case (0x201932e):
             case (0x201932f):
                 return 300.0f;
+
+            case (0x20050ce): //dlc1 auriel bow pickup
+                return 250.0f;
             }
         }
 
@@ -5135,6 +5173,51 @@ namespace MiscThings {
         return false;
     }
 
+
+
+
+
+
+    RE::TESObjectREFR* get_mysc_quest_teleport_ref()
+    {
+
+        auto my_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("myscPath");
+
+        if (my_quest)
+        {
+            auto quest_target = (*my_quest->objectives.begin())->targets[0];
+
+            for (auto teleport : quest_target->teleportPath.teleportRefs)
+            {
+                if (teleport.ref)
+                {
+                    return teleport.ref;
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
+
+    //long long dlc1_valley_portal_last_redirect_timestamp = 0;
+
+
+
+    bool dlc1_valley_portal_redirect_init_allowed()
+    {
+        
+
+        long long now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        float delta_this_redirect = (double)(now - get_last_load_timestamp()) / 1000000000.0;
+
+        return delta_this_redirect > 5.0f; //need to let it update portals
+    }
+
+
+
+
     RE::TESObjectREFR* get_generic_redirect(RE::TESObjectREFR* target, bool quest_mode, bool runaway_mode, bool already_redirecting)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
@@ -5174,6 +5257,199 @@ namespace MiscThings {
 
 
             //including quests
+
+
+            //dlc1 forgotten valley brugeforce portals
+            if (player_worldspace && player_worldspace->formID == 0x2000bb5)
+            {
+                if (player_pos.z < 5822.0f && player_pos.x > -34026.0f && player_pos.y < -13880.0f && target && target->GetPosition().z >= 5822.0f) //falmer cluster redirect into cave halfway
+                {
+                    auto redirect_thingy = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c8bb);
+                    if (redirect_thingy) return redirect_thingy;
+                }
+                else
+                {
+
+
+
+                    auto room1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015fbd);
+
+                    auto room1_p1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c192);
+                    auto room1_p2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015049);
+                    auto room1_p3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2012f74);
+                    auto room1_p4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c18d);
+                    auto room1_p5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c18a);
+
+
+                    auto room2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015fc0);
+
+                    auto room2_p1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c190);
+                    auto room2_p2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c17f);
+                    auto room2_p3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015053);
+                    auto room2_p4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c183);
+                    auto room2_p5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201504c);
+
+
+                    auto room3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200505f);
+
+                    auto room3_p1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015047);
+                    auto room3_p2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015045);
+                    auto room3_p3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015044);
+                    auto room3_p4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015046);
+                    auto room3_p5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015048);
+
+
+                    auto room4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2002b54);
+
+                    auto room4_p1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201504e);
+                    auto room4_p2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201504d);
+                    auto room4_p3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2004c12);
+                    auto room4_p4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201504f);
+                    auto room4_p5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2012f73);
+
+
+                    auto room5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015fbf);
+
+                    auto room5_p1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c18b);
+                    auto room5_p2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c17d);
+                    auto room5_p3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015051);
+                    auto room5_p4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201504a);
+                    auto room5_p5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c181);
+
+
+                    auto room6 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015fbe);
+
+                    auto room6_p1 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c187);
+                    auto room6_p2 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c17c);
+                    auto room6_p3 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x2015052);
+                    auto room6_p4 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c185);
+                    auto room6_p5 = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x201504b);
+
+
+
+
+                    if (player->GetDistance(room1) < 400.0f)
+                    {
+                        if (target == room1_p1) return room1_p1;
+                        if (target == room1_p2) return room1_p2;
+                        if (target == room1_p3) return room1_p3;
+                        if (target == room1_p4) return room1_p4;
+                        if (target == room1_p5) return room1_p5;
+
+                        auto test = get_mysc_quest_teleport_ref();
+
+                        if (test && dlc1_valley_portal_redirect_init_allowed())
+                        {
+                            if (test == room1_p1 || test == room1_p2 || test == room1_p3 || test == room1_p4 || test == room1_p5)
+                                return test;
+                        }
+                    }
+
+
+                    if (player->GetDistance(room2) < 400.0f)
+                    {
+                        if (target == room2_p1) return room2_p1;
+                        if (target == room2_p2) return room2_p2;
+                        if (target == room2_p3) return room2_p3;
+                        if (target == room2_p4) return room2_p4;
+                        if (target == room2_p5) return room2_p5;
+
+                        auto test = get_mysc_quest_teleport_ref();
+
+                        if (test && dlc1_valley_portal_redirect_init_allowed())
+                        {
+                            if (test == room2_p1 || test == room2_p2 || test == room2_p3 || test == room2_p4 || test == room2_p5)
+                                return test;
+                        }
+                    }
+
+
+                    if (player->GetDistance(room3) < 400.0f)
+                    {
+                        if (target == room3_p1) return room3_p1;
+                        if (target == room3_p2) return room3_p2;
+                        if (target == room3_p3) return room3_p3;
+                        if (target == room3_p4) return room3_p4;
+                        if (target == room3_p5) return room3_p5;
+
+                        auto test = get_mysc_quest_teleport_ref();
+
+                        if (test && dlc1_valley_portal_redirect_init_allowed())
+                        {
+                            if (test == room3_p1 || test == room3_p2 || test == room3_p3 || test == room3_p4 || test == room3_p5)
+                                return test;
+                        }
+                    }
+
+                    if (player->GetDistance(room4) < 400.0f)
+                    {
+                        if (target == room4_p1) return room4_p1;
+                        if (target == room4_p2) return room4_p2;
+                        if (target == room4_p3) return room4_p3;
+                        if (target == room4_p4) return room4_p4;
+                        if (target == room4_p5) return room4_p5;
+
+                        auto test = get_mysc_quest_teleport_ref();
+
+                        if (test && dlc1_valley_portal_redirect_init_allowed())
+                        {
+                            if (test == room4_p1 || test == room4_p2 || test == room4_p3 || test == room4_p4 || test == room4_p5)
+                                return test;
+                        }
+                    }
+
+                    if (player->GetDistance(room5) < 400.0f)
+                    {
+                        if (target == room5_p1) return room5_p1;
+                        if (target == room5_p2) return room5_p2;
+                        if (target == room5_p3) return room5_p3;
+                        if (target == room5_p4) return room5_p4;
+                        if (target == room5_p5) return room5_p5;
+
+                        auto test = get_mysc_quest_teleport_ref();
+
+                        if (test && dlc1_valley_portal_redirect_init_allowed())
+                        {
+                            if (test == room5_p1 || test == room5_p2 || test == room5_p3 || test == room5_p4 || test == room5_p5)
+                                return test;
+                        }
+                    }
+
+                    if (player->GetDistance(room6) < 400.0f)
+                    {
+                        if (target == room6_p1) return room6_p1;
+                        if (target == room6_p2) return room6_p2;
+                        if (target == room6_p3) return room6_p3;
+                        if (target == room6_p4) return room6_p4;
+                        if (target == room6_p5) return room6_p5;
+
+                        auto test = get_mysc_quest_teleport_ref();
+
+                        if (test && dlc1_valley_portal_redirect_init_allowed())
+                        {
+                            if (test == room6_p1 || test == room6_p2 || test == room6_p3 || test == room6_p4 || test == room6_p5)
+                                return test;
+                        }
+                    }
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             if (player_worldspace && player_worldspace == tamriel_worldspace)
             {
                 auto redirect_water = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x70152d2);
@@ -5914,30 +6190,33 @@ namespace MiscThings {
 
 
 
-        if (player_worldspace && player_worldspace->formID == 0x2000bb5)
-        {
-            if (player_pos.z < 5822.0f && player_pos.x > -34026.0f && player_pos.y < -13880.0f && target && target->GetPosition().z >= 5822.0f)
-            {
-                auto redirect_thingy = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c8bb);
-                if (redirect_thingy) return redirect_thingy;
-            }
-        }
 
-        
-        auto dlc1vq07_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ07");
+            auto dlc1vq07_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ07");
 
-        if (quest == dlc1vq07_quest && dlc1vq07_quest && player_worldspace && player_worldspace->formID == 0x2000bb5)
-        {
-            auto current_stage = quest->currentStage;
-            if (current_stage == 110)
+            if (quest == dlc1vq07_quest && dlc1vq07_quest && player_worldspace && player_worldspace->formID == 0x2000bb5)
             {
-                if (target && target->formID == 0x2006c13) //elf guy
+                if (!inside_forgotten_valley_castle_balcony_zone(player) && inside_forgotten_valley_castle_balcony_zone(target))
                 {
                     auto door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20039ad);
                     if (door) return door;
                 }
+                /*
+                auto current_stage = quest->currentStage;
+                if (current_stage == 110)
+                {
+                    if (target && target->formID == 0x2006c13) //elf guy
+                    {
+                        auto door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20039ad);
+                        if (door) return door;
+                    }
+                }
+                */
             }
-        }
+
+
+        
+
+
         
 
 
@@ -12623,6 +12902,17 @@ namespace MiscThings {
         }
             
 
+
+        //dlc1 shrine ghosts
+        case (0x200a8bf):
+        case (0x200a8af):
+        case (0x200a8bb):
+        case (0x2002b48):
+        case (0x200a8b8):
+            return "[Ghost]";
+
+
+
         }
 
 
@@ -14675,7 +14965,7 @@ namespace MiscThings {
 
                         if (model.find("SEWayShrinePortal01") != std::string::npos) //dlc1 wayshrine portals
                         {
-                            RE::NiPoint3 base_shift_vector = { 0.0f, 220.0f, 100.0f };
+                            RE::NiPoint3 base_shift_vector = { 0.0f, 205.0f, 100.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
                             result = rotated_shift_vector;
                         }

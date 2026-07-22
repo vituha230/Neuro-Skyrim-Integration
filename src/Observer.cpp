@@ -1885,7 +1885,49 @@ namespace Observer {
 
 
 
+	std::string get_frozen_falmer_name(RE::TESObjectREFR* object)
+	{
 
+		auto player = RE::PlayerCharacter::GetSingleton();
+
+		if (object && player)
+		{
+			if (object->formID == 0x200543f && object->GetDistance(player) < 3000.0f)
+				return "Group of frozen Falmers and Chaurus, standing around Shrine of Auriel";
+
+
+			bool raycast123 = MiscThings::raycastable(object, 4000.0f);
+
+			if (raycast123)
+			{
+				switch (object->formID)
+				{
+				case (0x2012453):
+				case (0x2005460):
+				case (0x2005461):
+				case (0x20054c9):
+				case (0x20054cb):
+				case (0x20054cf):
+				case (0x200546d):
+				case (0x20054d0):
+				case (0x200684c):
+				case (0x200684e):
+				case (0x2006854):
+					return "Frozen Falmer";
+
+				case (0x2005441):
+				case (0x2006850):
+				case (0x2006851):
+				case (0x201241e):
+				case (0x201241d):
+					return "Frozen Chaurus";
+				}
+			}
+
+		}
+
+		return "";
+	}
 
 
 
@@ -1936,6 +1978,9 @@ namespace Observer {
 					//}
 						
 
+					bool frozen_falmers_condition = player_cell && player_cell->formID == 0x200384f;
+
+
 
 					std::map<RE::FormType, int> dbg_test{};
 
@@ -1974,6 +2019,22 @@ namespace Observer {
 
 								if (base_type == RE::FormType::Hazard)
 									return RE::BSContainer::ForEachResult::kContinue;
+
+
+								if (frozen_falmers_condition)
+								{
+									if (!MiscThings::is_object_in_the_list(a_ref))
+									{
+										std::string name = get_frozen_falmer_name(a_ref);
+
+										if (name != "") //raycast embedded into name function
+										{
+											std::string info = MiscThings::insert_object_into_list_custom_name(name, a_ref);
+											if (info != "")
+												interesting_buffer.insert_or_assign(a_ref, info);
+										}
+									}
+								}
 
 								if (base_type == RE::FormType::Static)
 									return RE::BSContainer::ForEachResult::kContinue;
