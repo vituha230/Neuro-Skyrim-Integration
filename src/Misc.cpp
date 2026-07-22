@@ -5914,6 +5914,34 @@ namespace MiscThings {
 
 
 
+        if (player_worldspace && player_worldspace->formID == 0x2000bb5)
+        {
+            if (player_pos.z < 5822.0f && player_pos.x > -34026.0f && player_pos.y < -13880.0f && target && target->GetPosition().z >= 5822.0f)
+            {
+                auto redirect_thingy = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x200c8bb);
+                if (redirect_thingy) return redirect_thingy;
+            }
+        }
+
+        
+        auto dlc1vq07_quest = (RE::TESQuest*)RE::TESForm::LookupByEditorID("DLC1VQ07");
+
+        if (quest == dlc1vq07_quest && dlc1vq07_quest && player_worldspace && player_worldspace->formID == 0x2000bb5)
+        {
+            auto current_stage = quest->currentStage;
+            if (current_stage == 110)
+            {
+                if (target && target->formID == 0x2006c13) //elf guy
+                {
+                    auto door = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x20039ad);
+                    if (door) return door;
+                }
+            }
+        }
+        
+
+
+
         if (target && target->formID == 0x2004349 && parent_cell && parent_cell->formID == 0x2004346)
         {
             //dlc1 darkfall cave exit. messy
@@ -8583,6 +8611,17 @@ namespace MiscThings {
         }
 
 
+
+        /*
+        //final test for portals
+        for (auto teleport : tes_quest_target->teleportPath.teleportRefs)
+        {
+            if (teleport.ref)
+            {
+                return teleport.ref;
+            }
+        }
+        */
 
         //replaced with generic completely
         /*
@@ -14185,7 +14224,7 @@ namespace MiscThings {
                         std::string model = furniture->GetModel();
 
 
-                        if (model.find("WayShrineScoopMarker") != std::string::npos) //dlc1 wayshrine center bowl
+                        if (model.find("WayShrineScoopMarker") != std::string::npos || model.find("WayShrinePourMarker") != std::string::npos) //dlc1 wayshrine center bowl
                         {
                             RE::NiPoint3 base_shift_vector = { 0.0f, 65.0f, 50.0f };
                             RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);

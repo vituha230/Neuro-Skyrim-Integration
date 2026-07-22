@@ -3531,6 +3531,20 @@ namespace WalkerProcessor {
                 break;
             }
 
+            case (0x2015fc0): //dlc1 wayshrine bowl4
+            {
+                if (temp_result->formID == 0x2019c68)
+                    return target_ref;
+                break;
+            }
+
+            case (0x2015fc1): //dlc1 wayshrine bowl5 final
+            {
+                if (temp_result->formID == 0x2019c67)
+                    return target_ref;
+                break;
+            }
+
             }
         }
 
