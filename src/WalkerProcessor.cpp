@@ -9752,9 +9752,19 @@ namespace WalkerProcessor {
         
         if (!manual_check && !(target_ref && target_ref->parentCell != parent_cell))
         {
-            //tower of mzark so it doesnt go on full autosolve mode
-            if (parent_cell && parent_cell->formID == 0x2d4e3)
-                return false;
+            if (parent_cell)
+            {
+                switch (parent_cell->formID)
+                {
+                case (0x2d4e3): //tower of mzark
+                case (0x15255): //meridia1
+                case (0x4624f): //meridia2
+                case (0x27d1c): //meridia3
+                    return false;
+                }
+            }
+
+
 
 
             if (last_quest && last_quest->formID == 0x1f7a3) //ms11 blood on ice windhelm
