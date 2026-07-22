@@ -15875,6 +15875,12 @@ namespace WalkerProcessor {
         try
         {
             auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (!player)
+                return;
+
+            MiscThings::jumpable_ramp_ahead();
+
             auto player_ref = player->AsReference();
 
             auto parent_cell = player->GetParentCell();
@@ -20025,7 +20031,8 @@ namespace WalkerProcessor {
                                                 else
                                                 {
                                                     if (almost_stuck()) //basically no blocker but stuck - maybe terrain. will also trigger on pole-type doors though
-                                                        ;//jump(); //experimental //ITS SHIT, needs more complexity
+                                                        if (MiscThings::jumpable_ramp_ahead())
+                                                            jump();
                                                 }
 
                                                 walk_to_point(dtime);

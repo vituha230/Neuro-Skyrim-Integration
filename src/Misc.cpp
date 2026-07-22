@@ -2661,6 +2661,67 @@ namespace MiscThings {
 
 
 
+    bool jumpable_ramp_ahead()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+
+        if (!player)
+            return false;
+
+        auto player_pos = player->GetPosition();
+
+        auto camera = RE::PlayerCamera::GetSingleton();
+
+        if (!camera || !camera->cameraRoot.get())
+            return 0;
+
+        auto camera_dirY = camera->cameraRoot.get()->world.rotate.GetVectorY();
+        camera_dirY.z = 0.0f;
+        camera_dirY.Unitize();
+
+        auto camera_dirX = camera->cameraRoot.get()->world.rotate.GetVectorX();
+        camera_dirX.z = 0.0f;
+        camera_dirX.Unitize();
+
+        float score = 0.0f;
+
+        DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+
+        for (auto i = 0; i < 31; i++)
+            for (auto j = 0; j < 37; j++)
+            {
+                RE::NiPoint3 up = { 0.0f, 0.0f, 1.0f };
+                //auto raycast_start = player_pos + camera_dirX * (5.0f - (float)i) * 20.0f + up*j*10.0f;
+                auto raycast_start = player_pos + camera_dirX * (15.0f - (float)i) * 2.0f + up * (j + 1) * 4.0f;
+                bool hit = MiscThings::GetRaycastRef(raycast_start, camera_dirY, 50.0f, nullptr, 0b00000000000010010000000000000010); //this mask works on fences
+
+                /*
+                auto color = DebugAPI_IMPL::DrawDebug::Colors::GRN;
+                if (hit)
+                    color = DebugAPI_IMPL::DrawDebug::Colors::RED;
+
+                if (i == 0 || i == 30 || j == 0 || j == 36)
+                    if (i % 3 && j % 3)
+                        DebugAPI_IMPL::DrawDebug::draw_line(raycast_start, raycast_start + camera_dirY, 2.0f, color);
+                */
+
+                if (j > 16)
+                    score += -1.0f * hit;
+                else
+                    score += 1.0f * hit;
+            }
+
+
+        //Hooks::add_debug_line(std::to_string(score), true);
+        //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+        
+        return score > 240.0f;
+    }
+
+
+
+
+
     int safe_to_dodge_projectile()
     {
         float pi = RE::NI_PI;
@@ -2787,8 +2848,8 @@ namespace MiscThings {
 
                         
                         //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
-                        
-                        
+
+
                         int result = 0;
 
                         for (int i = 0; i < 8; i++)

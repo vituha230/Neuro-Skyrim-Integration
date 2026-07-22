@@ -8,6 +8,8 @@ namespace MiscThings {
 
     std::string get_equipped_hand_text(RE::TESBoundObject* object);
 
+    bool jumpable_ramp_ahead();
+
     bool player_has_deseases();
 
 

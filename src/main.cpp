@@ -24,7 +24,6 @@
 //forgotten valley the part where i ended - pathfinding barely works for these falmer bridges. think about changing walker a little so it accepts paths that consist of 1 point (maybe at least for this location)
 
 
-//raycast-driven jump-required-detection?
 //dragon-doesnt-land-go-find-some-landing-area?
 
 
