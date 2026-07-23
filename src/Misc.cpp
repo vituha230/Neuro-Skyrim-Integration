@@ -17843,9 +17843,32 @@ namespace MiscThings {
     }
 
 
+    bool is_note(RE::TESForm* object)
+    {
+        if (object)
+        {
+            if (object->formType == RE::FormType::Note)
+                return true;
+
+            if (object->formType == RE::FormType::Book)
+            {
+                auto book = (RE::TESObjectBOOK*)object;
+
+                if (book->inventoryModel && (book->inventoryModel->formID == 0x97788 || book->inventoryModel->formID == 0x1541c))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+
     std::pair<int, std::string> get_object_category(RE::TESForm* base_obj, RE::TESBoundObject* object, bool without_text_category)
     {
         std::pair<int, std::string> result{};
+
+        if (!base_obj)
+            return result;
+
 
         auto base_type = base_obj->GetFormType();
 
@@ -17893,7 +17916,7 @@ namespace MiscThings {
 
         if (base_type == RE::FormType::Book)
         {
-            if (object->IsNote())
+            if (is_note(base_obj))
             {
                 result.second = "[Note]";
                 result.first = 6;
@@ -17932,11 +17955,15 @@ namespace MiscThings {
             if (!without_text_category)
                 result.second = "[Scroll]";
 
-            auto hand_text = get_equipped_hand_text(object);
             std::string equipped_text = "";
+            if (object)
+            {
+                auto hand_text = get_equipped_hand_text(object);
 
-            if (is_equipped(object))
-                equipped_text = "[Equipped" + hand_text + "]";
+                if (is_equipped(object))
+                    equipped_text = "[Equipped" + hand_text + "]";
+            }
+
 
             auto casting_perk = get_casting_perk_info((RE::SpellItem*)base_obj);
 
@@ -22536,7 +22563,7 @@ namespace MiscThings {
                 }
                 case (6):
                 {
-                    if (category_list.at(6) == "")
+                    if (category_list.at(7) == "")
                         inventory_contents += "Notes:\n" + category_entry + "\n";
                     else
                         inventory_contents += "Notes and books:\n" + category_entry + "\n";
@@ -22546,7 +22573,7 @@ namespace MiscThings {
                     
                 case (7):
                 {
-                    if (category_list.at(5) == "")
+                    if (category_list.at(6) == "")
                         inventory_contents += "Books:\n" + category_entry + "\n";
                     else
                         inventory_contents += category_entry + "\n";
