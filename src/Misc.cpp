@@ -10010,9 +10010,9 @@ namespace MiscThings {
             if (model.find("critters") != std::string::npos && (model.find("bee") != std::string::npos || model.find("dragonfly") != std::string::npos || model.find("firefly") != std::string::npos || model.find("moths") != std::string::npos))
             {
 
-                auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
+                //auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
 
-                if (path_extra)
+                //if (path_extra)
                     return true;
             }
         }
@@ -10048,9 +10048,9 @@ namespace MiscThings {
             if (model.find("critters") != std::string::npos && (model.find("fish") != std::string::npos || model.find("fcjumpingsalmon") != std::string::npos))
             {
 
-                auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
+                //auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
 
-                if (path_extra)
+                //if (path_extra)
                     return true;
             }
         }
@@ -10085,9 +10085,9 @@ namespace MiscThings {
             if (model.find("critters") != std::string::npos && (model.find("birds") != std::string::npos || model.find("fchawk") != std::string::npos || model.find("birds") != std::string::npos || model.find("birds") != std::string::npos))
             {
 
-                auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
+                //auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
 
-                if (path_extra)
+                //if (path_extra)
                     return true;
             }
         }
