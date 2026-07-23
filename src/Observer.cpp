@@ -4578,6 +4578,21 @@ namespace Observer {
 
 						if (a_ref)
 						{
+
+							if (a_ref->formID == 0xdb9d7) //blackreach sun
+							{
+								if (!MiscThings::is_object_in_the_list(a_ref) && MiscThings::raycastable(a_ref, 20000.0f))
+								{
+									auto info = MiscThings::insert_object_into_list_custom_name("Huge Orange Lamp above Dwemer Buildings", a_ref);
+
+									if (info != "")
+										send_random_context("You see: " + info);
+
+								}
+							}
+
+
+
 							if (a_ref->IsActor())
 							{
 								auto actor_ref = (RE::Actor*)a_ref;

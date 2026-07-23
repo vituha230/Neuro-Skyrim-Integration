@@ -14,17 +14,18 @@
 //TODO polish civil war (ambush quest sometimes the soldier cannot hit the enemy)
 //TODO polish companions (maybe add jorwaskr as an interesting place to whiterun.. or make some kind of bridge-quest when player didnt take new quest right away. maybe test more locations for silverhands)
 
-
 //TODO polish dragonborn dlc
 // 1st book apocrypha polish (walk through passages along their bones)
 // 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1)
 
-
-//TODO dawnguard dlc
-//forgotten valley the part where i ended - pathfinding barely works for these falmer bridges. think about changing walker a little so it accepts paths that consist of 1 point (maybe at least for this location)
+//TODO polish dawnguard dlc 
+// improve harkon fight to let us actually use the bow even though its beatable without it, fix constant "cant walk there" pathfinding death during fight
+// add ability to shoow the sun with auriel bow
 
 
 //dragon-doesnt-land-go-find-some-landing-area?
+
+//check solitude lighthouse robbery the lighthouse fire returns no shift in looking_point_shift
 
 
 ///////////////////////

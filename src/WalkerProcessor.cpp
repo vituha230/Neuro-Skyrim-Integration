@@ -1368,8 +1368,14 @@ namespace WalkerProcessor {
         else
         {
             auto player = RE::PlayerCharacter::GetSingleton();
+            if (!player)
+                return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7003887);
+
             auto player_worldspace = player->GetWorldspace();
             auto soltsheim_worldspace = RE::TESForm::LookupByID(0x4000800);
+            auto parent_cell = player->GetParentCell();
+            auto player_pos = player->GetPosition();
+
 
             if (player_worldspace == soltsheim_worldspace)
                 return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7012408); //runaway marker soltsheim
@@ -1380,7 +1386,73 @@ namespace WalkerProcessor {
 
                 if (MiscThings::in_soltsheim())
                     return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x7012408); //runaway marker soltsheim
+
+                if (parent_cell)
+                {
+                    switch (parent_cell->formID)
+                    {
+                    case (0x56c1b):
+                        if (player_pos.z < -2800.0f)
+                            return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x57058); //alftand elevator to glacial ruins
+                        break;
+                    }
+                }
             }
+
+
+
+
+            if (player_worldspace && player_worldspace->formID == 0x69857)
+                return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x57058);//(0x699e8); //alftand cathedral
+
+            if (player_worldspace && player_worldspace->formID == 0x1ee62) //blackreach
+            {
+                auto elevator1 = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0xef7b8);
+                auto elevator2 = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0xef7b9);
+                auto elevator3 = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x2872a);
+                auto door_back = (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x4e504);
+
+                if (elevator1 && elevator2 && elevator3 && door_back)
+                {
+                    std::vector<float> distances{};
+
+                    distances.push_back(player->GetDistance(elevator1));
+                    distances.push_back(player->GetDistance(elevator2));
+                    distances.push_back(player->GetDistance(elevator3));
+                    distances.push_back(player->GetDistance(door_back));
+
+                    int best_i = 0;
+                    float min_distance = FLT_MAX;
+                    for (int i = 0; i < std::size(distances); i++)
+                    {
+                        if (distances.at(i) < min_distance)
+                        {
+                            min_distance = distances.at(i);
+                            best_i = i;
+                        }
+                    }
+
+                    if (best_i < std::size(distances) && best_i >= 0)
+                    {
+                        switch (best_i)
+                        {
+                        case (0):
+                            return elevator1;
+                        case (1):
+                            return elevator2;
+                        case (2):
+                            return elevator3;
+                        case (3):
+                            return (RE::TESObjectREFR*)RE::TESForm::LookupByID(0x57058); //alftand elevator to glacial ruins
+                        }
+                    }
+
+                    
+
+
+                }
+            }
+                
 
 
             if (Apocrypha::in_apocrypha())
@@ -6628,6 +6700,11 @@ namespace WalkerProcessor {
                                 range = 20000.0f;
                             else
                                 range = 2000.0f;
+
+
+                            if (target_ref && target_ref->formID == 0xdb9d7)
+                                range = 8000.0f;
+
                         }
                             
 
@@ -6644,7 +6721,19 @@ namespace WalkerProcessor {
                             range = 1.0f; //mega low range so it never returns true
 
 
+                        RE::NiPoint3 up = { 0.0f, 0.0f, 100.0f };
+
+                        //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                        //DebugAPI_IMPL::DrawDebug::draw_line(aim_pos, aim_pos + up);
+                        //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+
+
+
+
                         auto raycast_ref = MiscThings::GetRaycastRef(camera_pos, delta_pos, range, target_ref, 0b00000000000010010000000000000110); //projectile layer in player group
+
+                        if (target_ref && target_ref->formID == 0xdb9d7 && raycast_ref && raycast_ref->formID == 0x80b2c)
+                            raycast_ref = target_ref;
 
                         //if (target_ref->IsActor() && target_ref->IsDead())
                         //    return true;
@@ -10541,7 +10630,7 @@ namespace WalkerProcessor {
         auto player = RE::PlayerCharacter::GetSingleton();
         RE::TESObjectREFR* target = get_runaway_target();
 
-        
+
         auto player_pos = player->GetPosition();
         
         auto test_z_dif = player_pos.z - target->GetPosition().z;
@@ -10569,6 +10658,9 @@ namespace WalkerProcessor {
                 reset_walker();
 
             location_mode = true;
+
+            if (is_door(target))
+                location_mode_redirected_to_a_door = true;
 
 
             solitude_prison_out_of_bounds_check();
@@ -11607,6 +11699,7 @@ namespace WalkerProcessor {
 
                             send_random_context("You are using the shout: " + shout_name);
                             MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
+                            reset_walker();
                             return true;
                         }
                         else
@@ -16138,88 +16231,91 @@ namespace WalkerProcessor {
 
                 if (search_next_fight_target)
                 {
-                    auto next_targets = MiscThings::get_player_attackers(false, target_ref, true);
-
-                    if (std::size(next_targets) > 0)
+                    if (!attack_paused)
                     {
+                        auto next_targets = MiscThings::get_player_attackers(false, target_ref, true);
 
-                        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
-                        float delta_last_new_fight = (double)(now - last_time_new_fight) / 1000000000.0;
-
-                        bool last_fight_long_ago = false;
-
-                        if (delta_last_new_fight > 5.0f)
+                        if (std::size(next_targets) > 0)
                         {
-                            last_fight_long_ago = true;
-                        }
 
-                        last_time_new_fight = now;
+                            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+                            float delta_last_new_fight = (double)(now - last_time_new_fight) / 1000000000.0;
 
-                        reset_walker();
-                        auto new_target = next_targets.at(0);
-                        std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
+                            bool last_fight_long_ago = false;
 
-                        right_attack_cancel();
-                        left_attack_cancel();
-
-                        chill_with_context = true;
-
-                        walk_to_object_by_refr(new_target, 3);
-
-                        if (last_fight_long_ago || last_attack_target != new_target)
-                            send_random_context("[You started fighting next target: " + new_target_name + "]", false);
-
-                        last_attack_target = new_target;
-                    }
-                    else
-                    {
-                        if (search_next_target_timer > 1.0f)
-                        {
-                            std::string result_header = "[Fight ended";
-                            bool useless_fight = false;
-
-                            if (was_already_dead || (target_ref && !target_ref->IsActor()))
+                            if (delta_last_new_fight > 5.0f)
                             {
-                                result_header = "[You finished attacking " + reminder_target_name;
-                                useless_fight = true;
+                                last_fight_long_ago = true;
                             }
-                                
 
-                            Observer::reset_threats();
+                            last_time_new_fight = now;
 
                             reset_walker();
-                            std::string advice = "";
+                            auto new_target = next_targets.at(0);
+                            std::string new_target_name = MiscThings::insert_object_into_list_and_get_info(new_target);
 
-                            if (!useless_fight)
-                            {
-                                if (MiscThings::is_objects_around_valid())
-                                    if (MiscThings::is_werewolf())
-                                        advice = "eat corpses to progress werewolf powers";
-                                    else
-                                        if (!MiscThings::is_vampirelord()) //vampire lord has no interaction with corpses (apart from resurrect.. but its tricky)
-                                            advice = "loot dead enemies";
+                            right_attack_cancel();
+                            left_attack_cancel();
 
-                                Observer::add_quicksave_timer(40.0f);
-                            }
+                            chill_with_context = true;
 
+                            walk_to_object_by_refr(new_target, 3);
 
-                            if (MiscThings::have_any_quests())
-                                if (advice != "")
-                                    advice += ", follow some quest";
-                                else
-                                    advice = "follow some quest";
+                            if (last_fight_long_ago || last_attack_target != new_target)
+                                send_random_context("[You started fighting next target: " + new_target_name + "]", false);
 
-
-                            if (advice != "")
-                                advice = "You can " + advice;
-
-                            
-
-                            if (!shout_mode)
-                                send_random_context(result_header + ". Choose next action to do. " + advice + "]", false);
+                            last_attack_target = new_target;
                         }
                         else
-                            search_next_target_timer += dtime;
+                        {
+                            if (search_next_target_timer > 1.0f)
+                            {
+                                std::string result_header = "[Fight ended";
+                                bool useless_fight = false;
+
+                                if (was_already_dead || (target_ref && !target_ref->IsActor()))
+                                {
+                                    result_header = "[You finished attacking " + reminder_target_name;
+                                    useless_fight = true;
+                                }
+
+
+                                Observer::reset_threats();
+
+                                reset_walker();
+                                std::string advice = "";
+
+                                if (!useless_fight)
+                                {
+                                    if (MiscThings::is_objects_around_valid())
+                                        if (MiscThings::is_werewolf())
+                                            advice = "eat corpses to progress werewolf powers";
+                                        else
+                                            if (!MiscThings::is_vampirelord()) //vampire lord has no interaction with corpses (apart from resurrect.. but its tricky)
+                                                advice = "loot dead enemies";
+
+                                    Observer::add_quicksave_timer(40.0f);
+                                }
+
+
+                                if (MiscThings::have_any_quests())
+                                    if (advice != "")
+                                        advice += ", follow some quest";
+                                    else
+                                        advice = "follow some quest";
+
+
+                                if (advice != "")
+                                    advice = "You can " + advice;
+
+
+
+                                if (!shout_mode)
+                                    send_random_context(result_header + ". Choose next action to do. " + advice + "]", false);
+                            }
+                            else
+                                search_next_target_timer += dtime;
+                        }
                     }
 
                     return;
@@ -16993,7 +17089,13 @@ namespace WalkerProcessor {
                             if (model.find("DweFacadeLiftLeverLoad") != std::string::npos)
                             {
                                 float distance = player_pos.GetDistance(target_ref_pos);
-                                if (distance < 1000.0f && distance > 200.0f)
+
+                                float distance_threshold = 700.0f;
+
+                                if (target_ref && target_ref->formID == 0x2872a)
+                                    distance_threshold = 1000.0f;
+
+                                if (distance < distance_threshold && distance > 200.0f)
                                 {
                                     auto target_to_remember = target_ref;
                                     reset_walker();

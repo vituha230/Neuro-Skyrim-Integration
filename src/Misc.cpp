@@ -11426,6 +11426,12 @@ namespace MiscThings {
                             return RE::BSContainer::ForEachResult::kContinue;
 
 
+                        switch (a_ref->formID)
+                        {
+                        case (0xfb3e1): //blackreach hidden lever
+                            return RE::BSContainer::ForEachResult::kContinue;
+                        }
+
                         auto base_obj = a_ref->GetBaseObject();
                         if (base_obj)
                         {
@@ -14426,6 +14432,15 @@ namespace MiscThings {
 
                 switch (object->formID)
                 {
+
+                case (0xdb9d7): //blackreach sun
+                {
+                    RE::NiPoint3 rotated_shift_vector = { 0.0f, 0.0f, -1200.0f };
+
+                    return rotated_shift_vector;
+                }
+
+
                 case (0x7526c): //ship robbery lighthouse fire
                 {
                     RE::NiPoint3 object_angles = object->data.angle;
@@ -26768,6 +26783,10 @@ namespace MiscThings {
 
                     if (Apocrypha::in_apocrypha())
                         max_range = 7000.0f;
+
+                    if (this_object && this_object->formID == 0xdb9d7) //blackreach sun
+                        max_range = 20000.0f;
+
 
                     if (player_ref->GetDistance(this_object) < max_range)
                     {
