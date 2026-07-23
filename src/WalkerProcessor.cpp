@@ -4928,7 +4928,7 @@ namespace WalkerProcessor {
         //mouse_mouse_x(mouse_x);
 
 
-        if (MiscThings::is_insect(target))
+        if (MiscThings::is_critter(target))
         {
             auto distance_insect = target->GetPosition() - player->GetPosition();
             distance_insect.z = 0.0f;
@@ -6584,7 +6584,7 @@ namespace WalkerProcessor {
         }
         else
         {
-            if (MiscThings::is_insect(target_ref))
+            if (MiscThings::is_critter(target_ref))
             {
                 auto distance_insect = target_pos - player_pos;
                 distance_insect.z = 0.0f;
@@ -6957,7 +6957,7 @@ namespace WalkerProcessor {
                             threshold2 = weird_threshold2;
                         }
 
-                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_insect(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_normal)))
+                        if (!MiscThings::is_cave_autoloader_door(target_ref) && !MiscThings::is_ore(target_ref) && !MiscThings::is_tree(target_ref) && !MiscThings::is_flora(target_ref) && !MiscThings::is_critter(target_ref) && !is_door(target_ref) && (bound_dif.x > 100.0f || bound_dif.y > 100.0f * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_normal)))
                         {
                             if (distance.Length() < (std::max(bound_dif.x, bound_dif.y) + threshold * (1 + MiscThings::is_on_horse() * 3.0f) * (1 + MiscThings::is_werewolf() * werewolf_coef_normal) * (1 + MiscThings::is_vampirelord() * vampirelord_coef_normal)))
                                 return true;
@@ -13727,7 +13727,7 @@ namespace WalkerProcessor {
                                 }
 
 
-                                if (MiscThings::is_insect(target_ref))
+                                if (MiscThings::is_critter(target_ref))
                                 {
                                     //register backup-pickup for them
                                     if (!backup_pickup)
@@ -19124,7 +19124,7 @@ namespace WalkerProcessor {
                                                             result_target = target_ref;
                                                         }
 
-                                                        if (explore_mode && !MiscThings::is_insect(target_ref) && lock_camera_onto_target(target_ref, dtime))
+                                                        if (explore_mode && !MiscThings::is_critter(target_ref) && lock_camera_onto_target(target_ref, dtime))
                                                             result_target = target_ref;
 
 
@@ -19352,7 +19352,7 @@ namespace WalkerProcessor {
 
                                                                                     if (explore_mode)
                                                                                     {
-                                                                                        if (!dont_autointerract && MiscThings::object_is_interactive(target_ref) && !MiscThings::is_insect(target_ref) && MiscThings::is_stealing(target_ref) == "")
+                                                                                        if (!dont_autointerract && MiscThings::object_is_interactive(target_ref) && !MiscThings::is_critter(target_ref) && MiscThings::is_stealing(target_ref) == "")
                                                                                             auto temp_result = walk_to_object_by_refr(target_ref, 1);
                                                                                         else
                                                                                             reset_walker(); //success  

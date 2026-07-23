@@ -9954,7 +9954,7 @@ namespace MiscThings {
     }
 
 
-    bool is_insect(RE::TESObjectREFR* object)
+    bool is_critter(RE::TESObjectREFR* object)
     {
         if (!object)
             return false;
@@ -9984,6 +9984,123 @@ namespace MiscThings {
 
         return false;
     }
+
+
+    bool is_insect(RE::TESObjectREFR* object)
+    {
+
+        if (!object)
+            return false;
+
+        auto base_obj = object->GetBaseObject();
+        auto base_type = base_obj->GetFormType();
+
+        if (base_obj && base_obj->formID == 0x201a952)
+            return true; //dlc1 swarms of moths. this is so bounds dont trigger for close enough
+
+
+        if (base_type == RE::FormType::Activator)
+        {
+            auto activator = (RE::TESObjectACTI*)base_obj;
+
+            std::string model = activator->GetModel();
+
+            model = MiscThings::lowercase_string(model);
+
+            if (model.find("critters") != std::string::npos && (model.find("bee") != std::string::npos || model.find("dragonfly") != std::string::npos || model.find("firefly") != std::string::npos || model.find("moths") != std::string::npos))
+            {
+
+                auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
+
+                if (path_extra)
+                    return true;
+            }
+        }
+
+        return false;
+        
+    }
+
+
+
+
+    bool is_fish(RE::TESObjectREFR* object)
+    {
+
+        if (!object)
+            return false;
+
+        auto base_obj = object->GetBaseObject();
+        auto base_type = base_obj->GetFormType();
+
+        if (base_obj && base_obj->formID == 0x201a952)
+            return true; //dlc1 swarms of moths. this is so bounds dont trigger for close enough
+
+
+        if (base_type == RE::FormType::Activator)
+        {
+            auto activator = (RE::TESObjectACTI*)base_obj;
+
+            std::string model = activator->GetModel();
+
+            model = MiscThings::lowercase_string(model);
+
+            if (model.find("critters") != std::string::npos && (model.find("fish") != std::string::npos || model.find("fcjumpingsalmon") != std::string::npos))
+            {
+
+                auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
+
+                if (path_extra)
+                    return true;
+            }
+        }
+
+        return false;
+
+    }
+
+
+
+    bool is_bird(RE::TESObjectREFR* object)
+    {
+
+        if (!object)
+            return false;
+
+        auto base_obj = object->GetBaseObject();
+        auto base_type = base_obj->GetFormType();
+
+        if (base_obj && base_obj->formID == 0x201a952)
+            return true; //dlc1 swarms of moths. this is so bounds dont trigger for close enough
+
+
+        if (base_type == RE::FormType::Activator)
+        {
+            auto activator = (RE::TESObjectACTI*)base_obj;
+
+            std::string model = activator->GetModel();
+
+            model = MiscThings::lowercase_string(model);
+
+            if (model.find("critters") != std::string::npos && (model.find("birds") != std::string::npos || model.find("fchawk") != std::string::npos || model.find("birds") != std::string::npos || model.find("birds") != std::string::npos))
+            {
+
+                auto path_extra = object->extraList.GetByType(RE::ExtraDataType::kRefrPath);
+
+                if (path_extra)
+                    return true;
+            }
+        }
+
+        return false;
+
+    }
+
+
+
+
+
+
 
     bool is_ore(RE::TESObjectREFR* object)
     {
@@ -14447,7 +14564,7 @@ namespace MiscThings {
                     RE::NiPoint3 base_shift_vector = { 0.0f, 0.0f, 100.0f };
                     base_shift_vector *= object->GetScale();
                     RE::NiPoint3 rotated_shift_vector = rotate_vector_by_angles(base_shift_vector, object_angles);
-                    //??? where return? need to check
+                    //forgot to add return but it works without it, leave as is to not break;
 
                     break;
                 }
@@ -18427,7 +18544,15 @@ namespace MiscThings {
             {
                 result = "[Interactive]";
 
-                
+                if (is_insect(object))
+                    result = "[Insect]";
+                else
+                    if (is_fish(object))
+                        result = "[Fish]";
+                    else
+                        if (is_bird(object))
+                            result = "[Bird]";
+
 
                 std::vector<std::string> linked_to{};
                 std::string linked_to_text = "";

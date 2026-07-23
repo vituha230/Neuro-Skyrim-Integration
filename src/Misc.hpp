@@ -324,7 +324,9 @@ namespace MiscThings {
 
     bool player_has_levelup();
 
+    bool is_critter(RE::TESObjectREFR* object);
     bool is_insect(RE::TESObjectREFR* object);
+
     bool player_escaping_jail();
 
     void notifications();

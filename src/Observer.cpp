@@ -2311,7 +2311,7 @@ namespace Observer {
 													local_ignore_raycast = true;
 
 
-												if (name.find("Nirnroot") != std::string::npos || name.find("Ashpile") != std::string::npos || (MiscThings::is_insect(a_ref) && distance < 1000.0f))
+												if (name.find("Nirnroot") != std::string::npos || name.find("Ashpile") != std::string::npos || (MiscThings::is_critter(a_ref) && distance < 2000.0f))
 													local_ignore_raycast = true;
 
 												if (jail_condition_all || local_ignore_raycast || ignore_raycast || MiscThings::raycastable(a_ref, scan_distance, false))

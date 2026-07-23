@@ -24,8 +24,8 @@
 
 
 //dragon-doesnt-land-go-find-some-landing-area?
+//try adding some movement in melee combat
 
-//check solitude lighthouse robbery the lighthouse fire returns no shift in looking_point_shift
 
 
 ///////////////////////
