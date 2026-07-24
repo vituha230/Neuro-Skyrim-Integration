@@ -471,7 +471,7 @@ namespace MiscThings {
     bool is_novice_destruction_spell(RE::SpellItem* spell);
 
     RE::NiPoint3 projectile_flying_into_player_face();
-
+    std::pair<RE::NiPoint3, bool> about_to_be_hit_by_melee_attack();
 
     bool is_self_cast_spell(bool right);
 

@@ -24,8 +24,15 @@
 
 
 //dragon-doesnt-land-go-find-some-landing-area?
-//try adding some movement in melee combat
 
+
+//combat-only commands? that appear instead of map/wait? (they should be super compact, maybe even no description)
+//candidate commands:
+//tactical retreat (run away from enemies for a little)/full retreat (plain runaway action)
+//adjust dodge intensity (something like "prefer dodging attacks/prefer dealing more damage but not dodge so much") - probably needs proper melee-type dodging since current version is completely useless for pure melee combat
+//change focus - attack lowest hp enemy/attack nearest enemy/attack highest hp enemy/attack farthest enemy
+
+//about dodging - maybe add jumps/crouch too
 
 
 ///////////////////////

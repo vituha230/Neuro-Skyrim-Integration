@@ -161,7 +161,7 @@ namespace WalkerProcessor {
 
 	std::string get_equipped_spell_name(bool right);
 
-	RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target, bool sit_correction = true);
+	RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target, bool sit_correction = true, bool dont_touch_walker = true);
 
 	float get_attack_time(bool right);
 	

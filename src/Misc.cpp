@@ -61,6 +61,195 @@ namespace MiscThings {
 
 
 
+
+
+
+    std::pair<RE::NiPoint3, bool> about_to_be_hit_by_melee_attack()
+    {
+        auto player = RE::PlayerCharacter::GetSingleton();
+        std::pair<RE::NiPoint3, bool> result{};
+
+        if (player)
+        {
+            RE::TES::GetSingleton()->ForEachReferenceInRange(player, 1000.0f,
+                //player->GetParentCell()->ForEachReferenceInRange(player->GetPosition(), 3000.0,
+                [&](RE::TESObjectREFR* a_ref) {
+
+                    if (a_ref && !a_ref->IsDisabled())
+                    {
+                        //auto base_obj = a_ref->GetBaseObject();
+
+                        if (a_ref->IsActor() && a_ref != player)
+                        {
+                            auto actor_ref = (RE::Actor*)a_ref;
+
+                            auto controller = actor_ref->combatController;
+
+                            if (controller)
+                            {
+                                auto target_handle = controller->targetHandle;
+                                auto target_ref = RE::TESObjectREFR::LookupByHandle(target_handle.native_handle());
+
+                                if (target_ref && target_ref.get() == player)
+                                {
+                                    auto attack_state = actor_ref->GetAttackState();
+
+                                    //Hooks::add_debug_line(std::to_string((uint32_t)attack_state), true);
+
+                                    if (actor_ref->GetAttackState() == RE::ATTACK_STATE_ENUM::kDraw || actor_ref->GetAttackState() == RE::ATTACK_STATE_ENUM::kSwing)// || actor_ref->GetAttackState() == RE::ATTACK_STATE_ENUM::kHit)
+                                    {
+                                        
+
+                                        auto actor_3d = actor_ref->Get3D();
+
+                                        if (actor_3d)
+                                        {
+                                            auto actor_pos = actor_ref->GetPosition();
+
+                                            actor_pos.z = player->GetPosition().z + 70.0f;
+
+                                            auto attack_vector = actor_3d->world.rotate.GetVectorY();
+
+                                            if (MiscThings::is_dragon(a_ref))
+                                            {
+                                                auto controller = actor_ref->combatController;
+                                                if (controller)
+                                                {
+                                                    auto target_handle = controller->targetHandle;
+                                                    auto target_ref = RE::TESObjectREFR::LookupByHandle(target_handle.native_handle());
+                                                    if (target_ref && target_ref.get() == player)
+                                                    {
+                                                        auto player_pos = player->GetPosition();
+                                                        attack_vector = player_pos - actor_pos;
+                                                    }
+                                                }
+                                            }
+
+
+                                            attack_vector.z = 0.0f;
+
+                                            RE::CFilter cFilter_info{};
+                                            actor_ref->GetCollisionFilterInfo(cFilter_info);
+                                            auto group = cFilter_info.GetSystemGroup();
+
+                                            uint32_t filter = 0x110 + (group << 16);
+
+                                            float dragon_bonus = MiscThings::is_dragon(a_ref) * 300.0f;
+
+                                            auto raycast_ref = MiscThings::GetRaycastRef(actor_pos, attack_vector, actor_ref->GetAttackReach() + 50.0f + dragon_bonus, nullptr, filter);
+
+                                            //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                                            //DebugAPI_IMPL::DrawDebug::draw_line(actor_pos, actor_pos + attack_vector * (actor_ref->GetAttackReach() + 50.0f + dragon_bonus));
+                                            //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+
+                                            if (raycast_ref == player)
+                                            {
+                                                result.first = attack_vector;
+                                                result.second = actor_ref->GetAttackReach() > 200.0f;
+                                                return RE::BSContainer::ForEachResult::kStop;
+                                            }
+                                        }
+
+
+                                        /*
+                                        auto actor_3d = actor_ref->Get3D();
+
+                                        if (actor_3d)
+                                        {
+                                            if (actor_ref->currentProcess)
+                                                if (actor_ref->currentProcess->middleHigh)
+                                                    if (actor_ref->currentProcess->middleHigh->torsoNode)
+                                                    {
+                                                        auto actor_pos = actor_ref->currentProcess->middleHigh->torsoNode->world.translate;
+
+                                                        auto attack_vector = actor_3d->world.rotate.GetVectorY();
+
+                                                        attack_vector.z = 0.0f;
+
+                                                        RE::CFilter cFilter_info{};
+                                                        actor_ref->GetCollisionFilterInfo(cFilter_info);
+                                                        auto group = cFilter_info.GetSystemGroup();
+
+                                                        uint32_t filter = 0x110 + (group << 16);
+
+                                                        auto raycast_ref = MiscThings::GetRaycastRef(actor_pos, attack_vector, actor_ref->GetAttackReach() + 30.0f, nullptr, filter);
+
+                                                        DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                                                        DebugAPI_IMPL::DrawDebug::draw_line(actor_pos, actor_pos + attack_vector * (actor_ref->GetAttackReach() + 30.0f));
+                                                        DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+
+
+
+                                                        if (raycast_ref == player)
+                                                        {
+                                                            result = attack_vector;
+                                                            return RE::BSContainer::ForEachResult::kStop;
+                                                        }
+
+                                                    }
+                                        }
+                                        */
+                                    }
+                                }
+                            }
+                        }
+
+
+
+
+                            
+
+                            /*
+                            if (std::size(projectile_ref->impacts) <= 0)
+                            {
+                                RE::NiPoint3 projectile_fly_vector{};
+
+                                if (a_ref->Get3D())
+                                    projectile_fly_vector = a_ref->Get3D()->world.rotate.GetVectorY();
+                                else
+                                    return RE::BSContainer::ForEachResult::kContinue;
+                                ;// projectile_fly_vector = a_ref->data.angle;
+
+                                auto projectile_pos = a_ref->GetPosition();
+
+                                auto projectile = (RE::BGSProjectile*)base_obj;
+
+                                if (projectile->data.types != RE::BGSProjectileData::Type::kFlamethrower)
+                                {
+                                    auto col_layer = projectile->data.collisionLayer;
+
+
+                                    auto raycast_ref = MiscThings::GetRaycastRef(projectile_pos, projectile_fly_vector, 3000.0f, nullptr, 0b00001000000000000000000000000110);
+
+                                    //DebugAPI_IMPL::DebugAPI::GetSingleton()->LinesToDraw.clear();
+                                    //DebugAPI_IMPL::DrawDebug::draw_line(projectile_pos, projectile_pos + projectile_fly_vector * 500.0f);
+                                    //DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
+
+
+                                    if (raycast_ref == player)
+                                    {
+                                        result = projectile_fly_vector;
+                                        return RE::BSContainer::ForEachResult::kStop;
+                                    }
+                                }
+                            }
+
+                            */
+
+                    }
+                    return RE::BSContainer::ForEachResult::kContinue;
+                });
+        }
+
+        return result;
+    }
+
+
+
+
+
+
+
     RE::NiPoint3 projectile_flying_into_player_face()
     {
         auto player = RE::PlayerCharacter::GetSingleton();

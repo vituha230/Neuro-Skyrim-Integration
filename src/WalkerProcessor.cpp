@@ -341,7 +341,8 @@ namespace WalkerProcessor {
     bool do_dodge_projectile = false;
     RE::NiPoint3 dodge_projectile_direction{};
     int dodge_projectile_allowed_dirs = 0;
-
+    bool dodge_melee_mode = false;
+    bool dodge_melee_mode_enemy_long_reach = false;
 
     float attack_spell_cast_timeout = 0.0f;
 
@@ -426,6 +427,7 @@ namespace WalkerProcessor {
 
     bool attack_paused = false;
     float attack_pause_time = 0.0f;
+    float attack_postpause_time = 0.0f;
 
     bool got_close_for_pickpocket = false;
 
@@ -1239,8 +1241,13 @@ namespace WalkerProcessor {
 
                 
 
-                if (!weapon_state_ban || attack_pause_time > 1.0f)
+                if ((!weapon_state_ban && attack_postpause_time > 0.5f) || attack_pause_time > 5.0f)
                     return true;
+
+
+                if (!weapon_state_ban)
+                    attack_postpause_time += dtime;
+
 
                 attack_pause_time += dtime;
                 
@@ -1254,6 +1261,7 @@ namespace WalkerProcessor {
     void unpause_attacking()
     {
         attack_pause_time = 0.0f;
+        attack_postpause_time = 0.0f;
         attack_paused = false;
         attack_was_not_banned = false;
 
@@ -2518,6 +2526,12 @@ namespace WalkerProcessor {
 
         if (lock_camera_while_walking)
             lock_camera_onto_target(target_ref, dtime_maybe_bad);
+
+        if (do_dodge_projectile && dodge_melee_mode)
+            {
+                lock_camera_onto_target(target_ref, dtime_maybe_bad);
+                return;
+            }
 
 
         bool stealth_walking = is_stealthwalking(sneak_probe_sneak_checked);
@@ -4066,7 +4080,7 @@ namespace WalkerProcessor {
 
 
 
-    RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target, bool sit_correction)
+    RE::NiPoint3 get_estimate_aim_pos(RE::TESObjectREFR* target, bool sit_correction, bool dont_touch_walker)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
 
@@ -4188,21 +4202,31 @@ namespace WalkerProcessor {
         if (lookat_used)
         {
             if (MiscThings::is_dragon(target) && !is_fighting())
-                dont_use_bounds_for_close_enough = true;
+            {
+                if (!dont_touch_walker)
+                    dont_use_bounds_for_close_enough = true;
+            }
         }
 
 
         if (specific_shift != RE::NiPoint3::Zero())
         {
             if (!must_use_bounds && !(MiscThings::is_dragon(target) && is_fighting()))
-                dont_use_bounds_for_close_enough = true;
+                if (!dont_touch_walker)
+                    dont_use_bounds_for_close_enough = true;
 
             target_center += specific_shift;
         }
 
 
         if (MiscThings::is_inventory_object(target) && !must_use_bounds)
-            dont_use_bounds_for_close_enough = true;
+            if (!dont_touch_walker)
+                dont_use_bounds_for_close_enough = true;
+
+
+        if (MiscThings::is_dragon(target) && is_fighting())
+            if (!dont_touch_walker)
+                dont_use_bounds_for_close_enough = false;
 
         auto path_point_pos = target_center;
 
@@ -4466,6 +4490,9 @@ namespace WalkerProcessor {
         {
             if (MiscThings::is_dragon(target) && !is_fighting())
                 dont_use_bounds_for_close_enough = true;
+            else
+                if (MiscThings::is_dragon(target) && is_fighting())
+                    dont_use_bounds_for_close_enough = false;
         }
 
         
@@ -5892,6 +5919,7 @@ namespace WalkerProcessor {
 
         attack_paused = false;
         attack_pause_time = 0.0f;
+        attack_postpause_time = 0.0f;
         got_close_for_pickpocket = false;
 
         search_next_fight_target = false;
@@ -6167,7 +6195,12 @@ namespace WalkerProcessor {
         bool result = false;
         auto player = RE::PlayerCharacter::GetSingleton();
 
-        if (dodge_projectile_time < 0.3f && player)
+        float threshold = 0.3f;
+
+        if (dodge_melee_mode)
+            threshold = 0.4f;
+
+        if (dodge_projectile_time < threshold && player)
         {
             dodge_projectile_time += dtime;
 
@@ -6178,7 +6211,12 @@ namespace WalkerProcessor {
                 auto camera = RE::PlayerCamera::GetSingleton();
 
                 if (!camera || !camera->cameraRoot.get())
+                {
+                    dodge_melee_mode_enemy_long_reach = false;
+                    dodge_melee_mode = false; //so it doesnt block attack_target's attempt to come closer
                     return true;
+                }
+                    
 
                 auto camera_dir = camera->cameraRoot.get()->world.rotate.GetVectorY();
 
@@ -6199,6 +6237,7 @@ namespace WalkerProcessor {
                 float r = 1.0f;
                 float pi = RE::NI_PI;
 
+                float highest_dotproduct = -FLT_MAX;
                 float lowest_dotproduct = FLT_MAX;
                 int best_dir = -1;
 
@@ -6208,32 +6247,92 @@ namespace WalkerProcessor {
                     {
                         RE::NiPoint3 test_dir = { r * std::cos(pi / 4 * i + shift), r * std::sin(pi / 4 * i + shift), 0.0f };
 
-                        auto dotproduct = abs(test_dir.Dot(projectile_vector));
+                        auto dotproduct = test_dir.Dot(projectile_vector);
 
-                        if (dotproduct < lowest_dotproduct)
+
+                        if (dodge_melee_mode && !(dodge_melee_mode_enemy_long_reach && is_fighting() && !has_ranged_weapon_equipped(get_current_active_hand())))
                         {
-                            lowest_dotproduct = dotproduct;
-                            best_dir = i;
+                            if (dotproduct > highest_dotproduct)
+                            {
+                                highest_dotproduct = dotproduct;
+                                best_dir = i;
+                            }
                         }
+                        else
+                        {
+                            if (!(dodge_melee_mode_enemy_long_reach && is_fighting() && !has_ranged_weapon_equipped(get_current_active_hand())))
+                                dotproduct = abs(dotproduct);
+
+                            if (dotproduct < lowest_dotproduct)
+                            {
+                                lowest_dotproduct = dotproduct;
+                                best_dir = i;
+                            }
+                        }
+
                     }
 
                 }
 
                 if (best_dir >= 0 && best_dir < 8)
                 {
-                    int best_dir_opposite = (best_dir + 4) % 8;
 
-                    if (MiscThings::getbit(dodge_projectile_allowed_dirs, best_dir_opposite))
+                    if (dodge_melee_mode)
                     {
-                        float dodge_direction_chance = (float)std::rand() / RAND_MAX;
+                        //melee
+                        if (dodge_melee_mode_enemy_long_reach && is_fighting() && !has_ranged_weapon_equipped(get_current_active_hand())) //for long reach we duck left or right to the enemy instead but not straight forward
+                        {
+                            int best_dir_adjacent1 = (best_dir + 1) % 8;
+                            int best_dir_adjacent2 = (best_dir - 1) % 8;
 
-                        if (dodge_direction_chance < 0.5)
-                            dodge_direction = best_dir;
+                            //float dodge_direction_chance = (float)std::rand() / RAND_MAX;
+
+                            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+
+                            bool rotate_left = ((int)(((double)now / 1000000000.0) / 60.0)) % 2;
+
+
+                            if (rotate_left && MiscThings::getbit(dodge_projectile_allowed_dirs, best_dir_adjacent1))
+                                dodge_direction = best_dir_adjacent1;
+                            else
+                                if (MiscThings::getbit(dodge_projectile_allowed_dirs, best_dir_adjacent2))
+                                    dodge_direction = best_dir_adjacent2;
+                        }
                         else
-                            dodge_direction = best_dir_opposite;
+                        {
+                            int best_dir_adjacent1 = (best_dir + 1) % 8;
+                            int best_dir_adjacent2 = (best_dir - 1) % 8;
+
+                            float dodge_direction_chance = (float)std::rand() / RAND_MAX;
+
+                            if (dodge_direction_chance < 1.0f / 3.0f && MiscThings::getbit(dodge_projectile_allowed_dirs, best_dir_adjacent1))
+                                dodge_direction = best_dir_adjacent1;
+                            else
+                                if (dodge_direction_chance < 2.0f / 3.0f && MiscThings::getbit(dodge_projectile_allowed_dirs, best_dir_adjacent2))
+                                    dodge_direction = best_dir_adjacent2;
+                                else
+                                    dodge_direction = best_dir;
+                        }
+
+
                     }
                     else
-                        dodge_direction = best_dir;
+                    {
+                        //projectile
+                        int best_dir_opposite = (best_dir + 4) % 8;
+                        if (MiscThings::getbit(dodge_projectile_allowed_dirs, best_dir_opposite))
+                        {
+                            float dodge_direction_chance = (float)std::rand() / RAND_MAX;
+
+                            if (dodge_direction_chance < 0.5)
+                                dodge_direction = best_dir;
+                            else
+                                dodge_direction = best_dir_opposite;
+                        }
+                        else
+                            dodge_direction = best_dir;
+                    }
+
 
                 }
             }
@@ -6242,6 +6341,8 @@ namespace WalkerProcessor {
             {
                 dodge_projectile_time = 0.0f;
                 dodge_direction = -1;
+                dodge_melee_mode = false; //so it doesnt block attack_target's attempt to come closer
+                dodge_melee_mode_enemy_long_reach = false;
                 return true; //could not decide
             }
                 
@@ -6307,6 +6408,8 @@ namespace WalkerProcessor {
             //else
             //    dodge_direction = 0;
 
+            dodge_melee_mode = false; //so it doesnt block attack_target's attempt to come closer
+            dodge_melee_mode_enemy_long_reach = false;
             result = true;
         }
 
@@ -6674,7 +6777,7 @@ namespace WalkerProcessor {
                             camera_pos.z -= 34.0669f;
 
 
-                        auto aim_pos = get_estimate_aim_pos(target_ref);
+                        auto aim_pos = get_estimate_aim_pos(target_ref, true, false);
 
                         auto delta_pos = aim_pos - camera_pos;
 
@@ -6688,7 +6791,6 @@ namespace WalkerProcessor {
                         DebugAPI_IMPL::DrawDebug::draw_line(camera_pos_debug, aim_pos);
                         DebugAPI_IMPL::DebugAPI::GetSingleton()->Update();
                         */
-
 
 
                         float range = get_weapon_range(get_current_active_hand());
@@ -6808,6 +6910,7 @@ namespace WalkerProcessor {
 
                     if (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode) || MiscThings::is_dragon(target_ref)) //melee only
                     {
+
 
                         auto bound_max = target_ref->GetBoundMax() * target_ref->GetScale();
                         auto bound_min = target_ref->GetBoundMin() * target_ref->GetScale();
@@ -11699,7 +11802,10 @@ namespace WalkerProcessor {
 
                             send_random_context("You are using the shout: " + shout_name);
                             MiscThings::cast_spell_by_refr((RE::SpellItem*)shout_to_use);
-                            reset_walker();
+
+                            if (target_ref && target_ref->formID == 0xdb9d7) //blackreach sun
+                                reset_walker();
+
                             return true;
                         }
                         else
@@ -11787,26 +11893,6 @@ namespace WalkerProcessor {
                 return false;
             }
         }
-
-
-        if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && !target_ref->IsDead())// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)) && !target_ref->IsDead())
-        {
-            float weapon_range = get_weapon_range(get_current_active_hand());
-            auto player_pos = player->GetPosition();
-            auto target_pos = target_ref->GetPosition();
-
-            if (player_pos.GetDistance(target_pos) > get_weapon_range(get_current_active_hand()))
-            {
-                if (was_charging_ranged)
-                    cancel_charge_weapon();
-
-                return false;
-            }
-                
-        }
-            
-
-
 
 
 
@@ -11936,6 +12022,44 @@ namespace WalkerProcessor {
 
 
             bool dualhanding_two_weapons = is_melee_weapon(false) && is_melee_weapon(true) && !is_twohanded_weapon(true) && !MiscThings::player_brawling();
+
+
+
+
+
+            if (MiscThings::is_dragon(target_ref) && MiscThings::is_flying(target_ref) && !target_ref->IsDead())// && (!(has_ranged_weapon_equipped(get_current_active_hand()) || shout_mode)) && !target_ref->IsDead())
+            {
+                float weapon_range = get_weapon_range(get_current_active_hand());
+                auto player_pos = player->GetPosition();
+                auto target_pos = target_ref->GetPosition();
+
+                if (player_pos.GetDistance(target_pos) > get_weapon_range(get_current_active_hand()))
+                {
+                    if (!(player_pos.GetDistance(target_pos) > get_weapon_range(!get_current_active_hand()))) //check other hand
+                    {
+                        if (attack_action == 0)
+                            if (!left_is_useless && !low_mana_detected_left)
+                                attack_action = 1;
+                        else
+                            if (attack_action == 1)
+                                if (!right_is_useless && !low_mana_detected_right)
+                                    attack_action = 0;
+                    }
+
+
+
+                    if (was_charging_ranged)
+                        cancel_charge_weapon();
+
+                    return false;
+                }
+
+            }
+
+
+
+
+
 
 
 
@@ -12299,8 +12423,9 @@ namespace WalkerProcessor {
                                     {
                                         no_weapon = true;
                                         attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                        if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
-                                            cursor_up();
+                                        if (!(dodge_melee_mode && do_dodge_projectile))
+                                            if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
+                                                cursor_up();
                                     }
                                     else
                                     {
@@ -12315,8 +12440,9 @@ namespace WalkerProcessor {
                                         }
 
 
-                                        if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
-                                            cursor_up();
+                                        if (!(dodge_melee_mode && do_dodge_projectile))
+                                            if (is_melee_weapon(true) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
+                                                cursor_up();
                                     }
                                 }
 
@@ -12798,8 +12924,9 @@ namespace WalkerProcessor {
                                     if ((!MiscThings::has_something_equipped(false) && MiscThings::has_something_equipped(true) && is_melee_weapon(true)) || (left_contents && left_contents->IsArmor()))
                                     {
                                         attacking_info = "[You are blocking";
-                                        if (player->GetDistance(target_ref, true) > 100.0f)
-                                            cursor_up();
+                                        if (!(dodge_melee_mode && do_dodge_projectile))
+                                            if (player->GetDistance(target_ref, true) > 100.0f)
+                                                cursor_up();
                                     }
                                     else
                                     {
@@ -12813,8 +12940,9 @@ namespace WalkerProcessor {
                                             {
                                                 no_weapon = true;
                                                 attacking_weapon = "bare fist. You might want to equip some weapon or magic (use get_inventory and use_inventory_item to equip gear). ";
-                                                if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
-                                                    cursor_up();
+                                                if (!(dodge_melee_mode && do_dodge_projectile))
+                                                    if (player->GetDistance(target_ref, true) > 80.0f * target_ref->GetScale())
+                                                        cursor_up();
                                             }
                                             else
                                             {
@@ -12826,8 +12954,9 @@ namespace WalkerProcessor {
                                                 else
                                                     attacking_weapon = get_equipped_weapon_name(false) + ". ";
 
-                                                if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
-                                                    cursor_up();
+                                                if (!(dodge_melee_mode && do_dodge_projectile))
+                                                    if (is_melee_weapon(false) && player->GetDistance(target_ref, true) > 100.0f * target_ref->GetScale() && (!is_stealthwalking(sneak_probe_sneak_checked) || sneak_failed))
+                                                        cursor_up();
                                             }
                                         }
                                     }
@@ -16178,48 +16307,92 @@ namespace WalkerProcessor {
                 return;
             }
 
-            auto projectile_dir = MiscThings::projectile_flying_into_player_face();
 
-            if (projectile_dir != RE::NiPoint3::Zero())
-            {
-                int allowed_dirs = MiscThings::safe_to_dodge_projectile();
 
-                if (allowed_dirs)
+            //copy this for melee, change function so it dodges alongside attack vector. this is good
+
+                auto projectile_dir = MiscThings::projectile_flying_into_player_face();
+
+                if (projectile_dir == RE::NiPoint3::Zero())
                 {
-                    do_dodge_projectile = true;
-                    dodge_projectile_direction = projectile_dir;
-                    dodge_projectile_allowed_dirs = allowed_dirs;
+                    auto temp = MiscThings::about_to_be_hit_by_melee_attack();
+                    projectile_dir = temp.first;
 
-
-                    long long now = std::chrono::steady_clock::now().time_since_epoch().count();;
-                    float delta_dodge_info = (double)(now - last_dodge_info_timestamp) / 1000000000.0;
-
-                    if (delta_dodge_info > 5.0f)
+                    if (projectile_dir != RE::NiPoint3::Zero())
                     {
-                        if (MiscThings::coinflip())
-                            send_random_context("You are dodging...", true);
-
-                        last_dodge_info_timestamp = now;
+                        dodge_melee_mode = true;
+                        dodge_melee_mode_enemy_long_reach = temp.second;
                     }
+                    else
+                        if (!do_dodge_projectile)
+                        {
+                            dodge_melee_mode = false;
+                            dodge_melee_mode_enemy_long_reach = false;
+                        }
+                            
 
-
-
-                    //if (allowed_dirs == 1)
-                    //    dodge_direction = 0;
-
-                    //if (allowed_dirs == 2)
-                    //    dodge_direction = 1;
                 }
-                    
-            }
+                else
+                    if (!do_dodge_projectile)
+                    {
+                        dodge_melee_mode = false;
+                        dodge_melee_mode_enemy_long_reach = false;
+                    }
+                        
 
-            if (do_dodge_projectile)
-            {
-                if (dodge_projectile(dtime))
+
+                if (projectile_dir != RE::NiPoint3::Zero())
                 {
-                    do_dodge_projectile = false;
+                    int allowed_dirs = MiscThings::safe_to_dodge_projectile();
+
+                    if (allowed_dirs)
+                    {
+                        do_dodge_projectile = true;
+                        dodge_projectile_direction = projectile_dir;
+                        dodge_projectile_allowed_dirs = allowed_dirs;
+
+
+                        long long now = std::chrono::steady_clock::now().time_since_epoch().count();;
+                        float delta_dodge_info = (double)(now - last_dodge_info_timestamp) / 1000000000.0;
+
+                        if (delta_dodge_info > 5.0f)
+                        {
+                            if (MiscThings::coinflip() && MiscThings::coinflip())
+                                if (MiscThings::coinflip())
+                                    send_random_context("You are dodging...", true);
+                                else
+                                    send_random_context("You are evading attack...", true);
+
+                            last_dodge_info_timestamp = now;
+                        }
+
+
+
+                        //if (allowed_dirs == 1)
+                        //    dodge_direction = 0;
+
+                        //if (allowed_dirs == 2)
+                        //    dodge_direction = 1;
+                    }
+                    else
+                        if (!do_dodge_projectile)
+                        {
+                            dodge_melee_mode = false;
+                            dodge_melee_mode_enemy_long_reach = false;
+                        }
+                            
+
                 }
-            }
+
+                if (do_dodge_projectile)
+                {
+                    if (dodge_projectile(dtime))
+                    {
+                        dodge_projectile_time = 0.0f;
+                        do_dodge_projectile = false;
+                    }
+                }
+            
 
 
 
