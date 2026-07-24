@@ -12037,6 +12037,15 @@ namespace WalkerProcessor {
                 {
                     if (!(player_pos.GetDistance(target_pos) > get_weapon_range(!get_current_active_hand()))) //check other hand
                     {
+
+                        if (low_mana_detected_right && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f) && (MiscThings::get_player_mana() > WalkerProcessor::get_spell_cost(true)))
+                            low_mana_detected_right = false;
+
+                        if (low_mana_detected_left && (MiscThings::get_player_mana() > MiscThings::get_player_max_mana() * 0.3f) && (MiscThings::get_player_mana() > WalkerProcessor::get_spell_cost(false)))
+                            low_mana_detected_left = false;
+
+
+
                         if (attack_action == 0)
                             if (!left_is_useless && !low_mana_detected_left)
                                 attack_action = 1;
