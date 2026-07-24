@@ -2080,7 +2080,7 @@ namespace Observer {
 
 										auto word_of_power = MiscThings::get_word_of_power(a_ref);
 
-										if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1))
+										if (word_of_power && word_of_power != (RE::TESObjectREFR*)(-1) && MiscThings::is_object_valid(a_ref))
 										{
 											std::string info = MiscThings::insert_object_into_list_custom_name("Word of Power, calling for you", a_ref);
 											if (info != "")
