@@ -4928,7 +4928,7 @@ namespace Observer {
 						if (old_right_hand)
 							if (old_right_hand->GetFormType() == RE::FormType::Weapon)
 							{
-								if (player->GetItemCount((RE::TESBoundObject*)old_right_hand) > 0)
+								if (player->GetItemCount((RE::TESBoundObject*)old_right_hand) > 0 && (left_hand != old_right_hand || player->GetItemCount((RE::TESBoundObject*)old_right_hand) > 1))
 									player_equip->EquipObject(player, (RE::TESBoundObject*)old_right_hand, nullptr, 1, left_slot, true, false, false);
 							}
 							else
@@ -4944,7 +4944,7 @@ namespace Observer {
 						if (old_left_hand)
 							if (old_left_hand->GetFormType() == RE::FormType::Weapon)
 							{
-								if (player->GetItemCount((RE::TESBoundObject*)old_left_hand) > 0)
+								if (player->GetItemCount((RE::TESBoundObject*)old_left_hand) > 0 && (right_hand != old_left_hand || player->GetItemCount((RE::TESBoundObject*)old_left_hand) > 1))
 									player_equip->EquipObject(player, (RE::TESBoundObject*)old_left_hand, nullptr, 1, left_slot, true, false, false);
 							}
 							else
