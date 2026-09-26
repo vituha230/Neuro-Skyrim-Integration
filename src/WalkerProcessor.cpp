@@ -5666,11 +5666,12 @@ namespace WalkerProcessor {
             }
             else
             {
-                float threshold = 5.0f;
+                //float threshold = 5.0f;
 
-                threshold = std::max(1.0f, 5.0f * speed_koef + MiscThings::is_werewolf() * 10.0f);
+                float thresholdX = std::max(1.0f, 5.0f * speed_koef + MiscThings::is_werewolf() * 10.0f);
+                float thresholdY = std::max(1.0f, 5.0f * speed_koef + MiscThings::is_werewolf() * 20.0f);
 
-                if (abs(mouse_x) < threshold && abs(mouse_y) < threshold)
+                if (abs(mouse_x) < thresholdX && abs(mouse_y) < thresholdY)
                     return true;
             }
 
@@ -13664,8 +13665,7 @@ namespace WalkerProcessor {
     bool attack_target(float dtime)
     {
         auto player = RE::PlayerCharacter::GetSingleton();
-        RE::BSAnimationGraphManagerPtr my_ptr;
-        auto anim_graph_manager = player->GetAnimationGraphManager(my_ptr);
+
 
         if ((MiscThings::is_werewolf() || MiscThings::is_vampirelord()) && MiscThings::killcam_active())
         {
@@ -13681,6 +13681,35 @@ namespace WalkerProcessor {
                 //auto kill2 = (RE::TESIdleForm*)RE::TESForm::LookupByID(0x10d17e);
                 
                 player->SetCollision(false);
+
+
+                //auto current_combat_target = player->currentCombatTarget;
+                //if (current_combat_target && current_combat_target.get() && current_combat_target.get().get())
+                //{
+                //    auto current_combat_target_ref = current_combat_target.get().get();
+                //    //current_combat_target_ref->SetCollision(false); //victim too //THIS IS NOT VICTIM IT TAKES ENEMIES WHO ARE ATTACKING US. a bunch of npcs around lost their collision + it was NOT restored
+                //}
+
+                /*
+                RE::BSAnimationGraphManagerPtr my_ptr;
+                auto anim_graph_manager = player->GetAnimationGraphManager(my_ptr);
+                
+                if (my_ptr)
+                {
+                    if (my_ptr->activeGraph < my_ptr->graphs.size())
+                    {
+                        auto test_graph = my_ptr->graphs[my_ptr->activeGraph];
+
+
+                        if (test_graph)
+                        {
+                            //test_graph->physicsWorld->toggleCollision = false;
+                        }
+                    }
+                }
+                */
+
+                //(*((RE::hkArrayBase<RE::hkStringPtr>*)&test_graph._ptr->characterInstance.setup._ptr->data._ptr->stringData._ptr->animationNames))._data->_data = ..\SharedKillMoves\Human&Werewolf\paired_ww_pairedfeedingwithhuman.hkx
 
                 //player->UpdateAnimation(0.016f); //this speeds up that one animation but doesnt look like it affects others
 
@@ -14600,12 +14629,71 @@ namespace WalkerProcessor {
 
             if (attack_action < 0 || attack_action > 1)
             {
-                attack_action = dont_use_right;
+
+                if (MiscThings::is_werewolf() && player->IsSprinting())
+                {
+                    try_power_attack = false;
+                }
+                else
+                {
+                    if (!try_power_attack)
+                    {
+                        float power_attack_chance = (float)std::rand() / RAND_MAX;
+                        if (power_attack_chance > 0.5)
+                        {
+                            if (MiscThings::is_werewolf() && MiscThings::coinflip())
+                                must_powerattack_front = true;
+                            else
+                                must_powerattack_front = false;
+
+                            try_power_attack = true;
+                        }
+                    }
+
+                    if (fight_versus_dangerous_mage_power_attack_if_possible)
+                        try_power_attack = true;
+                }
+
+
+                float dual_attack_chance = (float)std::rand() / RAND_MAX;
+
+                if (attack_target_needs_to_come_closer && target_ref->IsActor() && target_ref->IsHumanoid())
+                    dual_attack_chance = 0.0f;
+
+                if ((dualhanding_two_weapons || MiscThings::is_werewolf()) && dual_attack_chance > 0.4)// && !(MiscThings::is_werewolf() && try_power_attack))
+                    try_dual_attack = true;
+
+
+
+
+                float choose_next_action = (float)std::rand() / RAND_MAX;
+                float chance = 0.2f;
+
+                if ((dualhanding_two_weapons || MiscThings::is_werewolf()))
+                    chance = 0.49f;
+
+                if (staff_of_magnus_in_left)
+                    chance = 0.03;
+
+                if ((choose_next_action < chance && !dont_use_left) || dont_use_right)
+                    attack_action = 1;
+                else
+                    attack_action = 0;
+
+                if (!MiscThings::has_something_equipped(false) && (MiscThings::is_werewolf() || MiscThings::is_vampirelord()))
+                {
+                    chance = 0.44f;
+                    if (choose_next_action < chance)
+                        attack_action = 1;
+                    else
+                        attack_action = 0;
+                }
 
                 int nettlebane_hand = MiscThings::get_nettlebane_hand_for_target(target_ref);
                 if (nettlebane_hand >= 0)
                     attack_action = !(bool)nettlebane_hand; //not bitwise
-            } 
+
+            }
 
             float stamina_state = MiscThings::get_player_stamina();// / MiscThings::get_player_max_stamina();
 

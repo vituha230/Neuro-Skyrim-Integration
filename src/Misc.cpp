@@ -106,22 +106,55 @@ namespace MiscThings {
 
     bool killcam_active()
     {
+        /*
+        bool camera_test = true;
+
         auto camera = RE::PlayerCamera::GetSingleton();
         if (camera)
         {
             auto camera_state = camera->currentState;
             if (camera_state)
             {
-                if (camera_state->id != RE::CameraStates::CameraState::kThirdPerson)
-                    bool stop_here = false;
-
-                return camera_state->id == RE::CameraStates::CameraState::kAnimated || camera_state->id == RE::CameraStates::CameraState::kPCTransition;
+                camera_test = camera_state->id == RE::CameraStates::CameraState::kAnimated || camera_state->id == RE::CameraStates::CameraState::kPCTransition;
             }
         }
+        */
 
-        //auto vats = RE::VATS::GetSingleton();
-        //if (vats)
-        //    return vats->mode == RE::VATS::VATS_MODE::kKillCam;
+
+        auto player = RE::PlayerCharacter::GetSingleton();
+        RE::BSAnimationGraphManagerPtr my_ptr;
+        auto anim_graph_manager = player->GetAnimationGraphManager(my_ptr);
+
+        if (my_ptr)
+        {
+            if (my_ptr->activeGraph < my_ptr->graphs.size())
+            {
+                auto test_graph = my_ptr->graphs[my_ptr->activeGraph];
+
+
+                if (test_graph)
+                {
+                        if (test_graph->characterInstance.setup && test_graph->characterInstance.setup->data && test_graph->characterInstance.setup->data->stringData && test_graph->characterInstance.setup->data->stringData->animationNames._data->size() > 0)
+                        {
+                            std::string anim_name = test_graph->characterInstance.setup->data->stringData->animationNames._data[0].c_str();
+
+                            if (anim_name.find("paired_ww_pairedfeedingwithhuman") != std::string::npos ||
+                                anim_name.find("paired_ww_pairedmaulingwithhuman") != std::string::npos ||
+                                anim_name.find("paired_ww_pairedheadthrow") != std::string::npos ||
+                                anim_name.find("paired_ww_pairedheadsmash") != std::string::npos
+                                )
+
+                            {
+                                bool test123 = false;
+                                player->GetGraphVariableBool("bIsSynced", test123);
+
+                                return test123;
+                            }
+                                
+                        }
+                }
+            }
+        }
 
         return false;
     }

@@ -11,11 +11,11 @@
 //TODO polish thief guild (potential softlock due to anti-drown in mercer fight, no info in the well of nocturnal sanctum, maybe fix goldenglow pathfinding)
 //TODO polish dark brotherhood (test alternative paths (kill astrid right away, dont kill captain when caught killing fake emperor, accept emperors offer to kill the client), orc drag mechanic
 //TODO polish civil war (ambush quest sometimes the soldier cannot hit the enemy)
-//TODO polish companions (maybe add jorwaskr as an interesting place to whiterun.. or make some kind of bridge-quest when player didnt take new quest right away. maybe test more locations for silverhands)
+//TODO polish companions (maybe add jorwaskr as an interesting place to whiterun; test more locations for silverhands)
 
 //TODO polish dragonborn dlc
 // 1st book apocrypha polish (walk through passages along their bones)
-// 2nd book apocrypha polish (walk through passages along their bones, check 1st hermaeus mora encounter ("find face" function), maybe make fully free navigation through zone1)
+// 2nd book apocrypha polish (walk through passages along their bones, maybe make fully free navigation through zone1)
 
 //TODO polish dawnguard dlc 
 // improve harkon fight to let us actually use the bow even though its beatable without it, fix constant "cant walk there" pathfinding death during fight
@@ -74,14 +74,9 @@
 
 //werewolf still freezes sometimes
 
-//fix werewolf combat (killcam)
-
 //do something with dodge mechanism going crazy when surrounded by enemies
 
 //raised zombies count as enemies sometimes (silver hands for example)
-//check autosave after wait
-
-
 //remember bad corpses for resurrection (those who are too powerful) and dont target them again automatically (maybe just filter in get_nearest_corpse function, it shouldnt affect manual targeting anyway since no search used.. test it maybe wrong)
 
 
@@ -3455,7 +3450,7 @@ void bhkPickData_CFilter(RE::bhkPickData* pickdata, uint32_t a_collisionFilter, 
 //////////////////////////////////////////////////////////////////////////////
 
 
-
+/*
 RE::ArrowProjectile* the_arrow{};
 RE::NiPoint3 last_arrow_pos{};
 
@@ -3477,6 +3472,8 @@ RE::NiPoint3 original_dif{};
 
 RE::ATTACK_STATE_ENUM last_attack_state;
 std::vector<RE::ATTACK_STATE_ENUM> track_attack{};
+*/
+
 
 
 //this update doesnt work in pause
