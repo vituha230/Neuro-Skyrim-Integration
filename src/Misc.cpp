@@ -1654,7 +1654,7 @@ namespace MiscThings {
                                             actor_ref->GetCollisionFilterInfo(cFilter_info);
                                             auto group = cFilter_info.GetSystemGroup();
 
-                                            uint32_t filter = 0x110 + (group << 16);
+                                            uint32_t filter = 0x110 + (group << 16); //TODO THIS SHOULD BE 0b110 NOT 0x110. dont want to risk it so leave as is but this is wrong
 
                                             float dragon_bonus = MiscThings::is_dragon(a_ref) * 300.0f;
 
@@ -1696,7 +1696,7 @@ namespace MiscThings {
                                                         actor_ref->GetCollisionFilterInfo(cFilter_info);
                                                         auto group = cFilter_info.GetSystemGroup();
 
-                                                        uint32_t filter = 0x110 + (group << 16);
+                                                        uint32_t filter = 0x110 + (group << 16); //TODO THIS SHOULD BE 0b110 NOT 0x110. dont want to risk it so leave as is but this is wrong
 
                                                         auto raycast_ref = MiscThings::GetRaycastRef(actor_pos, attack_vector, actor_ref->GetAttackReach() + 30.0f, nullptr, filter);
 
@@ -6646,15 +6646,15 @@ namespace MiscThings {
         "Windhelm",
         {
             {0x1b11c, 1, "Trader (Niranye)", 1}, //trader
-            {0x1b123, 1, "Trader (Sadri's Used Wares)", 1}, //trader
-            {0x1b118, 2, "Tavern [Provides bed, jobs and food/booze]", 2}, //tavern
-            {0x1b115, 3, "Alchemist [Provides potions and ingredients. Probably has alchemist table]", 3}, //alchemist
-            {0x1b135, 4, "Blacksmith [Weapons, armor, materials for crafting. Might have crafting workbenches around]", 4}, //blacksmith
-            {0x1b131, 5, "Jarl", 5}, //jarl ulfric
-            {0x1B117, 5, "Jarl", 6}, //jarl brynwulf
-            {0x1b132, 6, "Wizard", 7}, //wizard
-            {0x16962, 7, "Church [Has shrines]", 8}, //church
-            {0x1b134, 11, "Jarl's Steward", 9}  //steward Jorleif
+            {0x1b123, 1, "Trader (Sadri's Used Wares)", 2}, //trader
+            {0x1b118, 2, "Tavern [Provides bed, jobs and food/booze]", 3}, //tavern
+            {0x1b115, 3, "Alchemist [Provides potions and ingredients. Probably has alchemist table]", 4}, //alchemist
+            {0x1b135, 4, "Blacksmith [Weapons, armor, materials for crafting. Might have crafting workbenches around]", 5}, //blacksmith
+            {0x1b131, 5, "Jarl", 6}, //jarl ulfric
+            {0x1B117, 5, "Jarl", 7}, //jarl brynwulf
+            {0x1b132, 6, "Wizard", 8}, //wizard
+            {0x16962, 7, "Church [Has shrines]", 9}, //church
+            {0x1b134, 11, "Jarl's Steward", 10}  //steward Jorleif
 
         }
     }
