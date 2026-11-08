@@ -2,6 +2,11 @@
 
 Skyrim mod that can allow an LLM to play the game using text inputs
 
+Blunderbuss mod base: https://www.nexusmods.com/skyrim/mods/26653
+Blunderbuss texture design by Mantisprayer
+Neuro-sama and Vedal: https://www.twitch.tv/vedal987
+
+https://github.com/vituha230/skyrim-neuro-mods-standalone/releases/tag/tag
 
 Some demonstration videos:
 - [(OLD) Cave raid](https://www.youtube.com/watch?v=kQVDKba-8-8)
