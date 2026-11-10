@@ -10582,6 +10582,39 @@ namespace MiscThings {
         if (!quest)
             return nullptr;
 
+
+        if (quest->formID == 0x21552 && quest->currentStage > 20 && quest->currentStage <= 40) //dwemer museum thievs guild tg06 quest
+        {
+            if (target)
+            {
+                if (target->formID == 0x5486b && player_pos.z < -1679.0f) //outside bad door
+                {
+                    auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x16e47);
+                    if (redirect) return redirect;
+                }
+
+                if (target->formID == 0x7f65e)
+                {
+                    auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x36a82);
+                    if (redirect) return redirect;
+                }
+
+                
+                if (target->formID == 0x33d2d)
+                {
+                    auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x33d2c);
+                    if (redirect) return redirect;
+                }
+
+
+                if (target->formID == 0x882db)
+                {
+                    auto redirect = (RE::TESObjectREFR*)RE::TESObjectREFR::LookupByID(0x88295);
+                    if (redirect) return redirect;
+                }
+            }
+        }
+
         if (quest->formID == 0x3372b && quest->currentStage == 160)
         {
             if (target && target->formID == 0x2bf9e)
