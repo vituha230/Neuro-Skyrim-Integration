@@ -396,8 +396,7 @@ bool neuro::NeuroSocket::Initialize()
 {
     // Note: this is a FPS and we're polling every frame (which we shouldn't do, but...)
     // We can't have poll timeout be more than ~10ms without rethinking architecture
-    neurosdk_context_create_desc_t desc{.url = "ws://localhost:8000", //TODO: why was this not filled?
-                                        .game_name = "Skyrim",
+    neurosdk_context_create_desc_t desc{.game_name = "Skyrim",
                                         .poll_ms = PollRateMs,
                                         .flags = (neurosdk_context_create_flags_e)NEUROSDK_CONTEXT_CREATE_FLAGS_DEBUG,
                                         .callback_log = neuro::NeuroSocket::LogNeuro };
