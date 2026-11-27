@@ -9131,7 +9131,7 @@ namespace MiscThings {
                     }
 
                     std::string marker_name = data->mapData->locationName.GetFullName();
-                    if (marker_name != "" && marker_name.find("Military Camp") == std::string::npos)
+                    if (marker_name != "")// && marker_name.find("Military Camp") == std::string::npos)
                     {
 
                         RE::ObjectRefHandle quest_ref_handle{};
@@ -9296,7 +9296,7 @@ namespace MiscThings {
                     {
 
                         std::string marker_name = data->mapData->locationName.GetFullName();
-                        if (marker_name != "" && marker_name.find("Military Camp") == std::string::npos)
+                        if (marker_name != "")// && marker_name.find("Military Camp") == std::string::npos)
                         {
 
 

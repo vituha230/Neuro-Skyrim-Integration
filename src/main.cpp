@@ -5,6 +5,10 @@
 
 
 
+
+//TODO maybe work on dialogue skipping (need to remember dialogues across saveloads in case dialogue leads to death). something like, skip the line and allow say response right away.
+
+
 //////////////////////////////////////////////////////
 // QUESTLINES
 
